@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>调研NFV编排工具 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="调研NFV编排工具">
+<meta property="og:url" content="http://yoursite.com/2017/11/10/调研NFV编排工具/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
+<meta property="og:updated_time" content="2017-11-10T14:28:22.597Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="调研NFV编排工具">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-调研NFV编排工具" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/10/调研NFV编排工具/" class="article-date">
+  <time datetime="2017-11-10T14:27:51.000Z" itemprop="datePublished">2017-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      调研NFV编排工具
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="裸机配置工具"><a href="#裸机配置工具" class="headerlink" title="裸机配置工具"></a>裸机配置工具</h2><ul>
+<li>Cobbler, Dell开源的基于PXE的裸机部署工具</li>
+<li>Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具</li>
+<li>MAAS, Canonical的基于PXE的裸机部署工具，电源管理(<a href="https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等" target="_blank" rel="external">https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等</a> - <a href="http://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/37990507</a><h2 id="通用配置管理工具"><a href="#通用配置管理工具" class="headerlink" title="通用配置管理工具"></a>通用配置管理工具</h2></li>
+<li>Puppet, 配置管理工具的鼻祖，由Ruby语言编写，使用基于XML的自有的puppet描述语言管理配置文件、用户、cron任务、软件包、系统服务等，语法复杂，可移植性差。</li>
+<li>Chef, 一个类似于Puppet用来快速部署软件及其依赖包的脚本工具，将配置步骤通过脚本写出来(Puppet用基于XML的专用方法书写，Chef用Ruby书写），客户端从服务器端获取脚本并执行 - <a href="http://blog.csdn.net/quqi99/article/details/21247111" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/21247111</a></li>
+<li>Ansible, 它应该是吸引了Juju通过SSH进行所有的操作的思想让它可以并行运行任何标准脚本语言(Python, Bash, Ruby等等），Ansible剧本(YAML语言编写)角色映射到节点/虚机上对它们进行编排有序的执行。另外它和Juju不同的是它是agentless的。</li>
+<li>Salt, 又叫SaltStack，同时支持agent与agentless两种模式，在后一种模式下，Salt也使用SSH连接到受管理的节点/虚机执行以Python语言编写的模块。</li>
+<li>Docker, 可将软件及软件依赖的运行环境与安装包统统打包一起部署，从而实现软件与基础架构的解偶。<h2 id="OpenStack部署工具"><a href="#OpenStack部署工具" class="headerlink" title="OpenStack部署工具"></a>OpenStack部署工具</h2></li>
+<li>Devstack, 部署OpenStack开发环境</li>
+<li>Packstack, 使用Puppet经SSH部署OpenStack到RHEL/CentOS上，见：<a href="https://wiki.openstack.org/wiki/Packstack" target="_blank" rel="external">https://wiki.openstack.org/wiki/Packstack</a></li>
+<li>Redhat RDO, 使用Ansible部署OpenStack到RHEL/CentOS上</li>
+<li>Suse Crowbar, 使用Chef部署OpenStack到Suse上</li>
+<li>Rackspace OpenStack-Ansible, 使用Ansible部署OpenStack到Ubuntu和CentOS上</li>
+<li>Mirantis Fuel, 使用Puppet部署OpenStack到Ubuntu上</li>
+<li>HPE Helion, 使用Ansible部署OpenStack到Debian上</li>
+<li>OpenStack TripleO, 使用OpenStack本来的基础设施(Nova, Neutron, Ironic, Heat)来自动化部署和伸缩OpenStack集群，即OpenStack over OpenStack。见：<a href="http://blog.csdn.net/quqi99/article/details/9530627" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/9530627</a></li>
+<li>OpenStack Kolla, 上面工具只是实现了部署OpenStack的自动化，但没有简化OpenStack部署，如包依赖和升级困难等。Kolla项目起源于TripleO项目，实现OpenStack部署的容器化(即把目前OpenStack项目用到的所有组件部署在容器里)，因此具有原子性回滚升级特性。它既可以利用Ansible去伸缩OpenStack容器节点，也可以利用Kubernetes去伸缩OpenStack容器节点。<h2 id="NFV编排"><a href="#NFV编排" class="headerlink" title="NFV编排"></a>NFV编排</h2></li>
+<li>OpenStack Heat, Heat根据配置文件模板(HOT, heat orchestration template)实例化一组符合要求的虚机。也能够在其上对应用软件进行配置与编排。对支持对一个组件部署后的负载均衡进行编排。见： <a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/50359289</a></li>
+<li>Canonical Juju, 使用OPNFV JOID去编排VNFM与NFVO</li>
+<li>配置管理工具，上述的通用型的配置管理工具如Puppet、Chef、Ansible都可以用于去编排VNFM与NFVO<br>Docker, 使用Docker作为编排工具将VNFM与NFVO部署到容器里</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cj9tzzd6b0001nxbp34uez33l" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/11/08/CSDN博客地址/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">CSDN博客地址</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/CSDN博客地址/">CSDN博客地址</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/基于hexo搭建github博客-by-quqi99/">基于hexo搭建github博客(by quqi99)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/Play-with-Tacker-by-quqi99/">Play with Tacker(by quqi99)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

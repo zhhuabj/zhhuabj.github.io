@@ -61,6 +61,65 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-调研NFV编排工具" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/10/调研NFV编排工具/" class="article-date">
+  <time datetime="2017-11-10T14:27:51.000Z" itemprop="datePublished">2017-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="裸机配置工具"><a href="#裸机配置工具" class="headerlink" title="裸机配置工具"></a>裸机配置工具</h2><ul>
+<li>Cobbler, Dell开源的基于PXE的裸机部署工具</li>
+<li>Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具</li>
+<li>MAAS, Canonical的基于PXE的裸机部署工具，电源管理(<a href="https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等" target="_blank" rel="external">https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等</a> - <a href="http://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/37990507</a><h2 id="通用配置管理工具"><a href="#通用配置管理工具" class="headerlink" title="通用配置管理工具"></a>通用配置管理工具</h2></li>
+<li>Puppet, 配置管理工具的鼻祖，由Ruby语言编写，使用基于XML的自有的puppet描述语言管理配置文件、用户、cron任务、软件包、系统服务等，语法复杂，可移植性差。</li>
+<li>Chef, 一个类似于Puppet用来快速部署软件及其依赖包的脚本工具，将配置步骤通过脚本写出来(Puppet用基于XML的专用方法书写，Chef用Ruby书写），客户端从服务器端获取脚本并执行 - <a href="http://blog.csdn.net/quqi99/article/details/21247111" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/21247111</a></li>
+<li>Ansible, 它应该是吸引了Juju通过SSH进行所有的操作的思想让它可以并行运行任何标准脚本语言(Python, Bash, Ruby等等），Ansible剧本(YAML语言编写)角色映射到节点/虚机上对它们进行编排有序的执行。另外它和Juju不同的是它是agentless的。</li>
+<li>Salt, 又叫SaltStack，同时支持agent与agentless两种模式，在后一种模式下，Salt也使用SSH连接到受管理的节点/虚机执行以Python语言编写的模块。</li>
+<li>Docker, 可将软件及软件依赖的运行环境与安装包统统打包一起部署，从而实现软件与基础架构的解偶。<h2 id="OpenStack部署工具"><a href="#OpenStack部署工具" class="headerlink" title="OpenStack部署工具"></a>OpenStack部署工具</h2></li>
+<li>Devstack, 部署OpenStack开发环境</li>
+<li>Packstack, 使用Puppet经SSH部署OpenStack到RHEL/CentOS上，见：<a href="https://wiki.openstack.org/wiki/Packstack" target="_blank" rel="external">https://wiki.openstack.org/wiki/Packstack</a></li>
+<li>Redhat RDO, 使用Ansible部署OpenStack到RHEL/CentOS上</li>
+<li>Suse Crowbar, 使用Chef部署OpenStack到Suse上</li>
+<li>Rackspace OpenStack-Ansible, 使用Ansible部署OpenStack到Ubuntu和CentOS上</li>
+<li>Mirantis Fuel, 使用Puppet部署OpenStack到Ubuntu上</li>
+<li>HPE Helion, 使用Ansible部署OpenStack到Debian上</li>
+<li>OpenStack TripleO, 使用OpenStack本来的基础设施(Nova, Neutron, Ironic, Heat)来自动化部署和伸缩OpenStack集群，即OpenStack over OpenStack。见：<a href="http://blog.csdn.net/quqi99/article/details/9530627" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/9530627</a></li>
+<li>OpenStack Kolla, 上面工具只是实现了部署OpenStack的自动化，但没有简化OpenStack部署，如包依赖和升级困难等。Kolla项目起源于TripleO项目，实现OpenStack部署的容器化(即把目前OpenStack项目用到的所有组件部署在容器里)，因此具有原子性回滚升级特性。它既可以利用Ansible去伸缩OpenStack容器节点，也可以利用Kubernetes去伸缩OpenStack容器节点。<h2 id="NFV编排"><a href="#NFV编排" class="headerlink" title="NFV编排"></a>NFV编排</h2></li>
+<li>OpenStack Heat, Heat根据配置文件模板(HOT, heat orchestration template)实例化一组符合要求的虚机。也能够在其上对应用软件进行配置与编排。对支持对一个组件部署后的负载均衡进行编排。见： <a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/50359289</a></li>
+<li>Canonical Juju, 使用OPNFV JOID去编排VNFM与NFVO</li>
+<li>配置管理工具，上述的通用型的配置管理工具如Puppet、Chef、Ansible都可以用于去编排VNFM与NFVO<br>Docker, 使用Docker作为编排工具将VNFM与NFVO部署到容器里</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cj9tzzd6b0001nxbp34uez33l" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-CSDN博客地址" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/11/08/CSDN博客地址/" class="article-date">
@@ -83,12 +142,12 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>CSDN博客地址是： blog.csdn.net/quqi99</p>
+        <p>我的CSDN博客地址是：<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cj9qfpbtd00008zbp17zevk2j" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cj9tzzd6j0004nxbpb9xb7g0f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -133,12 +192,12 @@
 <p>7, 改用jekyll-bootstrap, 先扫描 _post，layout, 然后是目录和 page，</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">装入一个 site 对象后，用什么 Liquide render出来</span><br><span class="line">git clone https://github.com/plusjade/jekyll-bootstrap.git</span><br><span class="line">cp -r jekyll-bootstrap/* zhhuabj.github.io/*</span><br><span class="line">vi _config.yml</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">sudo gem install jekyll-sitemap</span><br><span class="line">jekyll serve #http://127.0.0.1:4000/</span><br></pre></td></tr></table></figure>
 <p>8, 改用hexo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">   sudo apt install npm node.js nodejs-legacy </span><br><span class="line">   sudo npm install hexo hexo-generator-feed -g</span><br><span class="line">   sudo npm install hexo-deployer-git --save</span><br><span class="line">   sudo npm install git --save</span><br><span class="line">   cd zhhuabj.github.io</span><br><span class="line">   hexo init .</span><br><span class="line">   hexo server    #http://localhost:4000/</span><br><span class="line">   hexo new &quot;my test post&quot;</span><br><span class="line">   </span><br><span class="line">   $ vim _config.yml</span><br><span class="line">deploy:</span><br><span class="line">  type: git  #注意前面有两个空格，冒号后有一个空格</span><br><span class="line">  repository: https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line">  user: zhhuabj</span><br><span class="line">  pass: password</span><br><span class="line">  </span><br><span class="line">   cp -r ../csdn-blog-export/*.md source/_posts/</span><br><span class="line">   hexo generate</span><br><span class="line">   hexo deploy  #cp -r public/* .</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">   sudo apt install npm node.js nodejs-legacy </span><br><span class="line">   sudo npm install hexo hexo-generator-feed -g</span><br><span class="line">   sudo npm install hexo-deployer-git --save</span><br><span class="line">   sudo npm install git --save</span><br><span class="line">   cd zhhuabj.github.io</span><br><span class="line">   hexo init .</span><br><span class="line">   hexo server    #http://localhost:4000/</span><br><span class="line">   hexo new &quot;my test post&quot;</span><br><span class="line">   </span><br><span class="line">   $ vim _config.yml</span><br><span class="line">deploy:</span><br><span class="line">  type: git  #注意前面有两个空格，冒号后有一个空格</span><br><span class="line">  #repository: https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  # 如果使用ssh免密码方式除了github上提交公钥，同时改成下面一句</span><br><span class="line">  repository: git@github.com:zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line">  #user: zhhuabj</span><br><span class="line">  #pass: password</span><br><span class="line">  </span><br><span class="line">   cp -r ../csdn-blog-export/*.md source/_posts/</span><br><span class="line">   hexo generate</span><br><span class="line">   hexo deploy  #cp -r public/* .</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cj9qfpbtq00038zbpd25vxxjn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cj9tzzd6f0002nxbp8bc9p5aa" class="article-share-link">Share</a>
       
       
     </footer>
@@ -201,7 +260,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cj9qfpbtj00018zbpvdbgae4d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cj9tzzd6g0003nxbpblnsn38n" class="article-share-link">Share</a>
       
       
     </footer>
@@ -246,7 +305,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/hello-world/" data-id="cj9qfpbto00028zbpvt577wqo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/hello-world/" data-id="cj9tzzd650000nxbprqlrlbe8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -284,6 +343,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
+          </li>
         
           <li>
             <a href="/2017/11/08/CSDN博客地址/">CSDN博客地址</a>
