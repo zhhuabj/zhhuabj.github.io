@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>将kubernetes跑在本地LXD容器中 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题本文将kubernetest跑在本地LXD容器中。 Kubernetes是什么Kubernetes是什么，见我的博客。 安装LXD如何安装LXD，见我的博客。这篇文章和之前的在LXD上运行容器化的OpenStack类似，见我的博客。 LXD上安装K">
+<meta property="og:type" content="article">
+<meta property="og:title" content="将kubernetes跑在本地LXD容器中">
+<meta property="og:url" content="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题本文将kubernetest跑在本地LXD容器中。 Kubernetes是什么Kubernetes是什么，见我的博客。 安装LXD如何安装LXD，见我的博客。这篇文章和之前的在LXD上运行容器化的OpenStack类似，见我的博客。 LXD上安装K">
+<meta property="og:image" content="http://img.blog.csdn.net/20171112211641461?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20171112211653333?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20171112211707374?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20171112211721152?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-11-12T13:19:31.654Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="将kubernetes跑在本地LXD容器中">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题本文将kubernetest跑在本地LXD容器中。 Kubernetes是什么Kubernetes是什么，见我的博客。 安装LXD如何安装LXD，见我的博客。这篇文章和之前的在LXD上运行容器化的OpenStack类似，见我的博客。 LXD上安装K">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20171112211641461?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-将kubernetes跑在本地LXD容器中" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/12/将kubernetes跑在本地LXD容器中/" class="article-date">
+  <time datetime="2017-11-12T13:19:18.000Z" itemprop="datePublished">2017-11-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      将kubernetes跑在本地LXD容器中
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本文将kubernetest跑在本地LXD容器中。</p>
+<h2 id="Kubernetes是什么"><a href="#Kubernetes是什么" class="headerlink" title="Kubernetes是什么"></a>Kubernetes是什么</h2><p>Kubernetes是什么，见<a href="http://blog.csdn.net/quqi99/article/details/42058833" target="_blank" rel="external">我的博客</a>。</p>
+<h2 id="安装LXD"><a href="#安装LXD" class="headerlink" title="安装LXD"></a>安装LXD</h2><p>如何安装LXD，见<a href="http://blog.csdn.net/quqi99/article/details/52131486" target="_blank" rel="external">我的博客</a>。<br>这篇文章和之前的在LXD上运行容器化的OpenStack类似，见<a href="http://blog.csdn.net/quqi99/article/details/52132140" target="_blank" rel="external">我的博客</a>。</p>
+<h2 id="LXD上安装Kubernetes"><a href="#LXD上安装Kubernetes" class="headerlink" title="LXD上安装Kubernetes"></a>LXD上安装Kubernetes</h2><p>1,  从<a href="https://jujucharms.com/canonical-kubernetes/" target="_blank" rel="external">这个链接</a>下载 ‘canonical-kubernetes.zip’ ，里面有下面要用到的bundle.yaml<br>2, 使用 juju-default profile运行’juju bootstrap’<br>juju bootstrap –debug –config bootstrap-series=xenial –config agent-stream=devel localhost juju-default<br>3, 使用juju一键部署kubernetes<br>juju deploy bundle.yaml<br>4，部署完毕</p>
+<h2 id="使用conjure-up部署Kubernetes"><a href="#使用conjure-up部署Kubernetes" class="headerlink" title="使用conjure-up部署Kubernetes"></a>使用conjure-up部署Kubernetes</h2><p>也可以使用conjure-up更加友好的在LXD容器里部署Kubernetes，它实际上也是调用上面的bundle.yaml进行部署的。脚本如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:juju/stable</span><br><span class="line">sudo apt-add-repository ppa:conjure-up/next</span><br><span class="line">sudo apt update</span><br><span class="line">sudo snap install lxd</span><br><span class="line">sudo snap install conjure-up --classic</span><br><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line">/snap/bin/lxd init --auto</span><br><span class="line">#Use lxdbr1 since the name lxdbr0 has been used in test env, can use &apos;lxc network list&apos; to see &apos;MANAGED&apos; field</span><br><span class="line">/snap/bin/lxc network create lxdbr1 ipv4.address=auto ipv4.nat=true ipv6.address=none</span><br><span class="line">#Must use non-root user to avoid the error &apos;This should _not_ be run as root or with sudo&apos;</span><br><span class="line">#Step1, select to install &apos;Kubernetes Core&apos;, see the picture below</span><br><span class="line">#Step2, select &apos;localhost&apos;, see the picture below</span><br><span class="line">#Step3, select the network bridge &apos;lxdbr1&apos;, see the picture below</span><br><span class="line">#Step4, click &apos;Deploy all 5 Remaining Applicatons, see the picture below</span><br><span class="line">sudo -u ubuntu -i conjure-up kubernetes</span><br><span class="line">tailf ~/.cache/conjure-up/conjure-up.log</span><br></pre></td></tr></table></figure>
+<p>贴一些相关的图如下：<br><img src="http://img.blog.csdn.net/20171112211641461?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211653333?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211707374?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211721152?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>[1] <a href="https://stgraber.org/2017/01/13/kubernetes-inside-lxd/" target="_blank" rel="external">https://stgraber.org/2017/01/13/kubernetes-inside-lxd/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cj9wsegc10005ydbppqgj19xs" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/11/12/Play-with-LXD/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Play with LXD</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/11/12/将kubernetes跑在本地LXD容器中/">将kubernetes跑在本地LXD容器中</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/12/Play-with-LXD/">Play with LXD</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/CSDN博客地址/">CSDN博客地址</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/08/基于hexo搭建github博客-by-quqi99/">基于hexo搭建github博客(by quqi99)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
