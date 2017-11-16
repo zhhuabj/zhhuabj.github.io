@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>通配符中一个星号两个星号和globstar的关系 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。1234/tmp/* rw,/tmp/*/ rw,/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通配符中一个星号两个星号和globstar的关系">
+<meta property="og:url" content="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。1234/tmp/* rw,/tmp/*/ rw,/">
+<meta property="og:updated_time" content="2017-11-16T07:49:18.493Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通配符中一个星号两个星号和globstar的关系">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 问题今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。1234/tmp/* rw,/tmp/*/ rw,/">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-通配符中一个星号两个星号和globstar的关系" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/" class="article-date">
+  <time datetime="2017-11-16T07:48:59.000Z" itemprop="datePublished">2017-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      通配符中一个星号两个星号和globstar的关系
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/tmp/* rw,</span><br><span class="line">/tmp/*/ rw,</span><br><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>但是在运行”sudo /etc/init.d/apparmor reload &amp;&amp; sudo service nova-compute restart“命令后仍然在syslog里能看到下列错误信息。奇了怪了，这是怎么一回事呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766810] audit: type=1400 audit(1510750176.727:10140): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766828] audit: type=1400 audit(1510750176.727:10141): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/var/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br></pre></td></tr></table></figure></p>
+<h2 id="globstar模式下的通配符"><a href="#globstar模式下的通配符" class="headerlink" title="globstar模式下的通配符"></a>globstar模式下的通配符</h2><p>通配符有一个星号，两个星号，还有逗号，globstar模式可以开启，还可以关闭。这些混在一起会有什么影响呢？<br>如果想要很方便地遍历所有的目录和文件得用两个星号的通配符。globstar是Bash 4.0才引入的选项，当设置启用globstar(shopt -s globstar)时，两个星号意为对通配符进行展开就可以匹配任何当前目录(包括子目录)以及其的文件；若不启用globstar(shopt -u globstar)，两个星号通配符的作用和一个星号通配符是相同的。</p>
+<ul>
+<li>~/tmp/* -  匹配当前目录的文件，及当前目录的下一级目录(不包括当前目录），与’ls ~/tmp’及”ls ~/tmp/“的效果同。</li>
+<li>~/tmp/*/ - 匹配当前目录的下一级目录(不包括当前目录）</li>
+<li>~/tmp/<em>* - 禁用globstar时，与~/tmp/</em>完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的文件和目录（也包括当前目录）</li>
+<li>~/tmp/<em>*/ - 禁用globstar时，与~/tmp/</em>/ 完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的目录（也包括当前目录）</li>
+</ul>
+<p>当启用globstar时，英语的解释如下（注：里面说的file包括文件和目录，在Linux里目录是特殊的文件）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Substitutes for any number of characters, except /.</span><br><span class="line">/tmp/* matches any file in /tmp. </span><br><span class="line">/tmp/*/ matches any directory in /tmp</span><br><span class="line"></span><br><span class="line">Substitutes for any number of characters, including /.</span><br><span class="line">/tmp/** matches all files and directories underneath /tmp.</span><br><span class="line">/tmp/**/ matches all directories underneath /tmp.</span><br></pre></td></tr></table></figure>
+<p>请看实验数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~/tmp$ tree .</span><br><span class="line">.</span><br><span class="line">├── l0_dir1</span><br><span class="line">│   ├── l1_dir</span><br><span class="line">│   │   ├── l2_dir</span><br><span class="line">│   │   │   └── l3_file</span><br><span class="line">│   │   └── l2_file</span><br><span class="line">│   └── l1_file</span><br><span class="line">├── l0_dir2</span><br><span class="line">└── l0_file</span><br><span class="line">4 directories, 4 files</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -s globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/l3_file  /home/hua/tmp/l0_dir1/l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_file         /home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -u globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br></pre></td></tr></table></figure>
+<h2 id="问题的解决"><a href="#问题的解决" class="headerlink" title="问题的解决"></a>问题的解决</h2><p>学习了上面的理论之后，是不是想到了问题所在了，那就是下列两个配置没有包括当前目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>所以它应该修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/&#123;,**&#125; rw,</span><br><span class="line">/var/tmp/&#123;,**&#125; rw,</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cja26d5200006oxbpx8t48quz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/11/13/Use-hexo-to-create-blog/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Use hexo to create blog</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/">通配符中一个星号两个星号和globstar的关系</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/Use-hexo-to-create-blog/">Use hexo to create blog</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/">使用Juju将OpenStack部署在单机的LXD容器上</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/12/将kubernetes跑在本地LXD容器中/">将kubernetes跑在本地LXD容器中</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/12/Play-with-LXD/">Play with LXD</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
