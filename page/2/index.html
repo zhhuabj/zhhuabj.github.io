@@ -68,6 +68,73 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-调研NFV编排工具" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/10/调研NFV编排工具/" class="article-date">
+  <time datetime="2017-11-10T14:27:51.000Z" itemprop="datePublished">2017-11-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="裸机配置工具"><a href="#裸机配置工具" class="headerlink" title="裸机配置工具"></a>裸机配置工具</h2><ul>
+<li>Cobbler, Dell开源的基于PXE的裸机部署工具</li>
+<li>Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具</li>
+<li>MAAS, Canonical的基于PXE的裸机部署工具，电源管理(<a href="https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等" target="_blank" rel="external">https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等</a> - <a href="http://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/37990507</a><h2 id="通用配置管理工具"><a href="#通用配置管理工具" class="headerlink" title="通用配置管理工具"></a>通用配置管理工具</h2></li>
+<li>Puppet, 配置管理工具的鼻祖，由Ruby语言编写，使用基于XML的自有的puppet描述语言管理配置文件、用户、cron任务、软件包、系统服务等，语法复杂，可移植性差。</li>
+<li>Chef, 一个类似于Puppet用来快速部署软件及其依赖包的脚本工具，将配置步骤通过脚本写出来(Puppet用基于XML的专用方法书写，Chef用Ruby书写），客户端从服务器端获取脚本并执行 - <a href="http://blog.csdn.net/quqi99/article/details/21247111" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/21247111</a></li>
+<li>Ansible, 它应该是吸引了Juju通过SSH进行所有的操作的思想让它可以并行运行任何标准脚本语言(Python, Bash, Ruby等等），Ansible剧本(YAML语言编写)角色映射到节点/虚机上对它们进行编排有序的执行。另外它和Juju不同的是它是agentless的。</li>
+<li>Salt, 又叫SaltStack，同时支持agent与agentless两种模式，在后一种模式下，Salt也使用SSH连接到受管理的节点/虚机执行以Python语言编写的模块。</li>
+<li>Docker, 可将软件及软件依赖的运行环境与安装包统统打包一起部署，从而实现软件与基础架构的解偶。<h2 id="OpenStack部署工具"><a href="#OpenStack部署工具" class="headerlink" title="OpenStack部署工具"></a>OpenStack部署工具</h2></li>
+<li>Devstack, 部署OpenStack开发环境</li>
+<li>Packstack, 使用Puppet经SSH部署OpenStack到RHEL/CentOS上，见：<a href="https://wiki.openstack.org/wiki/Packstack" target="_blank" rel="external">https://wiki.openstack.org/wiki/Packstack</a></li>
+<li>Redhat RDO, 使用Ansible部署OpenStack到RHEL/CentOS上</li>
+<li>Suse Crowbar, 使用Chef部署OpenStack到Suse上</li>
+<li>Rackspace OpenStack-Ansible, 使用Ansible部署OpenStack到Ubuntu和CentOS上</li>
+<li>Mirantis Fuel, 使用Puppet部署OpenStack到Ubuntu上</li>
+<li>HPE Helion, 使用Ansible部署OpenStack到Debian上</li>
+<li>OpenStack TripleO, 使用OpenStack本来的基础设施(Nova, Neutron, Ironic, Heat)来自动化部署和伸缩OpenStack集群，即OpenStack over OpenStack。见：<a href="http://blog.csdn.net/quqi99/article/details/9530627" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/9530627</a></li>
+<li>OpenStack Kolla, 上面工具只是实现了部署OpenStack的自动化，但没有简化OpenStack部署，如包依赖和升级困难等。Kolla项目起源于TripleO项目，实现OpenStack部署的容器化(即把目前OpenStack项目用到的所有组件部署在容器里)，因此具有原子性回滚升级特性。它既可以利用Ansible去伸缩OpenStack容器节点，也可以利用Kubernetes去伸缩OpenStack容器节点。<h2 id="NFV编排"><a href="#NFV编排" class="headerlink" title="NFV编排"></a>NFV编排</h2></li>
+<li>OpenStack Heat, Heat根据配置文件模板(HOT, heat orchestration template)实例化一组符合要求的虚机。也能够在其上对应用软件进行配置与编排。对支持对一个组件部署后的负载均衡进行编排。见： <a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/50359289</a></li>
+<li>Canonical Juju, 使用OPNFV JOID去编排VNFM与NFVO</li>
+<li>配置管理工具，上述的通用型的配置管理工具如Puppet、Chef、Ansible都可以用于去编排VNFM与NFVO</li>
+<li>Kebernetes或者Kolar, 可作为编排工具将VNFM与NFVO部署到容器里<h2 id="Mesos-Marathon"><a href="#Mesos-Marathon" class="headerlink" title="Mesos + Marathon"></a>Mesos + Marathon</h2>应用部署方面也可以采用Mesos + Marthon:</li>
+<li>Mesos是一个两阶段集群管理器（也叫数据中心操作系统)，Master第一阶段通过Framework注册的Schedule将资源分配给Framework (Framework可以支持Hadoop, Elasticsearch, Spark, Stom, Kafka, Marathon等, 也通过K8SM支持将容器集群管理器Kubernetest集成到Mesos)，Slave第二阶段在容器中调用Executor运行Framework的内部任务。</li>
+<li>Marathon作为一个Mesos Framework，用来支持长期服务，比如Web应用，它相当于分布式的init.d，能够在分布式集群上像原有单机那样运行二进制程序，所以说它也是一种私有的PaaS，能提供REST API服务，实现服务的发现，通过HAProxy实现服务发现和负载均衡。</li>
+<li>使用Mesos + Marathon来编排一些应用还行，但用来编排NFV似乎热度不高网上很难找到相关资料，社区缺乏活力</li>
+<li>Mesos的所有Schdule都没有像Kubernetes那样针对微服务进行了数据模型的抽象（如Pod, Service, Namespace等），所以Mesos的API没有Kubernetes精良易用。另外，Mesos涉及的组件使用的编程语言太多，如Mesos(C++)、Marathon（Scala）、Mesos-DNS（Golang）等。<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2></li>
+<li>做NFV的虚机编排用Juju或者Heat</li>
+<li>做NFV的容器编排用Juju或者Kolar或者Kebernetes</li>
+<li>当然，其他如Ansible这些其他配置软件也能用</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjauj9iub000ch2bpa4k0r523" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-CSDN博客地址" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/11/08/CSDN博客地址/" class="article-date">
@@ -95,7 +162,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjauikewz0000hfbp5lgqvoii" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjauj9itc0000h2bpg9zkfyfa" class="article-share-link">Share</a>
       
       
     </footer>
@@ -145,7 +212,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjauikey10008hfbp8koxgu6v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjauj9iu50009h2bpxajg4ohg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -208,7 +275,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjauikex90002hfbp78dldyms" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjauj9itm0002h2bpxyfwowk9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -253,7 +320,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/hello-world/" data-id="cjauikexd0005hfbpec6t6kn5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/hello-world/" data-id="cjauj9itu0006h2bptuauorpq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -297,6 +364,10 @@
       <ul>
         
           <li>
+            <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/">如何修改网卡名称由enp0s25为eth0</a>
+          </li>
+        
+          <li>
             <a href="/2017/12/06/三种方式使用vlan/">三种方式使用vlan</a>
           </li>
         
@@ -310,10 +381,6 @@
         
           <li>
             <a href="/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/">远程访问双层嵌套Openstack云下的Windows虚机</a>
-          </li>
-        
-          <li>
-            <a href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/">通配符中一个星号两个星号和globstar的关系</a>
           </li>
         
       </ul>
