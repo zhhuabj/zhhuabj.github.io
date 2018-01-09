@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>virtio/vhost中的限速机制 | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。 systemtap刚开始我们怀疑是这两个patches导致的问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="virtio&#x2F;vhost中的限速机制">
+<meta property="og:url" content="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。 systemtap刚开始我们怀疑是这两个patches导致的问题">
+<meta property="og:updated_time" content="2018-01-09T08:01:14.624Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="virtio&#x2F;vhost中的限速机制">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。 systemtap刚开始我们怀疑是这两个patches导致的问题">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS-каналы"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Поиск"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-virtio-vhost中的限速机制" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/09/virtio-vhost中的限速机制/" class="article-date">
+  <time datetime="2018-01-09T08:00:31.000Z" itemprop="datePublished">2018-01-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      virtio/vhost中的限速机制
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。</p>
+<h2 id="systemtap"><a href="#systemtap" class="headerlink" title="systemtap"></a>systemtap</h2><p>刚开始我们怀疑是这两个patches导致的问题：<br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853</a><br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92</a></p>
+<p>所以写了个systemtap脚本在宿主机监控vhost模块中的vhost_signal函数将vring的相关信息打印如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30401 new=30402 last_used_event=0 vring_used=30402 vring_avail=30402</span><br><span class="line"></span><br><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30403 new=30404 last_used_event=0 vring_used=30404 vring_avail=30404</span><br></pre></td></tr></table></figure></p>
+<p>根据打印的值，我们算出下面两个公式的结果均为False (<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189</a> )。<br>vring_need_event(vq-&gt;last_used_event, new + vq-&gt;num, new)<br>vring_need_event(vq-&gt;last_used_event, new, old)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TX 34936796160 values: old=7077 new=7077 last_used_event=0 vring_used=7077 vring_avail=7077 </span><br><span class="line">1. False: (7077 + 256) - 0 - 1 &lt; (7077 + 256) - 7077 </span><br><span class="line">2. False: 7077 - 0 - 1 &lt; 7077 - 7077</span><br></pre></td></tr></table></figure>
+<p>上面为False的话，vhost_notify()就为False，那样vhost也不会调用eventfd_signal通过中断向guest发通知(<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211</a>)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void vhost_signal(struct vhost_dev *dev, struct vhost_virtqueue *vq)</span><br><span class="line">&#123;</span><br><span class="line">	/* Signal the Guest tell them we used something up. */</span><br><span class="line">	if (vq-&gt;call_ctx &amp;&amp; vhost_notify(dev, vq))</span><br><span class="line">		eventfd_signal(vq-&gt;call_ctx, 1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="理论分析"><a href="#理论分析" class="headerlink" title="理论分析"></a>理论分析</h2><ul>
+<li>Guest发数据：guest将发送报文Buffer的head index加入avial_ring中， 在合适的时间点通过ioeventfds消息来通知backend。backend发完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
+<li>Guest收数据：两个queue都需要guest填充buffer, guest将空白Buffer的head index加入avail_ring中，在合适的时间点通过ioeventfds消息来通知backend。backend收完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
+<li>Flags, avail_ring与used_ring中都有flags字段，例如avail_ring中的flags字段代表guest告诉host在host发完报文之后是否需要通知guest。<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2>在打开VIRTIO_RING_F_EVENT_IDX特性之后，virtio/vhost将不再依据flags来决定是否向对方发送消息(guest到host根据消息通知，host到guest通过中断)，而是guest/host在发送一批报文后(flags是每个包发送性能较差)自行决定是否向对方发消息。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/* The standard layout for the ring is a continuous chunk of memory which looks</span><br><span class="line"> * like this.  We assume num is a power of 2.</span><br><span class="line"> *</span><br><span class="line"> * struct vring</span><br><span class="line"> * &#123;</span><br><span class="line"> *	// The actual descriptors (16 bytes each)</span><br><span class="line"> *	struct vring_desc desc[num];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of available descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 avail_flags;</span><br><span class="line"> *	__virtio16 avail_idx;</span><br><span class="line"> *	__virtio16 available[num];</span><br><span class="line"> *	__virtio16 used_event_idx;</span><br><span class="line"> *</span><br><span class="line"> *	// Padding to the next align boundary.</span><br><span class="line"> *	char pad[];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of used descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 used_flags;</span><br><span class="line"> *	__virtio16 used_idx;</span><br><span class="line"> *	struct vring_used_elem used[num];</span><br><span class="line"> *	__virtio16 avail_event_idx;</span><br><span class="line"> * &#125;;</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>此时，在数据结构方面，在used_ring中有avail_event_idx字段，在avail_ring中有used_event_idx字段，用下列方法相互填充。如：vring_avail_event(&amp;vq-&gt;vring)用于将avail_ring中的index填充到used_ring的最后一个字段used_event_idx中去，反之亦然。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* We publish the used event index at the end of the available ring, and vice</span><br><span class="line"> * versa. They are at the end for backwards compatibility. */</span><br><span class="line">#define vring_used_event(vr) ((vr)-&gt;avail-&gt;ring[(vr)-&gt;num])</span><br><span class="line">#define vring_avail_event(vr) (*(__virtio16 *)&amp;(vr)-&gt;used-&gt;ring[(vr)-&gt;num])</span><br></pre></td></tr></table></figure></p>
+<p>1, guest端virtio驱动, 根据vring_need_event()公式，guest在发送缓冲区满了之后才kick消息给host.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/torvalds/linux/blob/v4.10/drivers/virtio/virtio_ring.c#L547</span><br><span class="line"></span><br><span class="line">bool virtqueue_kick_prepare(struct virtqueue *_vq)&#123;</span><br><span class="line">	old = vq-&gt;avail_idx_shadow - vq-&gt;num_added;</span><br><span class="line">	new = vq-&gt;avail_idx_shadow;</span><br><span class="line">	vq-&gt;num_added = 0;</span><br><span class="line">        ...</span><br><span class="line">	if (vq-&gt;event) &#123;</span><br><span class="line">		needs_kick = vring_need_event(virtio16_to_cpu(_vq-&gt;vdev, vring_avail_event(&amp;vq-&gt;vring)),</span><br><span class="line">					      new, old);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		needs_kick = !(vq-&gt;vring.used-&gt;flags &amp; cpu_to_virtio16(_vq-&gt;vdev, VRING_USED_F_NO_NOTIFY));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">vq-&gt;event = virtio_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX);</span><br><span class="line"></span><br><span class="line">static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)</span><br><span class="line">&#123;</span><br><span class="line">	return (__u16)(new_idx - event_idx - 1) &lt; (__u16)(new_idx - old);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct vring_virtqueue &#123;</span><br><span class="line">	/* Last written value to avail-&gt;idx in guest byte order */</span><br><span class="line">	u16 avail_idx_shadow;</span><br><span class="line">	/* Head of free buffer list. */</span><br><span class="line">	unsigned int free_head;</span><br></pre></td></tr></table></figure></p>
+<p>注： vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)实际是一种限速，new指针在前, old指标在后，如果：</p>
+<ul>
+<li>如果event_idx也就是avail.idx的位置超过了old， vring_need_event=True, 表示后端处理的快(<strong>event_idx是后端通知给前端处理的索引值</strong>)，此时guest将发通知给host请它继续处理。</li>
+<li>如果event_idx在old之前，vring_need_event=False, <strong>说明后端处理的慢</strong>，此时guest不会向host发通知。</li>
+</ul>
+<p>2, guest端virtio驱动是如何发包的呢？ xmit_skb会高用virtqueue_add_outbuf最终会调用virtqueue_add, 设置完ring的相关字段之后最后调virtqueue_kick<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">   return virtqueue_add_outbuf(sq-&gt;vq, sq-&gt;sg, num_sg, skb, GFP_ATOMIC);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline int virtqueue_add(struct virtqueue *_vq,</span><br><span class="line">				struct scatterlist *sgs[],</span><br><span class="line">				unsigned int total_sg,</span><br><span class="line">				unsigned int out_sgs,</span><br><span class="line">				unsigned int in_sgs,</span><br><span class="line">				void *data,</span><br><span class="line">				gfp_t gfp)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">	head = vq-&gt;free_head;</span><br><span class="line">	/* Put entry in available array (but don&apos;t update avail-&gt;idx until they</span><br><span class="line">	 * do sync). */</span><br><span class="line">	avail = vq-&gt;avail_idx_shadow &amp; (vq-&gt;vring.num - 1);</span><br><span class="line">	vq-&gt;vring.avail-&gt;ring[avail] = cpu_to_virtio16(_vq-&gt;vdev, head);</span><br><span class="line"></span><br><span class="line">	/* Descriptors and available array need to be set before we expose the</span><br><span class="line">	 * new available array entries. */</span><br><span class="line">	virtio_wmb(vq-&gt;weak_barriers);</span><br><span class="line">	vq-&gt;avail_idx_shadow++;</span><br><span class="line">	vq-&gt;vring.avail-&gt;idx = cpu_to_virtio16(_vq-&gt;vdev, vq-&gt;avail_idx_shadow);</span><br><span class="line">	vq-&gt;num_added++;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Added buffer head %i to %p\n&quot;, head, vq);</span><br><span class="line">	END_USE(vq);</span><br><span class="line"></span><br><span class="line">	/* This is very unlikely, but theoretically possible.  Kick</span><br><span class="line">	 * just in case. */</span><br><span class="line">	if (unlikely(vq-&gt;num_added == (1 &lt;&lt; 16) - 1))</span><br><span class="line">		virtqueue_kick(_vq);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>从上面的代码分析中我们已经完成能够确定:<br>1, vhost后端没有给guest通过中断通知event_idx(avail_idx)值。<br>2，virtio前端也在根据vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)决定是否向vhost后端kick消息时， 由于event_idx在old的前面，vring_need_event值为False，所以前端就不会给后端发消息。这样前端就会丢包，所以前端也会看到“No buffer space available”之类的错误。通过上面的代码分析，我们也知道了造成这个的原因是因为后端发送的比前端慢。在检查宿主机的syslog后，发现了大量的MTU相关的日志”br-int: dropped over-mtu packet: 1500 &gt; 1458”。OK，问题就在这里了，虚机里需要设置合适的MTU值，如sudo ip link set eth0 mtu 1400</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjc7ckhyh0005bjbpcakuajy3" class="article-share-link">Поделиться</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/12/22/OpenStack-s-multiattach-Feature/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Предыдущий</strong>
+      <div class="article-nav-title">OpenStack&#39;s multiattach Feature</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Архив</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Недавние записи</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/22/OpenStack-s-multiattach-Feature/">OpenStack&#39;s multiattach Feature</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/">如何修改网卡名称由enp0s25为eth0</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/06/三种方式使用vlan/">三种方式使用vlan</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/">OpenWRT与QNAP上通过PXE安装Xenial</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Создано с помощью <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
