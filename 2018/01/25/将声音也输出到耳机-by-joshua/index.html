@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>将声音也输出到耳机(by joshua) | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="将声音也输出到耳机(by joshua)">
+<meta property="og:url" content="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机">
+<meta property="og:image" content="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2018-01-25T12:12:42.393Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="将声音也输出到耳机(by joshua)">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-将声音也输出到耳机-by-joshua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/25/将声音也输出到耳机-by-joshua/" class="article-date">
+  <time datetime="2018-01-25T12:12:26.000Z" itemprop="datePublished">2018-01-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      将声音也输出到耳机(by joshua)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)<br>而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机使用二合一线接前面板，可做到关闭音箱仍然可以从耳机抓取声音。）</p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>在ubuntu上安装pulseaudio的前端控制工具pavucontrol (apt install pavucontrol), 然后执行pavucontrol命令后在Playback和Recording菜单上将默认的’Build-in Audio Analog Stereo’修改成别的试试。（注：有声音的时候才会出现相应的菜单内容）<br><img src="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="附录一，将喇叭的声音同时从多个声卡输出"><a href="#附录一，将喇叭的声音同时从多个声卡输出" class="headerlink" title="附录一，将喇叭的声音同时从多个声卡输出"></a>附录一，将喇叭的声音同时从多个声卡输出</h2><p>sudo apt-get install paprefs, 然后在paprefs应用中设置simultaneous output，重启（pulseaudio -k), 这时Sound设置中会出出一个虚拟声卡.</p>
+<h2 id="附录二，Chrome中设置声音的路径"><a href="#附录二，Chrome中设置声音的路径" class="headerlink" title="附录二，Chrome中设置声音的路径"></a>附录二，Chrome中设置声音的路径</h2><p>chrome://settings/content#media-stream-mic</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjcuglk44000bb4bp42f542uh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/01/09/virtio-vhost中的限速机制/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">virtio/vhost中的限速机制</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/25/将声音也输出到耳机-by-joshua/">将声音也输出到耳机(by joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/22/OpenStack-s-multiattach-Feature/">OpenStack&#39;s multiattach Feature</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/">如何修改网卡名称由enp0s25为eth0</a>
+          </li>
+        
+          <li>
+            <a href="/2017/12/06/三种方式使用vlan/">三种方式使用vlan</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

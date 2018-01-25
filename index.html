@@ -55,9 +55,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS-каналы"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Поиск"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -67,6 +67,47 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-将声音也输出到耳机-by-joshua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/25/将声音也输出到耳机-by-joshua/" class="article-date">
+  <time datetime="2018-01-25T12:12:26.000Z" itemprop="datePublished">2018-01-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/25/将声音也输出到耳机-by-joshua/">将声音也输出到耳机(by joshua)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)<br>而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机使用二合一线接前面板，可做到关闭音箱仍然可以从耳机抓取声音。）</p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>在ubuntu上安装pulseaudio的前端控制工具pavucontrol (apt install pavucontrol), 然后执行pavucontrol命令后在Playback和Recording菜单上将默认的’Build-in Audio Analog Stereo’修改成别的试试。（注：有声音的时候才会出现相应的菜单内容）<br><img src="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="附录一，将喇叭的声音同时从多个声卡输出"><a href="#附录一，将喇叭的声音同时从多个声卡输出" class="headerlink" title="附录一，将喇叭的声音同时从多个声卡输出"></a>附录一，将喇叭的声音同时从多个声卡输出</h2><p>sudo apt-get install paprefs, 然后在paprefs应用中设置simultaneous output，重启（pulseaudio -k), 这时Sound设置中会出出一个虚拟声卡.</p>
+<h2 id="附录二，Chrome中设置声音的路径"><a href="#附录二，Chrome中设置声音的路径" class="headerlink" title="附录二，Chrome中设置声音的路径"></a>附录二，Chrome中设置声音的路径</h2><p>chrome://settings/content#media-stream-mic</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjcuglk44000bb4bp42f542uh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-virtio-vhost中的限速机制" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -116,7 +157,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjc7ckhyh0005bjbpcakuajy3" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjcuglk3t0006b4bpz6b2wk0y" class="article-share-link">Share</a>
       
       
     </footer>
@@ -178,7 +219,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjc7ckhyl0006bjbpwajmbmll" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjcuglk3g0001b4bpc59vjoz3" class="article-share-link">Share</a>
       
       
     </footer>
@@ -227,7 +268,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjc7ckhzi000ebjbpolncaxqw" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjcuglk420009b4bpilvnhvii" class="article-share-link">Share</a>
       
       
     </footer>
@@ -294,7 +335,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjc7ckhyz000cbjbpd9tsds6p" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjcuglk3w0007b4bpai10d5u7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -340,7 +381,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjc7ckhy70001bjbpgn2l5oer" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjcuglk4s000gb4bp64g7t9zx" class="article-share-link">Share</a>
       
       
     </footer>
@@ -395,7 +436,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjc7ckhyb0002bjbpq4mz7jgh" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjcuglk4q000fb4bp75ezci9m" class="article-share-link">Share</a>
       
       
     </footer>
@@ -458,7 +499,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjc7ckhzm000fbjbpqvzwqglp" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjcuglk4w000hb4bp6e5q0u9y" class="article-share-link">Share</a>
       
       
     </footer>
@@ -510,7 +551,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjc7ckhzo000gbjbptegwibyh" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjcuglk49000db4bpt2nj72s5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -560,67 +601,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjc7ckhys0008bjbp210pzvaj" class="article-share-link">Поделиться</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-使用Juju将OpenStack部署在单机的LXD容器上" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" class="article-date">
-  <time datetime="2017-11-13T07:18:08.000Z" itemprop="datePublished">2017-11-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/">使用Juju将OpenStack部署在单机的LXD容器上</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>作者：张华  发表于：2016-08-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
-<h2 id="理论基础"><a href="#理论基础" class="headerlink" title="理论基础"></a>理论基础</h2><ol>
-<li>iscsi还不能运行在容器里（因为netlink还不支持namesapce)，本文采用rbd使用ceph代替iscsi</li>
-<li>ovs, kvm通过定义profile支持运行在容器里。ovs目前只支持security.privileged: “true”</li>
-</ol>
-<h2 id="配置LXD"><a href="#配置LXD" class="headerlink" title="配置LXD"></a>配置LXD</h2><p>参考<a href="http://blog.csdn.net/quqi99/article/details/52131486" target="_blank" rel="external">Play with LXD</a>一文 在ubuntu 16.04上部署LXD环境。</p>
-<h2 id="LXD上部署OpenStack"><a href="#LXD上部署OpenStack" class="headerlink" title="LXD上部署OpenStack"></a>LXD上部署OpenStack</h2><p>1, 从这个<a href="https://jujucharms.com/openstack-base/" target="_blank" rel="external">链接</a>下载 ‘openstack-base.zip’ ，里面有下面要用到的bundle.yaml<br>2, 运行’juju bootstrap’，注意：运行这一步时先不要修改profile<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#sudo snap install lxd</span><br><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line">juju bootstrap --debug --config bootstrap-series=xenial --config agent-stream=devel localhost lxd-controller</span><br><span class="line">lxc exec `lxc list |grep juju- |awk -F &apos;|&apos; &apos;&#123;print $2&#125;&apos;` bash</span><br></pre></td></tr></table></figure></p>
-<p>3,  创建model，且<strong>它会自动生成juju-openstack-model profile</strong> （’juju add-model’会自动执行这一句‘lxc profile create juju-openstack-model 2&gt;/dev/null || echo “juju-openstack-model profile already exists”’）, <strong>如果不定义model，就会有一个名为default的model，那么这时下面第4步要编辑juju-default profile</strong>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">juju add-model openstack-model</span><br><span class="line">juju models</span><br><span class="line">lxc profile show juju-openstack-model</span><br></pre></td></tr></table></figure></p>
-<p>4, 编辑juju-openstack-model profile。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install --reinstall linux-image-extra-$(uname -r)</span><br><span class="line">sudo modprobe nbd</span><br><span class="line">sudo modprobe ip_tables</span><br><span class="line">sudo modprobe openvswitch</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF &gt; juju-openstack-model.yaml</span><br><span class="line">name: juju-openstack-model</span><br><span class="line">config:</span><br><span class="line">  boot.autostart: &quot;true&quot;</span><br><span class="line">  security.nesting: &quot;true&quot;</span><br><span class="line">  security.privileged: &quot;true&quot;</span><br><span class="line">  raw.lxc: lxc.aa_profile=unconfined</span><br><span class="line">  linux.kernel_modules: openvswitch,nbd,ip_tables,ip6_tables,ebtables,netlink_diag,nf_nat,overlay</span><br><span class="line">devices:</span><br><span class="line">  eth0:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth0</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr1</span><br><span class="line">    type: nic</span><br><span class="line">  eth1:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth1</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr1</span><br><span class="line">    type: nic</span><br><span class="line">  kvm:</span><br><span class="line">    path: /dev/kvm</span><br><span class="line">    type: unix-char</span><br><span class="line">  mem:</span><br><span class="line">    path: /dev/mem</span><br><span class="line">    type: unix-char</span><br><span class="line">  root:</span><br><span class="line">    path: /</span><br><span class="line">    pool: default</span><br><span class="line">    type: disk</span><br><span class="line">  tun:</span><br><span class="line">    path: /dev/net/tun</span><br><span class="line">    type: unix-char</span><br><span class="line">EOF</span><br><span class="line">cat lxd-profile.yaml | lxc profile edit juju-openstack-model</span><br><span class="line">#其他命令演示</span><br><span class="line">#lxc profile set juju-openstack-model raw.lxc lxc.aa_profile=unconfined</span><br><span class="line">#lxc profile device add juju-openstack-model fuse unix-char path=/dev/fuse</span><br><span class="line">#/snap/bin/lxc network create lxdbr1 ipv4.address=auto ipv4.nat=true ipv6.address=none</span><br></pre></td></tr></table></figure></p>
-<p>5, 使用juju一键部署openstack</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://api.jujucharms.com/charmstore/v5/openstack-base/archive/bundle.yaml</span><br><span class="line">juju deploy bundle.yaml</span><br><span class="line">juju status</span><br><span class="line">juju debug-log</span><br></pre></td></tr></table></figure>
-<h2 id="安装过程中遇到的问题"><a href="#安装过程中遇到的问题" class="headerlink" title="安装过程中遇到的问题"></a>安装过程中遇到的问题</h2><ul>
-<li>如果报这个错 - failed to bootstrap model: cannot start bootstrap instance: The container’s root device is missing the pool property， 那是要在profile中的root元素下添加：pool: default</li>
-<li>bootstrap时报这个错 - FATAL: Module ip6_tables，ebtables，netlink_diag not found in directory /lib/modules/4.4.0-98-generic - 运行‘sudo apt-get install –reinstall linux-image-extra-$(uname -r)’安装模块（/lib/modules/$(uname -r)/kernel/net/netlink/netlink_diag.ko）。<strong>此外是因为profile中写的这些模块名是从网页拷过来的存在乱码</strong>。</li>
-</ul>
-<h2 id="配置使用OpenStack"><a href="#配置使用OpenStack" class="headerlink" title="配置使用OpenStack"></a>配置使用OpenStack</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">source novarc</span><br><span class="line">$ cat novarc </span><br><span class="line">#!/bin/bash</span><br><span class="line">export OS_USERNAME=admin</span><br><span class="line">export OS_PASSWORD=openstack</span><br><span class="line">export OS_TENANT_NAME=admin</span><br><span class="line">export OS_REGION_NAME=RegionOne</span><br><span class="line">export OS_AUTH_URL=$&#123;OS_AUTH_PROTOCOL:-http&#125;://`juju run --unit  keystone/0 &quot;unit-get private-address&quot;`:5000/v2.0</span><br><span class="line"></span><br><span class="line">curl http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img</span><br><span class="line">openstack image create --public --container-format=bare --disk-format=qcow2 xenial</span><br><span class="line"></span><br><span class="line">./neutron-ext-net -g 10.0.8.1 -c 10.0.8.0/24 \ -f 10.0.8.201:10.0.8.254 ext_net</span><br><span class="line">./neutron-tenant-net -t admin -r provider-router \ -N 10.0.8.1 internal 192.168.20.0/24</span><br><span class="line"></span><br><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">nova boot --image xenial --flavor m1.small --key-name mykey --nic net-id=$(neutron net-list | grep internal | awk &apos;&#123; print $2 &#125;&apos;) i1</span><br><span class="line"></span><br><span class="line">cinder create --name testvolume 10</span><br><span class="line">nova volume-attach xenial $(cinder list | grep testvolume | awk &apos;&#123; print $2 &#125;&apos;) /dev/vdc</span><br><span class="line"></span><br><span class="line">nova floating-ip-create </span><br><span class="line">nova add-floating-ip &lt;uuid-of-instance&gt; &lt;new-floating-ip&gt;</span><br><span class="line"></span><br><span class="line">neutron security-group-rule-create --protocol icmp --direction ingress $(nova secgroup-list | grep default | awk &apos;&#123; print $2 &#125;&apos;) </span><br><span class="line">neutron security-group-rule-create --protocol tcp  --port-range-min 22 --port-range-max 22  --direction ingress $(nova secgroup-list | grep default | awk &apos;&#123; print $2 &#125;&apos;)</span><br><span class="line"></span><br><span class="line">ssh ubuntu@&lt;new-floating-ip&gt;</span><br></pre></td></tr></table></figure>
-<h2 id="又一例-部署opencontrail在lxd单机上"><a href="#又一例-部署opencontrail在lxd单机上" class="headerlink" title="又一例 - 部署opencontrail在lxd单机上"></a>又一例 - 部署opencontrail在lxd单机上</h2><p>下面的yaml是juju2.0的，如果是juju1.x可见：<a href="http://pastebin.ubuntu.com/24170320/" target="_blank" rel="external">http://pastebin.ubuntu.com/24170320/</a><br>实际上,opencontrail vrouter部署在容器里会报下列错，此例子只是说明yaml怎么写。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2017-03-13 11:46:06 INFO juju-log Loading kernel module vrouter</span><br><span class="line">2017-03-13 11:46:06 INFO install modprobe: ERROR: ../libkmod/libkmod.c:556 kmod_search_moddep() could not open moddep file &apos;/lib/modules/4.8.0-34-generic/modules.dep.bin&apos;</span><br><span class="line">2017-03-13 11:46:06 INFO juju-log vrouter kernel module failed to load, clearing pagecache and retrying</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><span class="line">series: trusty</span><br><span class="line">services:</span><br><span class="line">  # openstack</span><br><span class="line">  ubuntu:</span><br><span class="line">    charm: cs:trusty/ubuntu</span><br><span class="line">    num_units: 1</span><br><span class="line">  ntp:</span><br><span class="line">    charm: cs:trusty/ntp</span><br><span class="line">  mysql:</span><br><span class="line">    charm: cs:trusty/mysql</span><br><span class="line">    options:</span><br><span class="line">      dataset-size: 15%</span><br><span class="line">      max-connections: 1000</span><br><span class="line">    num_units: 1</span><br><span class="line">  rabbitmq-server:</span><br><span class="line">    charm: cs:trusty/rabbitmq-server</span><br><span class="line">    num_units: 1</span><br><span class="line">  keystone:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/keystone</span><br><span class="line">    options:</span><br><span class="line">      admin-password: password</span><br><span class="line">      admin-role: admin</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  nova-cloud-controller:</span><br><span class="line">    charm: cs:trusty/nova-cloud-controller</span><br><span class="line">    options:</span><br><span class="line">      network-manager: Neutron</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  neutron-api:</span><br><span class="line">    charm: cs:trusty/neutron-api</span><br><span class="line">    options:</span><br><span class="line">      manage-neutron-plugin-legacy-mode: false</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  glance:</span><br><span class="line">    charm: cs:trusty/glance</span><br><span class="line">    options:</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  openstack-dashboard:</span><br><span class="line">    charm: cs:trusty/openstack-dashboard</span><br><span class="line">    options:</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  nova-compute:</span><br><span class="line">    charm: cs:trusty/nova-compute</span><br><span class="line">    options:</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  # contrail</span><br><span class="line">  cassandra:</span><br><span class="line">    charm: cs:trusty/cassandra</span><br><span class="line">    options:</span><br><span class="line">      authenticator: AllowAllAuthenticator</span><br><span class="line">      install_sources: |</span><br><span class="line">        - deb http://www.apache.org/dist/cassandra/debian 22x main</span><br><span class="line">        - ppa:openjdk-r/ppa</span><br><span class="line">        - ppa:stub/cassandra</span><br><span class="line">    num_units: 1</span><br><span class="line">  zookeeper:</span><br><span class="line">    charm: cs:~charmers/trusty/zookeeper</span><br><span class="line">    num_units: 1</span><br><span class="line">  kafka:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/apache-kafka</span><br><span class="line">    num_units: 1</span><br><span class="line">  contrail-configuration:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/contrail-configuration</span><br><span class="line">    options:</span><br><span class="line">      openstack-origin: cloud:trusty-mitaka</span><br><span class="line">    num_units: 1</span><br><span class="line">  contrail-control:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/contrail-control</span><br><span class="line">    num_units: 1</span><br><span class="line">  contrail-analytics:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/contrail-analytics</span><br><span class="line">    num_units: 1</span><br><span class="line">  contrail-webui:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/contrail-webui</span><br><span class="line">    num_units: 1</span><br><span class="line">  neutron-api-contrail:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/neutron-api-contrail</span><br><span class="line">    num_units: 0</span><br><span class="line">  neutron-contrail:</span><br><span class="line">    charm: cs:~sdn-charmers/trusty/neutron-contrail</span><br><span class="line">    num_units: 0</span><br><span class="line"></span><br><span class="line">relations:</span><br><span class="line">  # openstack</span><br><span class="line"> - [ ubuntu, ntp ]</span><br><span class="line"> - [ keystone, mysql ]</span><br><span class="line"> - [ glance, mysql ]</span><br><span class="line"> - [ glance, keystone ]</span><br><span class="line"> - [ nova-cloud-controller, mysql ]</span><br><span class="line"> - [ nova-cloud-controller, rabbitmq-server ]</span><br><span class="line"> - [ nova-cloud-controller, keystone ]</span><br><span class="line"> - [ nova-cloud-controller, glance ]</span><br><span class="line"> - [ neutron-api, mysql ]</span><br><span class="line"> - [ neutron-api, rabbitmq-server ]</span><br><span class="line"> - [ neutron-api, nova-cloud-controller ]</span><br><span class="line"> - [ neutron-api, keystone ]</span><br><span class="line"> - [ neutron-api, neutron-api-contrail ]</span><br><span class="line"> - [ &quot;nova-compute:shared-db&quot;, &quot;mysql:shared-db&quot; ]</span><br><span class="line"> - [ &quot;nova-compute:amqp&quot;, &quot;rabbitmq-server:amqp&quot; ]</span><br><span class="line"> - [ nova-compute, glance ]</span><br><span class="line"> - [ nova-compute, nova-cloud-controller ]</span><br><span class="line"> - [ nova-compute, ntp ]</span><br><span class="line"> - [ openstack-dashboard, keystone ]</span><br><span class="line">  # contrail</span><br><span class="line"> - [ kafka, zookeeper ]</span><br><span class="line"> - [ &quot;contrail-configuration:cassandra&quot;, &quot;cassandra:database&quot; ]</span><br><span class="line"> - [ contrail-configuration, zookeeper ]</span><br><span class="line"> - [ contrail-configuration, rabbitmq-server ]</span><br><span class="line"> - [ &quot;contrail-configuration:identity-admin&quot;, &quot;keystone:identity-admin&quot; ]</span><br><span class="line"> - [ &quot;contrail-configuration:identity-service&quot;, &quot;keystone:identity-service&quot; ]</span><br><span class="line"> - [ neutron-api-contrail, contrail-configuration ]</span><br><span class="line"> - [ neutron-api-contrail, keystone ]</span><br><span class="line"> - [ &quot;contrail-control:contrail-api&quot;, &quot;contrail-configuration:contrail-api&quot; ]</span><br><span class="line"> - [ &quot;contrail-control:contrail-discovery&quot;, &quot;contrail-configuration:contrail-discovery&quot; ]</span><br><span class="line"> - [ &quot;contrail-control:contrail-ifmap&quot;, &quot;contrail-configuration:contrail-ifmap&quot; ]</span><br><span class="line"> - [ contrail-control, keystone ]</span><br><span class="line"> - [ &quot;contrail-analytics:cassandra&quot;, &quot;cassandra:database&quot; ]</span><br><span class="line"> - [ contrail-analytics, kafka ]</span><br><span class="line"> - [ contrail-analytics, zookeeper ]</span><br><span class="line"> - [ &quot;contrail-analytics:contrail-api&quot;, &quot;contrail-configuration:contrail-api&quot; ]</span><br><span class="line"> - [ &quot;contrail-analytics:contrail-discovery&quot;, &quot;contrail-configuration:contrail-discovery&quot; ]</span><br><span class="line"> - [ &quot;contrail-analytics:identity-admin&quot;, &quot;keystone:identity-admin&quot; ]</span><br><span class="line"> - [ &quot;contrail-analytics:identity-service&quot;, &quot;keystone:identity-service&quot; ]</span><br><span class="line"> - [ &quot;contrail-configuration:contrail-analytics-api&quot;, &quot;contrail-analytics:contrail-analytics-api&quot; ]</span><br><span class="line"> - [ nova-compute, neutron-contrail ]</span><br><span class="line"> - [ &quot;neutron-contrail:contrail-discovery&quot;, &quot;contrail-configuration:contrail-discovery&quot; ]</span><br><span class="line"> - [ &quot;neutron-contrail:contrail-api&quot;, &quot;contrail-configuration:contrail-api&quot; ]</span><br><span class="line"> - [ neutron-contrail, keystone ]</span><br><span class="line"> - [ contrail-webui, keystone ]</span><br><span class="line"> - [ &quot;contrail-webui:cassandra&quot;, &quot;cassandra:database&quot; ]</span><br></pre></td></tr></table></figure>
-<h2 id="通过conjure-up安装OpenStack"><a href="#通过conjure-up安装OpenStack" class="headerlink" title="通过conjure-up安装OpenStack"></a>通过conjure-up安装OpenStack</h2><p>我们也可以通过conjure-up安装OpenStack,</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">#Install a lxd container</span><br><span class="line">sudo lxc init ubuntu:16.04 openstack -c security.privileged=true -c security.nesting=true -c &quot;linux.kernel_modules=iptable_nat, ip6table_nat, ebtables, openvswitch, nbd&quot;</span><br><span class="line">printf &quot;lxc.cap.drop=\nlxc.aa_profile=unconfined\n&quot; | sudo lxc config set openstack raw.lxc -</span><br><span class="line">sudo lxc config get openstack raw.lxc</span><br><span class="line">lxc config device add openstack mem unix-char path=/dev/mem</span><br><span class="line">lxc start openstack</span><br><span class="line">lxc list</span><br><span class="line"></span><br><span class="line">#Install conjure-up inside the lxd container</span><br><span class="line">#lxc exec openstack bash</span><br><span class="line">lxc exec openstack -- apt update</span><br><span class="line">#lxc exec openstack -- apt dist-upgrade -y</span><br><span class="line">lxc exec openstack -- apt install squashfuse -y</span><br><span class="line">lxc exec openstack -- ln -s /bin/true /usr/local/bin/udevadm</span><br><span class="line">lxc exec openstack -- snap install conjure-up --classic</span><br><span class="line"></span><br><span class="line">#Init lxd container</span><br><span class="line">#Use the “dir” storage backend (“zfs” doesn’t work in a nested container)</span><br><span class="line">#Do NOT configure IPv6 networking (conjure-up/juju don’t play well with it)</span><br><span class="line">#lxc exec openstack -- lxd init</span><br><span class="line">lxc exec openstack -- snap install lxd</span><br><span class="line">sleep 10  #avoid the error &apos;Unable to talk to LXD: Get http://unix.socket/1.0&apos;</span><br><span class="line">lxc exec openstack -- /snap/bin/lxd init --auto</span><br><span class="line">lxc exec openstack -- /snap/bin/lxc network create lxdbr0 ipv4.address=auto ipv4.nat=true ipv6.address=none</span><br><span class="line">lxc exec openstack -- /snap/bin/lxc profile show default</span><br><span class="line"></span><br><span class="line">#Deploying OpenStack with conjure-up in nested LXD</span><br><span class="line">#conjure-up is a nice, user friendly, tool that interfaces with Juju to deploy complex services.</span><br><span class="line">#Step 1, select “OpenStack with NovaLXD”</span><br><span class="line">#Step 2, select “localhost” as the deployment target (uses LXD)</span><br><span class="line">#Step 3, select default in all middle steps, and click “Deploy all remaining applications”</span><br><span class="line">lxc exec openstack -- sudo -u ubuntu -i conjure-up</span><br><span class="line">hua@node1:~$ sudo lxc list</span><br><span class="line">+-----------+---------+--------------------------------+------+------------+-----------+</span><br><span class="line">|   NAME    |  STATE  |              IPV4              | IPV6 |    TYPE    | SNAPSHOTS |</span><br><span class="line">+-----------+---------+--------------------------------+------+------------+-----------+</span><br><span class="line">| openstack | RUNNING | 10.73.227.154 (eth0)           |      | PERSISTENT | 0         |</span><br><span class="line">|           |         | 10.164.92.1 (lxdbr0)           |      |            |           |</span><br><span class="line">|           |         | 10.101.0.1 (conjureup0)        |      |            |           |</span><br><span class="line">+-----------+---------+--------------------------------+------+------------+-----------+</span><br><span class="line"></span><br><span class="line">#Or deploy OpenStack with conjure-up in physical node</span><br><span class="line">sudo snap install lxd</span><br><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line">sudo /snap/bin/lxd init --auto</span><br><span class="line">sudo /snap/bin/lxc network create lxdbr0 ipv4.address=auto ipv4.nat=true ipv6.address=none</span><br><span class="line">sudo -i</span><br><span class="line">conjure-up openstack #but I hit the error &apos;This should _not_ be run as root or with sudo&apos; even though I&apos;ve already used root</span><br></pre></td></tr></table></figure>
-<p>下面粘一些使用conjure-up过程中的截图：<br><img src="http://img.blog.csdn.net/20171112101736564?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112101801150?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112101813090?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://stgraber.org/2016/10/26/lxd-2-0-lxd-and-openstack-1112/" target="_blank" rel="external">https://stgraber.org/2016/10/26/lxd-2-0-lxd-and-openstack-1112/</a></li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjc7ckhyv000abjbpkmw90ore" class="article-share-link">Поделиться</a>
+      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjcuglk3p0005b4bp3hjbgtg7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -649,7 +630,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Архив</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
@@ -659,9 +640,13 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Недавние записи</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/01/25/将声音也输出到耳机-by-joshua/">将声音也输出到耳机(by joshua)</a>
+          </li>
         
           <li>
             <a href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
@@ -679,10 +664,6 @@
             <a href="/2017/12/06/三种方式使用vlan/">三种方式使用vlan</a>
           </li>
         
-          <li>
-            <a href="/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/">OpenWRT与QNAP上通过PXE安装Xenial</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -696,7 +677,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2018 张华<br>
-      Создано с помощью <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
