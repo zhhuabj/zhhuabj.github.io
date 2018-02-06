@@ -68,6 +68,121 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-远程访问双层嵌套Openstack云下的Windows虚机" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" class="article-date">
+  <time datetime="2017-11-29T02:42:21.000Z" itemprop="datePublished">2017-11-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/">远程访问双层嵌套Openstack云下的Windows虚机</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>遇到这么一个奇葩组合问题，一个Bug只在Windows虚机上出现，实验环境是远程OpenStack云上再嵌套OpenStack云上提供的一个Windows虚机，两个OpenStack云都采用内网IP，现在的问题是如何远程登录到Windows虚机中。环境如下：</p>
+<ul>
+<li>Bastion中转机，是由Underlying OpenStack提供的一台虚机，它的floating ip是10.230.65.8，可通过VPN连接到该IP。众所周知的原因，VPN连接是容易断的。所以平时是先ssh连接到VPS，再在VPS启动VPN连接这台机器的。由于平时都是使用命令行所以没遇到问题，但是现在是采用RDP图形化界面连接Windows虚机的，那么网速就跟不上了。无奈，只能继续将VPN创建在本机上。</li>
+<li>Tenant OpenStack -  最上层的OpenStack是由Underlying OpenStack提供的虚机创建的。上层Tenant OpenStack的为这台Windows虚机提供的浮动IP是10.5.150.2</li>
+<li>如果我们将Windows虚机创建在Underlying OpenStack上，那么它可以分到10.230网段的IP，那么问题就简化了，登录VPN打通网络后直接通过remmina远程连接即可。但由于Underlying OpenStack我无权限控制，Windows虚机创建在Tenant OpenStack上，那样问题就复杂化了。 <h2 id="访问Tenant-OpenStack的Horizon界面"><a href="#访问Tenant-OpenStack的Horizon界面" class="headerlink" title="访问Tenant OpenStack的Horizon界面"></a>访问Tenant OpenStack的Horizon界面</h2>这个简单，登录VPN后，再在本机运行sshuttle命令即可访问horizon界面。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sshuttle -D -r ubuntu@10.230.65.8 10.5.0.0/24</span><br><span class="line">http://10.5.0.52/horizon</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="通过noVNC访问Tenant-OpenStack提供的Linux虚机"><a href="#通过noVNC访问Tenant-OpenStack提供的Linux虚机" class="headerlink" title="通过noVNC访问Tenant OpenStack提供的Linux虚机"></a>通过noVNC访问Tenant OpenStack提供的Linux虚机</h2><p>Linux虚机要是通过命令行来访问，那就没这些问题了。若要图形化访问，可以采用novnc方案。<br>1， 在控制节点上安装下列四个组件。计算节点不需要安装包。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install nova-consoleauth novnc python-novnc nova-novncproxy</span><br><span class="line">sudo service nova-consoleauth restart</span><br><span class="line">sudo service nova-novncproxy restart</span><br><span class="line">sudo service libvirt-bin restart</span><br></pre></td></tr></table></figure></p>
+<p>2， 在控制节点和计算节点上同时配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vnc_enabled = True</span><br><span class="line">novnc_enabled = True</span><br><span class="line">vncserver_proxyclient_address=10.5.0.49</span><br><span class="line">vncserver_listen=0.0.0.0</span><br><span class="line">novncproxy_base_url=http://10.5.0.43:6080/vnc_auto.html</span><br></pre></td></tr></table></figure></p>
+<p>3, 通过下列命令就可以获得novnc连接并访问了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nova get-vnc-console i1 novnc</span><br><span class="line">sshuttle -D -r ubuntu@10.230.65.8 10.5.0.0/24</span><br></pre></td></tr></table></figure></p>
+<p>上面命令相当于手动打开虚机的vnc支持：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo virsh edit i1</span><br><span class="line">   &lt;graphics type=&apos;vnc&apos; port=&apos;-1&apos; autoport=&apos;yes&apos; listen=&apos;192.168.99.124&apos; passwd=&apos;password&apos; keymap=&apos;en-us&apos;/&gt;</span><br><span class="line">sudo virsh shutdown i1 &amp;&amp; sudo virsh start i1</span><br><span class="line">#sudo virsh -c qemu+ssh://hua@node1/system vncdisplay i1</span><br><span class="line">sudo virsh vncdisplay i1</span><br><span class="line">vncviewer 192.168.99.124:1</span><br></pre></td></tr></table></figure></p>
+<p>如果本机开了VPN后通过’ssh -X’远程连接中转机，再通过上面的vncviewer也是可以连接Linux虚机的。<br>但是该Windows虚机不支持VNC，但它默认启动了RDP。同理，我们也可以本机开了VPN后通过’ssh -X’远程连接中转机，再通过remmina访问(或者采用rdesktop命令行方式 )，但是这种方式奇慢无比，于是有了本文的探讨。</p>
+<h2 id="通过tunnel-remmina访问Tenant-OpenStack提供的Windows虚机"><a href="#通过tunnel-remmina访问Tenant-OpenStack提供的Windows虚机" class="headerlink" title="通过tunnel+remmina访问Tenant OpenStack提供的Windows虚机"></a>通过tunnel+remmina访问Tenant OpenStack提供的Windows虚机</h2><p>设想的方案是通过如果的ssh正向隧道方式，本机上执行如下命令，本机的13389端口通过ssh server 10.230.65.8映射到远程的10.5.150.2:3389上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh -p 22 -L localhost:13389:10.5.150.2:3389 ubuntu@10.230.65.8 -N -v</span><br><span class="line">#sudo rdesktop 127.0.0.1:13389</span><br><span class="line">sudo rdesktop -z -r sound:local -g workarea -D -K -a 16 -u Administrator -p password 127.0.0.1:13389</span><br></pre></td></tr></table></figure></p>
+<p>但是发现不好使，原因在于在中转机10.230.65.8上都无法运行telnet 10.5.150.2 3389’命令。<br>VNC的5900-5910这些端口与RDP的3389端口似乎还有点不一样，<strong>5900-5910是运行虚机的物理机上的端口，而3389是Windows虚机的端口</strong>。</p>
+<p>所以第一步，应该将Windows虚机所在的物理机的Security group规则打开，这个得在Tenant OpenStack环境中执行如下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">nova secgroup-add-rule default tcp 3389 3389 0.0.0.0/0</span><br><span class="line">nova secgroup-add-rule default udp 3389 3389 0.0.0.0/0</span><br><span class="line">#secgroup=$&#123;1:-`openstack security group list --project admin| grep default| awk &apos;&#123;print $2&#125;&apos;`&#125;</span><br><span class="line">#openstack security group rule create $secgroup --protocol tcp --remote-ip 0.0.0.0/0 --dst-port 3389 --project admin</span><br><span class="line"></span><br><span class="line">#计算节点上通过下列命令验证：</span><br><span class="line">$ sudo iptables-save |grep 3389</span><br><span class="line">-A neutron-openvswi-i2f32d9bf-6 -p tcp -m tcp --dport 3389 -j RETURN</span><br><span class="line">-A neutron-openvswi-i2f32d9bf-6 -p udp -m udp --dport 3389 -j RETURN</span><br><span class="line"></span><br><span class="line">#网络节点上继续通过下列命令验证通过：</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 telnet 192.168.21.2 3389</span><br></pre></td></tr></table></figure></p>
+<p>第二步，要想通过192.168.21.2的floating ip (10.5.150.2)访问，还得将Tenant OpenStack的FWaaS服务中的3389端口打开。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">neutron firewall-rule-create --protocol tcp --destination-port 80 --action allow --name tcp_3389</span><br><span class="line">neutron firewall-rule-create --protocol udp --destination-port 80 --action allow --name udp_3389</span><br><span class="line">neutron firewall-policy-create --firewall-rules &quot;tcp_3389 udp_3389&quot; policy_3389</span><br><span class="line">neutron firewall-create policy_3389 --name myfirewall</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables-save |grep 3389</span><br><span class="line"></span><br><span class="line">#也可以通过下列命令直接手动添加：</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-iv49ecd7359 -p tcp -m tcp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-iv49ecd7359 -p udp -m udp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-ov49ecd7359 -p tcp -m tcp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-ov49ecd7359 -p udp -m udp --dport 3389 -j ACCEPT</span><br><span class="line"></span><br><span class="line">#添加成功后在网络节点上通过下列命令验证成功：</span><br><span class="line">telnet 10.5.150.2 3389</span><br></pre></td></tr></table></figure></p>
+<p>第三步，要想在中断机上也能成功运行’telnet 10.5.150.2 3389’, 由于中断机和Tenant OpenStack的网络节点都是由Underlying OpenStack提供的虚机，所以还需要在Underlying OpenStack中的Security Group设置3389支持。具体命令可以参考第一步，但由于我没有Underlying OpenStack的权限，所以这步做不了，此路不通，做罢，但理论应该是对的。</p>
+<h2 id="通过端口映射的方案访问Tenant-OpenStack提供的Windows虚机"><a href="#通过端口映射的方案访问Tenant-OpenStack提供的Windows虚机" class="headerlink" title="通过端口映射的方案访问Tenant OpenStack提供的Windows虚机"></a>通过端口映射的方案访问Tenant OpenStack提供的Windows虚机</h2><p>理论上也可以在中转机上将3389端口映射到Windows虚机的3389端口解决，但同样由于我没有Underlying OpenStack的权限无法解决在中转机上’telent 10.5.150.2 3389’，所以此方案也无法测试。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 3389 -j DNAT --to-destination 10.10.10.7:3389</span><br><span class="line">iptables -A FORWARD -p tcp --dport 3389 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
+<h2 id="最后的方案"><a href="#最后的方案" class="headerlink" title="最后的方案"></a>最后的方案</h2><p>没了Underlying OpenStack的权限，这个实验似乎做不下去了，还剩下两个手段：</p>
+<ul>
+<li><p>一个使用Underlying OpenStack环境的tenant用户为Tenant OpenStack的网络节点再分配一个10.230打头的floating ip （如10.230.65.118)，因为Tenant Network上的网络节点上是可以运行’telent 10.5.150.2 3389’的，同时，10.230的IP也可以在登录VPN后直接访问。但是10.230.65.118代表的网络节点是由Tenant OpenStack提供的，所以从本机登录时应该从中转机拷贝~/.local/share/juju/ssh/juju_id_rsa。这种方式目前已经测试成功。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scp ubuntu@10.230.65.8:/home/ubuntu/.local/share/juju/ssh/juju_id_rsa /home/hua/.ssh/</span><br><span class="line">#ssh -i ~/.ssh/juju_id_rsa ubuntu@10.230.65.118</span><br><span class="line">ssh -i ~/.ssh/juju_id_rsa -p 22 -L localhost:13389:10.5.150.2:3389 ubuntu@10.230.65.118 -N -v</span><br><span class="line">#sudo rdesktop 127.0.0.1:13389</span><br><span class="line">sudo rdesktop -z -r sound:local -g workarea -D -K -a 16 -u Administrator -p password 127.0.0.1:13389</span><br></pre></td></tr></table></figure>
+<p>-在Windows虚机中通过下列命令打开Powershell Remote, 再通过pywinrm库(<a href="https://github.com/diyan/pywinrm)通过命令行或程序(https://gist.github.com/vtapia/c4a87289298c73b9f75afcf36ed6a89b)操作Windows，这种方式蛮麻烦。" target="_blank" rel="external">https://github.com/diyan/pywinrm)通过命令行或程序(https://gist.github.com/vtapia/c4a87289298c73b9f75afcf36ed6a89b)操作Windows，这种方式蛮麻烦。</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Set-ExecutionPolicy -ExecutionPolicy Bypass -Force</span><br><span class="line">Enable-PSRemoting -force</span><br><span class="line">Set-Item WSMan:\localhost\Client\TrustedHosts * -force</span><br><span class="line">winrm set winrm/config/service/auth &apos;@&#123;Basic=&quot;true&quot;&#125;&apos;</span><br><span class="line">winrm set winrm/config/service &apos;@&#123;AllowUnencrypted=&quot;true&quot;&#125;&apos;</span><br><span class="line">restart-Service winrm</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjdb2yha0000gdhbp7xba6ooz" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-通配符中一个星号两个星号和globstar的关系" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/" class="article-date">
+  <time datetime="2017-11-16T07:48:59.000Z" itemprop="datePublished">2017-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/">通配符中一个星号两个星号和globstar的关系</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/tmp/* rw,</span><br><span class="line">/tmp/*/ rw,</span><br><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>但是在运行”sudo /etc/init.d/apparmor reload &amp;&amp; sudo service nova-compute restart“命令后仍然在syslog里能看到下列错误信息。奇了怪了，这是怎么一回事呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766810] audit: type=1400 audit(1510750176.727:10140): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766828] audit: type=1400 audit(1510750176.727:10141): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/var/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br></pre></td></tr></table></figure></p>
+<h2 id="globstar模式下的通配符"><a href="#globstar模式下的通配符" class="headerlink" title="globstar模式下的通配符"></a>globstar模式下的通配符</h2><p>通配符有一个星号，两个星号，还有逗号，globstar模式可以开启，还可以关闭。这些混在一起会有什么影响呢？<br>如果想要很方便地遍历所有的目录和文件得用两个星号的通配符。globstar是Bash 4.0才引入的选项，当设置启用globstar(shopt -s globstar)时，两个星号意为对通配符进行展开就可以匹配任何当前目录(包括子目录)以及其的文件；若不启用globstar(shopt -u globstar)，两个星号通配符的作用和一个星号通配符是相同的。</p>
+<ul>
+<li>~/tmp/* -  匹配当前目录的文件，及当前目录的下一级目录(不包括当前目录），与’ls ~/tmp’及”ls ~/tmp/“的效果同。</li>
+<li>~/tmp/*/ - 匹配当前目录的下一级目录(不包括当前目录）</li>
+<li>~/tmp/<em>* - 禁用globstar时，与~/tmp/</em>完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的文件和目录（也包括当前目录）</li>
+<li>~/tmp/<em>*/ - 禁用globstar时，与~/tmp/</em>/ 完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的目录（也包括当前目录）</li>
+</ul>
+<p>当启用globstar时，英语的解释如下（注：里面说的file包括文件和目录，在Linux里目录是特殊的文件）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Substitutes for any number of characters, except /.</span><br><span class="line">/tmp/* matches any file in /tmp. </span><br><span class="line">/tmp/*/ matches any directory in /tmp</span><br><span class="line"></span><br><span class="line">Substitutes for any number of characters, including /.</span><br><span class="line">/tmp/** matches all files and directories underneath /tmp.</span><br><span class="line">/tmp/**/ matches all directories underneath /tmp.</span><br></pre></td></tr></table></figure>
+<p>请看实验数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~/tmp$ tree .</span><br><span class="line">.</span><br><span class="line">├── l0_dir1</span><br><span class="line">│   ├── l1_dir</span><br><span class="line">│   │   ├── l2_dir</span><br><span class="line">│   │   │   └── l3_file</span><br><span class="line">│   │   └── l2_file</span><br><span class="line">│   └── l1_file</span><br><span class="line">├── l0_dir2</span><br><span class="line">└── l0_file</span><br><span class="line">4 directories, 4 files</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -s globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/l3_file  /home/hua/tmp/l0_dir1/l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_file         /home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -u globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br></pre></td></tr></table></figure>
+<h2 id="问题的解决"><a href="#问题的解决" class="headerlink" title="问题的解决"></a>问题的解决</h2><p>学习了上面的理论之后，是不是想到了问题所在了，那就是下列两个配置没有包括当前目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>所以它应该修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/&#123;,**&#125; rw,</span><br><span class="line">/var/tmp/&#123;,**&#125; rw,</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjdb2yhak000idhbp2khgoden" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Use-hexo-to-create-blog" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/11/13/Use-hexo-to-create-blog/" class="article-date">
@@ -108,7 +223,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjd14kps90004d9bpro4vdw81" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjdb2yh9m0008dhbph1jzyxxs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -168,7 +283,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjd14kpso0006d9bpr2lllzov" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjdb2yh9r000bdhbpdohxnbou" class="article-share-link">Share</a>
       
       
     </footer>
@@ -240,7 +355,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjd14kpsw0009d9bp7dqbyw1v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjdb2yh9x000edhbpnaivnbx4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -297,7 +412,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjd14kpsv0008d9bpv4weuvcg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjdb2yh990005dhbp9sgoibev" class="article-share-link">Share</a>
       
       
     </footer>
@@ -364,7 +479,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjd14kpsy000bd9bpzhewfsrp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjdb2yh9y000fdhbpwiqfbgyr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -401,7 +516,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjd14kprw0000d9bpuveut7yp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjdb2yh930002dhbp612p176o" class="article-share-link">Share</a>
       
       
     </footer>
@@ -451,7 +566,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjd14kpsq0007d9bp76jn18cp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjdb2yha4000hdhbphw48upta" class="article-share-link">Share</a>
       
       
     </footer>
@@ -514,52 +629,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjd14kpt3000ed9bpmcrqvdjj" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/08/hello-world/" class="article-date">
-  <time datetime="2017-11-08T02:08:52.408Z" itemprop="datePublished">2017-11-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/08/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/hello-world/" data-id="cjd14kpt5000fd9bp8t0wmgid" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjdb2yh9t000cdhbpsxhe5s6j" class="article-share-link">Share</a>
       
       
     </footer>
@@ -572,7 +642,7 @@
 
 
   <nav id="page-nav">
-    <a class="extend prev" rel="prev" href="/">&laquo; __('prev')</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/">&laquo; __('prev')</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">__('next') &raquo;</a>
   </nav>
 </section>
         
@@ -590,7 +660,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -603,6 +673,14 @@
       <ul>
         
           <li>
+            <a href="/2018/02/06/Set-up-juju-development-env/">Set up juju development env</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">Green on T440P integrated webcam(by Joshua)</a>
+          </li>
+        
+          <li>
             <a href="/2018/01/30/Assembly-Language-Learning-by-Joshua/">Assembly Language Learning (by Joshua)</a>
           </li>
         
@@ -612,14 +690,6 @@
         
           <li>
             <a href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
-          </li>
-        
-          <li>
-            <a href="/2017/12/22/OpenStack-s-multiattach-Feature/">OpenStack&#39;s multiattach Feature</a>
-          </li>
-        
-          <li>
-            <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/">如何修改网卡名称由enp0s25为eth0</a>
           </li>
         
       </ul>

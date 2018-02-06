@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Set up juju development env | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install go-1.8It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go-1.8">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Set up juju development env">
+<meta property="og:url" content="http://yoursite.com/2018/02/06/Set-up-juju-development-env/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install go-1.8It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go-1.8">
+<meta property="og:updated_time" content="2018-02-06T03:22:50.093Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Set up juju development env">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install go-1.8It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go-1.8">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Set-up-juju-development-env" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/06/Set-up-juju-development-env/" class="article-date">
+  <time datetime="2018-02-06T03:22:39.000Z" itemprop="datePublished">2018-02-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Set up juju development env
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="Install-go-1-8"><a href="#Install-go-1-8" class="headerlink" title="Install go-1.8"></a>Install go-1.8</h2><p>It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go-1.8.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:juju/golang</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt upgrade golang</span><br><span class="line"></span><br><span class="line">export GOROOT=/usr/lib/go-1.8</span><br><span class="line">export GOPATH=/bak/golang</span><br><span class="line">export PATH=$GOPATH/bin:$PATH</span><br></pre></td></tr></table></figure>
+<h2 id="Install-juju-from-source-code"><a href="#Install-juju-from-source-code" class="headerlink" title="Install juju from source code"></a>Install juju from source code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">go get -d -v github.com/juju/juju/...</span><br><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">make install-dependencies</span><br><span class="line"># may fail because of the lack of some packages caused by gfw, you can fix it by &apos;go get ...&apos; one by one</span><br><span class="line">go install -v github.com/juju/juju/...</span><br><span class="line"></span><br><span class="line">go get github.com/rogpeppe/godeps</span><br><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">godeps -u dependencies.tsv</span><br></pre></td></tr></table></figure>
+<h2 id="Prepare-LXD"><a href="#Prepare-LXD" class="headerlink" title="Prepare LXD"></a>Prepare LXD</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -rf /var/lib/lxd</span><br><span class="line">sudo rm -rf /home/hua/.config/lxc/</span><br><span class="line">sudo apt install lxd zfsutils-linux bridge-utils squid-deb-proxy</span><br><span class="line">sudo mkdir -p /images/lxd &amp;&amp; sudo ln -s /images/lxd /var/lib/lxd/containers</span><br><span class="line">sudo systemctl enable lxd</span><br><span class="line">sudo systemctl start lxd</span><br><span class="line">newgrp lxd</span><br><span class="line">sudo usermod -a -G lxd hua</span><br><span class="line">sudo lxd init</span><br><span class="line">sudo chown -R root:lxd /var/lib/lxd</span><br></pre></td></tr></table></figure>
+<h2 id="Create-juju-controller"><a href="#Create-juju-controller" class="headerlink" title="Create juju controller"></a>Create juju controller</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#https://jujucharms.com/docs/2.0/controllers-creating</span><br><span class="line">#https://api.jujucharms.com/charmstore/v5/~james-page/openstack-on-lxd/archive</span><br><span class="line">sudo lxc profile create juju-controller</span><br><span class="line">cat /bak/golang/jujudata/lxd-profile.yaml |sudo lxc profile edit juju-controller</span><br><span class="line">$ cat /bak/golang/jujudata/lxd-profile.yaml</span><br><span class="line">name: juju-controller</span><br><span class="line">config:</span><br><span class="line">  boot.autostart: &quot;true&quot;</span><br><span class="line">  security.nesting: &quot;true&quot;</span><br><span class="line">  security.privileged: &quot;true&quot;</span><br><span class="line">  linux.kernel_modules: openvswitch,nbd,ip_tables,ip6_tables</span><br><span class="line">devices:</span><br><span class="line">  eth0:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth0</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr0</span><br><span class="line">    type: nic</span><br><span class="line">  eth1:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth1</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr0</span><br><span class="line">    type: nic</span><br><span class="line">  kvm:</span><br><span class="line">    path: /dev/kvm</span><br><span class="line">    type: unix-char</span><br><span class="line">  mem:</span><br><span class="line">    path: /dev/mem</span><br><span class="line">    type: unix-char</span><br><span class="line">  root:</span><br><span class="line">    path: /</span><br><span class="line">    type: disk</span><br><span class="line">  tun:</span><br><span class="line">    path: /dev/net/tun</span><br><span class="line">    type: unix-char</span><br><span class="line">juju bootstrap --debug --config bootstrap-series=xenial --config agent-stream=devel localhost juju-controller</span><br><span class="line">sudo lxc exec juju-bf76c2-0 bash</span><br></pre></td></tr></table></figure>
+<h2 id="Set-up-development-env"><a href="#Set-up-development-env" class="headerlink" title="Set up development env"></a>Set up development env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">git config --global user.name &quot;xxx&quot;</span><br><span class="line">git config --global user.email &quot;xxx&quot;</span><br><span class="line">ln -s ../../scripts/pre-push.bash .git/hooks/pre-push</span><br><span class="line">#https://segmentfault.com/a/1190000002783245</span><br><span class="line">git remote -v</span><br><span class="line">git pull upstream master</span><br><span class="line">git checkout -b new_feature</span><br><span class="line">go test github.com/juju/juju/...</span><br><span class="line">go fmt</span><br><span class="line">#JUJU_NOTEST_MONGOJS=1 go test github.com/juju/juju/...</span><br><span class="line">git config --global push.default &apos;nothing&apos;</span><br><span class="line">git rebase master</span><br><span class="line">#git push origin new_feature</span><br><span class="line">$ cat .git/config </span><br><span class="line">[core]</span><br><span class="line">        repositoryformatversion = 0</span><br><span class="line">        filemode = true</span><br><span class="line">        bare = false</span><br><span class="line">        logallrefupdates = true</span><br><span class="line">[remote &quot;origin&quot;]</span><br><span class="line">        url = git@github.com:&lt;launchpad-id&gt;/juju.git</span><br><span class="line">        fetch = +refs/heads/*:refs/remotes/origin/*</span><br><span class="line">[branch &quot;master&quot;]</span><br><span class="line">        remote = upstream</span><br><span class="line">        merge = refs/heads/master</span><br><span class="line">[remote &quot;upstream&quot;]</span><br><span class="line">        url = https://github.com/juju/juju.git</span><br><span class="line">        fetch = +refs/heads/*:refs/remotes/upstream/*</span><br></pre></td></tr></table></figure>
+<h2 id="附录-如何创建Go开发环境"><a href="#附录-如何创建Go开发环境" class="headerlink" title="附录 - 如何创建Go开发环境"></a>附录 - 如何创建Go开发环境</h2><p>1, GOPATH不需要配置多个(它可以配置多个，但不需要)，只配置一个即可。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export GOROOT=/usr/lib/go-1.8</span><br><span class="line">export GOPATH=/bak/golang</span><br></pre></td></tr></table></figure></p>
+<p>2, 下面开始配置我的第一个Go工程ss，<strong>将它放在$GOPATH/src/github.com/zhhuabj目录下</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /bak/golang/src/github.com/zhhuabj/ &amp;&amp; mkdir ss</span><br></pre></td></tr></table></figure></p>
+<p>3, 使用govendor配置包依赖，使用govendor之后，优先从$GOPATH/src/github.com/zhhuabj/ss/vendor目录下找包，如果没有，才到$GOPATH/src目录下去找。‘govendor init’命令需在$GOPATH/src/github.com/zhhuabj/ss目录下执行，故：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">go get -u -v github.com/kardianos/govendor</span><br><span class="line">cd ss &amp;&amp; govendor init</span><br></pre></td></tr></table></figure></p>
+<p>4, 使用govendor配置本工程需要用到的其他包：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/mitchellh/go-homedir</span><br><span class="line">go get github.com/phayes/freeport</span><br><span class="line">govendor add github.com/mitchellh/go-homedir</span><br><span class="line">govendor add github.com/phayes/freeport</span><br><span class="line"></span><br><span class="line">hua@t440p:/bak/golang/src/github.com/zhhuabj/ss$ govendor list -v</span><br><span class="line"> vu github.com/mitchellh/go-homedir ::/vendor/github.com/mitchellh/go-homedir    </span><br><span class="line"> vu github.com/phayes/freeport ::/vendor/github.com/phayes/freeport</span><br></pre></td></tr></table></figure></p>
+<p>5, 编译并运行测试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#/usr/lib/go-1.8/bin/go install -v -gcflags &quot;-N -l&quot; github.com/zhhuabj/ss/...</span><br><span class="line">GOPATH=/bak/golang go install -v github.com/zhhuabj/ss/...</span><br><span class="line">ll $GOPATH/bin/ss*</span><br><span class="line">go test -cover -bench=. -run=. github.com/zhhuabj/ss/...</span><br></pre></td></tr></table></figure></p>
+<p>6， 配置eclipse + goclipse环境，首先安装goclipse插件(略), 然后运行下列命令安装一些下面要用到的库：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">go get -u golang.org/x/tools/cmd/goimports</span><br><span class="line">go get -u golang.org/x/tools/cmd/gorename</span><br><span class="line">go get -u github.com/sqs/goreturns</span><br><span class="line">go get -u github.com/nsf/gocode</span><br><span class="line">go get -u github.com/alecthomas/gometalinter</span><br><span class="line">go get -u github.com/zmb3/gogetdoc</span><br><span class="line">go get -u github.com/rogpeppe/godef</span><br><span class="line">go get -u golang.org/x/tools/cmd/guru</span><br></pre></td></tr></table></figure></p>
+<p>最后配置’Preferences -&gt; Go’与’Preferences -&gt; Go -&gt; Tools‘中的下列信息即可：<br>go installation directory = /usr/lib/go-1.8<br>gocode = /bak/golang/bin/gocode<br>guru = /bak/golang/bin/guru<br>godef = /bak/golang/bin/godef<br>gofmt = /usr/lib/go-1.8/bin/gofmt<br>最后创建eclipse工程，workspace可以选择在如/bak/workspace_go目录，但是工程目录设置到$GOPATH/src/github.com/zhhuabj/ss即可。所以不需要有多个GOPATH路径。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://github.com/juju/juju/blob/staging/CONTRIBUTING.md" target="_blank" rel="external">https://github.com/juju/juju/blob/staging/CONTRIBUTING.md</a><br>[2] <a href="https://launchpad.net/juju-core" target="_blank" rel="external">https://launchpad.net/juju-core</a><br>[3] <a href="https://blog.labix.org/2013/06/25/the-heart-of-juju" target="_blank" rel="external">https://blog.labix.org/2013/06/25/the-heart-of-juju</a><br>[4] <a href="https://jujucharms.com/community" target="_blank" rel="external">https://jujucharms.com/community</a><br>[5] <a href="https://lists.ubuntu.com/mailman/listinfo/juju" target="_blank" rel="external">https://lists.ubuntu.com/mailman/listinfo/juju</a><br>[6] <a href="https://lists.ubuntu.com/mailman/listinfo/juju-dev" target="_blank" rel="external">https://lists.ubuntu.com/mailman/listinfo/juju-dev</a><br>[7] <a href="https://github.com/juju/juju/tree/staging/doc" target="_blank" rel="external">https://github.com/juju/juju/tree/staging/doc</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="cjdb2yh960004dhbpp3n5fatr" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Green on T440P integrated webcam(by Joshua)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/02/06/Set-up-juju-development-env/">Set up juju development env</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">Green on T440P integrated webcam(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/30/Assembly-Language-Learning-by-Joshua/">Assembly Language Learning (by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/25/将声音也输出到耳机-by-joshua/">将声音也输出到耳机(by joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
