@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>OpenStack SSL | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07) OpenStack Charm如何支持SSLOpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenStack SSL">
+<meta property="og:url" content="http://yoursite.com/2018/02/07/OpenStack-SSL/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07) OpenStack Charm如何支持SSLOpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoi">
+<meta property="og:updated_time" content="2018-02-07T05:25:17.402Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OpenStack SSL">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07) OpenStack Charm如何支持SSLOpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoi">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-OpenStack-SSL" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/07/OpenStack-SSL/" class="article-date">
+  <time datetime="2018-02-07T05:25:04.000Z" itemprop="datePublished">2018-02-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      OpenStack SSL
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07)</strong></p>
+<h2 id="OpenStack-Charm如何支持SSL"><a href="#OpenStack-Charm如何支持SSL" class="headerlink" title="OpenStack Charm如何支持SSL"></a>OpenStack Charm如何支持SSL</h2><p>OpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoint，同时也会生成/etc/apache2/ssl/keystone配置。</p>
+<ol>
+<li><p>一种方式有证书就直接指定证书</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju config &lt;openstack-charm&gt; os-admin-hostname=&apos;X.xxx.com&apos; os-public-hostname=&apos;X.xxx.com&apos; os-internal-hostname=&apos;X.xxx.com&apos; ssl_ca=&apos;$cat ~/ssl_ca.crt&apos; ssl_cert=&apos;$cat ~/ssl_cert.crt&apos; ssl_key=&apos;&apos;$cat ~/ssl_key.key&apos;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>第二种方式是由charm来自动生成证书。如果用户没有指定ssl_cert与ssl_key，那么is_cert_provided_in_config=False，charm将自动生成证书。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def is_cert_provided_in_config():</span><br><span class="line">    cert = config(&apos;ssl_cert&apos;)</span><br><span class="line">    key = config(&apos;ssl_key&apos;)</span><br><span class="line">    return bool(cert and key)</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>具体命令如下，也可参考：<a href="https://paste.ubuntu.com/26533565/" target="_blank" rel="external">https://paste.ubuntu.com/26533565/</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">juju config keystone use-https=true</span><br><span class="line">juju config keystone https-service-endpoints=true</span><br><span class="line">tree /var/lib/keystone/juju_ssl/</span><br><span class="line">grep -r &apos;ssl&apos; /etc/keystone/</span><br><span class="line">grep -r &apos;ssl&apos; /etc/nova/  #on nova node</span><br><span class="line">select * from endpoint;</span><br><span class="line">juju run --unit keystone/0 &quot;relation-ids identity-service&quot;</span><br><span class="line">juju run --unit keystone/0 &quot;relation-list -r identity-service:13&quot;</span><br><span class="line">juju run --unit keystone/0 &quot;relation-get -r identity-service:13 - nova-cloud-controller/0&quot;</span><br><span class="line"></span><br><span class="line">export OS_REGION_NAME=RegionOne</span><br><span class="line">export OS_PROJECT_NAME=admin</span><br><span class="line">export OS_PASSWORD=openstack</span><br><span class="line">export OS_AUTH_URL=https://10.5.0.28:5000/v2.0</span><br><span class="line">export OS_USERNAME=admin</span><br><span class="line">openstack --insecure endpoint list</span><br><span class="line">openstack --insecure server list</span><br><span class="line">openstack --insecure --debug server list</span><br><span class="line">openstack --insecure --debug volume list</span><br></pre></td></tr></table></figure></p>
+<h2 id="OpenStack-HA-Charm如何支持SSL"><a href="#OpenStack-HA-Charm如何支持SSL" class="headerlink" title="OpenStack HA Charm如何支持SSL"></a>OpenStack HA Charm如何支持SSL</h2><p>如果如nova-cloud-controller服务前又运行了下列命令添加了HA服务时呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju add-unit nova-cloud-controller -n 2  </span><br><span class="line">juju deploy hacluster ncc-hacluster --series xenial  </span><br><span class="line">juju add-relation nova-cloud-controller ncc-hacluster  </span><br><span class="line">juju config nova-cloud-controller vip=10.5.104.1</span><br></pre></td></tr></table></figure></p>
+<p>corosync将通过下列配置将VIP=10.5.104.1创建在juju-2f3cc6-mitaka-10上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">root@juju-2f3cc6-mitaka-10:~# crm status</span><br><span class="line">Last updated: Wed Feb  7 04:18:31 2018		Last change: Wed Feb  7 04:09:33 2018 by hacluster via crmd on juju-2f3cc6-mitaka-10</span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: juju-2f3cc6-mitaka-6 (version 1.1.14-70404b0) - partition with quorum</span><br><span class="line">3 nodes and 4 resources configured</span><br><span class="line">Online: [ juju-2f3cc6-mitaka-10 juju-2f3cc6-mitaka-11 juju-2f3cc6-mitaka-6 ]</span><br><span class="line">Full list of resources:</span><br><span class="line"> Resource Group: grp_nova_vips</span><br><span class="line">     res_nova_ens3_vip	(ocf::heartbeat:IPaddr2):	Started juju-2f3cc6-mitaka-10</span><br><span class="line"> Clone Set: cl_nova_haproxy [res_nova_haproxy]</span><br><span class="line">     Started: [ juju-2f3cc6-mitaka-10 juju-2f3cc6-mitaka-11 juju-2f3cc6-mitaka-6 ]</span><br><span class="line"></span><br><span class="line">root@juju-2f3cc6-mitaka-10:~# ip addr show ens3 |grep 10.5.104.1</span><br><span class="line">    inet 10.5.104.1/16 brd 10.5.255.255 scope global secondary ens3</span><br></pre></td></tr></table></figure></p>
+<p>同时，三个HA节点上的haproxy的配置(/etc/haproxy/haproxy.cfg)将创建代理。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">frontend tcp-in_nova-api-os-compute</span><br><span class="line">    bind *:8774</span><br><span class="line">    bind :::8774</span><br><span class="line">    acl net_10.5.0.15 dst 10.5.0.15/255.255.0.0</span><br><span class="line">    use_backend nova-api-os-compute_10.5.0.15 if net_10.5.0.15</span><br><span class="line">    default_backend nova-api-os-compute_10.5.0.15</span><br><span class="line">backend nova-api-os-compute_10.5.0.15</span><br><span class="line">    balance leastconn</span><br><span class="line">    server nova-cloud-controller-1 10.5.0.15:8764 check</span><br><span class="line">    server nova-cloud-controller-0 10.5.0.37:8764 check</span><br><span class="line">    server nova-cloud-controller-2 10.5.0.52:8764 check</span><br></pre></td></tr></table></figure></p>
+<p>最重要的是，三个HA节点上Apache都将设置代理“RequestHeader set X-Forwarded-Proto “https””，完整的配置如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">root@juju-2f3cc6-mitaka-10:~# cat /etc/apache2/sites-available/openstack_https_frontend.conf </span><br><span class="line">Listen 8764</span><br><span class="line">&lt;VirtualHost 10.5.0.15:8764&gt;</span><br><span class="line">    ServerName 10.5.104.1</span><br><span class="line">    SSLEngine on</span><br><span class="line">    SSLProtocol +TLSv1 +TLSv1.1 +TLSv1.2</span><br><span class="line">    SSLCipherSuite HIGH:!RC4:!MD5:!aNULL:!eNULL:!EXP:!LOW:!MEDIUM</span><br><span class="line">    SSLCertificateFile /etc/apache2/ssl/nova/cert_10.5.104.1</span><br><span class="line">    # See LP 1484489 - this is to support &lt;= 2.4.7 and &gt;= 2.4.8</span><br><span class="line">    SSLCertificateChainFile /etc/apache2/ssl/nova/cert_10.5.104.1</span><br><span class="line">    SSLCertificateKeyFile /etc/apache2/ssl/nova/key_10.5.104.1</span><br><span class="line">    ProxyPass / http://localhost:8754/</span><br><span class="line">    ProxyPassReverse / http://localhost:8754/</span><br><span class="line">    ProxyPreserveHost on</span><br><span class="line">    RequestHeader set X-Forwarded-Proto &quot;https&quot;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">&lt;Proxy *&gt;</span><br><span class="line">    Order deny,allow</span><br><span class="line">    Allow from all</span><br><span class="line">&lt;/Proxy&gt;</span><br><span class="line">&lt;Location /&gt;</span><br><span class="line">    Order allow,deny</span><br><span class="line">    Allow from all</span><br><span class="line">&lt;/Location&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="OpenStack-Horizon和Apache代理之间如何支持SSL"><a href="#OpenStack-Horizon和Apache代理之间如何支持SSL" class="headerlink" title="OpenStack Horizon和Apache代理之间如何支持SSL"></a>OpenStack Horizon和Apache代理之间如何支持SSL</h2><p>openstack horizon使用了Django框架，Django中有如下代码（<a href="https://github.com/django/django/blob/2.0.2/django/http/request.py#L191），" target="_blank" rel="external">https://github.com/django/django/blob/2.0.2/django/http/request.py#L191），</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@property</span><br><span class="line">def scheme(self):</span><br><span class="line">    if settings.SECURE_PROXY_SSL_HEADER:</span><br><span class="line">        try:</span><br><span class="line">            header, value = settings.SECURE_PROXY_SSL_HEADER</span><br><span class="line">        except ValueError:</span><br><span class="line">            raise ImproperlyConfigured(</span><br><span class="line">                &apos;The SECURE_PROXY_SSL_HEADER setting must be a tuple containing two values.&apos;</span><br><span class="line">            )</span><br><span class="line">        if self.META.get(header) == value:</span><br><span class="line">            return &apos;https&apos;</span><br><span class="line">    return self._get_scheme()</span><br></pre></td></tr></table></figure>
+<p>它会根据django中是否配置了SECURE_PROXY_SSL_HEADER，然后比较和header中传过来的SECURE_PROXY_SSL_HEADER(self.META.get(header))是否相等, 若相等才返回https给前端代理。所以这说明需要做两件事情：</p>
+<ol>
+<li>一是在django的conf/global_settings.py模板中配置： SECURE_PROXY_SSL_HEADER = (‘HTTP_X_FORWARDED_PROTO’, ‘https’)</li>
+<li>二是前端代理apache中的配置传过来名为X-Forwarded-Proto的header: RequestHeader set X-Forwarded-Proto “https”<br>更多见： <a href="https://design.canonical.com/2015/08/django-behind-a-proxy-fixing-absolute-urls/" target="_blank" rel="external">https://design.canonical.com/2015/08/django-behind-a-proxy-fixing-absolute-urls/</a></li>
+</ol>
+<h2 id="OpenStack其他工程和Apache代理之间如何支持SSL"><a href="#OpenStack其他工程和Apache代理之间如何支持SSL" class="headerlink" title="OpenStack其他工程和Apache代理之间如何支持SSL"></a>OpenStack其他工程和Apache代理之间如何支持SSL</h2><p>至于其它openstack工程如nova则需要使用olso.middleware中的http_proxy_to_wsgi.py(<a href="https://github.com/openstack/oslo.middleware/blob/stable/ocata/oslo_middleware/http_proxy_to_wsgi.py)用于解析前端代理apache传过来的X-Forwarded-Proto" target="_blank" rel="external">https://github.com/openstack/oslo.middleware/blob/stable/ocata/oslo_middleware/http_proxy_to_wsgi.py)用于解析前端代理apache传过来的X-Forwarded-Proto</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># World before RFC7239</span><br><span class="line">forwarded_proto = req.environ.get(&quot;HTTP_X_FORWARDED_PROTO&quot;)</span><br><span class="line">if forwarded_proto:</span><br><span class="line">    req.environ[&apos;wsgi.url_scheme&apos;] = forwarded_proto</span><br></pre></td></tr></table></figure></p>
+<p>nova-api中再根据wsgi.url_scheme（<a href="https://github.com/openstack/nova/blob/stable/ocata/nova/api/openstack/urlmap.py）决定是使用80还是ssl的443" target="_blank" rel="external">https://github.com/openstack/nova/blob/stable/ocata/nova/api/openstack/urlmap.py）决定是使用80还是ssl的443</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if environ[&apos;wsgi.url_scheme&apos;] == &apos;http&apos;:</span><br><span class="line">    port = &apos;80&apos;</span><br><span class="line">else:</span><br><span class="line">    port = &apos;443&apos;</span><br></pre></td></tr></table></figure></p>
+<p>配置http_proxy_to_wsgi的方法是在/etc/nova/api-paste.ini中添加http_proxy_to_wsgi（ eg: <a href="https://bugs.launchpad.net/keystone/+bug/1590608" target="_blank" rel="external">https://bugs.launchpad.net/keystone/+bug/1590608</a>)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[composite:openstack_compute_api_v21]</span><br><span class="line">use = call:nova.api.auth:pipeline_factory_v21</span><br><span class="line">noauth2 = cors http_proxy_to_wsgi compute_req_id faultwrap sizelimit noauth2 osapi_compute_app_v21</span><br><span class="line">keystone = cors http_proxy_to_wsgi compute_req_id faultwrap sizelimit authtoken keystonecontext osapi_compute_app_v21</span><br><span class="line">[filter:http_proxy_to_wsgi]</span><br><span class="line">paste.filter_factory = oslo_middleware.http_proxy_to_wsgi:HTTPProxyToWSGI.factory</span><br></pre></td></tr></table></figure>
+<h2 id="附录-原生OpenStack配置SSL的方法"><a href="#附录-原生OpenStack配置SSL的方法" class="headerlink" title="附录 - 原生OpenStack配置SSL的方法"></a>附录 - 原生OpenStack配置SSL的方法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">1, Create ssl certifate</span><br><span class="line"></span><br><span class="line">$ sudo keystone-manage ssl_setup --keystone-user keystone --keystone-group keystone</span><br><span class="line">$ chown -R keystone:keystone /etc/keystone/ssl</span><br><span class="line">$ sudo ls /etc/keystone/ssl/certs</span><br><span class="line">01.pem	ca.pem	index.txt  index.txt.attr  index.txt.old  keystone.pem	openssl.conf  req.pem  serial  serial.old</span><br><span class="line">$ sudo ls /etc/keystone/ssl/private</span><br><span class="line">cakey.pem  keystonekey.pem</span><br><span class="line"></span><br><span class="line">openssl genrsa -out /etc/keystone/ssl/private/cakey.pem 1024</span><br><span class="line">openssl req -new -x509 -extensions v3_ca -key /etc/keystone/ssl/private/cakey.pem -out /etc/keystone/ssl/certs/ca.pem -days 3650 -config /etc/keystone/ssl/certs/openssl.conf -subj /C=US/ST=Unset/L=Unset/O=Unset/CN=localhost</span><br><span class="line">openssl genrsa -out /etc/keystone/ssl/private/keystonekey.pem 1024</span><br><span class="line">openssl req -key /etc/keystone/ssl/private/keystonekey.pem -new -out /etc/keystone/ssl/certs/req.pem -config /etc/keystone/ssl/certs/openssl.conf -subj /C=US/ST=Unset/L=Unset/O=Unset/CN=localhost</span><br><span class="line">openssl ca -batch -out /etc/keystone/ssl/certs/keystone.pem -config /etc/keystone/ssl/certs/openssl.conf -days 3650d -cert /etc/keystone/ssl/certs/ca.pem -keyfile /etc/keystone/ssl/private/cakey.pem -infiles /etc/keystone/ssl/certs/req.pem</span><br><span class="line"></span><br><span class="line">2, Keystone ssl configuration</span><br><span class="line"></span><br><span class="line"># vi /etc/keystone/keystone.conf</span><br><span class="line">[signing]</span><br><span class="line">certfile = /var/lib/keystone/juju_ssl/pki/certs/signing_cert.pem</span><br><span class="line">keyfile = /var/lib/keystone/juju_ssl/pki/privates/signing_key.pem</span><br><span class="line">ca_certs = /var/lib/keystone/juju_ssl/pki/certs/ca.pem</span><br><span class="line">ca_key = /var/lib/keystone/juju_ssl/pki/certs/ca_key.pem</span><br><span class="line"></span><br><span class="line">export OS_AUTH_URL=https://&#123;keystoneHost&#125;:5000/v2.0</span><br><span class="line"></span><br><span class="line"># create new https endpoint</span><br><span class="line">keystone endpoint-create</span><br><span class="line">--service keystone --region RegionOne --publicurl</span><br><span class="line">https://&#123;keystoneHost&#125;:5000/v2.0 --internalurl</span><br><span class="line">https://&#123;keystoneHost&#125;:35357/v2.0 --adminurl</span><br><span class="line">https://&#123;keystoneHost&#125;:35357/v2.0</span><br><span class="line"></span><br><span class="line"># delete old http endpoint</span><br><span class="line">keystone –-insecure endpoint-delete &#123;old endpoint id&#125;</span><br><span class="line"></span><br><span class="line">3, Nova ssl configuration</span><br><span class="line"></span><br><span class="line"># configure nova to use https to connect keystone</span><br><span class="line"># vi /etc/nova/api-paste.ini</span><br><span class="line">auth_uri = https://10.1.0.92:5000/v2.0</span><br><span class="line">auth_protocol = https</span><br><span class="line">insecure = True</span><br><span class="line"></span><br><span class="line">service openstack-nova-api restart</span><br><span class="line">service openstack-nova-compute restart</span><br><span class="line">service openstack-nova-scheduler restart</span><br><span class="line">service openstack-nova-cert restart</span><br><span class="line">service openstack-nova-conductor restart</span><br><span class="line">service openstack-nova-consoleauth restart</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># vi /etc/nova/nova.conf [DEFAULT]</span><br><span class="line">enabled_ssl_apis=osapi_compute</span><br><span class="line">ssl_cert_file=/etc/nova/ssl/keystone.pem</span><br><span class="line">ssl_key_file=/etc/nova/ssl/keystonekey.pem</span><br><span class="line"></span><br><span class="line"># test it, at this time other component has not be configured to use https, so use --insecure</span><br><span class="line">nova --insecure hypervisor-list</span><br><span class="line"></span><br><span class="line"># copy ssl certifate for nova</span><br><span class="line"># mkdir /etc/nova/ssl</span><br><span class="line"># cp /etc/keystone/ssl/certs/keystone.pem /etc/nova/ssl/</span><br><span class="line"># cp /etc/keystone/ssl/private/keystonekey.pem /etc/nova/ssl/</span><br><span class="line"># chown -R nova:nova /etc/nova/ssl/</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># create new https endpoint for nova</span><br><span class="line"># keystone --insecure</span><br><span class="line">endpoint-create --service nova --region RegionOne --publicurl</span><br><span class="line">&quot;https://&#123;novaHost&#125;:8774/v2/%(tenant_id)s&quot; --internalurl</span><br><span class="line">&quot;https://&#123;novaHost&#125;:8774/v2/%(tenant_id)s&quot; --adminurl</span><br><span class="line">&quot;https://&#123;novaHost&#125;:8774/v2/%(tenant_id)s&quot;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjdcmrpwm0000ombps762twa7" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/02/06/Set-up-juju-development-env/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">Set up juju development env</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/02/07/OpenStack-SSL/">OpenStack SSL</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/06/Set-up-juju-development-env/">Set up juju development env</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">Green on T440P integrated webcam(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/30/Assembly-Language-Learning-by-Joshua/">Assembly Language Learning (by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/25/将声音也输出到耳机-by-joshua/">将声音也输出到耳机(by joshua)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
