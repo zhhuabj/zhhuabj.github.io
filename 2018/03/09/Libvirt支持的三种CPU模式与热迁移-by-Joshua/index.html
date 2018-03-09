@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Libvirt支持的三种CPU模式与热迁移(by Joshua) | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09) 问题原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-m">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Libvirt支持的三种CPU模式与热迁移(by Joshua)">
+<meta property="og:url" content="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09) 问题原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-m">
+<meta property="og:updated_time" content="2018-03-09T03:42:34.085Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Libvirt支持的三种CPU模式与热迁移(by Joshua)">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09) 问题原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-m">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Libvirt支持的三种CPU模式与热迁移-by-Joshua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" class="article-date">
+  <time datetime="2018-03-09T03:42:14.000Z" itemprop="datePublished">2018-03-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Libvirt支持的三种CPU模式与热迁移(by Joshua)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-model’)但热迁移仍然失败。有两全其美的方法吗？</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">1, working solution was to create a custom CPU definition in /usr/share/libvirt/cpu_map.xml called SandyBridge-vmx, which contained the full feature flags for that CPU, not just the subset that differs from Westmere/etc., and includes the needed &apos;vmx&apos; feature for nested kvm</span><br><span class="line">&lt;model name=&apos;SandyBridge-vmx&apos;&gt;</span><br><span class="line">&lt;vendor name=&apos;Intel&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;aes&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;avx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;clflush&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cmov&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx16&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx8&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;de&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fpu&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fxsr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lahf_lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mca&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mce&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mmx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;msr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mtrr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;nx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pae&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pat&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pclmuldq&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pge&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pni&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;popcnt&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse36&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;rdtscp&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sep&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.1&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;ssse3&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;syscall&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc-deadline&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;x2apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;xsave&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;vmx&apos;/&gt;</span><br><span class="line">&lt;/model&gt;</span><br><span class="line"></span><br><span class="line">2, And in /etc/nova/nova.conf, we use:</span><br><span class="line">$ sudo grep ^cpu_m /etc/nova/nova.conf</span><br><span class="line">cpu_mode = custom</span><br><span class="line">cpu_model = SandyBridge-vmx</span><br></pre></td></tr></table></figure>
+<h2 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h2><p>Libvirt主要支持三种 CPU mode：</p>
+<ol>
+<li>host-passthrough: libvirt 令 KVM 把宿主机的 CPU 指令集全部透传给虚拟机。因此虚拟机能够最大限度的使用宿主机 CPU 指令集，故性能是最好的。但是在热迁移时，它要求目的节点的 CPU 和源节点的一致。</li>
+<li>host-model: libvirt 根据当前宿主机 CPU 指令集从配置文件 /usr/share/libvirt/cpu_map.xml 选择一种最相配的 CPU 型号。在这种 mode 下，虚拟机的指令集往往比宿主机少，性能相对 host-passthrough 要差一点，但是热迁移时，它允许目的节点 CPU 和源节点的存在一定的差异。</li>
+<li>custom: 这种模式下虚拟机 CPU 指令集数最少，故性能相对最差，但是它在热迁移时跨不同型号 CPU 的能力最强。此外，custom 模式下支持用户添加额外的指令集。</li>
+<li>三种mode的性能排序是：host-passthrough &gt; host-model &gt; custom</li>
+<li>三种mode的热迁移通用性是： custom &gt; host-model &gt; host-passthrough</li>
+</ol>
+<p>实际环境中多采用Intel E5系列的CPU，但是该系列的CPU也有多种型号，常见的有Xeon，Haswell，IvyBridge，SandyBridge等等。即使是host-model，在这些不同型号的CPU之间热迁移虚拟机也可能失败。所以从热迁移的角度，在选择 host-mode时：</p>
+<ul>
+<li>需要充分考虑既有宿主机类型，以后采购扩容时，也需要考虑相同问题</li>
+<li>除非不存在热迁移的场景，否则不应用选择host-passthrough</li>
+<li><p>host-model下不同型号的 CPU 最好能以aggregate hosts划分，在迁移时可以使用aggregate filter来匹配相同型号的物理机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">openstack aggregate create Broadwell</span><br><span class="line">openstack aggregate create Haswell</span><br><span class="line">openstack aggregate set --property cpu=broadwell Broadwell</span><br><span class="line">openstack aggregate set --property cpu=haswell Haswell</span><br><span class="line">opentack aggregate add host &lt;host1&gt; Haswell</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=broadwell &lt;flavor1&gt;</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=haswell &lt;flavor2&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果CPU型号过多，且不便用aggregate hosts划分，建议使用custom mode</p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjejeb5jk00026ubpg87sl4pl" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/02/07/OpenStack-SSL/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">OpenStack SSL</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/">Libvirt支持的三种CPU模式与热迁移(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/07/OpenStack-SSL/">OpenStack SSL</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/06/Set-up-juju-development-env/">Set up juju development env</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">Green on T440P integrated webcam(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/30/Assembly-Language-Learning-by-Joshua/">Assembly Language Learning (by Joshua)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
