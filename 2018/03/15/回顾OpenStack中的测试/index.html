@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>回顾OpenStack中的测试 | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)  沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35) 123source .tox/py35/bin/activatesudo pip install --upgrade -r requirem">
+<meta property="og:type" content="article">
+<meta property="og:title" content="回顾OpenStack中的测试">
+<meta property="og:url" content="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)  沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35) 123source .tox/py35/bin/activatesudo pip install --upgrade -r requirem">
+<meta property="og:updated_time" content="2018-03-15T06:28:18.151Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="回顾OpenStack中的测试">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)  沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35) 123source .tox/py35/bin/activatesudo pip install --upgrade -r requirem">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-回顾OpenStack中的测试" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/15/回顾OpenStack中的测试/" class="article-date">
+  <time datetime="2018-03-15T06:28:01.000Z" itemprop="datePublished">2018-03-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      回顾OpenStack中的测试
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)</strong></p>
+<ol>
+<li><p>沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source .tox/py35/bin/activate</span><br><span class="line">sudo pip install --upgrade -r requirements.txt</span><br><span class="line">sudo pip install --upgrade -r test-requirements.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用unittest和nose运行测试。nose是对unittest的扩展，使得python的测试更加简单，nose自动发现测试代码并执行，nose提供了大量的插件，比如覆盖报表等。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -m unittest -v unit_tests.test_neutron_utils.TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">.tox/py35/bin/python nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>注意：上面采用nosetests运行时会报错，因为我们的测试采用了python3, 所以需要在安装了python3-nose之后（sudo apt-get install python3-nose python3-mock）再采用下列三种方式之一运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nosetests3 -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br><span class="line">/bak/work/charms/neutron-gateway/.tox/py35/bin/python /usr/local/bin/nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">python -m nose unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br></pre></td></tr></table></figure></p>
+<p>但实际上仍然找不找nose模块，那是因为nose与virtualenv结合地不大好，在这个网页找着了答案(<a href="https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv" target="_blank" rel="external">https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv</a>) - You need to have a copy of nose installed in the virtual environment. In order to force installation of nose into the virtualenv, even though it is already installed in the global site-packages, run pip install with the -I flag: pip install nose -I</p>
+<ol>
+<li><p>上面使用unittest与nose运行测试的方式只是将结果输出到stdout，不便于分析。所以可以使用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中便于日后分析。因为subunit是基于二进制的不便于人眼看，所以可使用subunit2pyunit工具将其人类可读化。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python -m subunit.run discover |subunit2pyunit</span><br><span class="line">python -m subunit.run discover -t ./ ./unit_tests |subunit2pyunit</span><br><span class="line">python -m subunit.run unit_tests.test_neutron_utils.TestNeutronUtils. |subunit2pyunit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在大型应用中分析测试结果很重要，testrepository可以调用subunit来用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中，然后testrepository在些基础上有更多的分析，如分析哪些用例运行的时间最长，如显示失败的用例，如仅运行上次运行失败的用例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">testr init</span><br><span class="line">testr run</span><br><span class="line">testr run --parallel</span><br><span class="line">$ cat .testr.conf</span><br><span class="line">[DEFAULT]</span><br><span class="line">test_command=OS_STDOUT_CAPTURE=$&#123;OS_STDOUT_CAPTURE:-1&#125; \</span><br><span class="line">             OS_STDERR_CAPTURE=$&#123;OS_STDERR_CAPTURE:-1&#125; \</span><br><span class="line">             OS_TEST_TIMEOUT=$&#123;OS_TEST_TIMEOUT:-60&#125; \</span><br><span class="line">             $&#123;PYTHON:-python&#125; -m subunit.run discover -t ./ ./unit_tests $LISTOPT $IDOPTION</span><br><span class="line">test_id_option=--load-list $IDFILE</span><br><span class="line">test_list_option=--list</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>tox用于创建虚拟python环境，也可以集成上面的testrepository(commands = ostestr {posargs})</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">$ cat tox.ini</span><br><span class="line">[tox]</span><br><span class="line">envlist = pep8,py27,py35</span><br><span class="line">skipsdist = True</span><br><span class="line"></span><br><span class="line">[testenv]</span><br><span class="line">setenv = VIRTUAL_ENV=&#123;envdir&#125;</span><br><span class="line">         PYTHONHASHSEED=0</span><br><span class="line">         CHARM_DIR=&#123;envdir&#125;</span><br><span class="line">         AMULET_SETUP_TIMEOUT=5400</span><br><span class="line">install_command =</span><br><span class="line">  pip install --allow-unverified python-apt &#123;opts&#125; &#123;packages&#125;</span><br><span class="line">commands = ostestr &#123;posargs&#125;</span><br><span class="line">whitelist_externals = juju</span><br><span class="line">passenv = HOME TERM AMULET_* CS_API_*</span><br><span class="line"></span><br><span class="line">[testenv:py27]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = /bin/true</span><br><span class="line"></span><br><span class="line">[testenv:py35]</span><br><span class="line">basepython = python3.5</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line"></span><br><span class="line">[testenv:pep8]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = flake8 &#123;posargs&#125; hooks unit_tests tests actions lib</span><br><span class="line">           charm-proof</span><br><span class="line"></span><br><span class="line">[flake8]</span><br><span class="line">ignore = E402,E226</span><br><span class="line">exclude = */helpers</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>pydev使用virtualenv中的py35<br>在eclipse的”Preferences -&gt; Pydev -&gt; Interpreters -&gt; Python Interpreters”菜单中定义python35=/bak/work/charms/neutron-gateway/.tox/py35/bin/python,然后在工程上点右键从”Properties -&gt; Pydev - Interpreter/Grammar”定义使用python35。注意，需要将/bak/work/charms/neutron-gateway/.tox/py35/lib/python3.5/site-packages也选到环境变量中，否则后面会报ImportError: No module named ‘mock。<br>为一个测试类定义”Python unitest”类型的”Debug Configurations”, 也在其Interpreter选项卡中定义使用python35 (结果：eclipse似乎有bug，此处选择了python35后无法保存)<br>所以无法成功，似乎是pydev与python3协作不大好。最后还是pudb好使(sudo pip install pudb, import pudb; pdb.set_trace())</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjes4vdff000dtubpvlob5f7u" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Libvirt支持的三种CPU模式与热迁移(by Joshua)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/03/15/回顾OpenStack中的测试/">回顾OpenStack中的测试</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/">Libvirt支持的三种CPU模式与热迁移(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/07/OpenStack-SSL/">OpenStack SSL</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/06/Set-up-juju-development-env/">Set up juju development env</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">Green on T440P integrated webcam(by Joshua)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
