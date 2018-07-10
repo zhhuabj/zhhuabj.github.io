@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Set up k8s development env (by quqi99) | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-07-10) Sign the CLASign via Hellosign - https://github.com/kubernetes/community/blob/master/CLA.mdthen set email for github - https://github">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Set up k8s development env (by quqi99)">
+<meta property="og:url" content="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-07-10) Sign the CLASign via Hellosign - https://github.com/kubernetes/community/blob/master/CLA.mdthen set email for github - https://github">
+<meta property="og:updated_time" content="2018-07-10T09:48:16.159Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Set up k8s development env (by quqi99)">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-07-10) Sign the CLASign via Hellosign - https://github.com/kubernetes/community/blob/master/CLA.mdthen set email for github - https://github">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Set-up-k8s-development-env-by-quqi99" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/10/Set-up-k8s-development-env-by-quqi99/" class="article-date">
+  <time datetime="2018-07-10T09:47:57.000Z" itemprop="datePublished">2018-07-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Set up k8s development env (by quqi99)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-07-10)</strong></p>
+<h2 id="Sign-the-CLA"><a href="#Sign-the-CLA" class="headerlink" title="Sign the CLA"></a>Sign the CLA</h2><p>Sign via Hellosign - <a href="https://github.com/kubernetes/community/blob/master/CLA.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/CLA.md</a><br>then set email for github - <a href="https://github.com/settings/emails" target="_blank" rel="external">https://github.com/settings/emails</a><br>git config –global user.email “xxx@gmail.com”</p>
+<h2 id="Run-local-k8s-via-source-code"><a href="#Run-local-k8s-via-source-code" class="headerlink" title="Run local k8s  via source code"></a>Run local k8s  via source code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"># Install some packages</span><br><span class="line">sudo apt install -y gcc make socat git build-essential</span><br><span class="line"></span><br><span class="line"># Install docker</span><br><span class="line">curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -</span><br><span class="line">sudo add-apt-repository &quot;deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable&quot;</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt-cache policy docker-ce</span><br><span class="line">sudo apt install docker-ce</span><br><span class="line"></span><br><span class="line"># Install etcd &gt; 3.2.13</span><br><span class="line">ETCD_VER=v3.2.18</span><br><span class="line">DOWNLOAD_URL=&quot;https://github.com/coreos/etcd/releases/download&quot;</span><br><span class="line">curl -L $&#123;DOWNLOAD_URL&#125;/$&#123;ETCD_VER&#125;/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz -o /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz</span><br><span class="line">tar xzvf /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz</span><br><span class="line">sudo /bin/cp -f etcd-$&#123;ETCD_VER&#125;-linux-amd64/&#123;etcd,etcdctl&#125; /usr/bin</span><br><span class="line">rm -rf /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz etcd-$&#123;ETCD_VER&#125;-linux-amd64</span><br><span class="line"></span><br><span class="line"># Install golang &gt; 1.10.2</span><br><span class="line">wget https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz</span><br><span class="line">sudo rm -rf /usr/lib/go &amp;&amp; sudo tar -C /usr/lib -xzf go1.10.3.linux-amd64.tar.gz</span><br><span class="line">export GOROOT=/usr/lib/go</span><br><span class="line">export GOPATH=/bak/golang</span><br><span class="line">export PATH=$GOROOT/bin:$GOPATH/bin:$PATH</span><br><span class="line"></span><br><span class="line"># Install and run kubernetes in local env - https://www.cnblogs.com/edisonxiang/p/6951787.html</span><br><span class="line">mkdir -p $GOPATH/src/k8s.io</span><br><span class="line">git clone https://github.com/kubernetes/kubernetes $GOPATH/src/k8s.io/kubernetes</span><br><span class="line">hack/local-up-cluster.sh</span><br><span class="line"></span><br><span class="line"># Test local env</span><br><span class="line">export KUBERNETES_PROVIDER=local</span><br><span class="line">cluster/kubectl.sh config set-cluster local --server=https://localhost:6443 --certificate-authority=/var/run/kubernetes/server-ca.crt</span><br><span class="line">cluster/kubectl.sh config set-credentials myself --client-key=/var/run/kubernetes/client-admin.key --client-certificate=/var/run/kubernetes/client-admin.crt</span><br><span class="line">cluster/kubectl.sh config set-context local --cluster=local --user=myself</span><br><span class="line">cluster/kubectl.sh config use-context local</span><br><span class="line">cluster/kubectl.sh get node</span><br></pre></td></tr></table></figure>
+<h2 id="github-process"><a href="#github-process" class="headerlink" title="github process"></a>github process</h2><p><a href="https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md</a><br>k8s与openstack不一样，openstack使用gerrit来review code, 但是k8s使用github的PR机制。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">kubernetes提交PR的流程可以采用pull模型（Shared Repository Model，https://gist.github.com/seshness/3943237），也可以采用fork模型（https://www.cnblogs.com/edisonxiang/p/6951787.html）。我们采用fork模型：</span><br><span class="line"></span><br><span class="line"># Click &apos;Fork&apos; button to fork your own branch - https://github.com/kubernetes/kubernetes, then we have https://github.com/zhhuabj/kubernetes</span><br><span class="line">mkdir -p $GOPATH/src/k8s.io</span><br><span class="line">git clone git@github.com:zhhuabj/kubernetes.git $GOPATH/src/k8s.io/kubernetes</span><br><span class="line">cd kubernetes</span><br><span class="line">hack/local-up-cluster.sh</span><br><span class="line"></span><br><span class="line"># set up upstream branch</span><br><span class="line">git remote add upstream https://github.com/kubernetes/kubernetes.git</span><br><span class="line">git remote set-url --push upstream no_push</span><br><span class="line">git remote -v</span><br><span class="line"></span><br><span class="line"># Update our branch</span><br><span class="line">git fetch upstream</span><br><span class="line">git checkout master</span><br><span class="line">git rebase upstream/master</span><br><span class="line">#git pull upstream master</span><br><span class="line"></span><br><span class="line"># Add new branch myfeature</span><br><span class="line">git checkout -b myfeature</span><br><span class="line">git config --global user.email &quot;veryhua2006@gmail.com&quot;</span><br><span class="line">git config --global user.name &quot;zhhuabj&quot;</span><br><span class="line"># Add or Modify files</span><br><span class="line">...</span><br><span class="line">git add .</span><br><span class="line">git commit -a -F ./msg</span><br><span class="line">git commit --amend -a -F ./message</span><br><span class="line">git commit -m &quot;update&quot;</span><br><span class="line">git push origin myfeature</span><br><span class="line">git push origin :myfeature  #delete remote branch</span><br><span class="line"></span><br><span class="line"># Rebase unmerged PR into our repo</span><br><span class="line">git fetch upstream pull/56136/head:BRANCHNAME</span><br><span class="line"></span><br><span class="line"># Merge multiple local commits into a full commit by using &apos;git squash&apos;</span><br><span class="line">git log</span><br><span class="line">git rebase -i HEAD~6 把顶部的六个版本聚到一起进入编辑页面</span><br><span class="line">　　把需要压缩的日志前面的pick都改为s（squash的缩写）</span><br><span class="line">　　注意必须保留一个pick，如果将所有的pick都改为了s那就没有合并的载体了就会报如下错误</span><br><span class="line">　　依次输入CTRL+X Y ENTER三个命令完成编辑。</span><br><span class="line">　　最后Git Push orgin branchname</span><br><span class="line"></span><br><span class="line"># Pull Request - https://github.com/zhhuabj/kubernetes, 在新上传的Branch上，点击Compare &amp; Pull Request按钮创建一个Pull Requst</span><br><span class="line"></span><br><span class="line"># 最后https://github.com/kubernetes/kubernetes/pulls就可以找到刚刚提交的Pull Request。</span><br></pre></td></tr></table></figure></p>
+<h2 id="Review-process"><a href="#Review-process" class="headerlink" title="Review process"></a>Review process</h2><p><a href="https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#the-testing-and-merge-workflow" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#the-testing-and-merge-workflow</a><br> openstack社区更开放，使用gerrit机制，新人都能review代码，并能+1。<br>但k8s使用github的PR，相对封闭一些，新人是不能review代码的，新人的角色叫contributor，可以修改issue (在issue上回复/assign)并提交代码。<br>只有每个子模块下OWNERS文件定义的reviewer, approver角色的人员(<a href="https://github.com/kubernetes/community/blob/master/community-membership.md)才能review代码(reviewer可以LDTM(looks" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/community-membership.md)才能review代码(reviewer可以LDTM(looks</a> good to me, +1), approver可以+2，一个+1一个+2就可以进代码，但openstack中是只能两个+2才可以)</p>
+<p>如果要为某个issue创建PR, 需要在PR的描述里填写fixes #issue_num 。这样PR在 merge后issue会“自动”关闭。PR创建后，k8s机器人会做以下几件事：<br>在相应OWNER列表里选取一个人做为reviewer<br>如果是kubernetes member，则启动CI来检查PR，例如UT, e2e test；如果不是kuberentes member ，则需要一个member帮忙启动相应ci<br>待CI没有问题后，可以ping相应的reviewers来检查代码了</p>
+<p>在reviewer认为可以后，需要标lgtm (look go to me) 标签；同时需要该模块的approver标记approve标签。两个标签都有了以后，就可以等待合并了。代码的合并也是由k8s机器人完成的，可以在 <a href="http://submit-queue.k8s.io/#/queue" target="_blank" rel="external">http://submit-queue.k8s.io/#/queue</a> 看到等待合并的PR。在合并之前，k8s机器人也会自动重新跑ci以保证代码没有问题。<br>以上三步差不多就可以将typo提交到主干上。其中大部分工作都有k8s机器人自动完成，比如分配reviewer。<br>  Bot命令如下：</p>
+<ul>
+<li>Jenkins verification: @k8s-bot verify test this</li>
+<li>GCE E2E: @k8s-bot cvm gce e2e test this</li>
+<li>Test all: @k8s-bot test this please, issue #IGNORE</li>
+<li>CRI test: @k8s-bot cri test this.</li>
+<li>Verity test: @k8s-bot verify test this</li>
+<li>LGTM (only applied if you are one of assignees):: /lgtm</li>
+<li>LGTM cancel: /lgtm cancel<br>更多命令见 <a href="https://prow.k8s.io/command-help" target="_blank" rel="external">https://prow.k8s.io/command-help</a><h2 id="How-to-do-test"><a href="#How-to-do-test" class="headerlink" title="How to do test"></a>How to do test</h2><a href="https://github.com/kubernetes/community/blob/master/contributors/devel/testing.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/devel/testing.md</a><br>make verify<br>make test<br>make test-integration<h2 id="How-to-read-source-code"><a href="#How-to-read-source-code" class="headerlink" title="How to read source code"></a>How to read source code</h2><a href="http://dockone.io/article/895" target="_blank" rel="external">http://dockone.io/article/895</a><h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2>[1] <a href="https://kubernetes.io/docs/imported/community/devel/" target="_blank" rel="external">https://kubernetes.io/docs/imported/community/devel/</a><br>[2] <a href="https://github.com/kubernetes/community/tree/master/contributors/devel" target="_blank" rel="external">https://github.com/kubernetes/community/tree/master/contributors/devel</a><br>[3] Bug - <a href="https://github.com/kubernetes/community/issues" target="_blank" rel="external">https://github.com/kubernetes/community/issues</a><br>[4] Submit code review - <a href="https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md</a><br>[5] Membership - <a href="https://github.com/kubernetes/community/blob/master/community-membership.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/community-membership.md</a><br>[6] CONTRIBUTING - <a href="https://github.com/kubernetes/community/blob/master/CONTRIBUTING.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/CONTRIBUTING.md</a><br>[7] Code format - <a href="https://github.com/golang/go/wiki/CodeReviewComments" target="_blank" rel="external">https://github.com/golang/go/wiki/CodeReviewComments</a><br>[8] Slack - <a href="https://kubernetes.slack.com/messages" target="_blank" rel="external">https://kubernetes.slack.com/messages</a><br>[9] Mail-list - <a href="https://groups.google.com/forum/#!forum/kubernetes-dev" target="_blank" rel="external">https://groups.google.com/forum/#!forum/kubernetes-dev</a><br>[10] SIG-list (Special Interest Groups) - <a href="https://github.com/kubernetes/community/blob/master/sig-list.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/sig-list.md</a><br>[11] open-bug - <a href="https://github.com/kubernetes/community/blob/master/contributors/guide/issue-triage.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/guide/issue-triage.md</a><br>[12] BP - <a href="https://github.com/kubernetes/community/tree/master/contributors/design-proposals" target="_blank" rel="external">https://github.com/kubernetes/community/tree/master/contributors/design-proposals</a><br>[13] <a href="https://github.com/kubernetes/community/blob/master/community-membership.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/community-membership.md</a><br>[14] test - <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/testing.md" target="_blank" rel="external">https://github.com/kubernetes/community/blob/master/contributors/devel/testing.md</a><br>[15] <a href="https://ress.infoq.com/minibooks/Kubernetes-handbook/zh/pdf/kubernetes.pdf" target="_blank" rel="external">https://ress.infoq.com/minibooks/Kubernetes-handbook/zh/pdf/kubernetes.pdf</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjjfij4wb0009wbbp2vlh82a5" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/07/10/温故OpenStack中的测试-by-Joshua/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">温故OpenStack中的测试(by Joshua)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/10/Set-up-k8s-development-env-by-quqi99/">Set up k8s development env (by quqi99)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/10/温故OpenStack中的测试-by-Joshua/">温故OpenStack中的测试(by Joshua)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/13/Play-with-ceph-radosgw/">Play with ceph-radosgw</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/">Play with LDAP + Keystone (by quqi99)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/15/回顾OpenStack中的测试/">回顾OpenStack中的测试</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
