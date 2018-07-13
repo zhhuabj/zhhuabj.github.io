@@ -68,6 +68,56 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Assembly-Language-Learning-by-Joshua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/30/Assembly-Language-Learning-by-Joshua/" class="article-date">
+  <time datetime="2018-01-30T04:10:21.000Z" itemprop="datePublished">2018-01-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/30/Assembly-Language-Learning-by-Joshua/">Assembly Language Learning (by Joshua)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-30)</strong></p>
+<h2 id="汇编测试程序"><a href="#汇编测试程序" class="headerlink" title="汇编测试程序"></a>汇编测试程序</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ cat hello.asm </span><br><span class="line">; Hello World9%] [#######################################################################################################] </span><br><span class="line">; Compile asm: nasm -f elf64 -g -F dwarf hello.asm</span><br><span class="line">; Link asm:    ld -o hello hello.o</span><br><span class="line">; Debug asm:   [gdb|cgdb|kdbg] hello </span><br><span class="line">; Debug asm: or using insight, because kdbg can&apos;t see memory well</span><br><span class="line"></span><br><span class="line">section .data</span><br><span class="line">    msg db &apos;Hello, world!&apos;, 0</span><br><span class="line">    msglen: equ $-msg</span><br><span class="line">section .bss</span><br><span class="line">section .text</span><br><span class="line">    global _start</span><br><span class="line"></span><br><span class="line">_start:</span><br><span class="line">    nop</span><br><span class="line">    mov eax, 4       ; sys_write sys call</span><br><span class="line">    mov ebx, 1       ; stdout</span><br><span class="line">    mov ecx, msg</span><br><span class="line">    mov edx, msglen</span><br><span class="line">    int 80H</span><br><span class="line">    mov eax, 1       ; exit sys call</span><br><span class="line">    mov ebx, 0       ; return 0</span><br><span class="line">    int 80H         </span><br><span class="line">    mov ebp, esp</span><br></pre></td></tr></table></figure>
+<h2 id="编译与链接"><a href="#编译与链接" class="headerlink" title="编译与链接"></a>编译与链接</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nasm -f elf64 -g -F dwarf hello.asm</span><br><span class="line">ld -o hello hello.o</span><br></pre></td></tr></table></figure>
+<h2 id="用gdb调试"><a href="#用gdb调试" class="headerlink" title="用gdb调试"></a>用gdb调试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ gdb hello</span><br><span class="line">...</span><br><span class="line">(gdb) b 16</span><br><span class="line">Breakpoint 1 at 0x4000b1: file hello.asm, line 16.</span><br><span class="line">(gdb) r</span><br><span class="line">Starting program: /bak/work/asm/hello </span><br><span class="line"></span><br><span class="line">Breakpoint 1, _start () at hello.asm:16</span><br><span class="line">16	    mov eax, 4       ; sys_write sys call</span><br><span class="line">(gdb) n</span><br><span class="line">17	    mov ebx, 1       ; stdout</span><br><span class="line">(gdb) i r eax</span><br><span class="line">eax            0x4	4</span><br><span class="line">(gdb) set $eax=0x4</span><br></pre></td></tr></table></figure>
+<h2 id="用cgdb调试"><a href="#用cgdb调试" class="headerlink" title="用cgdb调试"></a>用cgdb调试</h2><p>cgdb能方便调试的过程中查看代码，如下图：<br><img src="http://img.blog.csdn.net/20180130120215608?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用kDbg调试"><a href="#用kDbg调试" class="headerlink" title="用kDbg调试"></a>用kDbg调试</h2><p>kDbg方便查看寄存器，但是查看内存不是很方便。如图：<br><img src="http://img.blog.csdn.net/20180130120334887?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用insight调试"><a href="#用insight调试" class="headerlink" title="用insight调试"></a>用insight调试</h2><p>kDgb不方便查看内存，所以有了insight, insight在ubuntu 16.04上的安装步骤如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install autoconf autogen texinfo zlib1g-dev tcl-dev tk-dev mesa-common-dev libjpeg-dev libtogl-dev python-dev flex bison itcl3 itk3 iwidgets4</span><br><span class="line">git clone --recursive git://sourceware.org/git/insight.git</span><br><span class="line">cd insight &amp;&amp; autoconf</span><br><span class="line">./configure --prefix=/usr/. --libdir=/usr/lib64 --disable-binutils --disable-elfcpp --disable-gas --disable-gold \</span><br><span class="line">--disable-gprof --disable-ld --disable-rpath --disable-zlib --enable-sim --with-gdb-datadir=/usr/share/insight \</span><br><span class="line">--with-jit-reader-dir=/usr/lib64/insight --with-separate-debug-dir=&apos;/usr/lib/debug&apos; --with-expat --with-python --without-libunwind</span><br><span class="line">make -j8 &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://img.blog.csdn.net/20180130120523311?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用sasm调试"><a href="#用sasm调试" class="headerlink" title="用sasm调试"></a>用sasm调试</h2><p>sasm的安装方法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">axel http://download.opensuse.org/repositories/home:/Dman95/xUbuntu_16.04/amd64/sasm_3.9.0_amd64.deb</span><br><span class="line">sudo dpkg -i sasm_3.9.0_amd64.deb</span><br><span class="line">sudo apt-get -f install</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://img.blog.csdn.net/20180130120714341?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>注意，使用sasm时，代码一是需要添加’%include “io64.inc”‘，二是_start需要变成CMAIN， 三是自己的代码写在下列代码的”write your code here“处。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">%include &quot;io64.inc&quot;</span><br><span class="line">section .text</span><br><span class="line">global CMAIN</span><br><span class="line">CMAIN:</span><br><span class="line">    ;write your code here</span><br><span class="line">    xor eax, eax</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>故完整的测试代码修改为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ cat hello2.asm </span><br><span class="line">%include &quot;io64.inc&quot;</span><br><span class="line">section .data</span><br><span class="line">    msg db &apos;Hello, world!&apos;, 0</span><br><span class="line">    msglen: equ $-msg</span><br><span class="line">section .bss</span><br><span class="line">section .text</span><br><span class="line">global CMAIN</span><br><span class="line">CMAIN:</span><br><span class="line">    nop</span><br><span class="line">    mov eax, 4       ; sys_write sys call</span><br><span class="line">    mov ebx, 1       ; stdout</span><br><span class="line">    mov ecx, msg</span><br><span class="line">    mov edx, msglen</span><br><span class="line">    int 80H</span><br><span class="line">    mov eax, 1       ; exit sys call</span><br><span class="line">    mov ebx, 0       ; return 0</span><br><span class="line">    int 80H         </span><br><span class="line">    mov ebp, esp</span><br><span class="line">    </span><br><span class="line">    xor eax, eax</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="cjjjixrmc0000wgbpbs4rfo3b" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-将声音也输出到耳机-by-joshua" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/01/25/将声音也输出到耳机-by-joshua/" class="article-date">
@@ -99,7 +149,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjjjielqi000mcebpkya4k95w" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjjjixro4000mwgbpavk0gp80" class="article-share-link">Share</a>
       
       
     </footer>
@@ -157,7 +207,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjjjielq0000gcebp9b0aq90g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjjjixrno000gwgbpqp1303sp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -219,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjjjielp90005cebp56d9wxkr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjjjixrmw0005wgbpv99hs71w" class="article-share-link">Share</a>
       
       
     </footer>
@@ -268,7 +318,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjjjielqe000kcebpjk8361dj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjjjixrny000kwgbp8h14ne6d" class="article-share-link">Share</a>
       
       
     </footer>
@@ -335,7 +385,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjjjielq6000hcebp1d0kxrm4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjjjixrnt000hwgbp0y22r0o6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -381,7 +431,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjjjielpd0006cebpsifivckt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjjjixrmz0006wgbpnzjwz9ga" class="article-share-link">Share</a>
       
       
     </footer>
@@ -436,7 +486,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjjjielpt000dcebp9rp7r192" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjjjixrnj000dwgbp1e7gext3" class="article-share-link">Share</a>
       
       
     </footer>
@@ -499,7 +549,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjjjielqn000pcebpjh0ysuvr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjjjixroc000qwgbpnockw986" class="article-share-link">Share</a>
       
       
     </footer>
@@ -551,57 +601,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjjjielqp000qcebp39xv0fs1" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Use-hexo-to-create-blog" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/13/Use-hexo-to-create-blog/" class="article-date">
-  <time datetime="2017-11-13T09:02:52.000Z" itemprop="datePublished">2017-11-13</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/13/Use-hexo-to-create-blog/">Use hexo to create blog</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>独立博客可以采用wordpress搭建动态博客，也可以采用Markdown语法编写静态博客(no db, no cms, simple, minimal)发布到有git版本控制的github上, jekyll与hexo是一个将markdown文件产生目录生成静态网站的程序。</p>
-<p>1, 登陆GitHub，新建一个repository, 命名为你的用户名 + github.io。如我的用户名为zhhuabj，所以repository命名为zhhuabj.github.io</p>
-<p>2, 创建第一个网页index.html</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">echo “my blog” &gt;&gt; index.html</span><br><span class="line">git add .</span><br><span class="line">git commit -m “first commit”</span><br><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
-<p>3, 访问<a href="https://zhhuabj.github.io/" target="_blank" rel="external">https://zhhuabj.github.io/</a></p>
-<p>4, [使用jekyll可省略]打开<a href="https://github.com/zhhuabj/zhhuabj.github.io/settings，" target="_blank" rel="external">https://github.com/zhhuabj/zhhuabj.github.io/settings，</a> 点击Launch automatic page generator按钮开始设置样式。</p>
-<p>5, CSDN博客迁移</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install beautifulsoup</span><br><span class="line">git clone https://github.com/gaocegege/csdn-blog-export.git</span><br><span class="line">cd csdn-blog-export</span><br><span class="line">./main.py -u quqi99 -f html</span><br><span class="line">./main.py -u quqi99 -f markdown</span><br></pre></td></tr></table></figure>
-<p>6, 使用jekyll本地写博客</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ruby ruby-dev</span><br><span class="line">gem sources --remove https://rubygems.org/</span><br><span class="line">gem sources -a https://ruby.taobao.org/</span><br><span class="line">gem sources -l</span><br><span class="line">sudo gem install jekyll</span><br><span class="line">cd zhhuabj.github.io/jekyll</span><br><span class="line">jekyll new .</span><br><span class="line">cp -r ../csdn-blog-export/*.md _posts/</span><br><span class="line">jekyll serve  #http://localhost:4000/</span><br><span class="line">vi _config.yml</span><br></pre></td></tr></table></figure>
-<p>7, 改用jekyll-bootstrap, 先扫描 _post，layout, 然后是目录和 page，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">装入一个 site 对象后，用什么 Liquide render出来</span><br><span class="line">git clone https://github.com/plusjade/jekyll-bootstrap.git</span><br><span class="line">cp -r jekyll-bootstrap/* zhhuabj.github.io/*</span><br><span class="line">vi _config.yml</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">sudo gem install jekyll-sitemap</span><br><span class="line">jekyll serve #http://127.0.0.1:4000/</span><br></pre></td></tr></table></figure>
-<p>8, 改用hexo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">   sudo apt install npm node.js nodejs-legacy </span><br><span class="line">   sudo npm install hexo hexo-generator-feed -g</span><br><span class="line">   sudo npm install hexo-deployer-git --save</span><br><span class="line">   sudo npm install git --save</span><br><span class="line">   cd zhhuabj.github.io</span><br><span class="line">   hexo init .</span><br><span class="line">   hexo server    #http://localhost:4000/</span><br><span class="line">   hexo new &quot;my test post&quot;</span><br><span class="line">   </span><br><span class="line">   $ vim _config.yml</span><br><span class="line">deploy:</span><br><span class="line">  type: git  #注意前面有两个空格，冒号后有一个空格</span><br><span class="line">  #repository: https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  # 如果使用ssh免密码方式除了github上提交公钥，同时改成下面一句</span><br><span class="line">  repository: git@github.com:zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line">  #user: zhhuabj</span><br><span class="line">  #pass: password</span><br><span class="line">  </span><br><span class="line">   cp -r ../csdn-blog-export/*.md source/_posts/</span><br><span class="line">   hexo generate</span><br><span class="line">   hexo deploy  #cp -r public/* .</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjjjielpw000ecebpwnerjs28" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjjjixrod000rwgbpznotukmm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -645,6 +645,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/10/Set-up-k8s-development-env-by-quqi99/">Set up k8s development env (by quqi99)</a>
           </li>
         
@@ -658,10 +662,6 @@
         
           <li>
             <a href="/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/">Play with LDAP + Keystone (by quqi99)</a>
-          </li>
-        
-          <li>
-            <a href="/2018/03/15/回顾OpenStack中的测试/">回顾OpenStack中的测试</a>
           </li>
         
       </ul>
