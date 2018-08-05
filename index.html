@@ -116,14 +116,16 @@
 </li>
 <li><p>外网访问内网机器<br>如果使用relay由于内网机器使用的是全球可路由的IPv6地址, 外网直接就是可以访问内网机器的；但如果是不同子网需要做路由；如果只是前缀相同只是子网长度不同可以做neigh proxy</p>
 </li>
-<li>但是此时我们发现内网机器无法访问外网(如ping6 ipv6.baidu.com), 但此时在路由器上却是可以访问外网的. 原因就在于上面使用::/0的默认路由似乎有问题, 所以改成了2000::/3:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;`</span><br></pre></td></tr></table></figure>
+<li>但是此时我们发现内网机器无法访问外网(如ping6 ipv6.baidu.com), 但此时在路由器上却是可以访问外网的. 原因就在于上面使用::/0的默认路由似乎有问题(报这个错: Destination unreachable: Unknown code 5), 改成了2000::/3就好了:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;`</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 <p>或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip -6 route add default from 2409:8a00:7805::48 dev pppoe-wan</span><br></pre></td></tr></table></figure></p>
 <p>但上面两种方法仍然遇到了不稳定的问题, 感觉是openwrt的odhcpd不稳定, 照下列方法更换为6relayd之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.shintaku.cc/files/6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">opkg install 6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">vi /etc/config/6relayd</span><br><span class="line">config relay</span><br><span class="line">        option master &apos;wan&apos;</span><br><span class="line">        option network &apos;lan&apos;</span><br><span class="line">        option rd &apos;relay&apos;</span><br><span class="line">        option dhcpv6 &apos;relay&apos;</span><br><span class="line">        option ndp &apos;relay&apos;</span><br><span class="line">/etc/init.d/odhcpd disable</span><br><span class="line">/etc/init.d/odhcpd stop</span><br><span class="line">/etc/init.d/6relayd enable</span><br><span class="line">/etc/init.d/6relayd start</span><br></pre></td></tr></table></figure></p>
 <p>接着使用tcpdump查看好像是DHCPv6 reply包从pppoe-wan过不来br-lan口:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">08:22:53.810272 IP6 2400:da00:2::29 &gt; 2409:8a00:7805:b7df:8d79:6c9:315a:9ca3: ICMP6, echo reply, seq 7, length 64</span><br></pre></td></tr></table></figure></p>
 <p>所以接着, 在/etc/config/firewall文件的 Allow-ICMPv6-Forward项中添加了下列行后确认已经有了129(129就是reply)相关的iptables rules之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        list icmp_type &apos;router-solicitation&apos;</span><br><span class="line">        list icmp_type &apos;neighbour-solicitation&apos;</span><br><span class="line">        list icmp_type &apos;router-advertisement&apos;</span><br><span class="line">        list icmp_type &apos;neighbour-advertisement&apos;</span><br><span class="line"></span><br><span class="line">root@OpenWrt:~# ip6tables-save |grep Allow-ICMPv6-Forward |grep 129</span><br><span class="line">-A zone_wan_forward -p ipv6-icmp -m icmp6 --icmpv6-type 129 -m limit --limit 1000/sec -m comment --comment Allow-ICMPv6-Forward -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<p>google查到的和这个bug相同(<a href="https://github.com/openwrt/odhcpd/issues/37" target="_blank" rel="external">https://github.com/openwrt/odhcpd/issues/37</a>), 但里面的所有方法都试过了不成功.<br>似乎是ISP使用的是Statefull DHCPV6的方式, 6relayd可以把ra信息relay过来，但LAN端机器似乎无法跟DHCPV6服务器通信。难道ISP端的DHCPv6 Server有限制 ?<br>苍天啊, 谁要是知道请告诉我哟.</p>
+<p>google查到的和这个bug相同(<a href="https://github.com/openwrt/odhcpd/issues/37" target="_blank" rel="external">https://github.com/openwrt/odhcpd/issues/37</a>), 但里面的所有方法都试过了不成功.<br>似乎是ISP使用的是Statefull DHCPV6的方式, 6relayd可以把ra信息relay过来，但LAN端机器似乎无法跟DHCPV6服务器通信。</p>
+<h2 id="2018-0805更新"><a href="#2018-0805更新" class="headerlink" title="2018-0805更新"></a>2018-0805更新</h2><p>今天通过这个帖子(<a href="https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题" target="_blank" rel="external">https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题</a>:<br>OpenWRT默认是在wan口使用DHCPv6 Client, 在LAN口使用odhcpd开启RA和DHCPv6. 这个默认配置适用于国外主流ISP, 因为他们DHCPv6-PD (prefix delegation)把一个至少/64地址段分配给客户使用(还有的使用小于64的地址段给客户分配静态IP).<br>不过中国移动给客户分配的是SLAAC地址, 没有使用DHCPv6, 也就没使用DHCPv6-PD, 这样拿不到前缀(ISP分配的2409:8a00:7805:xxx::/64地址的第4段总是变化的), 所以odhcpd也就无法根据这个前缀设置路由, 所以我们需要手工设置确保可以在OpenWrt上ping通内网机器, 这样才能保证reply消息到达br-lan之后能到达内网机器, 如:<br>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan<br>所以最终添加在/etc/firewall.user的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># make ipv6 relay to work</span><br><span class="line">PREFIX=`route -A inet6 |grep lo |grep 2409:8a00:7805 |grep ::/128 |awk -F &apos;::/&apos; &apos;&#123;print $1&quot;::/64&quot;&#125;&apos; |uniq`</span><br><span class="line">ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">ip -6 route del $PREFIX dev pppoe-wan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">ip -6 route add $PREFIX dev br-lan</span><br><span class="line">ip -6 route add default from $PREFIX dev pppoe-wan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line"></span><br><span class="line"># make ipv6 nat to work</span><br><span class="line">#ip -6 route add default from $PREFIX dev pppoe-wan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">#route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;` &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure></p>
+<p>再就是得配置replay消息能从pppoe-wan到达br-lan, 所以最终使用下列配置(也记得去掉IPv6 ULA-Prefix):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;wan&apos;</span><br><span class="line">        option interface &apos;wan&apos;</span><br><span class="line">        option ignore &apos;1&apos;</span><br><span class="line">        option ndp &apos;relay&apos;</span><br><span class="line">        option ra &apos;relay&apos;</span><br><span class="line">        option master &apos;1&apos;</span><br><span class="line">config dhcp &apos;lan&apos;</span><br><span class="line">        option interface &apos;lan&apos;</span><br><span class="line">        option start &apos;100&apos;</span><br><span class="line">        option limit &apos;150&apos;</span><br><span class="line">        option leasetime &apos;12h&apos;</span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;</span><br><span class="line">        option ndp &apos;relay&apos;</span><br><span class="line">        option ra &apos;relay&apos;</span><br></pre></td></tr></table></figure></p>
 <h2 id="转试NAT6"><a href="#转试NAT6" class="headerlink" title="转试NAT6"></a>转试NAT6</h2><p>上面使用replay时的bug解不了, 无奈之下, 只好使用NAT6, 外面访问不了内网就访问不了吧, 起码可以内网访问外网啊.</p>
 <ul>
 <li><p>在/etc/config/network中配置了ula_prefix=2001:192:168:99::/64, 这时路由器上的br-lan除了ISP分配的IP之外, 也会多时我们这个自己配置的地址: 2001:192:168:99:0:0:0:1/64</p>
@@ -141,7 +143,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjkdutz2s000489bpp1lp44le" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjkgczye70003kobptsv0oaop" class="article-share-link">Share</a>
       
       
     </footer>
@@ -181,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjkdutz3g000g89bp3waeuj1v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjkgczyew000gkobp797z5th5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -244,7 +246,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#109;&#97;&#x69;&#108;&#x74;&#x6f;&#x3a;&#118;&#x65;&#114;&#x79;&#x68;&#117;&#97;&#50;&#48;&#x30;&#54;&#x40;&#x67;&#x6d;&#97;&#105;&#x6c;&#46;&#99;&#x6f;&#109;">&#118;&#x65;&#114;&#x79;&#x68;&#117;&#97;&#50;&#48;&#x30;&#54;&#x40;&#x67;&#x6d;&#97;&#105;&#x6c;&#46;&#99;&#x6f;&#109;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#x61;&#105;&#108;&#116;&#111;&#x3a;&#118;&#x65;&#x72;&#121;&#104;&#117;&#97;&#x32;&#48;&#48;&#x36;&#64;&#x67;&#109;&#97;&#x69;&#x6c;&#46;&#x63;&#111;&#x6d;">&#118;&#x65;&#x72;&#121;&#104;&#117;&#97;&#x32;&#48;&#48;&#x36;&#64;&#x67;&#109;&#97;&#x69;&#x6c;&#46;&#x63;&#111;&#x6d;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -267,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjkdutz3z000q89bpl1c7ctrz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjkgczyfi000qkobp3o7f5r2l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -336,7 +338,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjkdutz3c000d89bp1mqu93pv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjkgczyes000dkobpqrods6z4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -396,7 +398,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjkdutz3y000p89bpggacvf85" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjkgczyfh000pkobp51ig18xy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -438,7 +440,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjkdutz39000b89bpsapsbr8x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjkgczyem000akobpvm0923bb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -487,7 +489,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjkdutz34000889bp5h2nk2hz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjkgczyek0008kobpxpbdlgx0" class="article-share-link">Share</a>
       
       
     </footer>
@@ -547,7 +549,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjkdutz3q000k89bpg2i9679e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjkgczyf7000kkobpfp71zjoj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -604,7 +606,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjkdutz2r000389bphs0z3lkx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjkgczye80004kobpvr66tbfg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -667,7 +669,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjkdutz2v000589bpeuyg6yv9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjkgczyeb0005kobp6jms8b46" class="article-share-link">Share</a>
       
       
     </footer>
