@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机">
 <meta property="og:image" content="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:updated_time" content="2018-01-25T12:12:42.393Z">
+<meta property="og:updated_time" content="2018-09-01T01:39:01.917Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="将声音也输出到耳机(by joshua)">
 <meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09) 问题发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机">
@@ -96,11 +96,13 @@
 <h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>在ubuntu上安装pulseaudio的前端控制工具pavucontrol (apt install pavucontrol), 然后执行pavucontrol命令后在Playback和Recording菜单上将默认的’Build-in Audio Analog Stereo’修改成别的试试。（注：有声音的时候才会出现相应的菜单内容）<br><img src="http://img.blog.csdn.net/20180125200958974?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
 <h2 id="附录一，将喇叭的声音同时从多个声卡输出"><a href="#附录一，将喇叭的声音同时从多个声卡输出" class="headerlink" title="附录一，将喇叭的声音同时从多个声卡输出"></a>附录一，将喇叭的声音同时从多个声卡输出</h2><p>sudo apt-get install paprefs, 然后在paprefs应用中设置simultaneous output，重启（pulseaudio -k), 这时Sound设置中会出出一个虚拟声卡.</p>
 <h2 id="附录二，Chrome中设置声音的路径"><a href="#附录二，Chrome中设置声音的路径" class="headerlink" title="附录二，Chrome中设置声音的路径"></a>附录二，Chrome中设置声音的路径</h2><p>chrome://settings/content#media-stream-mic</p>
+<h2 id="20180205更新"><a href="#20180205更新" class="headerlink" title="20180205更新"></a>20180205更新</h2><p>今天发现我的hexchat不能声音提示了，原来是在我安装pavucontrol之后这个工具和’System settings -&gt; sound’里设置alert volume的声音是独立的，在pavucontrol将’Playback -&gt; system sounds’设置之后能听到声音提示了。</p>
+<h2 id="20180901更新-将笔记本声音输出到手机"><a href="#20180901更新-将笔记本声音输出到手机" class="headerlink" title="20180901更新 - 将笔记本声音输出到手机"></a>20180901更新 - 将笔记本声音输出到手机</h2><p>笔记本只有一个音频输出, 所以需要买一个USB声卡, 这样就有了麦克风输入口和音频输出口. 将这个输出口用一根公对公音频线连接, 另一端接音频一分二线的麦克风输入口, 音频一分二线的公口插手机.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjkgeelm3000mtdbp5z9gr4lb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjlire9uf000khsbpbdpb1k7c" class="article-share-link">Share</a>
       
       
     </footer>
