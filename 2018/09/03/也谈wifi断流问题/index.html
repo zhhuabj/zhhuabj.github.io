@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>也谈wifi断流问题 | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:  排除法测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="也谈wifi断流问题">
+<meta property="og:url" content="http://yoursite.com/2018/09/03/也谈wifi断流问题/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:  排除法测试">
+<meta property="og:updated_time" content="2018-09-03T04:03:09.408Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="也谈wifi断流问题">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:  排除法测试">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-也谈wifi断流问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/03/也谈wifi断流问题/" class="article-date">
+  <time datetime="2018-09-03T04:02:42.000Z" itemprop="datePublished">2018-09-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      也谈wifi断流问题
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:</p>
+<ul>
+<li>排除法测试, 使用京东APP搜索商品时说找不着网络, 但使用京东APP的其他功能没有问题, 并且使用京东以外的其他APP也没问题</li>
+<li>排除法测试, 切换为4G网络使用京东APP搜索商品正常, 仅仅只是使用WIFI网络时才会出问题.</li>
+<li>排除法测试, 去麦当劳使用WIFI确认无问题, 但速度也不快, 但能打开页面.</li>
+<li>排除法测试, 难道是家里的WIFI有问题吗? 但换个手机型号使用京东APP搜索商品却又正常.</li>
+<li>排除法测试, 难道是VPN的问题? 关掉VPN, 恢复DNS国内设置依然有问题. </li>
+<li>排除法测试, 继续换一个没有VPN的干净的OpenWRT路由器依然有问题, 可惜家里没有Non-OpenWRT路由器可供测试.</li>
+<li>排除法测试, 路由器上修改802.11g, 802.11n, 802.11ac等设置后问题依旧.</li>
+<li>排除法测试, 检查了路由器上的MAC地址是否与其他机器重复, 未发现异常</li>
+<li>排除法测试, 使用114.114.114.114作为DNS, 问题依旧</li>
+<li>排除法测试, OpenWRT路由器使用tcpdump抓包, 干扰条目过多, 未深入</li>
+<li>排除法测试, 现在问题看起来只是发生在这款特定手机型号与特定的OpenWRT路由器与特定的某些APP如京东, 手机刷机到android 8.1与7.1两个版本问题依旧.</li>
+<li>排除法测试, google搜索大量京东或别的某些应用在各种手机型号上出问题的帖子, 试着更改帖子中的各种切换手机配置的操作, 如不对京东使用电源优化,问题依旧.</li>
+<li>排除法测试, 绝大多数时候打不开京东的这个搜索商品的功能, 但极少数情况又能打开, 但非常慢, 使用别家的wifi网络时也是非常慢, 很难说清楚现象.<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2>上述一系列排除性测试让我相信该问题仅和我使用特定的手机型号, 使用特定的OpenWRT路由器, 使用特定的某些APP如京东有关.<br>京东APP, 一个上层应用而已, 理论上只有下列几个因素会影响到上层应用:</li>
+<li>DNS</li>
+<li>IPv6/IPv4 fallback</li>
+<li>MTU<br>理论让我将目光回到MTU, 修改OpenWRT路由器WAN口的MTU=1492后问题依旧.继续深挖:</li>
+<li>路由器背后的手机操作系统应该有/proc/sys/net/ipv4/ip_no_pmtu_disc=0让手机可以根据pmtu来确实应用所需的mss值. 遗憾地是, 手机没有root, 无法检查此项值.</li>
+<li>OpenWRT路由器tcpdump抓包, 看到的mss值确实不小. 既然无root权限无法修改手机的ip_no_pmtu_disc参数, 那有没有方法直接修改OpenWRT路由器强迫修改mss值呢?<br>OK, 在路由器上添加如下两个命令, 问题就这么解决了:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#iptables -A FORWARD -j ACCEPT</span><br><span class="line">iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line"></span><br><span class="line">root@OpenWrt:~# iptables-save |grep mss</span><br><span class="line">:mssfix - [0:0]</span><br><span class="line">-A FORWARD -j mssfix</span><br><span class="line">-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">-A mssfix -o pppoe-wan -p tcp -m tcp --tcp-flags SYN,RST SYN -m comment --comment &quot;wan (mtu_fix)&quot; -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这款手机的操作系统没有设置ip_no_pmtu_disc参数去协商mss值, 而OpenWRT路由器刚好缺一条iptables rule (iptables -t mangle -A FORWARD -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu), 这样遭遇了pppoe的1492 MTU问题.<br>换句话说, 当我外出时, 如果所连的路由器没有加这条设置, 那么这个问题仍然又遇到. 手机操作系统ip_no_pmtu_disc设置才能彻底解决某些应用wifi网络不能上网的问题. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjllrf72s000hztbpazolrxc0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/08/03/IPv6来啦/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">IPv6来啦</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/09/03/也谈wifi断流问题/">也谈wifi断流问题</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/03/IPv6来啦/">IPv6来啦</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/13/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/10/Set-up-k8s-development-env-by-quqi99/">Set up k8s development env (by quqi99)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
