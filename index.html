@@ -68,6 +68,79 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Win-10-UEFI-Ubuntu-18-04-UEFI-双系统" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" class="article-date">
+  <time datetime="2018-09-08T17:28:15.000Z" itemprop="datePublished">2018-09-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本人昨天买了一块SSD, 结果后来发现原来这块SSD存在硬件质量问题, 造成了软件上的种种诡异问题, 如U盘时而识别时而不识别, 如触摸屏左键时而抽风, 如ghost安装win10时几乎到100%的进度时忽然来一个无响应, 重启系统后出现了”To interrupt normal start up, press the blue ThinkVantage button.”, 此时键盘无反应, 既进不了系统, 也进不了BIOS. 拨CMOS电源也无效. 最后发现是这块SSD有质量问题. 估计是SSD有控制器主要是软件吧, 控制器软件有bug导致运行ghost这种软件时也能导致硬件挂住.<br>也正是因为这个问题吧, 七搞八搞, 一不小心在重试的过程中将之前的一块linux分区误删了, 于是之前打算的迁移双系统的想法泡汤(当然, 那些通过分区助手或者ghost来迁移分区的网上文章照着做没一个是成功的).<br>这样, 有机会事隔多年再一次重装双系统的机会, 但是发现世道变了, 之前百试不爽的方法现在行不通了. 后经查证, 主要原因是ubuntu 18.04开始默认采用UEFI, 而win10默认仍然是MBR. 这样会导致一系列的问题, 如报错: grub-efi-amd64-signed failed to install 18.04, 统一采用UEFI安装.</p>
+<h2 id="BIOS设置"><a href="#BIOS设置" class="headerlink" title="BIOS设置"></a>BIOS设置</h2><p>在BIOS中将Boot Mode设置为UEFI Only, 如果有Secure Boot选项还要disable它(不做这一步可能会造成按F12键之后无法找到U盘)<br>注: 改成UEFI only之后, 运行双系统, 四系统都没问题, 但后来进不了U盘的livecd, 报: couldn’t get UEFI db list, 所以只得改回Both, 但UEFI优先.</p>
+<h2 id="安装win10"><a href="#安装win10" class="headerlink" title="安装win10"></a>安装win10</h2><ul>
+<li>下载大白菜UEFI专版 - <a href="http://www.bigbaicai.com/download.html?down2" target="_blank" rel="external">http://www.bigbaicai.com/download.html?down2</a></li>
+<li>下载win10 ghost - axel -n 10 <a href="http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar" target="_blank" rel="external">http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar</a></li>
+<li>制作大白菜启动U盘, 如果界面上有UEFI字眼就点上(不记得了, 有就点上), 还要注意一点, 记得点里面的格式转换, 将FAT32格式(HDD-FAT32)转换成NTFS(HDD-NTFS)转换, 否则HDD-FAT32格式不能拷贝大于4G的ghost文件哦,</li>
+<li>按F12选U盘启动进入大白菜后, 用DiskGenius工具重新分区, 必须将BIOS+MBR格式转UEFI+GPT格式. 分区表格式为GUID而不是MBR, window上管EFI分区叫ESP/MSR分区</li>
+<li><p>注意, 不要修改推荐的卷标, 这个卷就是指向的ESP/MSR分区.</p>
+<h2 id="安装win10后"><a href="#安装win10后" class="headerlink" title="安装win10后"></a>安装win10后</h2><p>安装win10后需要将禁用掉快速启动, 否则会造成按F12无法选择U盘启动. 菜单路径为: “设置 -&gt; 系统 -&gt; 电源与睡眠 -&gt; 其他电源设置 -&gt; 选择电源按钮的功能 -&gt; 更改当前不可用的设置 -&gt; 启动快速启动”</p>
+<h2 id="安装ubuntu-18-04"><a href="#安装ubuntu-18-04" class="headerlink" title="安装ubuntu 18.04"></a>安装ubuntu 18.04</h2><p>像安装win10一样, 一样要注意重要一点, 需创建大概300M左右的UEF分区, 另外, 还可以创建一个根分区和一个备份文件用的bak分区.<br>注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</p>
+<h2 id="安装win7"><a href="#安装win7" class="headerlink" title="安装win7"></a>安装win7</h2><p>win7若没有sata的驱动, 所以得先改回IDE, 装完win7之后再改回AHCI, 否则也容易挂在启动界面不动了.<br>注: 我未遇到以上问题, 可能因为我装的win7并不是原版的, 已经带了sata驱动</p>
+<h2 id="加装SSD"><a href="#加装SSD" class="headerlink" title="加装SSD"></a>加装SSD</h2><p>如果加装了SSD之后呢? 那得注意:</p>
+</li>
+<li><p>装win10时同样需要进大白菜或老毛桃后用DiskGenius在SSD上划分ESP/MSR分区</p>
+</li>
+<li>装ubuntu时, 分区处也要创建EFI分区, 同时grub设置安装在SSD上, 相当于: grub-install /dev/sdX.</li>
+<li>bios里选择哪块硬盘启动. 其实在SSD上安装grub后, 这个grub会连HDD上原先的win10与ubuntu一起放在启动列表里. 注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</li>
+<li><p>有时候需要对ssd优化, 例如不要将swap分区放在ssd以延长寿命, 如更改i/o调度策略为noop, 如使用bcache</p>
+<h2 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h2><p>装完之后进入win10发现thinkpad小红点左键失灵, 再切换进ubuntu发现小红点左键正常(实际上, 5次大概有一次有问题, 只是登录界面左键与右键似乎混乱了, 登录之后就正常了. 再换PE进系统发现小红点左键依然有问题. 所以基本断定和硬件没有关系, 应该是win10上的小红点驱动有问题.<br>但搜索了很多帖子, 没一个能解决问题的, 联想的小红点win10驱动做得太烂了. 所以决定回到win7, 回到win7之后该问题解决. 另外, PE回到win7的过程中不会伤害之前SSD上安装的ubuntu系统, 也不会伤害原HDD里的双系统.</p>
+<h2 id="数据迁移"><a href="#数据迁移" class="headerlink" title="数据迁移"></a>数据迁移</h2><p>现在在笔记本x220t上装了win10, 也装了ubuntu 18.04, 但是如何将工作机t440p的根分区迁移到x220t的根分区呢? 因为我们已经在x220t上安装了ubuntu 18.04, 这样省去了采用命令划分EFI分区, 以及最后填充EFI分区的步骤. 现在将精力集中在如何快速迁移根分区上.</p>
+</li>
+<li><p>目的机x220t因为有写操作, 故要以livecd启动, 启动ssh server, 并将根分区加载到/mnt</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">apt install openssh-server</span><br><span class="line">passwd</span><br><span class="line">echo &apos;PermitRootLogin yes&apos; &gt;&gt; /etc/ssh/sshd_config</span><br><span class="line">service ssh restart</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sdb8 /mnt</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>源机t440p最好也以livecd启动, 注意: 例如源机上有一个软链指向了/bak分区, 但因为此时没有挂载/bak分区, 所以在rsync命令迁移时会报错退出. 人工删除该软链重新运行即可.  且需要注意 rsync命令中的/mnt/后应该有/, 否则会将mnt目录迁移到根分区的mnt目录下.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sda9 /mnt</span><br><span class="line"></span><br><span class="line"># rsync will now copy all files, directories, permissions and owners over to the destination machine.</span><br><span class="line"># It also skips all files and directories that are not on the root filesystem, like /dev/, /sys/, /proc/.</span><br><span class="line"># If there are filesystems that are mounted separately on the source machine and your want those copied too, use rsync again on those mountpoints too.</span><br><span class="line">rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; /mnt root@192.168.99.128:/</span><br><span class="line">#rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; --exclude=&apos;/nas&apos; /mnt/ root@192.168.99.128:/mnt/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>更新grub, 此时会报”canot find EFI directory”, 这样会导致这时生成grub时无法找到原HDD中的双系统, 不要紧, 只要找到目前SSD中的双系统即可. 呆会下一步再运行一下grub命令即可解决</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdb8 /mnts</span><br><span class="line">for d in dev sys proc; do mount --bind /$d /mnt/$d; done</span><br><span class="line">chroot /mnt/ grub-install /dev/sdb   # canot find EFI directory</span><br><span class="line">chroot /mnt/ update-grub</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修复fstab, 之前运行上述迁移命令前忘了备份x220t上的fstab系统, 导致它被覆盖, OK, 我们修复它.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">blkid</span><br><span class="line">e2label /dev/sdb8 &quot;ROOT_SSD&quot;</span><br><span class="line">tee &quot;/mnt/etc/fstab&quot; &lt;&lt;EOF</span><br><span class="line">#UUID can be found via blkid command</span><br><span class="line">#LABEL=boot /boot ext2 sync 0 2</span><br><span class="line">#UUID=735b3be3-779c-4d21-a944-b033225f3ab4 none   swap    sw      0       0</span><br><span class="line">#LABEL=SWAP none swap sw 0 0</span><br><span class="line">UUID=9401-D2EA /boot/efi vfat defaults 0 2</span><br><span class="line">LABEL=ROOT_SSD / ext4 errors=remount-ro 0 1</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这时重启系统, 就可以以grub选择启动SSD上的双系统了, 如果还想把HDD的原有的双系统也加到grub的话, 那进ubuntu系统后再执行一次update-grub命令即可.</p>
+</li>
+<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjltpe8wa000fbhbpo46iz5qt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-也谈wifi断流问题" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/09/03/也谈wifi断流问题/" class="article-date">
@@ -118,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjllrf72s000hztbpazolrxc0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjltpe8y5000wbhbp82gj463n" class="article-share-link">Share</a>
       
       
     </footer>
@@ -213,7 +286,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjllrf7200001ztbpsahg8n36" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjltpe8w30008bhbpxxz7rhd6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -253,7 +326,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjllrf731000rztbpt3eshxy2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjltpe8wb000gbhbpqryxdqgr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -316,7 +389,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#118;&#x65;&#x72;&#x79;&#x68;&#117;&#97;&#50;&#x30;&#48;&#54;&#64;&#103;&#109;&#97;&#x69;&#x6c;&#46;&#99;&#111;&#109;">&#118;&#x65;&#x72;&#x79;&#x68;&#117;&#97;&#50;&#x30;&#48;&#54;&#64;&#103;&#109;&#97;&#x69;&#x6c;&#46;&#99;&#111;&#109;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x76;&#101;&#114;&#x79;&#104;&#x75;&#97;&#x32;&#48;&#x30;&#54;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;">&#x76;&#101;&#114;&#x79;&#104;&#x75;&#97;&#x32;&#48;&#x30;&#54;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -339,7 +412,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjllrf72z000pztbpx17a2luz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjltpe8wo000tbhbpvgk26kvu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -408,7 +481,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjllrf72p000eztbpmlghuzfr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjltpe8w5000abhbpyshtyjjs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -468,7 +541,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjllrf72w000mztbp8u8da5xn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjltpe8wk000pbhbpx24k6dfu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -510,7 +583,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjllrf72k000aztbpjsl9hk9r" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjltpe8w7000cbhbpj896ff60" class="article-share-link">Share</a>
       
       
     </footer>
@@ -559,7 +632,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjllrf72i0008ztbpzcqbukdm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjltpe8we000jbhbpd9e6gyxw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -619,64 +692,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjllrf72u000jztbpm9jcwmy7" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Libvirt支持的三种CPU模式与热迁移-by-Joshua" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" class="article-date">
-  <time datetime="2018-03-09T03:42:14.000Z" itemprop="datePublished">2018-03-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/">Libvirt支持的三种CPU模式与热迁移(by Joshua)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-model’)但热迁移仍然失败。有两全其美的方法吗？</p>
-<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">1, working solution was to create a custom CPU definition in /usr/share/libvirt/cpu_map.xml called SandyBridge-vmx, which contained the full feature flags for that CPU, not just the subset that differs from Westmere/etc., and includes the needed &apos;vmx&apos; feature for nested kvm</span><br><span class="line">&lt;model name=&apos;SandyBridge-vmx&apos;&gt;</span><br><span class="line">&lt;vendor name=&apos;Intel&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;aes&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;avx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;clflush&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cmov&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx16&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx8&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;de&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fpu&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fxsr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lahf_lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mca&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mce&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mmx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;msr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mtrr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;nx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pae&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pat&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pclmuldq&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pge&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pni&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;popcnt&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse36&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;rdtscp&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sep&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.1&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;ssse3&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;syscall&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc-deadline&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;x2apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;xsave&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;vmx&apos;/&gt;</span><br><span class="line">&lt;/model&gt;</span><br><span class="line"></span><br><span class="line">2, And in /etc/nova/nova.conf, we use:</span><br><span class="line">$ sudo grep ^cpu_m /etc/nova/nova.conf</span><br><span class="line">cpu_mode = custom</span><br><span class="line">cpu_model = SandyBridge-vmx</span><br></pre></td></tr></table></figure>
-<h2 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h2><p>Libvirt主要支持三种 CPU mode：</p>
-<ol>
-<li>host-passthrough: libvirt 令 KVM 把宿主机的 CPU 指令集全部透传给虚拟机。因此虚拟机能够最大限度的使用宿主机 CPU 指令集，故性能是最好的。但是在热迁移时，它要求目的节点的 CPU 和源节点的一致。</li>
-<li>host-model: libvirt 根据当前宿主机 CPU 指令集从配置文件 /usr/share/libvirt/cpu_map.xml 选择一种最相配的 CPU 型号。在这种 mode 下，虚拟机的指令集往往比宿主机少，性能相对 host-passthrough 要差一点，但是热迁移时，它允许目的节点 CPU 和源节点的存在一定的差异。</li>
-<li>custom: 这种模式下虚拟机 CPU 指令集数最少，故性能相对最差，但是它在热迁移时跨不同型号 CPU 的能力最强。此外，custom 模式下支持用户添加额外的指令集。</li>
-<li>三种mode的性能排序是：host-passthrough &gt; host-model &gt; custom</li>
-<li>三种mode的热迁移通用性是： custom &gt; host-model &gt; host-passthrough</li>
-</ol>
-<p>实际环境中多采用Intel E5系列的CPU，但是该系列的CPU也有多种型号，常见的有Xeon，Haswell，IvyBridge，SandyBridge等等。即使是host-model，在这些不同型号的CPU之间热迁移虚拟机也可能失败。所以从热迁移的角度，在选择 host-mode时：</p>
-<ul>
-<li>需要充分考虑既有宿主机类型，以后采购扩容时，也需要考虑相同问题</li>
-<li>除非不存在热迁移的场景，否则不应用选择host-passthrough</li>
-<li><p>host-model下不同型号的 CPU 最好能以aggregate hosts划分，在迁移时可以使用aggregate filter来匹配相同型号的物理机</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">openstack aggregate create Broadwell</span><br><span class="line">openstack aggregate create Haswell</span><br><span class="line">openstack aggregate set --property cpu=broadwell Broadwell</span><br><span class="line">openstack aggregate set --property cpu=haswell Haswell</span><br><span class="line">opentack aggregate add host &lt;host1&gt; Haswell</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=broadwell &lt;flavor1&gt;</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=haswell &lt;flavor2&gt;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如果CPU型号过多，且不便用aggregate hosts划分，建议使用custom mode</p>
-</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjllrf72i0007ztbpyiiq5t2d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjltpe8wg000lbhbpe3e6mj75" class="article-share-link">Share</a>
       
       
     </footer>
@@ -720,6 +736,10 @@
       <ul>
         
           <li>
+            <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/03/也谈wifi断流问题/">也谈wifi断流问题</a>
           </li>
         
@@ -733,10 +753,6 @@
         
           <li>
             <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/10/Set-up-k8s-development-env-by-quqi99/">Set up k8s development env (by quqi99)</a>
           </li>
         
       </ul>
