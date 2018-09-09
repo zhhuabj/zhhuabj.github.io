@@ -68,6 +68,51 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/09/hello-world/" class="article-date">
+  <time datetime="2018-09-08T17:46:29.048Z" itemprop="datePublished">2018-09-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/09/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/09/hello-world/" data-id="cjlu8d1cl000ij7bpiyzs1c98" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Win-10-UEFI-Ubuntu-18-04-UEFI-双系统" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" class="article-date">
@@ -125,13 +170,14 @@
 </li>
 <li><p>这时重启系统, 就可以以grub选择启动SSD上的双系统了, 如果还想把HDD的原有的双系统也加到grub的话, 那进ubuntu系统后再执行一次update-grub命令即可.</p>
 </li>
-<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵</li>
+<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵<h2 id="调整分区"><a href="#调整分区" class="headerlink" title="调整分区"></a>调整分区</h2>一个分区不够用时, 可以使用gpartd合并相邻的空闲分区.注意一点, 要合并的分区必须是umount状态时才能合并.<h2 id="SSD优化"><a href="#SSD优化" class="headerlink" title="SSD优化"></a>SSD优化</h2></li>
 </ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"># disable scanning for btrfs filesystems when boot</span><br><span class="line">sudo apt-get purge btrfs-tools</span><br><span class="line">sudo update-initramfs -ukall</span><br><span class="line"></span><br><span class="line"># enable TRIM feature by adding discard option</span><br><span class="line"># what&apos;s TRIM - https://blog.csdn.net/quqi99/article/details/50963308</span><br><span class="line"># the option noatime is used to disable access time for a file</span><br><span class="line">sudo hdparm -I /dev/sdb |grep TRIM</span><br><span class="line">vi /etc/fstab</span><br><span class="line">LABEL=ROOT_SSD /               ext4    noatime,discard,errors=remount-ro 0       1</span><br><span class="line">sudo mount -o remount /dev/sdb8</span><br><span class="line">sudo mount |grep sdb8 |grep discard</span><br><span class="line"></span><br><span class="line"># Try not to use swap space unless it&apos;s running out of memory.</span><br><span class="line">echo 1 &gt; /proc/sys/vm/swappiness</span><br><span class="line"></span><br><span class="line"># avoid visiting ssd by using ramdisk for /tmp instead of tmpfs</span><br><span class="line">vim /etc/fstab</span><br><span class="line">tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">sudo mount -o remount /</span><br><span class="line"></span><br><span class="line"># Set chrome to use ramdisk cache</span><br><span class="line">cd ~/.cache/google-chrome/Default</span><br><span class="line">rm -rf Cache</span><br><span class="line">sudo ln -s /tmp Cache</span><br><span class="line">rm -rf Media\ Cache/</span><br><span class="line">sudo ln -s /tmp Media\ Cache</span><br><span class="line"></span><br><span class="line"># Use noop for I/O elevator</span><br><span class="line">cat /sys/block/sda/queue/scheduler</span><br><span class="line">sudo vi /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;elevator=noop&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line"></span><br><span class="line"># Test SSD speed</span><br><span class="line">$ sudo hdparm -Tt /dev/sdb</span><br><span class="line">/dev/sdb:</span><br><span class="line"> Timing cached reads:   9128 MB in  2.00 seconds = 4569.28 MB/sec</span><br><span class="line"> Timing buffered disk reads: 818 MB in  3.01 seconds = 272.07 MB/sec</span><br><span class="line"></span><br><span class="line"># Make sure 4K align</span><br><span class="line">$ sudo fdisk -lu |grep sdb |grep sectors</span><br><span class="line">Disk /dev/sdb: 232.9 GiB, 250059350016 bytes, 488397168 sectors</span><br><span class="line"></span><br><span class="line"># Health check</span><br><span class="line">$ sudo smartctl -s on -a /dev/sdb |grep PASSED</span><br><span class="line">SMART overall-health self-assessment test result: PASSED</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjltpe8wa000fbhbpo46iz5qt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjlu8d1ck000hj7bpzp6mz1di" class="article-share-link">Share</a>
       
       
     </footer>
@@ -191,7 +237,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjltpe8y5000wbhbp82gj463n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjlu8d1co000lj7bpv9gjubkm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -286,7 +332,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjltpe8w30008bhbpxxz7rhd6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjlu8d1c60003j7bpllc7glcc" class="article-share-link">Share</a>
       
       
     </footer>
@@ -326,7 +372,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjltpe8wb000gbhbpqryxdqgr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/Using-kubeadm-to-deploy-k8s/" data-id="cjlu8d1cj000gj7bpmtnbsynf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -389,7 +435,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x76;&#101;&#114;&#x79;&#104;&#x75;&#97;&#x32;&#48;&#x30;&#54;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;">&#x76;&#101;&#114;&#x79;&#104;&#x75;&#97;&#x32;&#48;&#x30;&#54;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#x76;&#101;&#114;&#x79;&#x68;&#117;&#x61;&#50;&#48;&#x30;&#54;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#46;&#99;&#x6f;&#x6d;">&#x76;&#101;&#114;&#x79;&#x68;&#117;&#x61;&#50;&#48;&#x30;&#54;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#46;&#99;&#x6f;&#x6d;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -412,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjltpe8wo000tbhbpvgk26kvu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjlu8d1cu000sj7bpe2nnuxh9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -481,7 +527,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjltpe8w5000abhbpyshtyjjs" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="cjlu8d1cg000dj7bp65qncj4s" class="article-share-link">Share</a>
       
       
     </footer>
@@ -541,7 +587,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjltpe8wk000pbhbpx24k6dfu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjlu8d1ct000rj7bpavgpmldh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -583,7 +629,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjltpe8w7000cbhbpj896ff60" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjlu8d1ce000bj7bpcyw8jhpl" class="article-share-link">Share</a>
       
       
     </footer>
@@ -632,67 +678,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjltpe8we000jbhbpd9e6gyxw" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-回顾OpenStack中的测试" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/03/15/回顾OpenStack中的测试/" class="article-date">
-  <time datetime="2018-03-15T06:28:01.000Z" itemprop="datePublished">2018-03-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/03/15/回顾OpenStack中的测试/">回顾OpenStack中的测试</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)</strong></p>
-<ol>
-<li><p>沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source .tox/py35/bin/activate</span><br><span class="line">sudo pip install --upgrade -r requirements.txt</span><br><span class="line">sudo pip install --upgrade -r test-requirements.txt</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>使用unittest和nose运行测试。nose是对unittest的扩展，使得python的测试更加简单，nose自动发现测试代码并执行，nose提供了大量的插件，比如覆盖报表等。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -m unittest -v unit_tests.test_neutron_utils.TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">.tox/py35/bin/python nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>注意：上面采用nosetests运行时会报错，因为我们的测试采用了python3, 所以需要在安装了python3-nose之后（sudo apt-get install python3-nose python3-mock）再采用下列三种方式之一运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nosetests3 -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br><span class="line">/bak/work/charms/neutron-gateway/.tox/py35/bin/python /usr/local/bin/nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">python -m nose unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br></pre></td></tr></table></figure></p>
-<p>但实际上仍然找不找nose模块，那是因为nose与virtualenv结合地不大好，在这个网页找着了答案(<a href="https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv" target="_blank" rel="external">https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv</a>) - You need to have a copy of nose installed in the virtual environment. In order to force installation of nose into the virtualenv, even though it is already installed in the global site-packages, run pip install with the -I flag: pip install nose -I</p>
-<ol>
-<li><p>上面使用unittest与nose运行测试的方式只是将结果输出到stdout，不便于分析。所以可以使用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中便于日后分析。因为subunit是基于二进制的不便于人眼看，所以可使用subunit2pyunit工具将其人类可读化。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python -m subunit.run discover |subunit2pyunit</span><br><span class="line">python -m subunit.run discover -t ./ ./unit_tests |subunit2pyunit</span><br><span class="line">python -m subunit.run unit_tests.test_neutron_utils.TestNeutronUtils. |subunit2pyunit</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在大型应用中分析测试结果很重要，testrepository可以调用subunit来用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中，然后testrepository在些基础上有更多的分析，如分析哪些用例运行的时间最长，如显示失败的用例，如仅运行上次运行失败的用例。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">testr init</span><br><span class="line">testr run</span><br><span class="line">testr run --parallel</span><br><span class="line">$ cat .testr.conf</span><br><span class="line">[DEFAULT]</span><br><span class="line">test_command=OS_STDOUT_CAPTURE=$&#123;OS_STDOUT_CAPTURE:-1&#125; \</span><br><span class="line">             OS_STDERR_CAPTURE=$&#123;OS_STDERR_CAPTURE:-1&#125; \</span><br><span class="line">             OS_TEST_TIMEOUT=$&#123;OS_TEST_TIMEOUT:-60&#125; \</span><br><span class="line">             $&#123;PYTHON:-python&#125; -m subunit.run discover -t ./ ./unit_tests $LISTOPT $IDOPTION</span><br><span class="line">test_id_option=--load-list $IDFILE</span><br><span class="line">test_list_option=--list</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>tox用于创建虚拟python环境，也可以集成上面的testrepository(commands = ostestr {posargs})</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">$ cat tox.ini</span><br><span class="line">[tox]</span><br><span class="line">envlist = pep8,py27,py35</span><br><span class="line">skipsdist = True</span><br><span class="line"></span><br><span class="line">[testenv]</span><br><span class="line">setenv = VIRTUAL_ENV=&#123;envdir&#125;</span><br><span class="line">         PYTHONHASHSEED=0</span><br><span class="line">         CHARM_DIR=&#123;envdir&#125;</span><br><span class="line">         AMULET_SETUP_TIMEOUT=5400</span><br><span class="line">install_command =</span><br><span class="line">  pip install --allow-unverified python-apt &#123;opts&#125; &#123;packages&#125;</span><br><span class="line">commands = ostestr &#123;posargs&#125;</span><br><span class="line">whitelist_externals = juju</span><br><span class="line">passenv = HOME TERM AMULET_* CS_API_*</span><br><span class="line"></span><br><span class="line">[testenv:py27]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = /bin/true</span><br><span class="line"></span><br><span class="line">[testenv:py35]</span><br><span class="line">basepython = python3.5</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line"></span><br><span class="line">[testenv:pep8]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = flake8 &#123;posargs&#125; hooks unit_tests tests actions lib</span><br><span class="line">           charm-proof</span><br><span class="line"></span><br><span class="line">[flake8]</span><br><span class="line">ignore = E402,E226</span><br><span class="line">exclude = */helpers</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>pydev使用virtualenv中的py35<br>在eclipse的”Preferences -&gt; Pydev -&gt; Interpreters -&gt; Python Interpreters”菜单中定义python35=/bak/work/charms/neutron-gateway/.tox/py35/bin/python,然后在工程上点右键从”Properties -&gt; Pydev - Interpreter/Grammar”定义使用python35。注意，需要将/bak/work/charms/neutron-gateway/.tox/py35/lib/python3.5/site-packages也选到环境变量中，否则后面会报ImportError: No module named ‘mock。<br>为一个测试类定义”Python unitest”类型的”Debug Configurations”, 也在其Interpreter选项卡中定义使用python35 (结果：eclipse似乎有bug，此处选择了python35后无法保存)<br>所以无法成功，似乎是pydev与python3协作不大好。最后还是pudb好使(sudo pip install pudb, import pudb; pdb.set_trace())</p>
-</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjltpe8wg000lbhbpe3e6mj75" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjlu8d1cc0008j7bp4ni0ydpb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -736,6 +722,10 @@
       <ul>
         
           <li>
+            <a href="/2018/09/09/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
           </li>
         
@@ -749,10 +739,6 @@
         
           <li>
             <a href="/2018/07/13/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
           </li>
         
       </ul>

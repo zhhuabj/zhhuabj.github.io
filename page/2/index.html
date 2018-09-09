@@ -68,6 +68,66 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-回顾OpenStack中的测试" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/15/回顾OpenStack中的测试/" class="article-date">
+  <time datetime="2018-03-15T06:28:01.000Z" itemprop="datePublished">2018-03-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/15/回顾OpenStack中的测试/">回顾OpenStack中的测试</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)</strong></p>
+<ol>
+<li><p>沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source .tox/py35/bin/activate</span><br><span class="line">sudo pip install --upgrade -r requirements.txt</span><br><span class="line">sudo pip install --upgrade -r test-requirements.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用unittest和nose运行测试。nose是对unittest的扩展，使得python的测试更加简单，nose自动发现测试代码并执行，nose提供了大量的插件，比如覆盖报表等。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -m unittest -v unit_tests.test_neutron_utils.TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">.tox/py35/bin/python nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>注意：上面采用nosetests运行时会报错，因为我们的测试采用了python3, 所以需要在安装了python3-nose之后（sudo apt-get install python3-nose python3-mock）再采用下列三种方式之一运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nosetests3 -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br><span class="line">/bak/work/charms/neutron-gateway/.tox/py35/bin/python /usr/local/bin/nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">python -m nose unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br></pre></td></tr></table></figure></p>
+<p>但实际上仍然找不找nose模块，那是因为nose与virtualenv结合地不大好，在这个网页找着了答案(<a href="https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv" target="_blank" rel="external">https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv</a>) - You need to have a copy of nose installed in the virtual environment. In order to force installation of nose into the virtualenv, even though it is already installed in the global site-packages, run pip install with the -I flag: pip install nose -I</p>
+<ol>
+<li><p>上面使用unittest与nose运行测试的方式只是将结果输出到stdout，不便于分析。所以可以使用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中便于日后分析。因为subunit是基于二进制的不便于人眼看，所以可使用subunit2pyunit工具将其人类可读化。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python -m subunit.run discover |subunit2pyunit</span><br><span class="line">python -m subunit.run discover -t ./ ./unit_tests |subunit2pyunit</span><br><span class="line">python -m subunit.run unit_tests.test_neutron_utils.TestNeutronUtils. |subunit2pyunit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在大型应用中分析测试结果很重要，testrepository可以调用subunit来用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中，然后testrepository在些基础上有更多的分析，如分析哪些用例运行的时间最长，如显示失败的用例，如仅运行上次运行失败的用例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">testr init</span><br><span class="line">testr run</span><br><span class="line">testr run --parallel</span><br><span class="line">$ cat .testr.conf</span><br><span class="line">[DEFAULT]</span><br><span class="line">test_command=OS_STDOUT_CAPTURE=$&#123;OS_STDOUT_CAPTURE:-1&#125; \</span><br><span class="line">             OS_STDERR_CAPTURE=$&#123;OS_STDERR_CAPTURE:-1&#125; \</span><br><span class="line">             OS_TEST_TIMEOUT=$&#123;OS_TEST_TIMEOUT:-60&#125; \</span><br><span class="line">             $&#123;PYTHON:-python&#125; -m subunit.run discover -t ./ ./unit_tests $LISTOPT $IDOPTION</span><br><span class="line">test_id_option=--load-list $IDFILE</span><br><span class="line">test_list_option=--list</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>tox用于创建虚拟python环境，也可以集成上面的testrepository(commands = ostestr {posargs})</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">$ cat tox.ini</span><br><span class="line">[tox]</span><br><span class="line">envlist = pep8,py27,py35</span><br><span class="line">skipsdist = True</span><br><span class="line"></span><br><span class="line">[testenv]</span><br><span class="line">setenv = VIRTUAL_ENV=&#123;envdir&#125;</span><br><span class="line">         PYTHONHASHSEED=0</span><br><span class="line">         CHARM_DIR=&#123;envdir&#125;</span><br><span class="line">         AMULET_SETUP_TIMEOUT=5400</span><br><span class="line">install_command =</span><br><span class="line">  pip install --allow-unverified python-apt &#123;opts&#125; &#123;packages&#125;</span><br><span class="line">commands = ostestr &#123;posargs&#125;</span><br><span class="line">whitelist_externals = juju</span><br><span class="line">passenv = HOME TERM AMULET_* CS_API_*</span><br><span class="line"></span><br><span class="line">[testenv:py27]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = /bin/true</span><br><span class="line"></span><br><span class="line">[testenv:py35]</span><br><span class="line">basepython = python3.5</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line"></span><br><span class="line">[testenv:pep8]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = flake8 &#123;posargs&#125; hooks unit_tests tests actions lib</span><br><span class="line">           charm-proof</span><br><span class="line"></span><br><span class="line">[flake8]</span><br><span class="line">ignore = E402,E226</span><br><span class="line">exclude = */helpers</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>pydev使用virtualenv中的py35<br>在eclipse的”Preferences -&gt; Pydev -&gt; Interpreters -&gt; Python Interpreters”菜单中定义python35=/bak/work/charms/neutron-gateway/.tox/py35/bin/python,然后在工程上点右键从”Properties -&gt; Pydev - Interpreter/Grammar”定义使用python35。注意，需要将/bak/work/charms/neutron-gateway/.tox/py35/lib/python3.5/site-packages也选到环境变量中，否则后面会报ImportError: No module named ‘mock。<br>为一个测试类定义”Python unitest”类型的”Debug Configurations”, 也在其Interpreter选项卡中定义使用python35 (结果：eclipse似乎有bug，此处选择了python35后无法保存)<br>所以无法成功，似乎是pydev与python3协作不大好。最后还是pudb好使(sudo pip install pudb, import pudb; pdb.set_trace())</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjlu8d1cp000mj7bpzjo2qgvb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Libvirt支持的三种CPU模式与热迁移-by-Joshua" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" class="article-date">
@@ -115,7 +175,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjltpe8vr0000bhbpenm9e08p" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjlu8d1c70004j7bpvzqij16c" class="article-share-link">Share</a>
       
       
     </footer>
@@ -178,7 +238,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjltpe8vy0002bhbpcmd3vfpa" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjlu8d1c90005j7bp1l051812" class="article-share-link">Share</a>
       
       
     </footer>
@@ -243,7 +303,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="cjltpe8w6000bbhbprncvumua" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="cjlu8d1cf000cj7bpbsll9958" class="article-share-link">Share</a>
       
       
     </footer>
@@ -285,7 +345,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="cjltpe8vw0001bhbpzo7epcde" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="cjlu8d1c40002j7bpc94n4086" class="article-share-link">Share</a>
       
       
     </footer>
@@ -335,7 +395,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="cjltpe8vz0003bhbp4fwo1ju4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="cjlu8d1bv0000j7bpnh8rrfz1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -378,7 +438,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjltpe8wj000obhbpc01izchy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjlu8d1cs000qj7bpjcgbdovm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -436,7 +496,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjltpe8wd000ibhbpvtg7ricb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjlu8d1cm000jj7bpi9muo6ov" class="article-share-link">Share</a>
       
       
     </footer>
@@ -498,7 +558,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjltpe8w00004bhbpmefb2s9p" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="cjlu8d1ca0006j7bpyvylkrb8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -547,74 +607,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjltpe8wh000mbhbpzp0knrfw" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-三种方式使用vlan" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/12/06/三种方式使用vlan/" class="article-date">
-  <time datetime="2017-12-06T03:47:59.000Z" itemprop="datePublished">2017-12-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/12/06/三种方式使用vlan/">三种方式使用vlan</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>作者：张华  发表于：2016-04-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
-<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>Use OVS port in QEMU</p>
-<p>sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapath-source openvswitch-controller openvswitch-switch virt-top virt-manager Python-libvirt</p>
-<p>sudo ovs-vsctl add-br br-mano<br>sudo ovs-vsctl add-port br-mano eth2</p>
-<p>sudo virsh net-destroy default<br>sudo virsh net-define /tmp/br-mano.xml</p>
-<p><network><br>  <name>br-mano</name><br>  <forward mode="bridge"><br>  <bridge name="br-mano"><br>  <virtualport type="openvswitch"><br></virtualport></bridge></forward></network></p>
-<p>#sudo virsh net-undefine default<br>sudo virsh net-start br-mano<br>sudo virsh net-autostart br-mano</p>
-<p>Linux Bridge VLAN</p>
-<p>sudo modprobe 8021q<br>sudo ip link add link eth1 name eth1.2 type vlan id 2</p>
-<p>#sudo vconfig add eth1 2</p>
-<p>#sudo ifconfig eth1.2 down</p>
-<p>#sudo vconfig rem eth1.2<br>sudo ip link set eth1.2 up<br>sudo brctl addbr br2<br>sudo brctl setfd br2 0<br>sudo brctl stp br2 on<br>sudo ip link set br2 up<br>sudo brctl addif br2 eth1.2<br>sudo ifconfig br2 192.168.9.122/24<br>sudo ip tuntap add gw2 mode tap<br>sudo ip link set gw2 up<br>sudo brctl addif br2 gw2<br>hua@node1:~$ ip -d link show eth1.2<br>22: eth1.2@eth1: <broadcast,multicast,up,lower_up> mtu 1500 qdisc noqueue master br2 state UP mode DEFAULT group default qlen 1000<br>    link/ether 2c:53:4a:02:20:3c brd ff:ff:ff:ff:ff:ff promiscuity 1<br>    vlan protocol 802.1Q id 2 <reorder_hdr></reorder_hdr></broadcast,multicast,up,lower_up></p>
-<p>可用如下方法定义VLAN</p>
-<p>auto eth0.2<br>iface eth0.2 inet static<br>    address 10.12.2.2/24<br>    netmask 255.255.255.0<br>    network 10.12.2.0/24<br>    broadcast 10.12.2.255</p>
-<p>如果失败，先确保安装了vlan包 （sudo apt install -y vlan），并且启用了vlan模块（sudo modprobe 8021q）， 如果还报下列错的话是因为需要将网卡名改成规范的eth0之类的。</p>
-<p>Dec  6 08:54:50 localhost ifup[29785]: Cannot find device “enp0s25.2”<br>Dec  6 08:54:50 localhost ifup[29785]: Failed to bring up enp0s25.2.<br>OVS Bridge VLAN</p>
-<p>sudo ovs-vsctl add-br br-veth0<br>sudo ovs-vsctl add-port br-veth0 eth1<br>sudo ip link add veth0 type veth peer name veth1<br>sudo ovs-vsctl add-port br-veth0 veth0<br>sudo ovs-vsctl add-port br-mano veth1<br>sudo ip link set veth0 up<br>sudo ip link set veth1 up</p>
-<p>#sudo ovs-vsctl add-port br-veth0 veth0 – set Interface veth0 type=patch options:peer=veth1</p>
-<p>#sudo ovs-vsctl add-port br-mano veth1 – set Interface veth1 type=patch options:peer=veth0</p>
-<p>#sudo ovs-vsctl del-port br-mano veth1</p>
-<p>#sudo ovs-vsctl del-port br-veth0 veth0</p>
-<p>#Create ACCESS VLAN:<br>sudo ovs-vsctl set port vnet0 tag=2</p>
-<p>#sudo ovs-vsctl remove port vnet0 tag 2</p>
-<p>#Enable both ACCESS VLAN as well as TRUNK VLAN:<br>sudo ovs-vsctl set port vnet0 vlan_mode=trunk trunks=2 #access, native-tagged, native-untagged, trunk</p>
-<p>#sudo ovs-vsctl set port eth2 vlan_mode=access trunks=[]</p>
-<p>Verify VLAN</p>
-<p>Inside VM: ping 10.0.3.1 -I eth0</p>
-<p>sudo  tcpdump -i eth1  -e -n ‘arp or icmp’ and src host 10.0.3.1</p>
-<p>listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes<br>11:38:20.754894 52:54:00:f2:17:37 &gt; ff:ff:ff:ff:ff:ff, ethertype 802.1Q (0x8100), length 46: vlan 2, p 0, ethertype ARP, Request who-has 10.0.3.1 tell 10.0.3.2, length 28<br>Conclusion</p>
-<p>OVS Bridge br-mano上的VM无论是采用在VM里打Tag还是在br-mano vnet0处打Tag后的vlan流量能到达eth1(vlan数据只在物理网卡上能使用tcpdump看到），但无法到达同一机器上linux bridge br2上的eth1.2，反之亦然</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjltpe8xo000vbhbpsvnz5ac6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjlu8d1cq000oj7bpeerik1ha" class="article-share-link">Share</a>
       
       
     </footer>
@@ -658,6 +651,10 @@
       <ul>
         
           <li>
+            <a href="/2018/09/09/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
           </li>
         
@@ -671,10 +668,6 @@
         
           <li>
             <a href="/2018/07/13/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
           </li>
         
       </ul>

@@ -11,7 +11,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="问题本人昨天买了一块SSD, 结果后来发现原来这块SSD存在硬件质量问题, 造成了软件上的种种诡异问题, 如U盘时而识别时而不识别, 如触摸屏左键时而抽风, 如ghost安装win10时几乎到100%的进度时忽然来一个无响应, 重启系统后出现了”To interrupt normal start up, press the blue ThinkVantage button.”, 此时键盘无反应,">
-<meta property="og:updated_time" content="2018-09-08T17:28:35.062Z">
+<meta property="og:updated_time" content="2018-09-09T02:19:28.218Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Win 10 UEFI + Ubuntu 18.04 UEFI 双系统">
 <meta name="twitter:description" content="问题本人昨天买了一块SSD, 结果后来发现原来这块SSD存在硬件质量问题, 造成了软件上的种种诡异问题, 如U盘时而识别时而不识别, 如触摸屏左键时而抽风, 如ghost安装win10时几乎到100%的进度时忽然来一个无响应, 重启系统后出现了”To interrupt normal start up, press the blue ThinkVantage button.”, 此时键盘无反应,">
@@ -124,13 +124,14 @@
 </li>
 <li><p>这时重启系统, 就可以以grub选择启动SSD上的双系统了, 如果还想把HDD的原有的双系统也加到grub的话, 那进ubuntu系统后再执行一次update-grub命令即可.</p>
 </li>
-<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵</li>
+<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵<h2 id="调整分区"><a href="#调整分区" class="headerlink" title="调整分区"></a>调整分区</h2>一个分区不够用时, 可以使用gpartd合并相邻的空闲分区.注意一点, 要合并的分区必须是umount状态时才能合并.<h2 id="SSD优化"><a href="#SSD优化" class="headerlink" title="SSD优化"></a>SSD优化</h2></li>
 </ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"># disable scanning for btrfs filesystems when boot</span><br><span class="line">sudo apt-get purge btrfs-tools</span><br><span class="line">sudo update-initramfs -ukall</span><br><span class="line"></span><br><span class="line"># enable TRIM feature by adding discard option</span><br><span class="line"># what&apos;s TRIM - https://blog.csdn.net/quqi99/article/details/50963308</span><br><span class="line"># the option noatime is used to disable access time for a file</span><br><span class="line">sudo hdparm -I /dev/sdb |grep TRIM</span><br><span class="line">vi /etc/fstab</span><br><span class="line">LABEL=ROOT_SSD /               ext4    noatime,discard,errors=remount-ro 0       1</span><br><span class="line">sudo mount -o remount /dev/sdb8</span><br><span class="line">sudo mount |grep sdb8 |grep discard</span><br><span class="line"></span><br><span class="line"># Try not to use swap space unless it&apos;s running out of memory.</span><br><span class="line">echo 1 &gt; /proc/sys/vm/swappiness</span><br><span class="line"></span><br><span class="line"># avoid visiting ssd by using ramdisk for /tmp instead of tmpfs</span><br><span class="line">vim /etc/fstab</span><br><span class="line">tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">sudo mount -o remount /</span><br><span class="line"></span><br><span class="line"># Set chrome to use ramdisk cache</span><br><span class="line">cd ~/.cache/google-chrome/Default</span><br><span class="line">rm -rf Cache</span><br><span class="line">sudo ln -s /tmp Cache</span><br><span class="line">rm -rf Media\ Cache/</span><br><span class="line">sudo ln -s /tmp Media\ Cache</span><br><span class="line"></span><br><span class="line"># Use noop for I/O elevator</span><br><span class="line">cat /sys/block/sda/queue/scheduler</span><br><span class="line">sudo vi /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;elevator=noop&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line"></span><br><span class="line"># Test SSD speed</span><br><span class="line">$ sudo hdparm -Tt /dev/sdb</span><br><span class="line">/dev/sdb:</span><br><span class="line"> Timing cached reads:   9128 MB in  2.00 seconds = 4569.28 MB/sec</span><br><span class="line"> Timing buffered disk reads: 818 MB in  3.01 seconds = 272.07 MB/sec</span><br><span class="line"></span><br><span class="line"># Make sure 4K align</span><br><span class="line">$ sudo fdisk -lu |grep sdb |grep sectors</span><br><span class="line">Disk /dev/sdb: 232.9 GiB, 250059350016 bytes, 488397168 sectors</span><br><span class="line"></span><br><span class="line"># Health check</span><br><span class="line">$ sudo smartctl -s on -a /dev/sdb |grep PASSED</span><br><span class="line">SMART overall-health self-assessment test result: PASSED</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjltpe8wa000fbhbpo46iz5qt" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjlu8d1ck000hj7bpzp6mz1di" class="article-share-link">Share</a>
       
       
     </footer>
@@ -138,6 +139,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2018/09/09/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
   
   
     <a href="/2018/09/03/也谈wifi断流问题/" id="article-nav-older" class="article-nav-link-wrap">
@@ -179,6 +189,10 @@
       <ul>
         
           <li>
+            <a href="/2018/09/09/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
           </li>
         
@@ -192,10 +206,6 @@
         
           <li>
             <a href="/2018/07/13/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/13/用OpenSSL做自签名的证书/">用OpenSSL做自签名的证书</a>
           </li>
         
       </ul>
