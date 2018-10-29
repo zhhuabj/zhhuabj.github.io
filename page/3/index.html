@@ -55,9 +55,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -67,6 +67,55 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-如何修改网卡名称由enp0s25为eth0" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/" class="article-date">
+  <time datetime="2017-12-06T04:07:47.000Z" itemprop="datePublished">2017-12-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/">如何修改网卡名称由enp0s25为eth0</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>今天用下列配置创建测试用的VLAN网卡，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install -y vlan</span><br><span class="line">sudo modprobe 8021q</span><br><span class="line"></span><br><span class="line">auto enp0s25.1</span><br><span class="line">iface enp0s25.1 inet static</span><br><span class="line">    address 10.12.1.1/24</span><br><span class="line">    netmask 255.255.255.0</span><br><span class="line">    network 10.12.1.0/24</span><br><span class="line">    broadcast 10.12.1.255</span><br><span class="line">    mtu 1492</span><br><span class="line"></span><br><span class="line">sudo ifup enp0s25.1</span><br></pre></td></tr></table></figure></p>
+<p>但是失败，报下列错。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Dec  6 08:54:50 localhost ifup[29785]: Cannot find device &quot;enp0s25.1&quot;</span><br><span class="line">Dec  6 08:54:50 localhost ifup[29785]: Failed to bring up enp0s25.1.</span><br></pre></td></tr></table></figure></p>
+<p>原因是需要将enp0s25改为eth0。在谷歌上搜索一百篇文章起码有九十九篇都说要修改70-persistent-net.rules文件，但是照着改了就是不成功，那是怎么一回事呢？</p>
+<h2 id="enp0s25代表什么"><a href="#enp0s25代表什么" class="headerlink" title="enp0s25代表什么"></a>enp0s25代表什么</h2><p>根据systemd中udev的代码(<a href="https://github.com/systemd/systemd/blob/master/src/udev/udev-builtin-net_id.c#L20" target="_blank" rel="external">https://github.com/systemd/systemd/blob/master/src/udev/udev-builtin-net_id.c#L20</a> ), enp0s25 意为: en:ethernet, p0:bus_num=0, s25:slot_num=25<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">root@t440p:~# lspci |grep Ethernet</span><br><span class="line">00:19.0 Ethernet controller: Intel Corporation Ethernet Connection I217-LM (rev 04) </span><br><span class="line"></span><br><span class="line">root@t440p:~# lspci -n -s 00:19.0</span><br><span class="line">00:19.0 0200: 8086:153a (rev 04)</span><br><span class="line"></span><br><span class="line">root@t440p:~# find /sys/devices -type d -wholename &apos;/sys/devices/pci*/net&apos; -print</span><br><span class="line">/sys/devices/pci0000:00/0000:00:19.0/net</span><br><span class="line">/sys/devices/pci0000:00/0000:00:1c.1/0000:04:00.0/net</span><br><span class="line">/sys/devices/pci0000:00/0000:00:14.0/usb3/3-3/3-3:1.0/net</span><br><span class="line"></span><br><span class="line">hua@t440p:~$ sudo udevadm info /sys/class/net/enp0s25 |grep DEVPATH</span><br><span class="line">E: DEVPATH=/devices/pci0000:00/0000:00:19.0/net/enp0s25</span><br></pre></td></tr></table></figure></p>
+<h2 id="方法一，修改70-persistent-net-rules"><a href="#方法一，修改70-persistent-net-rules" class="headerlink" title="方法一，修改70-persistent-net.rules"></a>方法一，修改70-persistent-net.rules</h2><p>修改/etc/udev/rules.d/70-persistent-net.rules文件如下内容(注：ubuntu 16.04上由systemd.link管理默认无此文件，直接添加即可，并将如下ATTR{address}改为网卡的MAC地址，其他不变）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SUBSYSTEM==&quot;net&quot;, ACTION==&quot;add&quot;, DRIVERS==&quot;?*&quot;, ATTR&#123;address&#125;==&quot;28:d2:44:52:31:1d&quot;, ATTR&#123;dev_id&#125;==&quot;0x0&quot;, ATTR&#123;type&#125;==&quot;1&quot;, KERNEL==&quot;eth*&quot;, NAME=&quot;eth0&quot;</span><br></pre></td></tr></table></figure></p>
+<p><strong>但这样修改后并不生效，原因是动了udev的文件需要下列命令更新initrd</strong>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-initramfs -u</span><br></pre></td></tr></table></figure></p>
+<p>将上面配置改为下面的内容也行：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SUBSYSTEM==&quot;net&quot;, ACTION==&quot;add&quot;, DRIVERS==&quot;?*&quot;, ATTR&#123;dev_id&#125;==&quot;0x0&quot;, ATTR&#123;type&#125;==&quot;1&quot;, KERNELS==&quot;0000:00:19.0&quot;, KERNEL==&quot;eth*&quot;, NAME=&quot;eth0&quot;</span><br></pre></td></tr></table></figure>
+<p>该配置可直接运行这段脚本生成：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">scansys() &#123;</span><br><span class="line">    find /sys/devices -type d -wholename &apos;/sys/devices/pci*/net&apos; -print</span><br><span class="line">&#125;</span><br><span class="line">extract() &#123;</span><br><span class="line">    awk -F/ &apos;&#123;printf &quot;%s eth%u\n&quot;,$(NF-1),NR-1;&#125;&apos;</span><br><span class="line">&#125;</span><br><span class="line">generate() &#123;</span><br><span class="line">    echo &apos;# these rules are for persistence based on bus device address&apos;</span><br><span class="line">    awk &apos;&#123;printf &quot;SUBSYSTEM==\&quot;net\&quot;, ACTION==\&quot;add\&quot;, DRIVERS==\&quot;?*\&quot;, ATTR&#123;dev_id&#125;==\&quot;0x0\&quot;, ATTR&#123;type&#125;==\&quot;1\&quot;, KERNELS==\&quot;%s\&quot;, KERNEL==\&quot;eth*\&quot;, NAME=\&quot;%s\&quot;\n&quot;,$1,$2;&#125;&apos;</span><br><span class="line">&#125;</span><br><span class="line">scansys | extract | sort | generate</span><br></pre></td></tr></table></figure></p>
+<p>一般地，上面方法就会成功，至少我成功了，如果你重启机器后还不成功，可以考虑如下方法去Disable the Predictable Network Interface Names，见：<a href="https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/" target="_blank" rel="external">https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mv /lib/udev/rules.d/80-net-setup-link.rules /bak/bin/</span><br><span class="line">ln -s /dev/null /lib/udev/rules.d/80-net-setup-link.rules  #Disable the Predictable Network Interface Names</span><br></pre></td></tr></table></figure></p>
+<h2 id="方法二，使用systemd’s-systemd-link"><a href="#方法二，使用systemd’s-systemd-link" class="headerlink" title="方法二，使用systemd’s systemd.link"></a>方法二，使用systemd’s systemd.link</h2><p>修改文件/etc/systemd/network/10-internet.link添加如下内容后重启机器即可：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[Match]</span><br><span class="line">MACAddress=28:d2:44:52:31:1d</span><br><span class="line">[Link]</span><br><span class="line">Name=eth0</span><br></pre></td></tr></table></figure></p>
+<p>但参考该网页 (<a href="http://manpages.ubuntu.com/manpages/zesty/man5/systemd.link.5.html)做如下配置却不成功：" target="_blank" rel="external">http://manpages.ubuntu.com/manpages/zesty/man5/systemd.link.5.html)做如下配置却不成功：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[Match]</span><br><span class="line">Path=pci-0000:0000:19.0-*</span><br><span class="line">[Link]</span><br><span class="line">Name=eth0</span><br></pre></td></tr></table></figure></p>
+<h2 id="方法三，修改grub的方式"><a href="#方法三，修改grub的方式" class="headerlink" title="方法三，修改grub的方式"></a>方法三，修改grub的方式</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;quiet splash net.ifnames=0&quot;</span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="cjnu40m0q000ox6bpw71u2q2d" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-三种方式使用vlan" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -125,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjm8trj6e000mbobpu2ku6vax" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="cjnu40m0i000gx6bpn5va7e80" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -171,7 +220,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjm8trj6i000rbobp1wmhpbk3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="cjnu40m0e000cx6bpz8nefsxg" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -226,7 +275,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjm8trj65000dbobpo1xx4gxl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="cjnu40m0f000dx6bpmdr9uhdh" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -289,7 +338,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjm8trj6j000sbobp41pe1aig" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="cjnu40m0u000tx6bpnaduxgcl" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -341,7 +390,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjm8trj6l000vbobpsrx3bypl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjnu40m0w000vx6bptkeyizzd" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -391,7 +440,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjm8trj64000cbobpikjh9c00" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjnu40m0h000fx6bpxx8pbdx2" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -480,7 +529,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjm8trj71000wbobp1sp0cqn1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjnu40m1a000xx6bpozoquda5" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -552,7 +601,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjm8trj6f000obobpy8adq15l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjnu40m0t000rx6bpfw94enlb" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -632,74 +681,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjm8trj5x0005bobpp4kr18pq" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-调研NFV编排工具" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/10/调研NFV编排工具/" class="article-date">
-  <time datetime="2017-11-10T14:27:51.000Z" itemprop="datePublished">2017-11-10</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/10/调研NFV编排工具/">调研NFV编排工具</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="裸机配置工具"><a href="#裸机配置工具" class="headerlink" title="裸机配置工具"></a>裸机配置工具</h2><ul>
-<li>Cobbler, Dell开源的基于PXE的裸机部署工具</li>
-<li>Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具</li>
-<li>MAAS, Canonical的基于PXE的裸机部署工具，电源管理(<a href="https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等" target="_blank" rel="external">https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等</a> - <a href="http://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/37990507</a><h2 id="通用配置管理工具"><a href="#通用配置管理工具" class="headerlink" title="通用配置管理工具"></a>通用配置管理工具</h2></li>
-<li>Puppet, 配置管理工具的鼻祖，由Ruby语言编写，使用基于XML的自有的puppet描述语言管理配置文件、用户、cron任务、软件包、系统服务等，语法复杂，可移植性差。</li>
-<li>Chef, 一个类似于Puppet用来快速部署软件及其依赖包的脚本工具，将配置步骤通过脚本写出来(Puppet用基于XML的专用方法书写，Chef用Ruby书写），客户端从服务器端获取脚本并执行 - <a href="http://blog.csdn.net/quqi99/article/details/21247111" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/21247111</a></li>
-<li>Ansible, 它应该是吸引了Juju通过SSH进行所有的操作的思想让它可以并行运行任何标准脚本语言(Python, Bash, Ruby等等），Ansible剧本(YAML语言编写)角色映射到节点/虚机上对它们进行编排有序的执行。另外它和Juju不同的是它是agentless的。</li>
-<li>Salt, 又叫SaltStack，同时支持agent与agentless两种模式，在后一种模式下，Salt也使用SSH连接到受管理的节点/虚机执行以Python语言编写的模块。</li>
-<li>Docker, 可将软件及软件依赖的运行环境与安装包统统打包一起部署，从而实现软件与基础架构的解偶。<h2 id="OpenStack部署工具"><a href="#OpenStack部署工具" class="headerlink" title="OpenStack部署工具"></a>OpenStack部署工具</h2></li>
-<li>Devstack, 部署OpenStack开发环境</li>
-<li>Packstack, 使用Puppet经SSH部署OpenStack到RHEL/CentOS上，见：<a href="https://wiki.openstack.org/wiki/Packstack" target="_blank" rel="external">https://wiki.openstack.org/wiki/Packstack</a></li>
-<li>Redhat RDO, 使用Ansible部署OpenStack到RHEL/CentOS上</li>
-<li>Suse Crowbar, 使用Chef部署OpenStack到Suse上</li>
-<li>Rackspace OpenStack-Ansible, 使用Ansible部署OpenStack到Ubuntu和CentOS上</li>
-<li>Mirantis Fuel, 使用Puppet部署OpenStack到Ubuntu上</li>
-<li>HPE Helion, 使用Ansible部署OpenStack到Debian上</li>
-<li>OpenStack TripleO, 使用OpenStack本来的基础设施(Nova, Neutron, Ironic, Heat)来自动化部署和伸缩OpenStack集群，即OpenStack over OpenStack。见：<a href="http://blog.csdn.net/quqi99/article/details/9530627" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/9530627</a></li>
-<li>OpenStack Kolla, 上面工具只是实现了部署OpenStack的自动化，但没有简化OpenStack部署，如包依赖和升级困难等。Kolla项目起源于TripleO项目，实现OpenStack部署的容器化(即把目前OpenStack项目用到的所有组件部署在容器里)，因此具有原子性回滚升级特性。它既可以利用Ansible去伸缩OpenStack容器节点，也可以利用Kubernetes去伸缩OpenStack容器节点。<h2 id="NFV编排"><a href="#NFV编排" class="headerlink" title="NFV编排"></a>NFV编排</h2></li>
-<li>OpenStack Heat, Heat根据配置文件模板(HOT, heat orchestration template)实例化一组符合要求的虚机。也能够在其上对应用软件进行配置与编排。对支持对一个组件部署后的负载均衡进行编排。见： <a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/50359289</a></li>
-<li>Canonical Juju, 使用OPNFV JOID去编排VNFM与NFVO</li>
-<li>配置管理工具，上述的通用型的配置管理工具如Puppet、Chef、Ansible都可以用于去编排VNFM与NFVO</li>
-<li>Kebernetes或者Kolar, 可作为编排工具将VNFM与NFVO部署到容器里<h2 id="Mesos-Marathon"><a href="#Mesos-Marathon" class="headerlink" title="Mesos + Marathon"></a>Mesos + Marathon</h2>应用部署方面也可以采用Mesos + Marthon:</li>
-<li>Mesos是一个两阶段集群管理器（也叫数据中心操作系统)，Master第一阶段通过Framework注册的Schedule将资源分配给Framework (Framework可以支持Hadoop, Elasticsearch, Spark, Stom, Kafka, Marathon等, 也通过K8SM支持将容器集群管理器Kubernetest集成到Mesos)，Slave第二阶段在容器中调用Executor运行Framework的内部任务。</li>
-<li>Marathon作为一个Mesos Framework，用来支持长期服务，比如Web应用，它相当于分布式的init.d，能够在分布式集群上像原有单机那样运行二进制程序，所以说它也是一种私有的PaaS，能提供REST API服务，实现服务的发现，通过HAProxy实现服务发现和负载均衡。</li>
-<li>使用Mesos + Marathon来编排一些应用还行，但用来编排NFV似乎热度不高网上很难找到相关资料，社区缺乏活力</li>
-<li>Mesos的所有Schdule都没有像Kubernetes那样针对微服务进行了数据模型的抽象（如Pod, Service, Namespace等），所以Mesos的API没有Kubernetes精良易用。另外，Mesos涉及的组件使用的编程语言太多，如Mesos(C++)、Marathon（Scala）、Mesos-DNS（Golang）等。<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2></li>
-<li>做NFV的虚机编排用Juju或者Heat</li>
-<li>做NFV的容器编排用Juju或者Kolar或者Kebernetes</li>
-<li>当然，其他如Ansible这些其他配置软件也能用</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjm8trj6k000ubobp2kpp4rnq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjnu40m090008x6bpq3kgx0qy" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -730,7 +712,7 @@ lxc profile device set default eth0 nictype macvlan
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -738,9 +720,13 @@ lxc profile device set default eth0 nictype macvlan
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/10/29/为租户下的虚机提供IPv6-DNS服务/">为租户下的虚机提供IPv6 DNS服务</a>
+          </li>
         
           <li>
             <a href="/2018/09/10/hello-world/">Hello World</a>
@@ -758,10 +744,6 @@ lxc profile device set default eth0 nictype macvlan
             <a href="/2018/08/03/IPv6来啦/">IPv6来啦</a>
           </li>
         
-          <li>
-            <a href="/2018/07/13/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -775,7 +757,7 @@ lxc profile device set default eth0 nictype macvlan
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2018 张华<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
