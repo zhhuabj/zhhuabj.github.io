@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Set ip IPv6 env | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="基础 - ND协议的三个位ND协议包中有三个位(Auto, Managed, Other)：  M bit (Managed Address Configuration), M bit如果是1,表示Clients要另外再去跟DHCPv6要IPv6 Prefix O bit (Other Configuration), O bit如果是1,表示Clients要去跟DHCPv6要DNS(RDNSS)等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Set ip IPv6 env">
+<meta property="og:url" content="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="基础 - ND协议的三个位ND协议包中有三个位(Auto, Managed, Other)：  M bit (Managed Address Configuration), M bit如果是1,表示Clients要另外再去跟DHCPv6要IPv6 Prefix O bit (Other Configuration), O bit如果是1,表示Clients要去跟DHCPv6要DNS(RDNSS)等">
+<meta property="og:updated_time" content="2019-01-18T05:44:34.378Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Set ip IPv6 env">
+<meta name="twitter:description" content="基础 - ND协议的三个位ND协议包中有三个位(Auto, Managed, Other)：  M bit (Managed Address Configuration), M bit如果是1,表示Clients要另外再去跟DHCPv6要IPv6 Prefix O bit (Other Configuration), O bit如果是1,表示Clients要去跟DHCPv6要DNS(RDNSS)等">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Set-ip-IPv6-env" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/18/Set-ip-IPv6-env/" class="article-date">
+  <time datetime="2019-01-18T05:44:20.000Z" itemprop="datePublished">2019-01-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Set ip IPv6 env
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="基础-ND协议的三个位"><a href="#基础-ND协议的三个位" class="headerlink" title="基础 - ND协议的三个位"></a>基础 - ND协议的三个位</h2><p>ND协议包中有三个位(Auto, Managed, Other)：</p>
+<ul>
+<li>M bit (Managed Address Configuration), M bit如果是1,表示Clients要另外再去跟DHCPv6要IPv6 Prefix</li>
+<li>O bit (Other Configuration), O bit如果是1,表示Clients要去跟DHCPv6要DNS(RDNSS)等其他信息<br>这样：</li>
+<li>slaas, Stateless autoconfiguration, A=1, M=0, O=0, 主机將只得到Router給的 Prefix, 无法取得DNS等资讯, 其他必须自己填写.</li>
+<li>dhcpv6-stateful, A=0, M=1, O=1, 所有信息（IPv6 prefix, DNS等)都通过DHCPv6获得,客戶端主要使用UDP port 546, 而服務器端使用 UDP port 547</li>
+<li>dhcpv6-stateless,A=1, M=0, O=1, 除了使用RA裡面的Prefix,其他如DNS等等信息会由DHCPv6 取得.<h2 id="基础-Neutron-IPv6"><a href="#基础-Neutron-IPv6" class="headerlink" title="基础 - Neutron IPv6"></a>基础 - Neutron IPv6</h2>Neutron中有两个重要属性来支持IPv6 (ipv6_address_mode 与 ipv6_ra_mode):</li>
+<li>ipv6_ra_mode, 如果设置表示由Neutron来使用radvd来模拟软件IPv6路由器, 如果不设置表示使用外部IPv6路由器</li>
+<li>ipv6_address_mode, 对应上述ND协议中的三个位(Auto, Managed, Other), 例如: 对于dhcpv6-stateless, 3比特应该是: A=1, M=0, O=1.</li>
+</ul>
+<p>下面是创建一个使用外部IPv6路由器并使用dhcpv6-stateless的例子:<br>neutron net-create –provider:network_type flat –provider:physical_network physnet1 –router:external=True ext_net<br>neutron subnet-create ext_net –name external-subnet-v6 –ip_version 6 –ipv6_address_mode dhcpv6-stateless –allocation-pool start=2001:db8:0:1::2,end=2001:db8:0:1:ffff:ffff:ffff:ffff 2001:db8:0:1::/64</p>
+<h2 id="基础-Ubuntu中手工配置IPv6的注意点"><a href="#基础-Ubuntu中手工配置IPv6的注意点" class="headerlink" title="基础 - Ubuntu中手工配置IPv6的注意点"></a>基础 - Ubuntu中手工配置IPv6的注意点</h2><p>Ubuntu中配置IPv6可以采用network-manager, 也可采用在/etc/network/interface中手工配置, 也可以使用最新的netplan. 这里描述的是采用手工配置的方法.<br>先看一个遇到的实际问题:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">下面配置不work</span><br><span class="line">iface eth0 inet6 auto</span><br><span class="line">   # use SLAAC to get global IPv6 address from the router</span><br><span class="line">   # we may not enable ipv6 forwarding, otherwise SLAAC gets disabled</span><br><span class="line">   up sleep 5</span><br><span class="line">   dhcp 1</span><br><span class="line">   autoconf 1</span><br><span class="line">   accept_ra 2</span><br><span class="line"></span><br><span class="line">下列配置work</span><br><span class="line">iface eth0 inet6 static</span><br><span class="line">address 2001:192:168:99::135</span><br><span class="line">   gateway 2001:192:168:99::1</span><br><span class="line">   netmask 64</span><br><span class="line">且改成network-manager也work, 这是为什么呢?</span><br><span class="line"></span><br><span class="line">测试方法是:</span><br><span class="line">#it will flush link-local address as well</span><br><span class="line">#ip addr flush br-eth0</span><br><span class="line"># avoid the error: can&apos;t get a link-local address</span><br><span class="line">sudo ip link set dev eth0 down</span><br><span class="line">sudo ip link set dev eth0 up</span><br><span class="line">ifdown br-eth0</span><br><span class="line">ifup --force --verbose br-eth0</span><br></pre></td></tr></table></figure></p>
+<p>采用”ifup –force –verbose br-eth0”命令看到的错误是”can’t get a link-local address”.<br>为什么static模式与network-manager模式没有这个错误呢? 原来是这两者默认执行了:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6</span><br></pre></td></tr></table></figure></p>
+<p>并且之前Linux网桥br-eth0上一直没有IPv6地址的原因也是这个, 且上面”sudo ip link set dev eth0 up”这句也会自动设置disable_ipv6=0, 但不会对br-eth0作同样的设置.<br>所以添加”up echo 0 &gt; /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6”后问题解决, 完整配置如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">root@node1:~# cat /etc/network/interfaces</span><br><span class="line">auto lo</span><br><span class="line">iface lo inet loopback</span><br><span class="line">auto eth0</span><br><span class="line">iface eth0 inet manual</span><br><span class="line">auto br-eth0</span><br><span class="line">iface br-eth0 inet static</span><br><span class="line">    address 192.168.99.124/24</span><br><span class="line">    gateway 192.168.99.1</span><br><span class="line">    bridge_ports eth0</span><br><span class="line">    dns-nameservers 192.168.99.1</span><br><span class="line">    bridge_stp on</span><br><span class="line">    bridge_fd 0</span><br><span class="line">    bridge_maxwait 0</span><br><span class="line">    up echo -n 0 &gt; /sys/devices/virtual/net/$IFACE/bridge/multicast_snooping</span><br><span class="line"># for stateless it&apos;s &apos;inet6 auto&apos;, for stateful it&apos;s &apos;inet6 dhcp&apos;</span><br><span class="line">iface br-eth0 inet6 auto</span><br><span class="line">    #iface eth0 inet6 static</span><br><span class="line">    #address 2001:192:168:99::135</span><br><span class="line">    #gateway 2001:192:168:99::1</span><br><span class="line">    #netmask 64</span><br><span class="line">    # use SLAAC to get global IPv6 address from the router</span><br><span class="line">    # we may not enable ipv6 forwarding, otherwise SLAAC gets disabled</span><br><span class="line">    # sleep 5 is due a bug and &apos;dhcp 1&apos; indicates that info should be obtained from dhcpv6 server for stateless</span><br><span class="line">    up echo 0 &gt; /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6</span><br><span class="line">    up sleep 5</span><br><span class="line">    autoconf 1</span><br><span class="line">    accept_ra 2</span><br><span class="line">    dhcp 1</span><br></pre></td></tr></table></figure></p>
+<p>此外, 最好设置accept_ra=2, 因为经常会遇到自动配置的IPv6地址丢失或者不能获取的问题。一般情况是都是启用了IPv6转发功能(sudo sysctl -w net.ipv6.conf.all.forwarding=1)引起的。<br>为了配置IPv6 address和default gateway, client/host都会默认去listen或者solicit RA广播, 并且host作为router时会忽略RA, 这由accept_ra设置:</p>
+<ul>
+<li>0 Do not accept RouterAdvertisements.</li>
+<li>1 Accept Router Advertisements if forwarding is disabled.</li>
+<li>2 Overrule forwarding behavior. Accept Router Advertisements  even if forwarding is enabled.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo sysctl -w net.ipv6.conf.all.forwarding=1</span><br><span class="line">sudo sysctl -w net.ipv6.conf.all.accept_ra=2</span><br><span class="line">sudo sysctl -w net.ipv6.conf.br-lan.disable_ipv6=0</span><br><span class="line">#echo 0 &gt; /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="IPv6中的防火墙"><a href="#IPv6中的防火墙" class="headerlink" title="IPv6中的防火墙"></a>IPv6中的防火墙</h2><p>IPv6 Router端:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"># Clear all ip6tables rules</span><br><span class="line">ip6tables -t nat -X</span><br><span class="line">ip6tables -t nat -P PREROUTING ACCEPT</span><br><span class="line">ip6tables -t nat -P POSTROUTING ACCEPT</span><br><span class="line">ip6tables -t nat -P OUTPUT ACCEPT</span><br><span class="line">ip6tables -t mangle -F</span><br><span class="line">ip6tables -t mangle -X</span><br><span class="line">ip6tables -t mangle -P PREROUTING ACCEPT</span><br><span class="line">ip6tables -t mangle -P INPUT ACCEPT</span><br><span class="line">ip6tables -t mangle -P FORWARD ACCEPT</span><br><span class="line">ip6tables -t mangle -P OUTPUT ACCEPT</span><br><span class="line">ip6tables -t mangle -P POSTROUTING ACCEPT</span><br><span class="line">ip6tables -F</span><br><span class="line">ip6tables -X</span><br><span class="line">ip6tables -P FORWARD ACCEPT</span><br><span class="line">ip6tables -P INPUT ACCEPT</span><br><span class="line">ip6tables -P OUTPUT ACCEPT</span><br><span class="line">ip6tables -t raw -F</span><br><span class="line">ip6tables -t raw -X</span><br><span class="line">ip6tables -t raw -P PREROUTING ACCEPT</span><br><span class="line">ip6tables -t raw -P OUTPUT ACCEPT</span><br><span class="line"></span><br><span class="line"># Default DROP rules</span><br><span class="line">ip6tables -P INPUT   DROP</span><br><span class="line">ip6tables -P OUTPUT  ACCEPT</span><br><span class="line">ip6tables -P FORWARD DROP</span><br><span class="line"></span><br><span class="line"># Allow established connections</span><br><span class="line">ip6tables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT</span><br><span class="line">ip6tables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT</span><br><span class="line"></span><br><span class="line"># For IPv6</span><br><span class="line"># it&apos;s not required due to ipv6-icmp</span><br><span class="line"># sudo ip6tables -A INPUT -p udp --dport 547 -j ACCEPT</span><br><span class="line">#ip6tables -A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT</span><br><span class="line">ip6tables -A INPUT -p ipv6-icmp -j ACCEPT</span><br><span class="line">ip6tables -A FORWARD -p ipv6-icmp -j ACCEPT</span><br><span class="line"></span><br><span class="line"># Ajust MTU</span><br><span class="line">ip6tables -t mangle -A POSTROUTING -o pppoe-wan -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure></p>
+<p>IPv6 Client端:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ip6tables -t filter -A INPUT -p udp -m udp --sport 547 --dport 546 -j ACCEPT</span><br><span class="line">ip6tables -t filter -A INPUT -p ipv6-icmp -j ACCEPT</span><br><span class="line"></span><br><span class="line"># or security group</span><br><span class="line">https://bugs.launchpad.net/neutron/+bug/1335984</span><br><span class="line">openstack security group rule create $secgroup --protocol udp --dst-port 546 --ethertype IPv6</span><br><span class="line">openstack security group rule create $secgroup --protocol icmpv6 --ethertype IPv6</span><br><span class="line"></span><br><span class="line"># Flow based firewall</span><br><span class="line">hard_timeout=0,idle_timeout=0,priority=4,udp,tp_dst=546/0xffff,table=32,tp_src=547/0xffff,nw_src=fe80::f816:3eff:fea3:ec40,actions=learn(table=33,priority=5,hard_timeout=120,eth_type=0x800,nw_proto=17,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[],NXM_OF_IP_SRC[]=NXM_OF_IP_DST[],NXM_OF_UDP_SRC[]=NXM_OF_UDP_DST[], NXM_OF_UDP_DST[]=NXM_OF_UDP_SRC[],output:NXM_OF_IN_PORT[]),normal</span><br></pre></td></tr></table></figure></p>
+<p>另外, 别忘了禁用掉ufw或者SELinux之类的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw disable</span><br></pre></td></tr></table></figure></p>
+<h2 id="Statefull-DHCPv6"><a href="#Statefull-DHCPv6" class="headerlink" title="Statefull DHCPv6"></a>Statefull DHCPv6</h2><p>采用isc-dhcp-server搭建DHCPv6 Server:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">https://jochen.kirstaetter.name/dhcpv6-ipv6-in-your-local-network/</span><br><span class="line">hua@t440p:~$ ip addr show eth0 |grep inet6 |grep global</span><br><span class="line">    inet6 2001:192:168:99::430/128 scope global</span><br><span class="line">echo &apos;Acquire::ForceIPv4 &quot;true&quot;;&apos; | sudo tee /etc/apt/apt.conf.d/99force-ipv4</span><br><span class="line">sudo apt install isc-dhcp-server</span><br><span class="line">grep -v ^# /etc/dhcp/dhcpd6.conf</span><br><span class="line">sudo cp /etc/dhcp/dhcpd6.conf /etc/dhcp/dhcpd6.conf_bak</span><br><span class="line">sudo bash -c &apos;cat &gt;/etc/dhcp/dhcpd6.conf&apos; &lt;&lt;EOF</span><br><span class="line">authoritative;</span><br><span class="line">default-lease-time 14400;</span><br><span class="line">max-lease-time 86400;</span><br><span class="line">log-facility local7;</span><br><span class="line">subnet6 2001:192:168:99::/64 &#123;</span><br><span class="line">    option dhcp6.name-servers 2001:4860:4860::8888, 2001:4860:4860::8844;</span><br><span class="line">    option dhcp6.domain-search &quot;quqi.com&quot;;</span><br><span class="line">    range6 2001:192:168:99::100 2001:192:168:99::199;</span><br><span class="line">    range6 2001:192:168:99::/64 temporary;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">sudo touch /var/lib/dhcp/dhcpd6.leases</span><br><span class="line">sudo /usr/sbin/dhcpd -6 -d -cf /etc/dhcp/dhcpd6.conf eth0</span><br><span class="line">sudo chown dhcpd:dhcpd /var/lib/dhcp/dhcpd6.leases</span><br><span class="line">sudo service isc-dhcp-server6 restart</span><br></pre></td></tr></table></figure></p>
+<p>然后记得照上节说的设置DHCPv6 Server与Client上的防火墙规则. 接着在另一台机器上作client测试:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"># need to use &apos;inet6 dhcp&apos; in client side for statefull DHCPv6</span><br><span class="line">iface br-eth0 inet6 dhcp</span><br><span class="line">    #iface eth0 inet6 static</span><br><span class="line">    #address 2001:192:168:99::135</span><br><span class="line">    #gateway 2001:192:168:99::1</span><br><span class="line">    #netmask 64</span><br><span class="line">    # use SLAAC to get global IPv6 address from the router</span><br><span class="line">    # we may not enable ipv6 forwarding, otherwise SLAAC gets disabled</span><br><span class="line">    # sleep 5 is due a bug and &apos;dhcp 1&apos; indicates that info should be obtained from dhcpv6 server for stateless</span><br><span class="line">    up echo 0 &gt; /proc/sys/net/ipv6/conf/$IFACE/disable_ipv6</span><br><span class="line">    up sleep 5</span><br><span class="line">    autoconf 1</span><br><span class="line">    accept_ra 2</span><br><span class="line">    dhcp 1</span><br><span class="line"></span><br><span class="line"># test command</span><br><span class="line">dhclient -6 -d br-eth0</span><br><span class="line"></span><br><span class="line"># verity</span><br><span class="line">hua@node1:~$ sudo tcpdump -ni eth0 ip6 host fe80::d5a3:10a3:6161:5b2e</span><br><span class="line">12:44:00.868609 IP6 fe80::d5a3:10a3:6161:5b2e.547 &gt; fe80::fa32:e4ff:febe:87cd.546: dhcp6 advertise</span><br><span class="line">12:44:01.946548 IP6 fe80::d5a3:10a3:6161:5b2e.547 &gt; fe80::fa32:e4ff:febe:87cd.546: dhcp6 reply</span><br><span class="line">root@node1:~# cat /etc/resolv.conf</span><br><span class="line"># Dynamic resolv.conf(5) file for glibc resolver(3) generated by resolvconf(8)</span><br><span class="line">#     DO NOT EDIT THIS FILE BY HAND -- YOUR CHANGES WILL BE OVERWRITTEN</span><br><span class="line">nameserver 192.168.99.1</span><br><span class="line">#nameserver 211.136.17.107</span><br><span class="line">#nameserver 114.114.114.114</span><br><span class="line">#nameserver 223.5.5.5</span><br><span class="line">nameserver 2001:4860:4860::8888</span><br><span class="line">nameserver 2001:4860:4860::8844</span><br><span class="line">nameserver 2001:db8::1:6a1:51ff:fe8a:2ca7</span><br><span class="line">search quqi.com lan</span><br></pre></td></tr></table></figure>
+<p>另外, 使用BIND9的例子可参见 - <a href="https://jochen.kirstaetter.name/enabling-dns-for-ipv6-infrastructure/" target="_blank" rel="external">https://jochen.kirstaetter.name/enabling-dns-for-ipv6-infrastructure/</a></p>
+<h2 id="SLAAC-Stateless-Address-Auto-Configuration"><a href="#SLAAC-Stateless-Address-Auto-Configuration" class="headerlink" title="SLAAC (Stateless Address Auto Configuration)"></a>SLAAC (Stateless Address Auto Configuration)</h2><p>radvd来提供RA部分, SLAAC只有RA部分. RA只能设置IPv6 prefix与DNS (RDNSS).<br>Historically the software package radvd was commonly used for just the RA-part of this. But dnsmasq offers a more complete setup.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">sudo sysctl -w net.ipv6.conf.all.forwarding=1</span><br><span class="line">sudo ip addr add 2001:db8:0:1::1/64 dev eth0</span><br><span class="line">sudo apt-get install radvd</span><br><span class="line">$ cat /etc/radvd.conf</span><br><span class="line">    interface eth0</span><br><span class="line">    &#123;</span><br><span class="line">       AdvSendAdvert on;</span><br><span class="line">       prefix 2001:db8:0:1::/64</span><br><span class="line">       &#123;</span><br><span class="line">            AdvOnLink on;</span><br><span class="line">            AdvAutonomous on;</span><br><span class="line">       &#125;;</span><br><span class="line">       #Send DNS Server setting</span><br><span class="line">       #RDNSS fd5d:12c9:2201:1::2&#123;</span><br><span class="line">    &#125;;</span><br><span class="line">sudo /etc/init.d/radvd restart</span><br><span class="line">sudo ip6tables -F</span><br><span class="line"></span><br><span class="line">neutron subnet-create --ip-version=6 --name=ext-v6-subnet --gateway 2001:db8:0:1::1 --allocation-pool start=2001:db8:0:1::5,end=2001:db8:0:1:ffff:ffff:ffff:fffe --disable-dhcp ext_net 2001:db8:0:1::/64</span><br><span class="line">neutron net-create private</span><br><span class="line">neutron subnet-create --ip-version=6 --name=private_v6_subnet --ipv6-address-mode=slaac --ipv6-ra-mode=slaac private 2001:db8:0:2::/64</span><br><span class="line">neutron router-interface-add provider-router private_v6_subnet</span><br></pre></td></tr></table></figure></p>
+<h2 id="SLAAS-with-Stateless-DHCPv6"><a href="#SLAAS-with-Stateless-DHCPv6" class="headerlink" title="SLAAS with Stateless DHCPv6"></a>SLAAS with Stateless DHCPv6</h2><p>Stateless意味着:</p>
+<ul>
+<li>radvd提供RA (AdvManagedFlag=off)</li>
+<li>client使用radvd RA提供的IPv6 prefix配置IPv6 address</li>
+<li>client的其他信息如DNS等从DHCPv6获得<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt; /etc/dhcp/dhcpd6.conf&apos; &lt;&lt;EOF</span><br><span class="line">interface eth0</span><br><span class="line">&#123;</span><br><span class="line">    AdvSendAdvert on;</span><br><span class="line">    MinRtrAdvInterval 30;</span><br><span class="line">    MaxRtrAdvInterval 100;</span><br><span class="line">    AdvManagedFlag off;</span><br><span class="line">    AdvOtherConfigFlag on;</span><br><span class="line">    prefix 2001:192:168:99::/64</span><br><span class="line">    &#123;</span><br><span class="line">        AdvOnLink on;</span><br><span class="line">        AdvAutonomous on;</span><br><span class="line">        AdvRouterAddr off;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/radvd.conf&apos; &lt;&lt;EOF</span><br><span class="line">default-lease-time 600;</span><br><span class="line">max-lease-time 7200;</span><br><span class="line">log-facility local7;</span><br><span class="line">option dhcp6.name-servers 2001:4860:4860::8888;</span><br><span class="line">option dhcp6.domain-search &quot;&quot;;</span><br><span class="line">subnet6 2001:192:168:99::/64 &#123;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="SLAAS-with-Statefull-DHCPv6"><a href="#SLAAS-with-Statefull-DHCPv6" class="headerlink" title="SLAAS with Statefull DHCPv6"></a>SLAAS with Statefull DHCPv6</h2><p>Statefull意味着:</p>
+<ul>
+<li>radvd不提供RA (AdvManagedFlag=on)</li>
+<li>client使用DHCPv6去配置IPv6 address</li>
+<li>client的其他信息如DNS等也从DHCPv6获得<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt; /etc/dhcp/dhcpd6.conf&apos; &lt;&lt;EOF</span><br><span class="line">interface eth0</span><br><span class="line">&#123;</span><br><span class="line">    AdvSendAdvert on;</span><br><span class="line">    MinRtrAdvInterval 30;</span><br><span class="line">    MaxRtrAdvInterval 100;</span><br><span class="line">    AdvManagedFlag on;</span><br><span class="line">    AdvOtherConfigFlag on;</span><br><span class="line">    prefix 2001:192:168:99::/64</span><br><span class="line">    &#123;</span><br><span class="line">        AdvOnLink on;</span><br><span class="line">        AdvAutonomous on;</span><br><span class="line">        AdvRouterAddr off;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sudo bash -c &apos;cat &gt;/etc/dhcp/dhcpd6.conf&apos; &lt;&lt;EOF</span><br><span class="line">authoritative;</span><br><span class="line">default-lease-time 14400;</span><br><span class="line">max-lease-time 86400;</span><br><span class="line">log-facility local7;</span><br><span class="line">subnet6 2001:192:168:99::/64 &#123;</span><br><span class="line">    option dhcp6.name-servers 2001:4860:4860::8888, 2001:4860:4860::8844;</span><br><span class="line">    option dhcp6.domain-search &quot;quqi.com&quot;;</span><br><span class="line">    range6 2001:192:168:99::100 2001:192:168:99::199;</span><br><span class="line">    range6 2001:192:168:99::/64 temporary;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="实际问题"><a href="#实际问题" class="headerlink" title="实际问题"></a>实际问题</h2><p>例如, 使用OpenStack根据外部IPv6 stateless router定义的IPv6网络, 虚机分配了IP, 但是网卡上去没配置, 一般地, 理论上问题出在:<br>1, 既然有外部路由器, Openstack CLI中不应该定义ipv6_ra_mode, 不指定ipv6_ra_mode, neutron就不会创建radvd, 那样就会直接使用外部的IPv6路由器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">neutron net-create IPv6 (vlan1809) --shared --provider:physical_network physnet2 --provider:network_type vlan --provider:segmentation_id 1809 --router:external True</span><br><span class="line">neutron subnet-create ipv6-pd --name external-subnet-v6 --ip_version 6 --ipv6_address_mode dhcp-stateless --allocation-pool start=2001:1284:ff:18::2,end=2001:1284:ff:18:ffff:ffff:ffff:ffff --dns-nameserver 2001:1284:ff02::243 2001:1284:ff:18::/64</span><br></pre></td></tr></table></figure></p>
+<p>2, 外部IPv6路由器的防火墙规则打开了没:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo ip6tables -A INPUT -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ip6tables -A OUTPUT -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ip6tables -A FORWARD -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ufw allow proto udp from fe80::/64 to any port 547</span><br><span class="line">sudo ufw disable</span><br></pre></td></tr></table></figure></p>
+<p>3, 虚机这边虚机定义security group rule将其所有的计算节点上的防火墙规则打开:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">https://bugs.launchpad.net/neutron/+bug/1335984</span><br><span class="line"></span><br><span class="line">openstack security group rule create $secgroup --protocol udp --dst-port 546 --ethertype IPv6</span><br><span class="line">openstack security group rule create $secgroup --protocol icmpv6 --ethertype IPv6</span><br><span class="line"></span><br><span class="line">For iptables driver, above equals:</span><br><span class="line">ip6tables -t filter -A INPUT -p udp -m udp --sport 547 --dport 546 -j ACCEPT</span><br><span class="line">ip6tables -t filter -A INPUT -p ipv6-icmp -j ACCEPT</span><br><span class="line"></span><br><span class="line">For ovs flow based driver, above equals:</span><br><span class="line">hard_timeout=0,idle_timeout=0,priority=4,udp,tp_dst=546/0xffff,table=32,tp_src=547/0xffff,nw_src=fe80::f816:3eff:fea3:ec40,actions=learn(table=33,priority=5,hard_timeout=120,eth_type=0x800,nw_proto=17,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[],NXM_OF_IP_SRC[]=NXM_OF_IP_DST[],NXM_OF_UDP_SRC[]=NXM_OF_UDP_DST[], NXM_OF_UDP_DST[]=NXM_OF_UDP_SRC[],output:NXM_OF_IN_PORT[]),normal</span><br></pre></td></tr></table></figure></p>
+<p>3, 外部路由器因为启用了forwarding应该设置accept_ra=2而不是accept_ra=1:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo sysctl -w net.ipv6.conf.all.accept_ra=2</span><br></pre></td></tr></table></figure></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://asdkda.github.io/2016/02/05/ipv6/" target="_blank" rel="external">http://asdkda.github.io/2016/02/05/ipv6/</a><br>[2] <a href="http://tldp.org/HOWTO/html_single/Linux+IPv6-HOWTO/#idp57787920" target="_blank" rel="external">http://tldp.org/HOWTO/html_single/Linux+IPv6-HOWTO/#idp57787920</a><br>[3] <a href="https://jochen.kirstaetter.name/dhcpv6-ipv6-in-your-local-network/" target="_blank" rel="external">https://jochen.kirstaetter.name/dhcpv6-ipv6-in-your-local-network/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="cjr1mdcgf0007ttbp0qfhy7g3" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/01/02/Using-kubeadm-to-deploy-k8s/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">Using kubeadm to deploy k8s</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/01/18/Set-ip-IPv6-env/">Set ip IPv6 env</a>
+          </li>
+        
+          <li>
+            <a href="/2019/01/02/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/">Use Octavia to Implement HTTPS Health Monitors</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/29/为租户下的虚机提供IPv6-DNS服务/">为租户下的虚机提供IPv6 DNS服务</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/10/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

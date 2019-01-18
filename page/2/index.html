@@ -68,6 +68,66 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-温故OpenStack中的测试-by-Joshua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/10/温故OpenStack中的测试-by-Joshua/" class="article-date">
+  <time datetime="2018-07-10T08:28:15.000Z" itemprop="datePublished">2018-07-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/10/温故OpenStack中的测试-by-Joshua/">温故OpenStack中的测试(by Joshua)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-15)</strong></p>
+<ol>
+<li><p>沿用tox调用virtualenv自动创建的虚拟环境(virtualenv -p python3.5 .tox/py35)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source .tox/py35/bin/activate</span><br><span class="line">sudo pip install --upgrade -r requirements.txt</span><br><span class="line">sudo pip install --upgrade -r test-requirements.txt</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用unittest和nose运行测试。nose是对unittest的扩展，使得python的测试更加简单，nose自动发现测试代码并执行，nose提供了大量的插件，比如覆盖报表等。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -m unittest -v unit_tests.test_neutron_utils.TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">.tox/py35/bin/python nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>注意：上面采用nosetests运行时会报错，因为我们的测试采用了python3, 所以需要在安装了python3-nose之后（sudo apt-get install python3-nose python3-mock）再采用下列三种方式之一运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nosetests3 -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br><span class="line">/bak/work/charms/neutron-gateway/.tox/py35/bin/python /usr/local/bin/nosetests -v unit_tests/test_neutron_utils.py:TestNeutronUtils.test_get_packages_ovs_newton</span><br><span class="line">python -m nose unit_tests/test_neutron_utils.py:TestNeutronUtils.test_restart_map_ovs_odl</span><br></pre></td></tr></table></figure></p>
+<p>但实际上仍然找不找nose模块，那是因为nose与virtualenv结合地不大好，在这个网页找着了答案(<a href="https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv" target="_blank" rel="external">https://stackoverflow.com/questions/864956/problems-using-nose-in-a-virtualenv</a>) - You need to have a copy of nose installed in the virtual environment. In order to force installation of nose into the virtualenv, even though it is already installed in the global site-packages, run pip install with the -I flag: pip install nose -I</p>
+<ol>
+<li><p>上面使用unittest与nose运行测试的方式只是将结果输出到stdout，不便于分析。所以可以使用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中便于日后分析。因为subunit是基于二进制的不便于人眼看，所以可使用subunit2pyunit工具将其人类可读化。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python -m subunit.run discover |subunit2pyunit</span><br><span class="line">python -m subunit.run discover -t ./ ./unit_tests |subunit2pyunit</span><br><span class="line">python -m subunit.run unit_tests.test_neutron_utils.TestNeutronUtils. |subunit2pyunit</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在大型应用中分析测试结果很重要，testrepository可以调用subunit来用python-subunit模块来运行测试，并将测试结果通过subunit协议输出到文件中，然后testrepository在些基础上有更多的分析，如分析哪些用例运行的时间最长，如显示失败的用例，如仅运行上次运行失败的用例。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">testr init</span><br><span class="line">testr run</span><br><span class="line">testr run --parallel</span><br><span class="line">$ cat .testr.conf</span><br><span class="line">[DEFAULT]</span><br><span class="line">test_command=OS_STDOUT_CAPTURE=$&#123;OS_STDOUT_CAPTURE:-1&#125; \</span><br><span class="line">             OS_STDERR_CAPTURE=$&#123;OS_STDERR_CAPTURE:-1&#125; \</span><br><span class="line">             OS_TEST_TIMEOUT=$&#123;OS_TEST_TIMEOUT:-60&#125; \</span><br><span class="line">             $&#123;PYTHON:-python&#125; -m subunit.run discover -t ./ ./unit_tests $LISTOPT $IDOPTION</span><br><span class="line">test_id_option=--load-list $IDFILE</span><br><span class="line">test_list_option=--list</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>tox用于创建虚拟python环境，也可以集成上面的testrepository(commands = ostestr {posargs})</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">$ cat tox.ini</span><br><span class="line">[tox]</span><br><span class="line">envlist = pep8,py27,py35</span><br><span class="line">skipsdist = True</span><br><span class="line"></span><br><span class="line">[testenv]</span><br><span class="line">setenv = VIRTUAL_ENV=&#123;envdir&#125;</span><br><span class="line">         PYTHONHASHSEED=0</span><br><span class="line">         CHARM_DIR=&#123;envdir&#125;</span><br><span class="line">         AMULET_SETUP_TIMEOUT=5400</span><br><span class="line">install_command =</span><br><span class="line">  pip install --allow-unverified python-apt &#123;opts&#125; &#123;packages&#125;</span><br><span class="line">commands = ostestr &#123;posargs&#125;</span><br><span class="line">whitelist_externals = juju</span><br><span class="line">passenv = HOME TERM AMULET_* CS_API_*</span><br><span class="line"></span><br><span class="line">[testenv:py27]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = /bin/true</span><br><span class="line"></span><br><span class="line">[testenv:py35]</span><br><span class="line">basepython = python3.5</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line"></span><br><span class="line">[testenv:pep8]</span><br><span class="line">basepython = python2.7</span><br><span class="line">deps = -r&#123;toxinidir&#125;/requirements.txt</span><br><span class="line">       -r&#123;toxinidir&#125;/test-requirements.txt</span><br><span class="line">commands = flake8 &#123;posargs&#125; hooks unit_tests tests actions lib</span><br><span class="line">           charm-proof</span><br><span class="line"></span><br><span class="line">[flake8]</span><br><span class="line">ignore = E402,E226</span><br><span class="line">exclude = */helpers</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>pydev使用virtualenv中的py35<br>在eclipse的”Preferences -&gt; Pydev -&gt; Interpreters -&gt; Python Interpreters”菜单中定义python35=/bak/work/charms/neutron-gateway/.tox/py35/bin/python,然后在工程上点右键从”Properties -&gt; Pydev - Interpreter/Grammar”定义使用python35。注意，需要将/bak/work/charms/neutron-gateway/.tox/py35/lib/python3.5/site-packages也选到环境变量中，否则后面会报ImportError: No module named ‘mock。<br>为一个测试类定义”Python unitest”类型的”Debug Configurations”, 也在其Interpreter选项卡中定义使用python35 (结果：eclipse似乎有bug，此处选择了python35后无法保存)<br>所以无法成功，似乎是pydev与python3协作不大好。最后还是pudb好使(sudo pip install pudb, import pudb; pdb.set_trace())</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="cjr1mdchc000wttbp5m81j4ib" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Play-with-ceph-radosgw" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/13/Play-with-ceph-radosgw/" class="article-date">
@@ -100,7 +160,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjqykgtu30008etbp7exwn3qp" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="cjr1mdcgo000ittbpbt9p81lg" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -149,7 +209,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjqykgtu10006etbpmvq3g4vq" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="cjr1mdcge0006ttbpbof626ob" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -214,7 +274,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjqykgtuk000oetbpg6ccawuv" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="cjr1mdcgp000kttbpygclo6iz" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -271,7 +331,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjqykgtu9000eetbpx4jr12s2" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="cjr1mdcgl000ettbpjr5blmeg" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -334,7 +394,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjqykgttx0002etbppe1t96ed" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="cjr1mdcg90001ttbp2zk2pegt" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -399,7 +459,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="cjqykgtu40009etbpxf5lh3ps" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="cjr1mdcgj000bttbp8gypnh8g" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -441,7 +501,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="cjqykgttu0001etbpfoym47f0" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="cjr1mdcf50000ttbpx10sju8b" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -491,7 +551,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="cjqykgtty0003etbplf9mx7x6" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="cjr1mdcgb0002ttbp4lhl7chf" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -534,65 +594,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjqykgtun000retbpz9q4mr5n" class="article-share-link">Delen</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-virtio-vhost中的限速机制" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/01/09/virtio-vhost中的限速机制/" class="article-date">
-  <time datetime="2018-01-09T08:00:31.000Z" itemprop="datePublished">2018-01-09</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/01/09/virtio-vhost中的限速机制/">virtio/vhost中的限速机制</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。</p>
-<h2 id="systemtap"><a href="#systemtap" class="headerlink" title="systemtap"></a>systemtap</h2><p>刚开始我们怀疑是这两个patches导致的问题：<br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853</a><br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92</a></p>
-<p>所以写了个systemtap脚本在宿主机监控vhost模块中的vhost_signal函数将vring的相关信息打印如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30401 new=30402 last_used_event=0 vring_used=30402 vring_avail=30402</span><br><span class="line"></span><br><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30403 new=30404 last_used_event=0 vring_used=30404 vring_avail=30404</span><br></pre></td></tr></table></figure></p>
-<p>根据打印的值，我们算出下面两个公式的结果均为False (<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189</a> )。<br>vring_need_event(vq-&gt;last_used_event, new + vq-&gt;num, new)<br>vring_need_event(vq-&gt;last_used_event, new, old)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TX 34936796160 values: old=7077 new=7077 last_used_event=0 vring_used=7077 vring_avail=7077 </span><br><span class="line">1. False: (7077 + 256) - 0 - 1 &lt; (7077 + 256) - 7077 </span><br><span class="line">2. False: 7077 - 0 - 1 &lt; 7077 - 7077</span><br></pre></td></tr></table></figure>
-<p>上面为False的话，vhost_notify()就为False，那样vhost也不会调用eventfd_signal通过中断向guest发通知(<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211</a>)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void vhost_signal(struct vhost_dev *dev, struct vhost_virtqueue *vq)</span><br><span class="line">&#123;</span><br><span class="line">	/* Signal the Guest tell them we used something up. */</span><br><span class="line">	if (vq-&gt;call_ctx &amp;&amp; vhost_notify(dev, vq))</span><br><span class="line">		eventfd_signal(vq-&gt;call_ctx, 1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="理论分析"><a href="#理论分析" class="headerlink" title="理论分析"></a>理论分析</h2><ul>
-<li>Guest发数据：guest将发送报文Buffer的head index加入avial_ring中， 在合适的时间点通过ioeventfds消息来通知backend。backend发完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
-<li>Guest收数据：两个queue都需要guest填充buffer, guest将空白Buffer的head index加入avail_ring中，在合适的时间点通过ioeventfds消息来通知backend。backend收完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
-<li>Flags, avail_ring与used_ring中都有flags字段，例如avail_ring中的flags字段代表guest告诉host在host发完报文之后是否需要通知guest。<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2>在打开VIRTIO_RING_F_EVENT_IDX特性之后，virtio/vhost将不再依据flags来决定是否向对方发送消息(guest到host根据消息通知，host到guest通过中断)，而是guest/host在发送一批报文后(flags是每个包发送性能较差)自行决定是否向对方发消息。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/* The standard layout for the ring is a continuous chunk of memory which looks</span><br><span class="line"> * like this.  We assume num is a power of 2.</span><br><span class="line"> *</span><br><span class="line"> * struct vring</span><br><span class="line"> * &#123;</span><br><span class="line"> *	// The actual descriptors (16 bytes each)</span><br><span class="line"> *	struct vring_desc desc[num];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of available descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 avail_flags;</span><br><span class="line"> *	__virtio16 avail_idx;</span><br><span class="line"> *	__virtio16 available[num];</span><br><span class="line"> *	__virtio16 used_event_idx;</span><br><span class="line"> *</span><br><span class="line"> *	// Padding to the next align boundary.</span><br><span class="line"> *	char pad[];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of used descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 used_flags;</span><br><span class="line"> *	__virtio16 used_idx;</span><br><span class="line"> *	struct vring_used_elem used[num];</span><br><span class="line"> *	__virtio16 avail_event_idx;</span><br><span class="line"> * &#125;;</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>此时，在数据结构方面，在used_ring中有avail_event_idx字段，在avail_ring中有used_event_idx字段，用下列方法相互填充。如：vring_avail_event(&amp;vq-&gt;vring)用于将avail_ring中的index填充到used_ring的最后一个字段used_event_idx中去，反之亦然。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* We publish the used event index at the end of the available ring, and vice</span><br><span class="line"> * versa. They are at the end for backwards compatibility. */</span><br><span class="line">#define vring_used_event(vr) ((vr)-&gt;avail-&gt;ring[(vr)-&gt;num])</span><br><span class="line">#define vring_avail_event(vr) (*(__virtio16 *)&amp;(vr)-&gt;used-&gt;ring[(vr)-&gt;num])</span><br></pre></td></tr></table></figure></p>
-<p>1, guest端virtio驱动, 根据vring_need_event()公式，guest在发送缓冲区满了之后才kick消息给host.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/torvalds/linux/blob/v4.10/drivers/virtio/virtio_ring.c#L547</span><br><span class="line"></span><br><span class="line">bool virtqueue_kick_prepare(struct virtqueue *_vq)&#123;</span><br><span class="line">	old = vq-&gt;avail_idx_shadow - vq-&gt;num_added;</span><br><span class="line">	new = vq-&gt;avail_idx_shadow;</span><br><span class="line">	vq-&gt;num_added = 0;</span><br><span class="line">        ...</span><br><span class="line">	if (vq-&gt;event) &#123;</span><br><span class="line">		needs_kick = vring_need_event(virtio16_to_cpu(_vq-&gt;vdev, vring_avail_event(&amp;vq-&gt;vring)),</span><br><span class="line">					      new, old);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		needs_kick = !(vq-&gt;vring.used-&gt;flags &amp; cpu_to_virtio16(_vq-&gt;vdev, VRING_USED_F_NO_NOTIFY));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">vq-&gt;event = virtio_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX);</span><br><span class="line"></span><br><span class="line">static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)</span><br><span class="line">&#123;</span><br><span class="line">	return (__u16)(new_idx - event_idx - 1) &lt; (__u16)(new_idx - old);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct vring_virtqueue &#123;</span><br><span class="line">	/* Last written value to avail-&gt;idx in guest byte order */</span><br><span class="line">	u16 avail_idx_shadow;</span><br><span class="line">	/* Head of free buffer list. */</span><br><span class="line">	unsigned int free_head;</span><br></pre></td></tr></table></figure></p>
-<p>注： vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)实际是一种限速，new指针在前, old指标在后，如果：</p>
-<ul>
-<li>如果event_idx也就是avail.idx的位置超过了old， vring_need_event=True, 表示后端处理的快(<strong>event_idx是后端通知给前端处理的索引值</strong>)，此时guest将发通知给host请它继续处理。</li>
-<li>如果event_idx在old之前，vring_need_event=False, <strong>说明后端处理的慢</strong>，此时guest不会向host发通知。</li>
-</ul>
-<p>2, guest端virtio驱动是如何发包的呢？ xmit_skb会高用virtqueue_add_outbuf最终会调用virtqueue_add, 设置完ring的相关字段之后最后调virtqueue_kick<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">   return virtqueue_add_outbuf(sq-&gt;vq, sq-&gt;sg, num_sg, skb, GFP_ATOMIC);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline int virtqueue_add(struct virtqueue *_vq,</span><br><span class="line">				struct scatterlist *sgs[],</span><br><span class="line">				unsigned int total_sg,</span><br><span class="line">				unsigned int out_sgs,</span><br><span class="line">				unsigned int in_sgs,</span><br><span class="line">				void *data,</span><br><span class="line">				gfp_t gfp)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">	head = vq-&gt;free_head;</span><br><span class="line">	/* Put entry in available array (but don&apos;t update avail-&gt;idx until they</span><br><span class="line">	 * do sync). */</span><br><span class="line">	avail = vq-&gt;avail_idx_shadow &amp; (vq-&gt;vring.num - 1);</span><br><span class="line">	vq-&gt;vring.avail-&gt;ring[avail] = cpu_to_virtio16(_vq-&gt;vdev, head);</span><br><span class="line"></span><br><span class="line">	/* Descriptors and available array need to be set before we expose the</span><br><span class="line">	 * new available array entries. */</span><br><span class="line">	virtio_wmb(vq-&gt;weak_barriers);</span><br><span class="line">	vq-&gt;avail_idx_shadow++;</span><br><span class="line">	vq-&gt;vring.avail-&gt;idx = cpu_to_virtio16(_vq-&gt;vdev, vq-&gt;avail_idx_shadow);</span><br><span class="line">	vq-&gt;num_added++;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Added buffer head %i to %p\n&quot;, head, vq);</span><br><span class="line">	END_USE(vq);</span><br><span class="line"></span><br><span class="line">	/* This is very unlikely, but theoretically possible.  Kick</span><br><span class="line">	 * just in case. */</span><br><span class="line">	if (unlikely(vq-&gt;num_added == (1 &lt;&lt; 16) - 1))</span><br><span class="line">		virtqueue_kick(_vq);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>从上面的代码分析中我们已经完成能够确定:<br>1, vhost后端没有给guest通过中断通知event_idx(avail_idx)值。<br>2，virtio前端也在根据vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)决定是否向vhost后端kick消息时， 由于event_idx在old的前面，vring_need_event值为False，所以前端就不会给后端发消息。这样前端就会丢包，所以前端也会看到“No buffer space available”之类的错误。通过上面的代码分析，我们也知道了造成这个的原因是因为后端发送的比前端慢。在检查宿主机的syslog后，发现了大量的MTU相关的日志”br-int: dropped over-mtu packet: 1500 &gt; 1458”。OK，问题就在这里了，虚机里需要设置合适的MTU值，如sudo ip link set eth0 mtu 1400</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="cjqykgtug000jetbppm025qx0" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="cjr1mdcgs000nttbp9hcqwc67" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -636,6 +638,10 @@
       <ul>
         
           <li>
+            <a href="/2019/01/18/Set-ip-IPv6-env/">Set ip IPv6 env</a>
+          </li>
+        
+          <li>
             <a href="/2019/01/02/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
           </li>
         
@@ -649,10 +655,6 @@
         
           <li>
             <a href="/2018/09/10/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
-            <a href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a>
           </li>
         
       </ul>
