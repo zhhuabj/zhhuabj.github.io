@@ -120,7 +120,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#x6f;&#58;&#x76;&#101;&#114;&#x79;&#x68;&#117;&#x61;&#x32;&#x30;&#48;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#109;">&#x76;&#101;&#114;&#x79;&#x68;&#117;&#x61;&#x32;&#x30;&#48;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#108;&#46;&#99;&#111;&#109;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#109;&#97;&#x69;&#x6c;&#x74;&#x6f;&#58;&#118;&#101;&#114;&#121;&#x68;&#x75;&#97;&#x32;&#48;&#48;&#54;&#64;&#103;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#109;">&#118;&#101;&#114;&#121;&#x68;&#x75;&#97;&#x32;&#48;&#48;&#54;&#64;&#103;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#109;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -143,7 +143,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjuuiicfm000yhtbpt5evl1fy" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="cjuv6xjcy000wrgbpw7k2ke1r" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -201,6 +201,10 @@
       <ul>
         
           <li>
+            <a href="/2019/04/24/如何让OpenStack支持多个FIP/">如何让OpenStack支持多个FIP</a>
+          </li>
+        
+          <li>
             <a href="/2019/04/15/手机作为显示器及键鼠控制电脑棒/">手机作为显示器及键鼠控制电脑棒</a>
           </li>
         
@@ -214,10 +218,6 @@
         
           <li>
             <a href="/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/">Use Octavia to Implement HTTPS Health Monitors</a>
-          </li>
-        
-          <li>
-            <a href="/2018/10/29/为租户下的虚机提供IPv6-DNS服务/">为租户下的虚机提供IPv6 DNS服务</a>
           </li>
         
       </ul>
