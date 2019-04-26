@@ -5,16 +5,16 @@
   
   <title>也谈wifi断流问题 | 技术并艺术着</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
 <meta property="og:type" content="article">
 <meta property="og:title" content="也谈wifi断流问题">
 <meta property="og:url" content="http://yoursite.com/2018/09/03/也谈wifi断流问题/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不">
-<meta property="og:updated_time" content="2019-04-26T01:35:46.754Z">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
+<meta property="og:updated_time" content="2019-04-26T01:50:40.698Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="也谈wifi断流问题">
-<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 问题笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
   
     <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
   
@@ -89,7 +89,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong><br><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong></p>
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong></p>
+<h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a>导言</h2><p>现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置(iptables -t mangle -A POSTROUTING -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu)也失效, 这样tcp访问某些特定mtu值不一致的网站时就会出现各种莫名其妙的问题.<br>另一方面, 对于udp, 因为无连接, 所以无法协商mss, 这样有些网络设备(eg: Nokia7)会设置禁止pmtud协商(disable DF bit in the IP header of the sender, ip_no_pmtu_disc=1), 从而也会反过来造成路由器中的clamp-mss-to-pmtu失效.</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:</p>
 <ul>
 <li>排除法测试, 使用京东APP搜索商品时说找不着网络, 但使用京东APP的其他功能没有问题, 并且使用京东以外的其他APP也没问题</li>
@@ -116,6 +117,8 @@
 </li>
 </ul>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这款手机的操作系统没有设置ip_no_pmtu_disc参数去协商mss值, 而OpenWRT路由器刚好缺一条iptables rule (iptables -t mangle -A FORWARD -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu), 这样遭遇了pppoe的1492 MTU问题.<br>换句话说, 当我外出时, 如果所连的路由器没有加这条设置, 那么这个问题仍然又遇到. 手机操作系统ip_no_pmtu_disc设置才能彻底解决某些应用wifi网络不能上网的问题.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">iptables -t mangle -I POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">iptables -t mangle -I OUTPUT -o pppoe-wan -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">iptables -t mangle -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">ip6tables -t mangle -I POSTROUTING -o pppoe-wan -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">ip6tables -t mangle -I OUTPUT -o pppoe-wan -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br><span class="line">ip6tables -t mangle -I FORWARD -o pppoe-wan -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure></p>
+<p>另外, 要想clamp-mss-to-pmtu生效, 需要设置充许设计DF=1来禁用分片从而启用pmtud协议.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 &gt;/proc/sys/net/ipv4/ip_no_pmtu_disc</span><br></pre></td></tr></table></figure></p>
+<p>但设置”echo 0 &gt;/proc/sys/net/ipv4/ip_no_pmtu_disc”后之后, 对于无连接的udp包, 由于无法协商mss值, 当大分片的udp包到达路由器后, 路由器会简单地丢弃它.</p>
 <h2 id="另一个案例"><a href="#另一个案例" class="headerlink" title="另一个案例"></a>另一个案例</h2><p>openstack虚机上再创建docker容器, 因为是vxlan网络虚机的mtu=1450, docker0的mtu如果为1500时将导致docker container无法通信.<br>当mtu配置不正确时此时需要依赖mss, 此时计算节点充当的是路由器它发现此情况(不能将docker container发出的mtu=1500的包发出时)应该发ICMP error到docker container, 或者openstack vrouter应当做这件事情.</p>
 <p>docker container错误的具体表现是无法下载, 此时, 最可能的情况时, 最大的包到达openstack vrouter后, 它从external interface收到mtu=1500的包并尝试分片发给虚机, 失败后将发ICMP error到外部下载服务器. 此时:</p>
 <p>1, 当non-DVR时, l3-agent上的snat-xxx确实向外部下载服务器发出了ICMP error:</p>
@@ -150,7 +153,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjuxemy2g000ltrbpngtiy082" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjuxf5y8f000oi0bp6ry2yzzm" class="article-share-link">Share</a>
       
       
     </footer>
