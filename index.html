@@ -57,7 +57,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -106,11 +106,14 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ nova list</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">| ID                                   | Name | Status | Task State | Power State | Networks                                                       |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">| 45083dc2-c72e-4201-b35c-6d0f6ef3712a | i1   | ACTIVE | -          | Running     | ext_net=10.5.150.8; ext_net2=10.10.0.64; private=192.168.21.13 |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">juju ssh neutron-gateway/0</span><br><span class="line">sudo ip netns exec qrouter-8b597dd0-49b3-40e3-8e0e-c035d8535cae ssh -i /home/ubuntu/id_rsa ubuntu@192.168.21.13</span><br><span class="line">$ sudo ifconfig ens5 up</span><br><span class="line">$ sudo ifconfig ens6 up</span><br><span class="line">$ sudo ip addr add 10.5.150.8/16 dev ens5</span><br><span class="line">$ sudo ip addr add 10.10.0.64/24 dev ens6</span><br></pre></td></tr></table></figure>
 <p>第五步, 测试.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ ping 10.5.150.8</span><br><span class="line">PING 10.5.150.8 (10.5.150.8) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.150.8: icmp_seq=1 ttl=64 time=5.07 ms</span><br><span class="line">ubuntu@zhhuabj-bastion:~$ ping 10.10.0.64</span><br><span class="line">PING 10.10.0.64 (10.10.0.64) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.10.0.64: icmp_seq=1 ttl=64 time=4.16 ms</span><br><span class="line"></span><br><span class="line">ubuntu@i1:~$ ping -c 1 10.10.0.58</span><br><span class="line">PING 10.10.0.58 (10.10.0.58) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.10.0.58: icmp_seq=1 ttl=64 time=2.21 ms</span><br><span class="line">ubuntu@i1:~$ ping -c 1 10.5.0.8</span><br><span class="line">PING 10.5.0.8 (10.5.0.8) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.0.8: icmp_seq=1 ttl=64 time=2.18 ms</span><br></pre></td></tr></table></figure></p>
 <p>注: 若报下列这种错误, 是因为没有做第一步创建br-data2及相关的NIC.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ nova interface-attach $(nova list |grep i1 |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show ext_net2 -c id -f value)</span><br><span class="line">neutron CLI is deprecated and will be removed in the future. Use openstack CLI instead.</span><br><span class="line">ERROR (ClientException): Unexpected API Error. Please report this at http://bugs.launchpad.net/nova/ and attach the Nova API log if possible.</span><br><span class="line">&lt;class &apos;PortBindingFailed_Remote&apos;&gt; (HTTP 500) (Request-ID: req-38c9faad-872c-43c4-921d-798b31bff548)</span><br></pre></td></tr></table></figure></p>
+<h2 id="更近一步考虑"><a href="#更近一步考虑" class="headerlink" title="更近一步考虑"></a>更近一步考虑</h2><p>如果设置”juju config neutron-openvswitch enable-local-dhcp-and-metadata=True”这样可以省掉计算节点的网卡, 这样计算节点原先用于连l3-agent的网卡(现在不需要l3-agent了, 同时dhcp-agent与metadata-agent挪到了计算节点上)可以挪出来用于provider network. 所以对于flat之前的:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=False</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data physnet2:br-data2&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9 br-data2:ens7&quot;</span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1 physnet2&quot;</span><br></pre></td></tr></table></figure></p>
+<p>变成了:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=True</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9&quot;</span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1&quot;</span><br></pre></td></tr></table></figure></p>
+<p>如果是vlan, 则:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=True</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9&quot;</span><br><span class="line">juju config neutron-api vlan-ranges=&quot;physnet1:1000:2000&quot;</span><br><span class="line"># must configure external switch to truck mode to allow vlan 1000 to 2000</span><br><span class="line">neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1001</span><br><span class="line">neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1002</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="cjuxf5y8h000ri0bpcefnl3zj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="cjv37q4r7000s7bbpggf3aius" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -178,7 +181,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="cjuxf5y8j000ti0bpb8zvmy5e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="cjv37q4ra000v7bbphhicbhie" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -262,7 +265,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="cjuxf5y84000ci0bpz02jfd2o" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="cjv37q4ql00097bbp6lsd6kcq" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -307,7 +310,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="cjuxf5y8a000ii0bp9dd9x2b1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="cjv37q4qx000k7bbpkjs4e80h" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -390,7 +393,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="cjuxf5y930010i0bpzm2y1tnv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="cjv37q4rl00107bbp8n8cqna9" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -483,7 +486,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="cjuxf5y8d000mi0bplxf1si4h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="cjv37q4r2000o7bbp0t12waxc" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -528,7 +531,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="cjuxf5y8a000ji0bpa20qe76e" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="cjv37q4qv000j7bbpal214sp9" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -602,7 +605,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjuxf5y89000hi0bpu7j6ib2d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjv37q4qy000l7bbprfd0s1yx" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -698,7 +701,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjuxf5y8f000oi0bp6ry2yzzm" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjv37q4r4000q7bbpuz0vnfj0" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -795,7 +798,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjuxf5y7w0004i0bpjlcvi2et" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/03/IPv6来啦/" data-id="cjv37q4q700007bbp87cgn9mf" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -824,7 +827,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Archieven</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
@@ -834,7 +837,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Recente berichten</h3>
     <div class="widget">
       <ul>
         
