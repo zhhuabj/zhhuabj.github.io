@@ -57,7 +57,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -67,6 +67,58 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-通配符中一个星号两个星号和globstar的关系" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/" class="article-date">
+  <time datetime="2017-11-16T07:48:59.000Z" itemprop="datePublished">2017-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/">通配符中一个星号两个星号和globstar的关系</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/tmp/* rw,</span><br><span class="line">/tmp/*/ rw,</span><br><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>但是在运行”sudo /etc/init.d/apparmor reload &amp;&amp; sudo service nova-compute restart“命令后仍然在syslog里能看到下列错误信息。奇了怪了，这是怎么一回事呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766810] audit: type=1400 audit(1510750176.727:10140): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766828] audit: type=1400 audit(1510750176.727:10141): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/var/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br></pre></td></tr></table></figure></p>
+<h2 id="globstar模式下的通配符"><a href="#globstar模式下的通配符" class="headerlink" title="globstar模式下的通配符"></a>globstar模式下的通配符</h2><p>通配符有一个星号，两个星号，还有逗号，globstar模式可以开启，还可以关闭。这些混在一起会有什么影响呢？<br>如果想要很方便地遍历所有的目录和文件得用两个星号的通配符。globstar是Bash 4.0才引入的选项，当设置启用globstar(shopt -s globstar)时，两个星号意为对通配符进行展开就可以匹配任何当前目录(包括子目录)以及其的文件；若不启用globstar(shopt -u globstar)，两个星号通配符的作用和一个星号通配符是相同的。</p>
+<ul>
+<li>~/tmp/* -  匹配当前目录的文件，及当前目录的下一级目录(不包括当前目录），与’ls ~/tmp’及”ls ~/tmp/“的效果同。</li>
+<li>~/tmp/*/ - 匹配当前目录的下一级目录(不包括当前目录）</li>
+<li>~/tmp/<em>* - 禁用globstar时，与~/tmp/</em>完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的文件和目录（也包括当前目录）</li>
+<li>~/tmp/<em>*/ - 禁用globstar时，与~/tmp/</em>/ 完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的目录（也包括当前目录）</li>
+</ul>
+<p>当启用globstar时，英语的解释如下（注：里面说的file包括文件和目录，在Linux里目录是特殊的文件）：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Substitutes for any number of characters, except /.</span><br><span class="line">/tmp/* matches any file in /tmp. </span><br><span class="line">/tmp/*/ matches any directory in /tmp</span><br><span class="line"></span><br><span class="line">Substitutes for any number of characters, including /.</span><br><span class="line">/tmp/** matches all files and directories underneath /tmp.</span><br><span class="line">/tmp/**/ matches all directories underneath /tmp.</span><br></pre></td></tr></table></figure>
+<p>请看实验数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~/tmp$ tree .</span><br><span class="line">.</span><br><span class="line">├── l0_dir1</span><br><span class="line">│   ├── l1_dir</span><br><span class="line">│   │   ├── l2_dir</span><br><span class="line">│   │   │   └── l3_file</span><br><span class="line">│   │   └── l2_file</span><br><span class="line">│   └── l1_file</span><br><span class="line">├── l0_dir2</span><br><span class="line">└── l0_file</span><br><span class="line">4 directories, 4 files</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -s globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/l3_file  /home/hua/tmp/l0_dir1/l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_file         /home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -u globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br></pre></td></tr></table></figure>
+<h2 id="问题的解决"><a href="#问题的解决" class="headerlink" title="问题的解决"></a>问题的解决</h2><p>学习了上面的理论之后，是不是想到了问题所在了，那就是下列两个配置没有包括当前目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
+<p>所以它应该修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/&#123;,**&#125; rw,</span><br><span class="line">/var/tmp/&#123;,**&#125; rw,</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="cjzlerquf000zl7bpig2f3q0t" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-Use-hexo-to-create-blog" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -108,7 +160,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjv37q4qr000g7bbplbkjjf1r" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="cjzlerqu0000gl7bpzf5v7acr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -197,7 +249,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjv37q4rm00117bbpdhg5xw8o" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="cjzlerqv10012l7bpjersf64h" class="article-share-link">Share</a>
       
       
     </footer>
@@ -269,7 +321,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjv37q4re000y7bbpmffr6rsi" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="cjzlerqu8000rl7bpugejtir5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -349,7 +401,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjv37q4qo000c7bbpdxsh4gcx" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="cjzlerqtq0008l7bps3h6ibjv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -416,7 +468,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjv37q4r9000u7bbpyd3nlm2g" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/10/调研NFV编排工具/" data-id="cjzlerqub000wl7bpewqc2sfq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -453,7 +505,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjv37q4qc00017bbpkol76dpc" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/08/CSDN博客地址/" data-id="cjzlerqtn0005l7bp9mkb0925" class="article-share-link">Share</a>
       
       
     </footer>
@@ -503,7 +555,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjv37q4qz000m7bbpv8pozfws" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/08/基于hexo搭建github博客-by-quqi99/" data-id="cjzlerqu6000pl7bpu7x4riz2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -566,7 +618,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjv37q4qj00077bbppj2m4m40" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/" data-id="cjzlerqtw000cl7bpf44kl17k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -595,9 +647,9 @@ lxc profile device set default eth0 nictype macvlan
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -605,9 +657,13 @@ lxc profile device set default eth0 nictype macvlan
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/08/21/刷机/">刷机</a>
+          </li>
         
           <li>
             <a href="/2019/04/24/如何让OpenStack支持多个FIP/">如何让OpenStack支持多个FIP</a>
@@ -623,10 +679,6 @@ lxc profile device set default eth0 nictype macvlan
         
           <li>
             <a href="/2019/01/02/Using-kubeadm-to-deploy-k8s/">Using kubeadm to deploy k8s</a>
-          </li>
-        
-          <li>
-            <a href="/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/">Use Octavia to Implement HTTPS Health Monitors</a>
           </li>
         
       </ul>
