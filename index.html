@@ -55,9 +55,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -68,10 +68,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-刷机" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2019/08/21/刷机/" class="article-date">
-  <time datetime="2019-08-21T15:24:30.000Z" itemprop="datePublished">2019-08-21</time>
+    <a href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" class="article-date">
+  <time datetime="2019-08-22T03:50:03.000Z" itemprop="datePublished">2019-08-22</time>
 </a>
     
   </div>
@@ -82,7 +82,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2019/08/21/刷机/">刷机</a>
+      <a class="article-title" href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a>
     </h1>
   
 
@@ -114,15 +114,18 @@
 <p>但是上面刷了之后不work,, 刷了TWRP之后’adb reboot recovery’进入的还是Mi-Recovery 2.0.1模式, 官网说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</span><br><span class="line">Note many devices will replace your custom recovery automatically during first boot. To prevent this, use Google to find the proper key combo to enter recovery. After typing fastboot reboot, hold the key combo and boot to TWRP. Once TWRP is booted, TWRP will patch the stock ROM to prevent the stock ROM from replacing TWRP. If you don&apos;t follow this step, you will have to repeat the install.</span><br></pre></td></tr></table></figure></p>
 <p>但运行完’fastboot reboot’再按音量上键+电源键根本就进不了recovery模式, 可能是我的音量键有问题的原因吧. 此路不通.这个网页说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://www.reddit.com/r/Xiaomi/comments/bdurg8/replace_mi_recovery_with_twrp/</span><br><span class="line">With the new protection you need to boot from adb to twrp, by fastboot boot twrp.img. When boot in twrp transfer the image and flash inside from twrp. Now, it will reboot on TWRP recovery.</span><br></pre></td></tr></table></figure></p>
 <p>所以我们可以先’fastboot boot’来启动TWRP, 再将TWRP持久化. 但是试了很多多twrp版本都报下列错”dtb not found”.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ fastboot boot twrp-3.3.1-0-dior.img</span><br><span class="line">downloading &apos;boot.img&apos;...</span><br><span class="line">OKAY [  0.433s]</span><br><span class="line">booting...</span><br><span class="line">FAILED (remote: dtb not found)</span><br><span class="line">finished. total time: 0.449s</span><br></pre></td></tr></table></figure></p>
-<p>无奈下载网页(<a href="http://en.miui.com/thread-213264-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-213264-1-1.html</a>) 或这个网页(<a href="http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功" target="_blank" rel="external">http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功</a>, 但语言却不是英语看不懂啊. 太麻烦了, 现在android即不能root也不能刷机基本就和封闭的iphone没什么两样, 再加上android的YCM通知机制被封, 看样子这年头只能玩iphone了.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot boot twrp.img</span><br></pre></td></tr></table></figure></p>
-<p>3, install supersu by using TWRP in recovery mode<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
-<p>注: 这步出错, 因为上步没有flash好TWRP, 如果我们只是以fastboot boot进入TWRP这是需要事先通过’adb push SR5-SuperSU-v2.82-SR5-20171001224502.zip /system/‘命令拷supersu到SD卡的, 但SD卡是只读的没有root权限也无法运行”adb remount  #mount -o remount,rw /system”, 鸡生蛋蛋生鸡的问题出来了. 不弄了, 放弃.<br>4, other operation, eg: enable ssh<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">adb shell android-gadget-service enable ssh</span><br><span class="line">adb shell mkdir /home/phablet/.ssh</span><br><span class="line">adb push ~/.ssh/id_rsa.pub /home/phablet/.ssh/authorized_keys</span><br><span class="line">adb shell chown -R phablet.phablet /home/phablet/.ssh</span><br><span class="line">adb shell chmod 700 /home/phablet/.ssh</span><br><span class="line">adb shell chmod 600 /home/phablet/.ssh/authorized_keys</span><br><span class="line">adb shell ip addr show wlan0|grep inet</span><br><span class="line">ssh phablet@192.168.99.168 -v</span><br></pre></td></tr></table></figure></p>
+<p>无奈下载网页(<a href="http://en.miui.com/thread-213264-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-213264-1-1.html</a>) 或这个网页(<a href="http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功" target="_blank" rel="external">http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot boot twrp.img</span><br></pre></td></tr></table></figure></p>
+<p>但语言却不是英语看不懂啊, 没办法, 只好在网上找一个有图的, 照着大致的位置点了.<br><img src="https://img-blog.csdnimg.cn/20190822112723313.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190822112742744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>上面需要事先将supersu下载放到手机上, 注意: 只有/sdcard/Download是可写的. (其他目录需要root权限运行”adb remount  #mount -o remount,rw /system”才行”.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push SR5-SuperSU-v2.82-SR5-20171001224502.zip /sdcard/Download/</span><br></pre></td></tr></table></figure>
+<p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
+<p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
+<p>4, 安装ssh server (eg: sshdroid), 并用supersu将root权限授予sshdroid</p>
 <p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/21/刷机/" data-id="cjzm44hbp000m2ybprpmng9k6" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="cjzm5evf5000cdwbpso8ftvr1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -177,7 +180,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="cjzm44hbv000u2ybp28maosc2" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="cjzm5evfk000sdwbpygnvk2lv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -245,7 +248,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="cjzm44hbu000t2ybpn5o2rmdn" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="cjzm5evfn000vdwbpfx34e21w" class="article-share-link">Share</a>
       
       
     </footer>
@@ -329,7 +332,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="cjzm44hbe00092ybp0b0i1w6x" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="cjzm5evf6000ddwbppr6gffne" class="article-share-link">Share</a>
       
       
     </footer>
@@ -374,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="cjzm44hbo000k2ybpoarucbn0" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="cjzm5evfc000jdwbpz41vljak" class="article-share-link">Share</a>
       
       
     </footer>
@@ -457,7 +460,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="cjzm44hcb00112ybp1qdcp7uv" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="cjzm5evg40011dwbp67dofbwr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -550,7 +553,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="cjzm44hbq000n2ybp2j3o9llm" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="cjzm5evff000ndwbpoglp9hro" class="article-share-link">Share</a>
       
       
     </footer>
@@ -595,7 +598,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="cjzm44hbk000f2ybp7yv9ocv5" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="cjzm5evfd000kdwbp9w3qdqsv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -669,7 +672,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjzm44hbm000i2ybp1agvlh0o" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="cjzm5evfb000idwbpv67491is" class="article-share-link">Share</a>
       
       
     </footer>
@@ -765,7 +768,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjzm44hbt000r2ybp86oxj86k" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="cjzm5evfh000pdwbpwmb3hvfd" class="article-share-link">Share</a>
       
       
     </footer>
@@ -804,12 +807,12 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
           <li>
-            <a href="/2019/08/21/刷机/">刷机</a>
+            <a href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a>
           </li>
         
           <li>
@@ -841,7 +844,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2019 张华<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
