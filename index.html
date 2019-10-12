@@ -55,9 +55,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -120,12 +120,13 @@
 <p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
 <p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
 <p>4, 安装必要的软件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"></span><br><span class="line"># grep &apos;system&apos; /proc/mounts</span><br><span class="line">mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system</span><br><span class="line"></span><br><span class="line"># ssh server -  by install SSHDroid and use supersu to give it root</span><br><span class="line"></span><br><span class="line"># ssh client</span><br><span class="line">ln -s /data/data/berserker.android.apps.sshdroid/dropbear/ssh /system/bin/ssh</span><br><span class="line">chmod o+rx /system/bin/ssh</span><br><span class="line"></span><br><span class="line"># key</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/dropbear/</span><br><span class="line">./dropbearkey -t rsa -f ../home/.ssh/id_rsa &gt; ../home/.ssh/id_rsa.pub</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/home</span><br><span class="line">echo &apos;ssh hua@t440p -i ~/.ssh/id_rsa&apos; &gt; ./ssht440p.sh</span><br><span class="line">sh ssht440p.sh</span><br><span class="line"></span><br><span class="line"># use vi in adb shell, we don&apos;t need to add busybox prefix in ssh</span><br><span class="line">busybox vi /etc/hosts</span><br></pre></td></tr></table></figure></p>
+<p>5, run ubuntu 18.04 on android by using linuxdeploy<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#run ubuntu 18.04 on android by using linuxdeploy</span><br><span class="line">#https://www.maketecheasier.com/install-ubuntu-on-android-linux-deploy/</span><br><span class="line">wget https://github.com/meefik/busybox/releases/download/1.30.1/busybox-1.30.1-41.apk</span><br><span class="line">adb install busybox-1.30.1-41.apk  #install into /system/xbin</span><br><span class="line">wget https://github.com/meefik/linuxdeploy/releases/download/2.4.0/linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install vnc_viewer_remote_desktop.apk</span><br><span class="line"></span><br><span class="line">#enter linuxdeploy</span><br><span class="line">telnet 192.168.99.249 5023</span><br><span class="line"></span><br><span class="line">#but hit the error: chroot: can&apos;t execute &apos;/bin/su&apos;: No such file or directory</span><br><span class="line">/su/bin/su root</span><br><span class="line">/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell</span><br><span class="line">mkdir /data/local/mnt/&#123;dev,sys,proc&#125;</span><br><span class="line">#for d in dev sys proc; do mount -o bind /$d /data/local/mnt/$d; done</span><br><span class="line">#umount /data/local/mnt/&#123;dev,proc,sys&#125;</span><br><span class="line">chroot /data/local/mnt/ /bin/pwd</span><br><span class="line">ls /data/local/mnt/bin/su</span><br><span class="line"></span><br><span class="line">上面的chroot错误实际上是image文件没有创建的原因</span><br><span class="line">ls /data/data/ru.meefik.linuxdeploy/files/config/linux.conf</span><br><span class="line">rm -rf /sdcard/linux.img</span><br><span class="line">vi /data/user/0/ru.meefik.linuxdeploy/files/include/bootstrap/rootfs/deploy.sh</span><br></pre></td></tr></table></figure></p>
 <p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck04s80w3000erfbpa0ft7rz8" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck1mzu1zu0009asbpglpztadt" class="article-share-link">Share</a>
       
       
     </footer>
@@ -180,7 +181,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck04s80wk000vrfbpz63navdq" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck1mzu20w000tasbphvs8yubw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -248,7 +249,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="ck04s80wp000xrfbpkzc61gzc" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="ck1mzu20z000vasbpfrgj81pk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -332,7 +333,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="ck04s80w1000crfbp7lqwc94z" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="ck1mzu1zx000casbprjoxr89f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -377,7 +378,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="ck04s80wd000orfbpd6v0k07v" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="ck1mzu20o000masbp6734xus7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -473,7 +474,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="ck04s80x20011rfbpm7iffeqd" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="ck1mzu21b0011asbp9pb9ecik" class="article-share-link">Share</a>
       
       
     </footer>
@@ -566,7 +567,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="ck04s80w8000krfbp46ay6y6j" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="ck1mzu20p000nasbps9cw8m21" class="article-share-link">Share</a>
       
       
     </footer>
@@ -611,7 +612,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="ck04s80w5000hrfbp7jxltpev" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/10/hello-world/" data-id="ck1mzu20j000hasbpihxrsgld" class="article-share-link">Share</a>
       
       
     </footer>
@@ -685,7 +686,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="ck04s80w9000lrfbpuyqxr2yn" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" data-id="ck1mzu20n000lasbpll5491wa" class="article-share-link">Share</a>
       
       
     </footer>
@@ -781,7 +782,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="ck04s80wf000qrfbp9s3z6ryo" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/09/03/也谈wifi断流问题/" data-id="ck1mzu20v000sasbp6n67un4b" class="article-share-link">Share</a>
       
       
     </footer>
@@ -820,7 +821,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -857,7 +858,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2019 张华<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

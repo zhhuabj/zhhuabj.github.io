@@ -13,7 +13,7 @@
 <meta property="og:description" content="作者：张华 发表于：2017-06-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) ## I have two Meizu MX4 ubuntu cellphones, now I will re-install Flyme or native google android on them.">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20190822112723313.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20190822112742744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70">
-<meta property="og:updated_time" content="2019-08-22T12:04:06.268Z">
+<meta property="og:updated_time" content="2019-10-12T03:21:40.458Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Root Mi note lte with SuperSU without flashing TWRP Recovery permanently">
 <meta name="twitter:description" content="作者：张华 发表于：2017-06-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) ## I have two Meizu MX4 ubuntu cellphones, now I will re-install Flyme or native google android on them.">
@@ -59,9 +59,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -122,12 +122,13 @@
 <p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
 <p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
 <p>4, 安装必要的软件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"></span><br><span class="line"># grep &apos;system&apos; /proc/mounts</span><br><span class="line">mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system</span><br><span class="line"></span><br><span class="line"># ssh server -  by install SSHDroid and use supersu to give it root</span><br><span class="line"></span><br><span class="line"># ssh client</span><br><span class="line">ln -s /data/data/berserker.android.apps.sshdroid/dropbear/ssh /system/bin/ssh</span><br><span class="line">chmod o+rx /system/bin/ssh</span><br><span class="line"></span><br><span class="line"># key</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/dropbear/</span><br><span class="line">./dropbearkey -t rsa -f ../home/.ssh/id_rsa &gt; ../home/.ssh/id_rsa.pub</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/home</span><br><span class="line">echo &apos;ssh hua@t440p -i ~/.ssh/id_rsa&apos; &gt; ./ssht440p.sh</span><br><span class="line">sh ssht440p.sh</span><br><span class="line"></span><br><span class="line"># use vi in adb shell, we don&apos;t need to add busybox prefix in ssh</span><br><span class="line">busybox vi /etc/hosts</span><br></pre></td></tr></table></figure></p>
+<p>5, run ubuntu 18.04 on android by using linuxdeploy<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#run ubuntu 18.04 on android by using linuxdeploy</span><br><span class="line">#https://www.maketecheasier.com/install-ubuntu-on-android-linux-deploy/</span><br><span class="line">wget https://github.com/meefik/busybox/releases/download/1.30.1/busybox-1.30.1-41.apk</span><br><span class="line">adb install busybox-1.30.1-41.apk  #install into /system/xbin</span><br><span class="line">wget https://github.com/meefik/linuxdeploy/releases/download/2.4.0/linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install vnc_viewer_remote_desktop.apk</span><br><span class="line"></span><br><span class="line">#enter linuxdeploy</span><br><span class="line">telnet 192.168.99.249 5023</span><br><span class="line"></span><br><span class="line">#but hit the error: chroot: can&apos;t execute &apos;/bin/su&apos;: No such file or directory</span><br><span class="line">/su/bin/su root</span><br><span class="line">/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell</span><br><span class="line">mkdir /data/local/mnt/&#123;dev,sys,proc&#125;</span><br><span class="line">#for d in dev sys proc; do mount -o bind /$d /data/local/mnt/$d; done</span><br><span class="line">#umount /data/local/mnt/&#123;dev,proc,sys&#125;</span><br><span class="line">chroot /data/local/mnt/ /bin/pwd</span><br><span class="line">ls /data/local/mnt/bin/su</span><br><span class="line"></span><br><span class="line">上面的chroot错误实际上是image文件没有创建的原因</span><br><span class="line">ls /data/data/ru.meefik.linuxdeploy/files/config/linux.conf</span><br><span class="line">rm -rf /sdcard/linux.img</span><br><span class="line">vi /data/user/0/ru.meefik.linuxdeploy/files/include/bootstrap/rootfs/deploy.sh</span><br></pre></td></tr></table></figure></p>
 <p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck04s80w3000erfbpa0ft7rz8" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck1mzu1zu0009asbpglpztadt" class="article-share-link">Share</a>
       
       
     </footer>
@@ -138,7 +139,7 @@
   
   
     <a href="/2019/04/24/如何让OpenStack支持多个FIP/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">如何让OpenStack支持多个FIP</div>
     </a>
   
@@ -171,7 +172,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -208,7 +209,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2019 张华<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
