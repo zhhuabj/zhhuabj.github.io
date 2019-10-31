@@ -123,7 +123,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck27gzh60000c1kbpnk4oer2s" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck2e3m1dt000b1kbphe5no203" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -165,7 +165,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck27gzh5e00061kbpidy3ci3q" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck2e3m1dm00061kbpjgaqbzi3" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -215,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck27gzh5700031kbpmps4wgqx" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck2e3m1dh00021kbp0zljzzqs" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -257,11 +257,16 @@
 <h2 id="20191026更新-stream-ubuntu-audio-output-to-android-over-wifi"><a href="#20191026更新-stream-ubuntu-audio-output-to-android-over-wifi" class="headerlink" title="20191026更新 - stream ubuntu audio output to android over wifi"></a>20191026更新 - stream ubuntu audio output to android over wifi</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ pactl list | grep tcp</span><br><span class="line">	Name: module-native-protocol-tcp</span><br><span class="line">	Name: module-simple-protocol-tcp</span><br><span class="line">hua@t440p:~$ pactl list sources short |grep analog-stereo.monitor</span><br><span class="line">1	alsa_output.pci-0000_00_1b.0.analog-stereo.monitor	module-alsa-card.c	s16le 2ch 44100Hz	IDLE</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/pulse/default.pa</span><br><span class="line">#load-module module-simple-protocol-tcp source=1 record=true port=12344</span><br><span class="line">load-module module-simple-protocol-tcp source=alsa_output.pci-0000_00_1b.0.analog-stereo.monitor rate=48000 format=s16le record=true port=12344</span><br><span class="line">EOF</span><br><span class="line">pulseaudio -k</span><br><span class="line">pulseaudio --start --log-target=syslog</span><br><span class="line">install app &apos;SIMPLE PROTOCOL PLAYER&apos; in the cellphone</span><br></pre></td></tr></table></figure>
 <p>android底层使用tinyalsa, 并无pavucontrol可以将声音输出改为耳机带麦模式.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@virgo:/ # cat /proc/asound/cards</span><br><span class="line"> 0 [msm8974taikomtp]: msm8974-taiko-m - msm8974-taiko-mtp-snd-card</span><br><span class="line">                      msm8974-taiko-mtp-snd-cardls</span><br><span class="line">root@virgo:/ # ls /system/lib/libtinyalsa.so</span><br><span class="line">/system/lib/libtinyalsa.so</span><br><span class="line"></span><br><span class="line">https://wenku.baidu.com/view/9160ea8e14791711cd79170f.html</span><br><span class="line">https://www.wildmountainechoes.com/equipment/audio-recording-with-a-smartphone/</span><br></pre></td></tr></table></figure></p>
 <p>anbox安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:morphis/anbox-support</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install linux-headers-generic anbox-modules-dkms</span><br><span class="line">sudo modprobe ashmem_linux</span><br><span class="line">sudo modprobe binder_linux</span><br><span class="line">ls -1 /dev/&#123;ashmem,binder&#125;</span><br><span class="line">sudo snap install --devmode --beta anbox</span><br><span class="line">#sudo apt install android-tools-adb</span><br><span class="line">adb devices</span><br><span class="line">adb install xxx.apk</span><br></pre></td></tr></table></figure></p>
+<h2 id="耳机电流声解决"><a href="#耳机电流声解决" class="headerlink" title="耳机电流声解决"></a>耳机电流声解决</h2><p>sudo alsamixer<br>按F6选择第二个（HDA INTEL PCH），然后把auto mute改为disable<br>sudo alsactl store<br>when “automute” is set to<br>“on”, your speakers will be automatically muted when you plug in your<br>headphones, and when you unplug your headphones, your speakers will be<br>automatically unmuted.</p>
+<h2 id="解决PulseAudio的爆音问题提声音质"><a href="#解决PulseAudio的爆音问题提声音质" class="headerlink" title="解决PulseAudio的爆音问题提声音质"></a>解决PulseAudio的爆音问题提声音质</h2><p>Ubuntu下的音量调节范围比Windows要大得多，这并非是什么好事——音量条左端10%和右端20%几乎是废的，前者声音小得根本听不见，而后者则大得出现了爆音。有意义的音量条长度变短直接导致了音量调节非常困难，而且，就算是中间音量也经常出现爆音。做下列设置避免让pulseaudio来“智能”地根据主音量来调整PCM音量.<br>modify the file /usr/share/pulseaudio/alsa-mixer/paths/analog-output.conf.common<br>change ‘volume=’merge’ to ‘volume=’ignore’</p>
+<h2 id="安装最新的ALSA驱动"><a href="#安装最新的ALSA驱动" class="headerlink" title="安装最新的ALSA驱动"></a>安装最新的ALSA驱动</h2><p>安装最新的ALSA驱动， 仅适用于HDA Intel声卡，如果是2005年之后的计算机一般都有一个HDA Intel声卡，it  is for handling internal speakers, headphone jacks and microphones. USB or Bluetooth sound will not be affected.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#https://wiki.ubuntu.com/Audio/UpgradingAlsa/DKMS</span><br><span class="line">#http://yangwenbo.com/articles/solve-ubuntu-intel-soundcard-problem-with-latest-alsa-driver.html</span><br><span class="line">sudo add-apt-repository ppa:ubuntu-audio-dev/alsa-daily</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install dkms oem-audio-hda-daily-dkms</span><br><span class="line">hua@t440p:~$ alsactl -v</span><br><span class="line">alsactl version 1.1.3</span><br></pre></td></tr></table></figure></p>
+<h2 id="ALSA学习"><a href="#ALSA学习" class="headerlink" title="ALSA学习"></a>ALSA学习</h2><p><a href="https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture" target="_blank" rel="external">https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture</a><br>ALSA(高级linux声音体系)是为声卡提供驱动的linux内核组件，以替代原先的OSS(开放声音系统），而PulseAudio则是声音服务器。软件要发声先传给Pulse处理(主要是多条音频流的混音）然后发给ALSA驱动发出声音。PulseAudio的出现解决了混音和声卡独占的问题， 但它并不是必须的， 可以跳过它直接控制ALSA的，只是没有了声音控制及混音功能（anroid上就是只有minialsa而没有PulseAudio导制声音无法输出到多声道，如同时输出到耳机和喇叭，插上耳机后此时如果耳机本身不带喇叭是在录音时无法同时输出的）。<br>其实ALSA也是自带了一个简单的混音器dmix的， 但因声卡独占它会经常出现问题。什么叫混音呢？简单来说， 就是多个软件同时发出声音， 但声卡的音频流只有一个， 解决办法就是将所有声音“混合”起来。如果没有混音器， 那么就会出现声卡独占的问题，这就是PulseAuddio的存在价值了， 同时， 有了PulseAudio你可以分别控制各个软件的音量。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">查看音频设备</span><br><span class="line">hua@t440p:~$ cat /proc/asound/cards</span><br><span class="line"> 0 [HDMI           ]: HDA-Intel - HDA Intel HDMI</span><br><span class="line">                      HDA Intel HDMI at 0xf1630000 irq 32</span><br><span class="line"> 1 [PCH            ]: HDA-Intel - HDA Intel PCH</span><br><span class="line">                      HDA Intel PCH at 0xf1634000 irq 31</span><br><span class="line"> 2 [U0x46d0x81b    ]: USB-Audio - USB Device 0x46d:0x81b</span><br><span class="line">                      USB Device 0x46d:0x81b at usb-0000:00:14.0-3, high speed</span><br><span class="line"></span><br><span class="line">查看音频输入</span><br><span class="line">hua@t440p:~$ arecord -l</span><br><span class="line">**** List of CAPTURE Hardware Devices ****</span><br><span class="line">card 1: PCH [HDA Intel PCH], device 0: ALC3232 Analog [ALC3232 Analog]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 2: U0x46d0x81b [USB Device 0x46d:0x81b], device 0: USB Audio [USB Audio]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line"></span><br><span class="line">查看音频输出</span><br><span class="line">hua@t440p:~$ aplay -l</span><br><span class="line">**** List of PLAYBACK Hardware Devices ****</span><br><span class="line">card 0: HDMI [HDA Intel HDMI], device 3: HDMI 0 [HDMI 0]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 0: HDMI [HDA Intel HDMI], device 7: HDMI 1 [HDMI 1]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 0: HDMI [HDA Intel HDMI], device 8: HDMI 2 [HDMI 2]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 0: HDMI [HDA Intel HDMI], device 9: HDMI 3 [HDMI 3]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 0: HDMI [HDA Intel HDMI], device 10: HDMI 4 [HDMI 4]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line">card 1: PCH [HDA Intel PCH], device 0: ALC3232 Analog [ALC3232 Analog]</span><br><span class="line">  Subdevices: 1/1</span><br><span class="line">  Subdevice #0: subdevice #0</span><br><span class="line"></span><br><span class="line">查看音频输出</span><br><span class="line">使用speaker-test测试默认音频输出， 默认输出设备通过apply -L查看</span><br><span class="line">hua@t440p:~$ aplay -L |grep -i &apos;^default&apos; -A 1</span><br><span class="line">default</span><br><span class="line">    Playback/recording through the PulseAudio sound server</span><br><span class="line">使用‘aplay test.wav -D plughw:CARD=PCH,DEV=0’来指定测试音频来测试，输出设备通过apply -L查看</span><br><span class="line"></span><br><span class="line">检测音频输入</span><br><span class="line">使用arecord录制音频输入:</span><br><span class="line">-f 表示音频格式。cd (16 bit little endian, 44100, stereo)</span><br><span class="line">-d 录制几秒</span><br><span class="line">-c 几个通道，如录制4个麦的麦克风阵列：-c 4</span><br><span class="line">-D 使用ALSA的哪个设备：-D hw:1,0表示使用card 0下的device 0设备</span><br><span class="line">arecord -f cd -d 5 -c 4 -D hw:1,0 &gt; a.pcm #</span><br><span class="line">aply a.pcm</span><br><span class="line"></span><br><span class="line">PulseAudio GUI工具pavucontrol</span><br><span class="line">pavucontrol是PulseAudio的GUI工具(PulseAudio Volume controler)用于配置与控制音频设备</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck27gzh6p000r1kbpgdeo6xhi" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck2e3m1fn000u1kbppltyhh2l" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -319,7 +324,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck27gzh6l000n1kbp70fjjm9d" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck2e3m1fh000o1kbplgrtskav" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -381,7 +386,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck27gzh5900041kbpb2pcyx02" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck2e3m1dj00041kbpwcgsairx" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -430,7 +435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck27gzh6o000q1kbpe34qjjnw" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck2e3m1fl000r1kbp4a3nmq5a" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -497,7 +502,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck27gzh6g000l1kbpa210ucnc" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck2e3m1fc000m1kbpd9wed7l9" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -543,7 +548,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck27gzh63000e1kbp7ypfgsow" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck2e3m1dy000g1kbpzav2xy8q" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -598,7 +603,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck27gzh6m000o1kbp92l3bn5u" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck2e3m1dz000h1kbp6ntf0lso" class="article-share-link">Delen</a>
       
       
     </footer>
