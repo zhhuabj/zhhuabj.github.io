@@ -57,7 +57,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -123,7 +123,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck2e3m1dt000b1kbphe5no203" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck2hh1ara000eudbplrn110v6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -165,7 +165,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck2e3m1dm00061kbpjgaqbzi3" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck2hh1aqx0002udbpglkb4zcy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -215,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck2e3m1dh00021kbp0zljzzqs" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck2hh1aqo0000udbpki2sqfqm" class="article-share-link">Share</a>
       
       
     </footer>
@@ -249,7 +249,9 @@
       
         <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>发现一个问题，在笔记本上使用了pyaudio包的应用在关闭扬声器仅使用耳机的情况下无法将声音送出去。(注：笔记本只有一个口)<br>而使用台式机没这个问题，即使关闭音箱只使用耳机，一样工作正常。(注：台式机是一个声卡，录音与扬声器分别出前面板和后面板，当音响接后面，耳机使用二合一线接前面板，可做到关闭音箱仍然可以从耳机抓取声音。）<br>这也是京东上所有3.5mm的手机麦克风(如山业 MM-MC24）在接单孔的手机或电脑时在录音时就无法同时接功放的原因(手机麦克风接手机的单孔3.5mm口了， 手机上的扬声器就关闭了， 但一般的手机麦克风并没有集成的喇叭，所以就不能放声了)</p>
-<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>在ubuntu上安装pulseaudio的前端控制工具pavucontrol (apt install pavucontrol), 然后执行pavucontrol命令后在Playback和Recording菜单上将默认的’Build-in Audio Analog Stereo’修改成别的试试。（注：有声音的时候才会出现相应的菜单内容）<br><img src="https://img-blog.csdnimg.cn/20191026080902473.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>在ubuntu上安装pulseaudio的前端控制工具pavucontrol (apt install pavucontrol), 然后执行pavucontrol命令后只须在Recording TAB处将<strong>改成’Monitor of Built-in Audio Analog Stereo’后在关闭音箱的情况下pyaudio可以直接监听耳机将声音再回传至耳机， 但是此时耳机的录音功能会失效.</strong>（Playback处维持不变仍为’Build-int Audio Analog Stereo’)，</p>
+<p><img src="https://img-blog.csdnimg.cn/20191102190955575.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/2019110219100736.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p>注： android上因无pulseaudio故无法做这件事，google上搜索“android simultaneous output”到下列网页解释的很清楚 - <a href="https://stackoverflow.com/questions/14064693/audio-output-on-headset-speakerphone-simultaneously" target="_blank" rel="external">https://stackoverflow.com/questions/14064693/audio-output-on-headset-speakerphone-simultaneously</a></p>
 <h2 id="附录一，将喇叭的声音同时从多个声卡输出"><a href="#附录一，将喇叭的声音同时从多个声卡输出" class="headerlink" title="附录一，将喇叭的声音同时从多个声卡输出"></a>附录一，将喇叭的声音同时从多个声卡输出</h2><p>sudo apt-get install paprefs, 然后在paprefs应用中设置simultaneous output，重启（pulseaudio -k), 这时Sound设置中会出出一个虚拟声卡.</p>
 <h2 id="附录二，Chrome中设置声音的路径"><a href="#附录二，Chrome中设置声音的路径" class="headerlink" title="附录二，Chrome中设置声音的路径"></a>附录二，Chrome中设置声音的路径</h2><p>chrome://settings/content#media-stream-mic</p>
 <h2 id="20180205更新"><a href="#20180205更新" class="headerlink" title="20180205更新"></a>20180205更新</h2><p>今天发现我的hexchat不能声音提示了，原来是在我安装pavucontrol之后这个工具和’System settings -&gt; sound’里设置alert volume的声音是独立的，在pavucontrol将’Playback -&gt; system sounds’设置之后能听到声音提示了。</p>
@@ -266,7 +268,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck2e3m1fn000u1kbppltyhh2l" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck2hh1art000vudbpk059sdqz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -324,7 +326,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck2e3m1fh000o1kbplgrtskav" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck2hh1ari000ludbp9zljhrgz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -386,7 +388,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck2e3m1dj00041kbpwcgsairx" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck2hh1ar20006udbpl9lxacxo" class="article-share-link">Share</a>
       
       
     </footer>
@@ -435,7 +437,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck2e3m1fl000r1kbp4a3nmq5a" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck2hh1arn000rudbprxqih5wg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -502,7 +504,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck2e3m1fc000m1kbpd9wed7l9" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck2hh1arj000mudbpphq4n5jv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -548,7 +550,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck2e3m1dy000g1kbpzav2xy8q" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck2hh1arr000tudbpzplqtbc5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -603,7 +605,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck2e3m1dz000h1kbp6ntf0lso" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck2hh1ard000hudbp11v4gz1e" class="article-share-link">Share</a>
       
       
     </footer>
@@ -632,7 +634,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
@@ -642,7 +644,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
