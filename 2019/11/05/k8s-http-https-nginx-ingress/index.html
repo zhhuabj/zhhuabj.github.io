@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>k8s http/https nginx ingress | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="作者：张华 发表于：2019-11-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (https://zhhuabj.blog.csdn.net)Client与nginx-ingress之间可以配置https，此时nginx-ignress与backends仍然可以配置http, ssl termination, ssl passthrough三种模式。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s http&#x2F;https nginx ingress">
+<meta property="og:url" content="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2019-11-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (https://zhhuabj.blog.csdn.net)Client与nginx-ingress之间可以配置https，此时nginx-ignress与backends仍然可以配置http, ssl termination, ssl passthrough三种模式。">
+<meta property="og:updated_time" content="2019-11-05T04:02:29.539Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="k8s http&#x2F;https nginx ingress">
+<meta name="twitter:description" content="作者：张华 发表于：2019-11-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (https://zhhuabj.blog.csdn.net)Client与nginx-ingress之间可以配置https，此时nginx-ignress与backends仍然可以配置http, ssl termination, ssl passthrough三种模式。">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-k8s-http-https-nginx-ingress" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/05/k8s-http-https-nginx-ingress/" class="article-date">
+  <time datetime="2019-11-05T04:02:18.000Z" itemprop="datePublished">2019-11-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      k8s http/https nginx ingress
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>作者：张华 发表于：2019-11-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="https://zhhuabj.blog.csdn.net" target="_blank" rel="external">https://zhhuabj.blog.csdn.net</a>)</strong><br>Client与nginx-ingress之间可以配置https，此时nginx-ignress与backends仍然可以配置http, ssl termination, ssl passthrough三种模式。若Client前面还有L7 LB那就是四种模式：</p>
+<ul>
+<li>client –(HTTP)–&gt; ingress-controller  –(HTTP)–&gt; backend      # http lb</li>
+<li>client –(HTTPs)–&gt; ingress-controller –(HTTP)–&gt; backend      # ssl termination http</li>
+<li>client –(HTTPs)–&gt; ingress-controller –(HTTPS)–&gt; backend     # ssl termination https (nginx.ingress.kubernetes.io/backend-protocol: “HTTPS” or nginx.ingress.kubernetes.io/secure-backends: “true”)</li>
+<li>client –(HTTPs)–&gt; ingress-controller –(HTTPs)–&gt; backend     # ssl passthrough https (–enable-ssl-passthrough and nginx.ingress.kubernetes.io/ssl-passthrough: “true”)</li>
+<li>client –(HTTPs)–&gt; L7 LB –(use-forwarded-headers=true, X-Forwarded-Proto=https)–&gt; ingress-controller –(HTTPs)–&gt; backend     # ssl termination with F5 - <a href="https://bugs.launchpad.net/bugs/1842286" target="_blank" rel="external">https://bugs.launchpad.net/bugs/1842286</a><h2 id="http-ingress"><a href="#http-ingress" class="headerlink" title="http ingress"></a>http ingress</h2>client –(HTTP)–&gt; ingress-controller  –(HTTP)–&gt; backend      # http lb<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">juju scp kubernetes-master/0:config ~/.kube/config</span><br><span class="line">#juju run-action etcd/0 health --wait</span><br><span class="line">kubectl get pods --all-namespaces</span><br><span class="line"></span><br><span class="line">kubectl get services --namespace=ingress-nginx-kubernetes-worker default-http-backend-kubernetes-worker -o yaml</span><br><span class="line">kubectl get daemonset --namespace=ingress-nginx-kubernetes-worker nginx-ingress-controller-kubernetes-worker -o yaml</span><br><span class="line">      containers:</span><br><span class="line">      - args:</span><br><span class="line">        - /nginx-ingress-controller</span><br><span class="line">        - --configmap=$(POD_NAMESPACE)/nginx-configuration</span><br><span class="line">        - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services</span><br><span class="line">        - --udp-services-configmap=$(POD_NAMESPACE)/udp-services</span><br><span class="line">        - --annotations-prefix=nginx.ingress.kubernetes.io</span><br><span class="line">        - --enable-ssl-chain-completion=False</span><br><span class="line">        - --enable-ssl-passthrough=False</span><br><span class="line"></span><br><span class="line">#deploy http ingress</span><br><span class="line">kubectl run nginx --image=nginx --port 80</span><br><span class="line">kubectl expose deployment nginx --port=80 --target-port=80 --type=NodePort</span><br><span class="line">cat &lt;&lt;EOF &gt;ingress-test.yaml</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: ingress-service</span><br><span class="line">spec:</span><br><span class="line">  rules:</span><br><span class="line">  - host: &quot;quqi.com&quot;</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - backend:</span><br><span class="line">          serviceName: nginx</span><br><span class="line">          servicePort: 80</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f ./ingress-test.yaml</span><br><span class="line">kubectl describe ingresses ingress-service</span><br><span class="line">kubectl run -i --rm --tty client --image=tutum/curl</span><br><span class="line">$ kubectl describe service nginx</span><br><span class="line">IP:                       10.152.183.250</span><br><span class="line">Port:                     &lt;unset&gt;  80/TCP</span><br><span class="line">TargetPort:               80/TCP</span><br><span class="line">NodePort:                 &lt;unset&gt;  31463/TCP</span><br><span class="line">Endpoints:                10.1.60.3:80</span><br><span class="line">$ juju status |grep worker/0</span><br><span class="line">kubernetes-worker/0*      active    idle   4        10.5.0.53       80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line"></span><br><span class="line">#curl http(s)://&lt;worker-ip&gt;:NodePort&gt;/ -H &apos;Host: quqi.com&apos;</span><br><span class="line">curl http://10.5.0.53:31463/ -H &apos;Host: quqi.com&apos;</span><br><span class="line">curl http://10.5.0.53:31463/ -H &apos;Host: quqi.com&apos; -I -L</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="ssl-termination-http"><a href="#ssl-termination-http" class="headerlink" title="ssl termination http"></a>ssl termination http</h2><p>client –(HTTPs)–&gt; ingress-controller –(HTTP)–&gt; backend      # ssl termination http<br>ssl termination可参见：<a href="https://www.howtoing.com/how-to-set-up-nginx-load-balancing-with-ssl-termination/" target="_blank" rel="external">https://www.howtoing.com/how-to-set-up-nginx-load-balancing-with-ssl-termination/</a><br>在k8s中， 如果nginx-ingress前面还有LB如F5的话，nginx-ingress并不是和client直接相连的，client传给F5的链接里的https标记会最终设置成X-Forwarded-Proto=https, 所以nginx-ingress这端需要在configmap中设置use-forwarded-headers=true(kubectl -n ingress-nginx-kubernetes-worker edit cm nginx-configura<br>tion), If true, nginx-ingress passes the incoming X-Forwarded-* (eg: X-Forwarded-Proto) headers to upstreams. Use this option when nginx is behind another L7 proxy / LB that is setting these headers.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">#openssl genrsa -out server.key 2048</span><br><span class="line">#openssl req -new -x509 -key server.key -out server.crt -subj &quot;/C=CN/ST=BJ/L=BJ/O=DevOps/CN=ssltest.quqi.com&quot;</span><br><span class="line">openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout server.key -out server.crt -subj &quot;/C=CN/ST=BJ/L=BJ/O=DevOps/CN=ssltest.quqi.com&quot;</span><br><span class="line">kubectl create secret tls ingress-ssl-secret --cert=server.crt --key=server.key</span><br><span class="line">kubectl describe secret ingress-ssl-secret</span><br><span class="line">kubectl run nginx --image=nginx --port 80 --expose</span><br><span class="line"></span><br><span class="line"># 固定node对外暴露的端口 - https://blog.csdn.net/yyf773002779/article/details/89499682</span><br><span class="line">cat &lt;&lt;EOF &gt;ingress-nginx.yaml</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: ingress-nginx</span><br><span class="line">  namespace: ingress-nginx-kubernetes-worker</span><br><span class="line">  labels:</span><br><span class="line">    app.kubernetes.io/name: ingress-nginx-kubernetes-worker</span><br><span class="line">    app.kubernetes.io/part-of: ingress-nginx-kubernetes-worker</span><br><span class="line">spec:</span><br><span class="line">  type: NodePort</span><br><span class="line">  ports:</span><br><span class="line">    - name: http</span><br><span class="line">      port: 80</span><br><span class="line">      targetPort: 80</span><br><span class="line">      protocol: TCP</span><br><span class="line">      nodePort: 32080</span><br><span class="line">    - name: https</span><br><span class="line">      port: 443</span><br><span class="line">      targetPort: 443</span><br><span class="line">      protocol: TCP</span><br><span class="line">      nodePort: 32443</span><br><span class="line">  selector:</span><br><span class="line">    app.kubernetes.io/name: ingress-nginx-kubernetes-worker</span><br><span class="line">    app.kubernetes.io/part-of: ingress-nginx-kubernetes-worker</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f ingress-nginx.yaml</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;EOF &gt;ingress-nginx.yaml</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: ingress-nginx</span><br><span class="line">  namespace: default</span><br><span class="line">  annotations:</span><br><span class="line">    kubernetes.io/ingress.class: &quot;nginx&quot;</span><br><span class="line">spec:</span><br><span class="line">  tls:</span><br><span class="line">  - hosts:</span><br><span class="line">    - ssltest.quqi.com</span><br><span class="line">    secretName: ingress-ssl-secret</span><br><span class="line">  rules:</span><br><span class="line">  - host: ssltest.quqi.com</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path:</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: nginx</span><br><span class="line">          servicePort: 80</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f ingress-nginx.yaml</span><br><span class="line">kubectl exec pod/nginx-ingress-controller-kubernetes-worker-k9n6j -n ingress-nginx-kubernetes-worker -- cat /etc/nginx/nginx.conf |grep &apos;start server ssltest.quqi.com&apos; -A 123 &gt; 1.txt</span><br><span class="line">kubectl exec pod/nginx-ingress-controller-kubernetes-worker-w98fm -n ingress-nginx-kubernetes-worker -- cat /etc/nginx/nginx.conf |grep &apos;start server ssltest.quqi.com&apos; -A 123 &gt; 2.txt</span><br><span class="line">vimdiff 1.txt 2.txt</span><br><span class="line">#https://paste.ubuntu.com/p/8yV7RZJ9D7/</span><br><span class="line">curl http://10.5.0.53:32080/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos; -I -L</span><br></pre></td></tr></table></figure></p>
+<p>如果nginx-ingress和backend总是采用https的话， ingress定义时需添加annotation：nginx.ingress.kubernetes.io/secure-backends: “true”<br>或者使用附录中的tomcat容器也行。</p>
+<h2 id="ssl-termination-with-HTTPS-backend"><a href="#ssl-termination-with-HTTPS-backend" class="headerlink" title="ssl termination with HTTPS backend"></a>ssl termination with HTTPS backend</h2><p>client –(HTTPs)–&gt; ingress-controller –(HTTPS)–&gt; backend     # ssl termination (nginx.ingress.kubernetes.io/backend-protocol: “HTTPS”  or nginx.ingress.kubernetes.io/secure-backends: “true”)<br>后端需要做一个https测试应用： <a href="https://www.jianshu.com/p/96f52ed2266d" target="_blank" rel="external">https://www.jianshu.com/p/96f52ed2266d</a><br>新版本需添加：nginx.ingress.kubernetes.io/backend-protocol: “HTTPS”， 旧版本使用：nginx.ingress.kubernetes.io/secure-backends: “true”,<br>下面是制作一个https测试应用的步骤:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">cat server.crt server.key &gt; server.pem</span><br><span class="line">sudo bash -c &apos;cat &gt;simple-https-server.py&apos; &lt;&lt;EOF</span><br><span class="line">#!/usr/bin/env python</span><br><span class="line"># coding=utf-8</span><br><span class="line">import BaseHTTPServer, SimpleHTTPServer</span><br><span class="line">import ssl</span><br><span class="line">httpd = BaseHTTPServer.HTTPServer((&apos;0.0.0.0&apos;, 443), SimpleHTTPServer.SimpleHTTPRequestHandler)</span><br><span class="line">httpd.socket = ssl.wrap_socket (httpd.socket, certfile=&apos;./server.pem&apos;, server_side=True)</span><br><span class="line">httpd.serve_forever()</span><br><span class="line">EOF</span><br><span class="line">#sudo docker run -it --rm --name simple-https-server -v &quot;$PWD&quot;:/root -w /root python:2 python simple-https-server.py</span><br><span class="line">mkdir simple-https-server</span><br><span class="line">cp server.* simple-https-server/</span><br><span class="line">cp simple-https-server.py simple-https-server/</span><br><span class="line">cd simple-https-server</span><br><span class="line">sudo bash -c &apos;cat &gt;Dockerfile&apos; &lt;&lt;EOF</span><br><span class="line">FROM python:2.7-alpine</span><br><span class="line">ADD simple-https-server.py /</span><br><span class="line">ADD server.pem /</span><br><span class="line">RUN pip install simple_http_server</span><br><span class="line">CMD [ &quot;python&quot;, &quot;./simple-https-server.py&quot; ]</span><br><span class="line">EOF</span><br><span class="line">sudo docker build -t simple-https-server .</span><br><span class="line">sudo docker tag simple-https-server zhhuabj/simple-https-server</span><br><span class="line">sudo docker image rm simple-https-server</span><br><span class="line">sudo docker history zhhuabj/simple-https-server</span><br><span class="line">#sudo docker run -d --rm --name simple-https-server zhhuabj/simple-https-server</span><br><span class="line">#sudo docker inspect simple-https-server |grep IPAddress</span><br><span class="line">#curl --resolve ssltest.quqi.com:443:172.17.0.2 --cacert server.pem https://ssltest.quqi.com</span><br><span class="line">#sudo docker rm simple-https-server --force</span><br><span class="line">sudo docker login</span><br><span class="line">sudo docker push zhhuabj/simple-https-server</span><br><span class="line"></span><br><span class="line">kubectl run simple-https-server --image=zhhuabj/simple-https-server --port 443</span><br><span class="line">kubectl expose deployment simple-https-server --port=443 --target-port=443 --type=NodePort</span><br><span class="line">kubectl describe service simple-https-server</span><br><span class="line">curl --resolve ssltest.quqi.com:443:10.152.183.181 --cacert server.pem https://ssltest.quqi.com</span><br><span class="line"></span><br><span class="line">#debug, containerd operation</span><br><span class="line">sudo ctr containers ls</span><br><span class="line">sudo ctr images ls</span><br></pre></td></tr></table></figure></p>
+<p>继续测试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt;EOF &gt;ingress-simple-https-server.yaml</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: ingress-simple-https-server</span><br><span class="line">  namespace: default</span><br><span class="line">  annotations:</span><br><span class="line">    kubernetes.io/ingress.class: &quot;nginx&quot;</span><br><span class="line">    nginx.ingress.kubernetes.io/backend-protocol: &quot;HTTPS&quot;</span><br><span class="line">spec:</span><br><span class="line">  tls:</span><br><span class="line">  - hosts:</span><br><span class="line">    - ssltest.quqi.com</span><br><span class="line">    secretName: ingress-ssl-secret</span><br><span class="line">  rules:</span><br><span class="line">  - host: ssltest.quqi.com</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path:</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: simple-https-server</span><br><span class="line">          servicePort: 443</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f ingress-simple-https-server.yaml</span><br><span class="line"></span><br><span class="line">curl http://10.5.0.53:32080/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos; -I -L</span><br><span class="line">kubectl exec pod/nginx-ingress-controller-kubernetes-worker-k9n6j -n ingress-nginx-kubernetes-worker -- cat /etc/nginx/nginx.conf |grep &apos;start server ssltest.quqi.com&apos; -A 123 &gt; 3.txt</span><br></pre></td></tr></table></figure></p>
+<p>因为环境刚好在此时挂了，未测试。</p>
+<h2 id="ssl-passthrough"><a href="#ssl-passthrough" class="headerlink" title="ssl passthrough"></a>ssl passthrough</h2><p>ssl passthrough可参见：<a href="https://www.jianshu.com/p/96f52ed2266d" target="_blank" rel="external">https://www.jianshu.com/p/96f52ed2266d</a><br>ssl passthrough时由于使用tcp不做https拆包取不到https相关字段，但nginx提供了preread on特性在握手阶段读取domain, 这样可实现SNI - 见： <a href="https://www.jianshu.com/p/c86a94b14137" target="_blank" rel="external">https://www.jianshu.com/p/c86a94b14137</a><br>在k8s中，需要启动controller时添加–enable-ssl-passthrough标志, ssl passthrough only works on layer 4 (TCP) and not on layer 7 (HTTP), 同时ingress定义时添加annotation：nginx.ingress.kubernetes.io/ssl-passthrough: “true”， 另外测试时应指明key:<br>curl –resolve ssltest.quqi.com:443:10.5.0.8 –cacert server.pem <a href="https://ssltest.quqi.com" target="_blank" rel="external">https://ssltest.quqi.com</a></p>
+<h2 id="k8s-ingress-前端再加F7-LB"><a href="#k8s-ingress-前端再加F7-LB" class="headerlink" title="k8s ingress 前端再加F7 LB"></a>k8s ingress 前端再加F7 LB</h2><p>1, 编辑configmap添加内容：<br>kubectl edit cm –namespace=ingress-nginx-kubernetes-worker nginx-configuration<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">data:</span><br><span class="line">  use-forwarded-headers: &quot;true&quot;</span><br></pre></td></tr></table></figure></p>
+<p>2, Set up L7 LB in front of ingress-controller<br>sudo apt install haproxy</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">global</span><br><span class="line">    chroot      /var/lib/haproxy</span><br><span class="line">    pidfile     /var/run/haproxy.pid</span><br><span class="line">    maxconn     4000</span><br><span class="line">    user        haproxy</span><br><span class="line">    group       haproxy</span><br><span class="line">    stats socket /var/lib/haproxy/stats</span><br><span class="line">    debug</span><br><span class="line"></span><br><span class="line">defaults</span><br><span class="line">    log global</span><br><span class="line">    option httpclose</span><br><span class="line">    timeout connect 30000ms</span><br><span class="line">    timeout client 300000ms</span><br><span class="line">    timeout server 300000ms</span><br><span class="line"></span><br><span class="line">frontend http-in</span><br><span class="line">    mode http</span><br><span class="line">    bind *:80</span><br><span class="line">    reqirep ^Host: 10.5.0.53:80 Host: ssltest.quqi.com</span><br><span class="line">    option httplog</span><br><span class="line">    option forwardfor</span><br><span class="line">    reqadd X-Forwarded-Proto: http</span><br><span class="line">    default_backend http-routers</span><br><span class="line"></span><br><span class="line">frontend https-in</span><br><span class="line">    mode http</span><br><span class="line">    bind *:443 ssl /home/ubuntu/stsstack-bundles/kubernetes/ingress/simple-https-server/server.pem</span><br><span class="line">    reqirep ^Host: 10.5.0.53:443 Host: ssltest.quqi.com</span><br><span class="line">    option httplog</span><br><span class="line">    option forwardfor</span><br><span class="line">    reqadd X-Forwarded-Proto: https</span><br><span class="line">    default_backend http-routers</span><br><span class="line"></span><br><span class="line">frontend ssl-in</span><br><span class="line">    mode tcp</span><br><span class="line">    reqirep ^Host: 10.5.0.53:4443 Host: ssltest.quqi.com</span><br><span class="line">    bind :4443 ssl /home/ubuntu/stsstack-bundles/kubernetes/ingress/simple-https-server/server.pem</span><br><span class="line">    default_backend tcp-routers</span><br><span class="line"></span><br><span class="line">backend http-routers</span><br><span class="line">    mode http</span><br><span class="line">    reqirep ^Host: 10.5.0.53:80 Host: ssltest.quqi.com</span><br><span class="line">    balance roundrobin</span><br><span class="line">        server k8s-nginx-ingress ssltest.quqi.com:80 check inter 1000</span><br><span class="line"></span><br><span class="line">backend https-routers</span><br><span class="line">    mode http</span><br><span class="line">    reqirep ^Host: 10.5.0.53:443 Host: ssltest.quqi.com</span><br><span class="line">    balance roundrobin</span><br><span class="line">        server k8s-nginx-ingress ssltest.quqi.com:443 check inter 1000</span><br><span class="line"></span><br><span class="line">backend tcp-routers</span><br><span class="line">    mode tcp</span><br><span class="line">    balance roundrobin</span><br><span class="line">        server k8s-nginx-ingress ssltest.quqi.com:4443 check inter 1000</span><br><span class="line"> reqirep ^Host: external-address:4443 Host: loggregator.internal-address:4443</span><br></pre></td></tr></table></figure>
+<p>kubectl exec pod/nginx-ingress-controller-kubernetes-worker-k9n6j -n ingress-nginx-kubernetes-worker – cat /etc/nginx/nginx.conf |grep ‘start server ssltest.quqi.com’ -A 123 &gt; 4.txt<br>curl <a href="http://10.5.0.53:32080/" target="_blank" rel="external">http://10.5.0.53:32080/</a> -H ‘Host: ssltest.quqi.com’<br>curl -k <a href="https://10.5.0.53:32443/" target="_blank" rel="external">https://10.5.0.53:32443/</a> -H ‘Host: ssltest.quqi.com’<br>curl -k <a href="https://10.5.0.53:32443/" target="_blank" rel="external">https://10.5.0.53:32443/</a> -H ‘Host: ssltest.quqi.com’ -I -L</p>
+<h2 id="Appendix-tomcat-container"><a href="#Appendix-tomcat-container" class="headerlink" title="Appendix - tomcat container"></a>Appendix - tomcat container</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt;EOF &gt;tomcat-deploy.yaml</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: tomcat</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  selector:</span><br><span class="line">    app: tomcat</span><br><span class="line">  ports:</span><br><span class="line">  - name: http</span><br><span class="line">    targetPort: 8080</span><br><span class="line">    port: 8080</span><br><span class="line">  - name: ajp</span><br><span class="line">    targetPort: 8009</span><br><span class="line">    port: 8009</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line">apiVersion: apps/v1</span><br><span class="line">kind: Deployment</span><br><span class="line">metadata:</span><br><span class="line">  name: tomcat-deploy</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  replicas: 2</span><br><span class="line">  selector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: tomcat</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        app: tomcat</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - name: tomcat</span><br><span class="line">        image: tomcat:9.0-jre8-alpine</span><br><span class="line">        ports:</span><br><span class="line">        - name: http</span><br><span class="line">          containerPort: 8080</span><br><span class="line">        - name: ajp</span><br><span class="line">          containerPort: 8009</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f tomcat-deploy.yaml</span><br><span class="line"></span><br><span class="line">cat &lt;&lt;EOF &gt;ingress-tomcat.yaml</span><br><span class="line">apiVersion: extensions/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line">  name: ingress-tomcat</span><br><span class="line">  namespace: default</span><br><span class="line">  annotations:</span><br><span class="line">    kubernetes.io/ingress.class: &quot;nginx&quot;</span><br><span class="line">spec:</span><br><span class="line">  tls:</span><br><span class="line">  - hosts:</span><br><span class="line">    - ssltest.quqi.com</span><br><span class="line">    secretName: ingress-ssl-secret</span><br><span class="line">  rules:</span><br><span class="line">  - host: ssltest.quqi.com</span><br><span class="line">    http:</span><br><span class="line">      paths:</span><br><span class="line">      - path:</span><br><span class="line">        backend:</span><br><span class="line">          serviceName: tomcat</span><br><span class="line">          servicePort: 8080</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f ingress-tomcat.yaml</span><br><span class="line"></span><br><span class="line">#kubectl run -i --rm --tty client --image=tutum/curl</span><br><span class="line">curl http://10.5.0.53:32080/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos;</span><br><span class="line">curl -k https://10.5.0.53:32443/ -H &apos;Host: ssltest.quqi.com&apos; -I -L</span><br></pre></td></tr></table></figure>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://ju.outofmemory.cn/entry/359682" target="_blank" rel="external">http://ju.outofmemory.cn/entry/359682</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/" data-id="ck2n3pt2t000mppbpadfnehb9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          使用apt-mirror和simplestreams搭建本地源
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/10/14/OpenStack开发过程中常用Git操作场景/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">OpenStack开发过程中常用Git操作场景</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">使用apt-mirror和simplestreams搭建本地源</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/05/k8s-http-https-nginx-ingress/">k8s http/https nginx ingress</a>
+          </li>
+        
+          <li>
+            <a href="/2019/10/14/OpenStack开发过程中常用Git操作场景/">OpenStack开发过程中常用Git操作场景</a>
+          </li>
+        
+          <li>
+            <a href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/24/如何让OpenStack支持多个FIP/">如何让OpenStack支持多个FIP</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
