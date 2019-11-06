@@ -95,9 +95,9 @@
 <ul>
 <li>archive.ubuntu.com                   (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
 <li>security.ubuntu.com                  (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
-<li>ubuntu-cloud.archive.canonical.com   (UCA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu-cloud-images/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu-cloud-images/</a> instead)</li>
+<li>ubuntu-cloud.archive.canonical.com (UCA)</li>
 <li>images.maas.io                       (juju , lxd, maas)</li>
-<li>cloud-images.ubuntu.com              (juju , lxd, maas)</li>
+<li>cloud-images.ubuntu.com              (juju , lxd, maas, <a href="http://mirrors.cloud.tencent.com/ubuntu-cloud-images/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu-cloud-images/</a> instead)</li>
 <li>streams.canonical.com                (juju , lxd, maas)<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw disable</span><br><span class="line">sudo apt -y install apache2 apt-mirror</span><br><span class="line">mkdir -p /images/xenial-repo</span><br><span class="line"></span><br><span class="line">$ cat /etc/apt/mirror.list</span><br><span class="line">############# config ##################</span><br><span class="line">#</span><br><span class="line">set base_path /images/xenial-repo</span><br><span class="line">#set defaultarch amd64</span><br><span class="line">#</span><br><span class="line"># set mirror_path  $base_path/mirror</span><br><span class="line"># set skel_path    $base_path/skel</span><br><span class="line"># set var_path     $base_path/var</span><br><span class="line"># set cleanscript $var_path/clean.sh</span><br><span class="line"># set defaultarch  &lt;running host architecture&gt;</span><br><span class="line"># set postmirror_script $var_path/postmirror.sh</span><br><span class="line"># set run_postmirror 0</span><br><span class="line">set nthreads     30</span><br><span class="line">set _tilde 0</span><br><span class="line">#</span><br><span class="line">############# end config ##############</span><br><span class="line"></span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#see http://ubuntu-cloud.archive.canonical.com/ubuntu/dists/xenial-updates/</span><br><span class="line">deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/ocata main</span><br><span class="line">#deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/queens main</span><br><span class="line"></span><br><span class="line">#clean http://archive.ubuntu.com/ubuntu</span><br><span class="line">clean http://ubuntu-cloud.archive.canonical.com/ubuntu</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -119,7 +119,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" data-id="ck2n3pt2y000rppbpa96s48hc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" data-id="ck2n4hxan000rzxbp4xrkgrz1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -176,7 +176,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/" data-id="ck2n3pt2t000mppbpadfnehb9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/" data-id="ck2n4hxah000mzxbpaw0l26im" class="article-share-link">Share</a>
       
       
     </footer>
@@ -287,7 +287,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/" data-id="ck2n3pt2e0007ppbpx1bjsozx" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/" data-id="ck2n4hxa40007zxbp4x1vbagf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -355,7 +355,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck2n3pt2j000dppbp9pxr13ym" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck2n4hxaa000dzxbp1r9mf82z" class="article-share-link">Share</a>
       
       
     </footer>
@@ -410,7 +410,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck2n3pt32000vppbpj4lazwpl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck2n4hxas000vzxbphok946qs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -478,7 +478,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="ck2n3pt37000yppbpetcbwyno" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="ck2n4hxay000yzxbpyuqudol4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -562,7 +562,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="ck2n3pt2k000eppbp36h0j5a7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/18/Set-ip-IPv6-env/" data-id="ck2n4hxab000ezxbptni8s5i0" class="article-share-link">Share</a>
       
       
     </footer>
@@ -607,7 +607,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="ck2n3pt2s000lppbp7umn25la" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/01/02/Using-kubeadm-to-deploy-k8s/" data-id="ck2n4hxaf000jzxbpuol2z52i" class="article-share-link">Share</a>
       
       
     </footer>
@@ -703,7 +703,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="ck2n3pt3k0014ppbphutrpy9m" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/12/31/Use-Octavia-to-Implement-HTTPS-Health-Monitors/" data-id="ck2n4hxbh0014zxbp68zdppg1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -796,7 +796,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="ck2n3pt2w000pppbpplmho9gl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" data-id="ck2n4hxak000pzxbpyprd02nl" class="article-share-link">Share</a>
       
       
     </footer>
