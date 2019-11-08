@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Perf火焰图 | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install perf12sudo add-apt-repository ppa:canonical-kernel-team/ppasudo apt install linux-tools-$(uname -r) 注意点 火焰图看最宽的那条, 最宽的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Perf火焰图">
+<meta property="og:url" content="http://yoursite.com/2019/11/08/Perf火焰图/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install perf12sudo add-apt-repository ppa:canonical-kernel-team/ppasudo apt install linux-tools-$(uname -r) 注意点 火焰图看最宽的那条, 最宽的">
+<meta property="og:updated_time" content="2019-11-08T07:18:01.813Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Perf火焰图">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Install perf12sudo add-apt-repository ppa:canonical-kernel-team/ppasudo apt install linux-tools-$(uname -r) 注意点 火焰图看最宽的那条, 最宽的">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Perf火焰图" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/11/08/Perf火焰图/" class="article-date">
+  <time datetime="2019-11-08T07:17:52.000Z" itemprop="datePublished">2019-11-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Perf火焰图
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="Install-perf"><a href="#Install-perf" class="headerlink" title="Install perf"></a>Install perf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">sudo apt install linux-tools-$(uname -r)</span><br></pre></td></tr></table></figure>
+<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
+<li>火焰图看最宽的那条, 最宽的显示最耗时的, 上下最高则表示调用深度最长</li>
+<li>如若抓应用态的(如ovs)则应添加” –call-graph dwarf “ 参数, ovs最好也安装符号表</li>
+<li>如ovs隔六七秒就死, 可以使用它来抓这六七秒内的调用栈 - sudo perf record -a –call-graph dwarf – sleep 12</li>
+</ul>
+<h2 id="Perf-Flame-Graph"><a href="#Perf-Flame-Graph" class="headerlink" title="Perf Flame Graph"></a>Perf Flame Graph</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">sudo perf record --call-graph dwarf -p $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf script | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl &gt; process.svg</span><br></pre></td></tr></table></figure>
+<h2 id="分解"><a href="#分解" class="headerlink" title="分解"></a>分解</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo perf record -F 99 -g -- sleep 30 $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf report -n --stdio</span><br><span class="line">sudo perf script | gzip &gt; out.perf01.gz</span><br><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">; http://svgshare.com can be used to share svg</span><br><span class="line">sudo perf script | ./FlameGraph/stackcollapse-perf.pl | sed &apos;/cpu_idle/d;s/\[unknown\];//g&apos; | ./FlameGraph/flamegraph.pl --width 1000 &gt; perf.svg</span><br><span class="line">google-chrome-stable ./perf.svg</span><br></pre></td></tr></table></figure>
+<h2 id="其他一"><a href="#其他一" class="headerlink" title="其他一"></a>其他一</h2><p>参考： <a href="https://github.com/bboymimi/perf-utils" target="_blank" rel="external">https://github.com/bboymimi/perf-utils</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># To get the all CPUs profiling callstack from user space to kernel space (both kernel and user space)</span><br><span class="line">sudo perf record -a --call-graph dwarf</span><br><span class="line"># To get the all CPUs profiling of kernel space callstack (just kernel space)</span><br><span class="line">sudo perf record -a -g</span><br><span class="line">git clone https://github.com/bboymimi/perf-utils.git</span><br><span class="line">sudo ./perf-utils/easy-flamegraph.sh -i perf.data</span><br><span class="line">google-chrome-stable ./perf-output/2018-01-04_14:18:15.perf.data.svg</span><br></pre></td></tr></table></figure></p>
+<h2 id="其他二"><a href="#其他二" class="headerlink" title="其他二"></a>其他二</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Enable the sysrq</span><br><span class="line">sudo sysctl -w kernel.sysrq=1</span><br><span class="line"># Dump all active tasks stack - https://www.kernel.org/doc/html/latest/admin-guide/sysrq.html</span><br><span class="line">echo l | sudo tee /proc/sysrq-trigger</span><br><span class="line"># Dumps tasks that are in uninterruptable (blocked) state.</span><br><span class="line">echo p | sudo tee /proc/sysrq-trigger</span><br><span class="line"># Performance profiling and get the flame-graph to see if there is</span><br><span class="line">any performance bottleneck when the problem happened</span><br><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git</span><br><span class="line">sudo perf record -a -g sleep 5</span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure>
+<p><strong>Profile Java with Perf</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Profile Java with Perf</span><br><span class="line"># https://cloud.tencent.com/developer/article/1416234</span><br><span class="line"># https://my.oschina.net/u/150599/blog/3023394</span><br><span class="line">sudo apt install -y linux-tools-common linux-tools-generic bindfs</span><br><span class="line">mkdir /tmp/containerrootfs</span><br><span class="line">PID=$(docker inspect --format &#123;&#123;.State.Pid&#125;&#125; cas1)</span><br><span class="line">sudo perf record -g -p $PID</span><br><span class="line">sudo perf report</span><br><span class="line">#fix symbols in container</span><br><span class="line">cp perf.data /tmp/containerrootfs/</span><br><span class="line">bindfs /proc/$PID/root /tmp/containerrootfs</span><br><span class="line">perf report --symfs /tmp/containerrootfs</span><br><span class="line">umount /tmp/containerrootfs</span><br><span class="line"></span><br><span class="line"># install java</span><br><span class="line">sudo apt install -y openjdk-8-jdk</span><br><span class="line">dpkg-query -L openjdk-8-jdk</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64</span><br><span class="line"># install perf-map-agent to help generate symbols with FlameGraph</span><br><span class="line">sudo apt install -y cmake pkg-config libfuse-dev libfuse2 autoconf</span><br><span class="line">git clone https://github.com/brendangregg/FlameGraph.git</span><br><span class="line">export FLAMEGRAPH_DIR=/home/ubuntu/FlameGraph</span><br><span class="line">git clone https://github.com/jvm-profiling-tools/perf-map-agent.git</span><br><span class="line">cd perf-map-agent/</span><br><span class="line">cmake .</span><br><span class="line">make</span><br><span class="line">sudo bin/create-links-in /usr/local/bin</span><br><span class="line"></span><br><span class="line"># Use perf-java-flames (</span><br><span class="line"># Need to add one jvm option in java process: -XX:+PreserveFramePointer</span><br><span class="line">perf-java-flames $PID -g</span><br><span class="line">#perf-java-record-stack $PID -g</span><br><span class="line">chromium-browser /bak/work/perf-map-agent/flamegraph-10286.svg</span><br></pre></td></tr></table></figure>
+<p><strong>上下文切换高</strong><br>启用sar，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install sysstat</span><br><span class="line">sudo sed -i &apos;s/^ENABLED=&quot;false&quot;/ENABLED=&quot;true&quot;/&apos; /etc/default/sysstat</span><br><span class="line">sudo sed -i &apos;s/^5-55\/10/*\/2/&apos; /etc/cron.d/sysstat</span><br><span class="line">sudo systemctl restart sysstat</span><br></pre></td></tr></table></figure></p>
+<p>后可以观测如上文文切换过高<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">00:00:01       proc/s   cswch/s</span><br><span class="line">Average:       143.82  59339.01</span><br></pre></td></tr></table></figure></p>
+<p>可以搜索火焰图（用户态内核态一起收集)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git</span><br><span class="line">cd perf-production</span><br><span class="line">sudo perf record -a --call-graph dwarf sleep 5</span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure></p>
+<p>也可以使用pidstat -w 1来确定哪个进程的上下文切换高， 或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># https://serverfault.com/questions/190049/find-out-which-task-is-generating-a-lot-of-context-switches-on-linux</span><br><span class="line">sudo perf record -e context-switches -a -g</span><br><span class="line"># then ctrl+c</span><br><span class="line">sudo perf report # inspect the result</span><br></pre></td></tr></table></figure></p>
+<p><strong>Appendix - error - ERROR: No stack counts found </strong><br>遇到下面error是需要: sudo chown -R root:root perf.data, 必须使用root用户, 而非它说的普通用户.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/perf-utils$ sudo ./easy-flamegraph.sh perf.data  -f</span><br><span class="line">Use the /bak/work/perf-utils/perf.data as the source of the FlameGraph.</span><br><span class="line">File /bak/work/perf-utils/perf.data not owned by current user or root (use -f to override)</span><br><span class="line">ERROR: No stack counts found</span><br></pre></td></tr></table></figure></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/11/08/Perf火焰图/" data-id="ck2pt5y100009qjbp232gi0ck" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">使用apt-mirror和simplestreams搭建本地源</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/11/08/Perf火焰图/">Perf火焰图</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">使用apt-mirror和simplestreams搭建本地源</a>
+          </li>
+        
+          <li>
+            <a href="/2019/11/05/k8s-http-https-nginx-ingress/">k8s http/https nginx ingress</a>
+          </li>
+        
+          <li>
+            <a href="/2019/10/14/OpenStack开发过程中常用Git操作场景/">OpenStack开发过程中常用Git操作场景</a>
+          </li>
+        
+          <li>
+            <a href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
