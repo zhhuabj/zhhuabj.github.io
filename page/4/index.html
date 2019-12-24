@@ -68,6 +68,68 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-OpenStack-s-multiattach-Feature" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/12/22/OpenStack-s-multiattach-Feature/" class="article-date">
+  <time datetime="2017-12-22T05:31:50.000Z" itemprop="datePublished">2017-12-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/12/22/OpenStack-s-multiattach-Feature/">OpenStack&#39;s multiattach Feature</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>作者：张华  发表于：2017-12-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="什么是multiattach特性"><a href="#什么是multiattach特性" class="headerlink" title="什么是multiattach特性"></a>什么是multiattach特性</h2><p>OpenStack’s multiattach Feature允许一个read only volume经iscsi/FC被attached到多个VM。</p>
+<h2 id="代码实现原理"><a href="#代码实现原理" class="headerlink" title="代码实现原理"></a>代码实现原理</h2><ul>
+<li>用户首先通过cinder定义一个shareable标志的volume.</li>
+<li>在attach的时候，nova需要修改即使在in-use状态下仍然可以attach, nova为每一个attachment指定read-write或者read-only, cinder端修改在available和in-use状态下仍然可attach，multiattach标志设置可以被attach多次。attach之后将volume和instance的关系记录到attachment表中。libvirt端需要将这个volume设置shareable标, 这样hypervisor将不会在volume上设置独占锁及相关针对vm的SELinux隔离设置。</li>
+<li>在detach的时候，nova需要传递attachment_id到clinderclient告诉cinder哪个attahment需要detach, 然后cinder结合instance_id与attachment_id做detach。如果cinder设置了multiattach标志又没有传attachment_id(os-detach-&gt;attachment_id)过来应该失败。</li>
+</ul>
+<p>数据表设计：<br>volume_attachment(id, volume_id, attached_host, instance_uuid, mountpoint, attach_time, attach_mode, sttach_status, time)</p>
+<p>代码实现：<br>1, cinder side<br>   <a href="https://review.openstack.org/#/c/85847/" target="_blank" rel="external">https://review.openstack.org/#/c/85847/</a><br>2, cinderclient side<br>   <a href="https://review.openstack.org/#/c/85856/" target="_blank" rel="external">https://review.openstack.org/#/c/85856/</a><br>3, nova side<br>   <a href="https://review.openstack.org/#/c/526182/" target="_blank" rel="external">https://review.openstack.org/#/c/526182/</a><br>   <a href="https://review.openstack.org/#/c/525787/" target="_blank" rel="external">https://review.openstack.org/#/c/525787/</a><br>   <a href="https://review.openstack.org/#/c/330285/" target="_blank" rel="external">https://review.openstack.org/#/c/330285/</a><br>   <a href="https://review.openstack.org/#/c/527468/" target="_blank" rel="external">https://review.openstack.org/#/c/527468/</a>  </p>
+<p>CLI如何使用：<br>openstack volume create –size 1 –multi-attach multi_attach_test</p>
+<h2 id="已知问题"><a href="#已知问题" class="headerlink" title="已知问题"></a>已知问题</h2><p>RDB驱动不支持multiattach - <a href="https://review.openstack.org/#/c/283695/" target="_blank" rel="external">https://review.openstack.org/#/c/283695/</a>, 关于它的讨论 - <a href="https://openstack.nimeyo.com/103230/openstack-dev-multi-attach-volume-for-rbd，但根据这个说法（https://bugs.launchpad.net/cinder/+bug/1535815/comments/6）似乎用这个特性是安全的。" target="_blank" rel="external">https://openstack.nimeyo.com/103230/openstack-dev-multi-attach-volume-for-rbd，但根据这个说法（https://bugs.launchpad.net/cinder/+bug/1535815/comments/6）似乎用这个特性是安全的。</a></p>
+<h2 id="容器虚机通过multiattach特性使用同一个存储卷"><a href="#容器虚机通过multiattach特性使用同一个存储卷" class="headerlink" title="容器虚机通过multiattach特性使用同一个存储卷"></a>容器虚机通过multiattach特性使用同一个存储卷</h2><p>我们知道Docker容器本身是无状态的，意味着容器退出后不会保存任何数据。但实际使用场景，肯定是需要保存业务数据的，Docker通过volume实现数据的持久化存储以及共享。Docker有很多种使用OpenStack Cinder的驱动：</p>
+<ul>
+<li>Docker Cinder Driver - <a href="https://github.com/j-griffith/cinder-docker-driver" target="_blank" rel="external">https://github.com/j-griffith/cinder-docker-driver</a>, 如何使用见<a href="http://superuser.openstack.org/articles/how-to-use-openstack-cinder-for-docker/与http://superuser.openstack.org/articles/how-to-use-cinder-with-swarm/" target="_blank" rel="external">http://superuser.openstack.org/articles/how-to-use-openstack-cinder-for-docker/与http://superuser.openstack.org/articles/how-to-use-cinder-with-swarm/</a></li>
+<li>OpenStack Fuxi - 华为主导的OpenStack官方工程，让Docker容器使用Cinder和Manila - <a href="https://docs.openstack.org/fuxi/latest/readme.html" target="_blank" rel="external">https://docs.openstack.org/fuxi/latest/readme.html</a></li>
+<li>Flocker - 是一款针对容器的存储方案</li>
+<li>REX-Ray - 也是一款进一步封装之后针对容器的存储方案 - rexray/cinder驱动(<a href="https://rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/)实现了Docker的provider.Provider存储Plugin接口，rexray/cinder最终通过rexray的cinder驱动去挂载cinder" target="_blank" rel="external">https://rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/)实现了Docker的provider.Provider存储Plugin接口，rexray/cinder最终通过rexray的cinder驱动去挂载cinder</a> volume (<a href="https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go)。" target="_blank" rel="external">https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go)。</a></li>
+</ul>
+<p>什么是REX-Ray:</p>
+<ul>
+<li>REX-Ray是一个开源的存储编排引擎(<a href="http://blog.daocloud.io/swarm-emc/" target="_blank" rel="external">http://blog.daocloud.io/swarm-emc/</a>), 进一步封装整合了不同的存储如Ceph, Cinder, EBS等，来主要为Docker, Mesos等容器来提供持续的存储访问, 似乎没有看到REX-Ray下挂到OpenStack Cinder的驱动（见: <a href="https://rexray.readthedocs.io/en/stable/）。" target="_blank" rel="external">https://rexray.readthedocs.io/en/stable/）。</a></li>
+<li>REX-Ray下可以直接挂ceph驱动, 见：<a href="http://www.stillhq.com/docker/000001.html和https://blog.thecodeteam.com/2017/01/27/rexray-ceph/" target="_blank" rel="external">http://www.stillhq.com/docker/000001.html和https://blog.thecodeteam.com/2017/01/27/rexray-ceph/</a></li>
+<li>REX-Ray下也可以挂cinder驱动，然后通过cinder ceph驱动来支持ceph。见：<a href="https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go" target="_blank" rel="external">https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go</a></li>
+</ul>
+<p>Cinder不仅是给nova用的，也可以绕开nova单独使用，见<a href="https://specs.openstack.org/openstack/cinder-specs/specs/mitaka/use-cinder-without-nova.html" target="_blank" rel="external">https://specs.openstack.org/openstack/cinder-specs/specs/mitaka/use-cinder-without-nova.html</a> ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cinder local-attach [--mountpoint /mnt/disk] [--multipath True] [--enforce-multipath True] [--mode rw] &lt;volume_id&gt;</span><br></pre></td></tr></table></figure></p>
+<p>如果通过rexray/cinder让Docker容器使用了cinder ceph volume的话，如果这个volume是有状态需要需要在容器和虚机间共享的话，这个volume也可以通过上面说的nova multiattach特性给nova instance使用的， 还可以使用这个特性’cinder local-attach’特性给non-nova instance使用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck4jppqr9000a88bprk7khk06" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-如何修改网卡名称由enp0s25为eth0" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/" class="article-date">
@@ -107,7 +169,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck3tj9x4f000ut0bpj2iai8ai" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/12/06/如何修改网卡名称由enp0s25为eth0/" data-id="ck4jppqrq000w88bp345t075j" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -174,7 +236,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck3tj9x4b000rt0bphors7b00" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck4jppqrn000t88bpiq71t8nj" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -220,7 +282,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck3tj9x330007t0bpsv5egl9v" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" data-id="ck4jppqrh000k88bp4wtnephh" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -275,7 +337,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck3tj9x41000jt0bpr8lmh4qo" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" data-id="ck4jppqrg000j88bp1xzzc1gy" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -338,7 +400,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="ck3tj9x4q0014t0bpshnwi7j7" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" data-id="ck4jppqs0001488bphapdgyi2" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -390,7 +452,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="ck3tj9x4p0013t0bpuwu6zndw" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/" data-id="ck4jppqsf001588bpv9mn54yr" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -440,7 +502,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="ck3tj9x40000it0bp2s5pehqt" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/" data-id="ck4jppqrj000m88bpfc0npq1g" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -529,7 +591,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="ck3tj9x4s0017t0bps9jb1wq5" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/" data-id="ck4jppqsk001888bpm2xf2htt" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -601,87 +663,7 @@ lxc profile device set default eth0 nictype macvlan
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="ck3tj9x4l000yt0bpgwk4gxjr" class="article-share-link">Partager</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Play-with-LXD" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/11/12/Play-with-LXD/" class="article-date">
-  <time datetime="2017-11-12T06:28:36.000Z" itemprop="datePublished">2017-11-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/11/12/Play-with-LXD/">Play with LXD</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>作者：张华  发表于：2016-08-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
-<h2 id="安装LXD"><a href="#安装LXD" class="headerlink" title="安装LXD"></a>安装LXD</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install juju-deployer lxd zfsutils-linux bridge-utils squid-deb-proxy python-novaclient python-keystoneclient python-glanceclient python-neutronclient python-openstackclient</span><br><span class="line">sudo mkdir -p /images/lxd &amp;&amp; sudo ln -s /images/lxd /var/lib/lxd/containers</span><br><span class="line">#sudo rm -rf /var/lib/lxd</span><br><span class="line">#sudo rm -rf ~/.config/lxc/</span><br><span class="line">sudo systemctl enable lxd</span><br><span class="line">sudo systemctl start lxd</span><br><span class="line">sudo systemctl status lxd</span><br><span class="line">sudo systemctl --failed</span><br><span class="line">#newgrp lxd</span><br><span class="line">#sudo usermod -a -G lxd hua</span><br><span class="line">#sudo chown -R root:lxd /var/lib/lxd</span><br><span class="line"></span><br><span class="line">sudo lxc profile device set default eth0 mtu 9000</span><br><span class="line">$ sudo lxd init</span><br><span class="line">Would you like to use LXD clustering? (yes/no) [default=no]: </span><br><span class="line">Do you want to configure a new storage pool? (yes/no) [default=yes]: </span><br><span class="line">Name of the new storage pool [default=default]: </span><br><span class="line">Name of the storage backend to use (btrfs, dir, lvm, zfs) [default=zfs]: dir</span><br><span class="line">Would you like to connect to a MAAS server? (yes/no) [default=no]: </span><br><span class="line">Would you like to create a new local network bridge? (yes/no) [default=yes]: </span><br><span class="line">What should the new bridge be called? [default=lxdbr0]: </span><br><span class="line">What IPv4 address should be used? (CIDR subnet notation, “auto” or “none”) [default=auto]: </span><br><span class="line">What IPv6 address should be used? (CIDR subnet notation, “auto” or “none”) [default=auto]: </span><br><span class="line">Would you like LXD to be available over the network? (yes/no) [default=no]: </span><br><span class="line">Would you like stale cached images to be updated automatically? (yes/no) [default=yes] </span><br><span class="line">Would you like a YAML &quot;lxd init&quot; preseed to be printed? (yes/no) [default=no]:</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lxc profile show default</span><br><span class="line">config: &#123;&#125;</span><br><span class="line">description: Default LXD profile</span><br><span class="line">devices:</span><br><span class="line">  eth0:</span><br><span class="line">      name: eth0</span><br><span class="line">          nictype: bridged</span><br><span class="line">              parent: lxdbr0</span><br><span class="line">                  type: nic</span><br><span class="line">                  name: default</span><br><span class="line"></span><br><span class="line">                  $ ps -ef|grep dnsmasq</span><br><span class="line">                  lxd      28917     1  0 17:43 ?        00:00:00 dnsmasq -s lxd -S /lxd/ -u lxd --strict-order --bind-interfaces --pid-file=/run/lxd-bridge//dnsmasq.pid --dhcp-no-override --except-interface=lo --interface=lxdbr0 --dhcp-leasefile=/var/lib/lxd-bridge//dnsmasq.lxdbr0.leases --dhcp-authoritative --listen-address 10.0.8.1 --dhcp-range 10.0.8.2,10.0.8.200 --dhcp-lease-max=252</span><br></pre></td></tr></table></figure>
-<pre><code>安装LXD中可能遇到的问题
--------------
-
-上面的命令会自动调用下列命令配置lxdbr0，但是有时候出错时可以使用下列命令分步调试。
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo dpkg-reconfigure lxd</span><br><span class="line">cat /etc/default/lxd-bridge  #/usr/lib/lxd/lxd-bridge</span><br><span class="line">sudo service lxd-bridge restart</span><br><span class="line">sudo systemctl status lxd-bridge</span><br></pre></td></tr></table></figure>
-
-配置lxd-bridge时出错比较多，首先会遇到这么一个错误“Unable to connect to Upstart”，那是因为ubuntu 16.04里同时安装了upstart与systemd，使用下列命令禁用upstart的启动方式，今后启动程序采用init.d或systemd的方式。
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">                  sudo dpkg-divert --local --rename --add /sbin/initctl</span><br><span class="line">                  sudo ln -s /bin/true /sbin/initctl</span><br><span class="line">#sudo apt-get --reinstall install upstart</span><br><span class="line">#sudo dpkg-diver --local --remove /sbin/initctl</span><br><span class="line">#sudo rm /sbin/initctl</span><br></pre></td></tr></table></figure>
-
-另外一个是/var/log/syslog中报这种错误“Aug  5 17:02:54 localhost lxd-bridge.start[23556]: Error: ??? prefix is expected rather than &quot;10.0.8.1/24/24&quot;.&quot;，这是采用sudo dpkg-reconfigure lxd命令生成的/etc/default/lxd-bridge文件中配置的下列LXD_IPV4_ADDR参数多出了/24。
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">## IPv4 address (e.g. 10.0.8.1)</span><br><span class="line">                  LXD_IPV4_ADDR=&quot;10.0.8.1/24&quot;</span><br></pre></td></tr></table></figure>
-
-从而导致/usr/lib/lxd/lxd-bridge中的下列命令就会报上述错误。
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ifup &quot;$&#123;LXD_BRIDGE&#125;&quot; &quot;$&#123;LXD_IPV4_ADDR&#125;&quot; &quot;$&#123;LXD_IPV4_NETMASK&#125;&quot;</span><br></pre></td></tr></table></figure>
-
-测试lxd
------
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">                  sudo lxc launch ubuntu:xenial test1</span><br><span class="line">                  sudo lxc info --show-log test1</span><br><span class="line">                  sudo lxc list</span><br><span class="line">#sudo lxc delete test1 --force</span><br><span class="line"></span><br><span class="line">                  sudo lxc exec test1 bash</span><br><span class="line">                  root@test1:~# ip addr show eth0           </span><br><span class="line">                  root@test1:~# cat /etc/resolv.conf </span><br><span class="line">                  nameserver 10.0.8.1</span><br><span class="line">                  root@test1:~# ip addr show eth0 |grep eth0</span><br><span class="line">                  265: eth0@if266: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 9000 qdisc noqueue state UP group default qlen 1000</span><br><span class="line">                      inet 10.0.8.129/24 brd 10.0.8.255 scope global eth0</span><br></pre></td></tr></table></figure>
-
-    参考
-    --
-
-     1. 
-         [https://bayton.org/2016/05/lxd-zfs-and-bridged-networking-on-ubuntu-16-04-lts/](https://bayton.org/2016/05/lxd-zfs-and-bridged-networking-on-ubuntu-16-04-lts/)
-
-
-
-    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">```&quot;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> </span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"> </span><br></pre></td></tr></table></figure>
-</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">```</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/11/12/Play-with-LXD/" data-id="ck3tj9x36000at0bppm0jxjuy" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/" data-id="ck4jppqrs000x88bpd090po1d" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -712,7 +694,7 @@ lxc profile device set default eth0 nictype macvlan
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -723,6 +705,10 @@ lxc profile device set default eth0 nictype macvlan
     <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/12/24/How-to-make-pure-text-presentation-ppt/">How to make pure text presentation/ppt</a>
+          </li>
         
           <li>
             <a href="/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/">How to test Neutron VRRP HA rapidly</a>
@@ -738,10 +724,6 @@ lxc profile device set default eth0 nictype macvlan
         
           <li>
             <a href="/2019/11/05/k8s-http-https-nginx-ingress/">k8s http/https nginx ingress</a>
-          </li>
-        
-          <li>
-            <a href="/2019/10/14/OpenStack开发过程中常用Git操作场景/">OpenStack开发过程中常用Git操作场景</a>
           </li>
         
       </ul>

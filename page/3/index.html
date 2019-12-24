@@ -68,6 +68,48 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Play-with-ceph-radosgw" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/13/Play-with-ceph-radosgw/" class="article-date">
+  <time datetime="2018-06-13T10:56:45.000Z" itemprop="datePublished">2018-06-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/13/Play-with-ceph-radosgw/">Play with ceph-radosgw</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-06-13)</strong></p>
+<h2 id="Rapidly-install"><a href="#Rapidly-install" class="headerlink" title="Rapidly install"></a>Rapidly install</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/openstack/charm-ceph-radosgw</span><br><span class="line">juju deploy ceph-radosgw --series xenial</span><br><span class="line">juju add-relation ceph-radosgw ceph</span><br><span class="line">juju add-relation keystone ceph-radosgw</span><br><span class="line">juju expose ceph-radosgw</span><br><span class="line">curl http://juju-332891-mitaka-ceph-13</span><br><span class="line"></span><br><span class="line">juju ssh ceph/0 &apos;sudo radosgw-admin metadata list user&apos;</span><br><span class="line">sudo radosgw-admin user create --uid=&quot;admin&quot; --display-name=&quot;admin&quot;</span><br><span class="line">sudo radosgw-admin usage show --uid=admin</span><br><span class="line">sudo radosgw-admin usage show --show-log-entries=false</span><br><span class="line">sudo radosgw-admin caps add --uid=admin --caps=&quot;users=*&quot;</span><br><span class="line">sudo radosgw-admin caps add --uid=admin --caps=&quot;usage=read&quot;</span><br><span class="line">sudo radosgw-admin bucket stats</span><br><span class="line">sudo radosgw-admin bucket stats --uid=anonymous</span><br></pre></td></tr></table></figure>
+<h2 id="Use-s3cmd-client-to-visit-RGW"><a href="#Use-s3cmd-client-to-visit-RGW" class="headerlink" title="Use s3cmd client to visit RGW"></a>Use s3cmd client to visit RGW</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install s3cmd</span><br><span class="line">s3cmd --configure</span><br><span class="line">check_ssl_certificate = False</span><br><span class="line">check_ssl_hostname = False</span><br><span class="line">access_key = EJECCFLCB0K53EMVM3DL</span><br><span class="line">secret_key = C281KRmdFFWxzOHyjZ3OsvQorCgf1mxdML7kYJ1t</span><br><span class="line">cloudfront_host = juju-332891-mitaka-ceph-13</span><br><span class="line">host_base = juju-332891-mitaka-ceph-13:80</span><br><span class="line">host_bucket = %(bucket)s.juju-332891-mitaka-ceph-13</span><br><span class="line"></span><br><span class="line">s3cmd mb s3://my_test1</span><br><span class="line">s3cmd ls  # qeury bucket</span><br><span class="line">s3cmd put testfile s3://my_test1</span><br><span class="line">s3cmd ls s3://my_test1</span><br><span class="line">s3cmd get s3://my_test1/diff</span><br></pre></td></tr></table></figure>
+<h2 id="Enable-usage-log"><a href="#Enable-usage-log" class="headerlink" title="Enable usage.log"></a>Enable usage.log</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">http://www.yangguanjun.com/2016/08/30/rgw-user-statistics/</span><br><span class="line">Add the following configurations into ceph-radosgw/0 node</span><br><span class="line">[client.radosgw.gateway]</span><br><span class="line">rgw enable usage log = true</span><br><span class="line">rgw usage log tick interval = 30</span><br><span class="line">rgw usage log flush threshold = 1024</span><br><span class="line">rgw usage max shards = 32</span><br><span class="line">rgw usage max user shards = 1</span><br><span class="line"></span><br><span class="line">sudo ceph osd pool create .usage 64   # create a pool for usage, run in &apos;ceph/0&apos;</span><br><span class="line">sudo ceph osd pool create .rgw 128 128</span><br><span class="line">sudo ceph osd pool create .rgw.root 128 128</span><br><span class="line">sudo ceph osd pool create .rgw.control 128 128</span><br><span class="line">sudo ceph osd pool create .rgw.gc 128 128</span><br><span class="line">sudo ceph osd pool create .rgw.buckets 128 128</span><br><span class="line">sudo ceph osd pool create .rgw.buckets.index 128 128</span><br><span class="line">sudo ceph osd pool create .log 128 128</span><br><span class="line">sudo ceph osd pool create .intent-log 128 128</span><br><span class="line">sudo ceph osd pool create .usage 128 128</span><br><span class="line">sudo ceph osd pool create .users 128 128</span><br><span class="line">sudo ceph osd pool create .users.email 128 128</span><br><span class="line">sudo ceph osd pool create .users.swift 128 128</span><br><span class="line">sudo ceph osd pool create .users.uid 128 128</span><br><span class="line"></span><br><span class="line">sudo /etc/init.d/radosgw restart</span><br><span class="line">ceph daemon /var/run/ceph/ceph-client.radosgw.gateway.asok config show # verify config, run in radosgw node</span><br><span class="line">sudo radosgw-admin usage show --show-log-entries=false  # after 1 hour, use radosgw-admin to see usage data, run in ceph/0</span><br></pre></td></tr></table></figure>
+<h2 id="REST-API"><a href="#REST-API" class="headerlink" title="REST API"></a>REST API</h2><p>用REST API调用时遇到一个问题(radosgw-admin usage show无此问题), 就是看到anonymous用户有很多空bucket<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">$ sudo radosgw-admin usage show --uid=anonymous</span><br><span class="line">user.init failed: (13) Permission denied</span><br><span class="line"></span><br><span class="line">$./get_anonymous.py</span><br><span class="line">DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): juju-332891-mitaka-ceph-13</span><br><span class="line">DEBUG:urllib3.connectionpool:http://juju-332891-mitaka-ceph-13:80 &quot;GET /admin/usage?format=json&amp;show-summary=False&amp;uid=anonymous HTTP/1.1&quot; 200 242</span><br><span class="line">&lt;Response [200]&gt;</span><br><span class="line">&#123;</span><br><span class="line">    &quot;entries&quot;:[</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;buckets&quot;:[</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;bucket&quot;:&quot;&quot;,</span><br><span class="line">                    &quot;categories&quot;:[</span><br><span class="line">                        &#123;</span><br><span class="line">                            &quot;bytes_received&quot;:0,</span><br><span class="line">                            &quot;bytes_sent&quot;:940,</span><br><span class="line">                            &quot;category&quot;:&quot;list_buckets&quot;,</span><br><span class="line">                            &quot;ops&quot;:4,</span><br><span class="line">                            &quot;successful_ops&quot;:4</span><br><span class="line">                        &#125;</span><br><span class="line">                    ],</span><br><span class="line">                    &quot;epoch&quot;:1528275600,</span><br><span class="line">                    &quot;owner&quot;:&quot;anonymous&quot;,</span><br><span class="line">                    &quot;time&quot;:&quot;2018-06-06 09:00:00.000000Z&quot;</span><br><span class="line">                &#125;</span><br><span class="line">            ],</span><br><span class="line">            &quot;user&quot;:&quot;anonymous&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$ cat get_anonymous.py</span><br><span class="line">#!/usr/bin/python</span><br><span class="line">import requests</span><br><span class="line">import json</span><br><span class="line">import logging</span><br><span class="line">import argparse</span><br><span class="line">from awsauth import S3Auth</span><br><span class="line"></span><br><span class="line">logging.basicConfig(level=logging.DEBUG)</span><br><span class="line">server = &apos;juju-332891-mitaka-ceph-13&apos;</span><br><span class="line">aws_key = &apos;EJECCFLCB0K53EMVM3DL&apos;</span><br><span class="line">secret = &apos;C281KRmdFFWxzOHyjZ3OsvQorCgf1mxdML7kYJ1t&apos;</span><br><span class="line">url = &apos;http://%s/admin/usage?format=json&amp;show-summary=False&amp;uid=anonymous&apos; % server</span><br><span class="line">response = requests.get(url, auth=S3Auth(aws_key, secret, server))</span><br><span class="line">print response</span><br><span class="line">print json.dumps(response.json(), sort_keys=True, indent=4, separators=(&apos;,&apos;, &apos;:&apos;))</span><br></pre></td></tr></table></figure></p>
+<h2 id="Set-up-ceph-debug-env-in-boinic"><a href="#Set-up-ceph-debug-env-in-boinic" class="headerlink" title="Set up ceph debug env in boinic"></a>Set up ceph debug env in boinic</h2><p>gdb can also debug python by using prefix py- in gdb comand - <a href="http://linux-debug.blogspot.com/2015/01/ceph-debugging-python-code-in-gdb.html" target="_blank" rel="external">http://linux-debug.blogspot.com/2015/01/ceph-debugging-python-code-in-gdb.html</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/ceph/ceph</span><br><span class="line">git submodule update --force --init --recursive</span><br><span class="line">git checkout master</span><br><span class="line">./install-deps.sh</span><br><span class="line">sudo apt install libatomic-ops-dev libboost-dev libboost-iostreams-dev libboost-thread-dev libboost-random-dev libboost-program-options-dev libcurl4-openssl-dev libcunit1 libcunit1-dev liblz4-dev liboath-dev liblttng-ust-dev libcrypto++ libcrypto++-dev libgoogle-perftools4 libtool cython libsnappy-dev libleveldb-dev libblkid-dev libudev-dev libkeyutils-dev libcrypto++-dev libcrypto++-doc libcrypto++-utils libfuse-dev libcurl4-openssl-dev libxml++2.6-dev libssl-dev libgoogle-perftools-dev libgoogle-perftools4 libatomic-ops-dev libaio-dev  xfslibs-dev libboost-iostreams-dev libfcgi-dev</span><br><span class="line">sudo apt install gcr libblockdev-crypto2 libhcrypto4-heimdal libhogweed4 libk5crypto3 libnettle6 libsodium23 openssl python-m2crypto python3-crypto python3-cryptography</span><br><span class="line">#./autogen.sh &amp;&amp; ./configure  #old way, need to modifty makefile to &apos;-O0-Wall -g&apos; for debug</span><br><span class="line">./do_cmake.sh -DCMAKE_BUILD_TYPE=Debug</span><br><span class="line">cd build</span><br><span class="line">make -j56</span><br><span class="line">make ceph-osd -j56</span><br><span class="line"></span><br><span class="line">MON=1 OSD=3 MDS=1 MGR=1 RGW=1 ../src/vstart.sh -n -d --without-dashboard</span><br><span class="line">../src/stop.sh</span><br><span class="line">./bin/ceph -s</span><br><span class="line">./bin/ceph osd pool stats</span><br><span class="line">ps aux|grep ceph</span><br><span class="line">pstree -p</span><br><span class="line"></span><br><span class="line">./bin/radosgw-admin user create --uid=admin --display-name=admin --access-key=admin --secret=password</span><br><span class="line">./bin/radosgw-admin usage show --uid=admin</span><br><span class="line">./bin/radosgw-admin bucket stats --uid=anonymous</span><br><span class="line"></span><br><span class="line">sudo gdb attach $(pidof radosgw)</span><br><span class="line">(gdb) set solib-search-path /bak/linux/ceph/src/.libs/</span><br><span class="line">(gdb) set pagination off</span><br><span class="line">(gdb) b rgw/rgw_process.cc:38</span><br><span class="line">(gdb) b process_request</span><br><span class="line">(gdb) c</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="ck4jppqrb000d88bpejpgz8k3" class="article-share-link">Partager</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Play-with-LDAP-Keystone-by-quqi99" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" class="article-date">
@@ -107,7 +149,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="ck3tj9x350009t0bpvcrdzdss" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="ck4jppqr9000b88bppppcmy25" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -172,7 +214,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="ck3tj9x4h000vt0bpa2o6b2mr" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="ck4jppqrp000v88bp3tgn9ho7" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -229,7 +271,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="ck3tj9x340008t0bp5fg7zm8b" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="ck4jppqr1000288bpzvjr1thz" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -292,7 +334,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="ck3tj9x2w0003t0bp1qq6onyz" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="ck4jppqr6000788bp7dk2w0ak" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -357,7 +399,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck3tj9x3a000ft0bp719y48mu" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck4jppqrd000f88bpc952b6x3" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -399,7 +441,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck3tj9x2o0000t0bpylro5ov1" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck4jppqr4000588bp8igmqrjv" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -449,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck3tj9x2y0004t0bpxmqy9akm" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/" data-id="ck4jppqqz000188bp6aesdp9u" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -502,7 +544,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck3tj9x4l000xt0bpnl0kkgo2" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/" data-id="ck4jppqrv001088bp704z907q" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -560,69 +602,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck3tj9x45000mt0bp5owpkor7" class="article-share-link">Partager</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-OpenStack-s-multiattach-Feature" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/12/22/OpenStack-s-multiattach-Feature/" class="article-date">
-  <time datetime="2017-12-22T05:31:50.000Z" itemprop="datePublished">2017-12-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/12/22/OpenStack-s-multiattach-Feature/">OpenStack&#39;s multiattach Feature</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>作者：张华  发表于：2017-12-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="什么是multiattach特性"><a href="#什么是multiattach特性" class="headerlink" title="什么是multiattach特性"></a>什么是multiattach特性</h2><p>OpenStack’s multiattach Feature允许一个read only volume经iscsi/FC被attached到多个VM。</p>
-<h2 id="代码实现原理"><a href="#代码实现原理" class="headerlink" title="代码实现原理"></a>代码实现原理</h2><ul>
-<li>用户首先通过cinder定义一个shareable标志的volume.</li>
-<li>在attach的时候，nova需要修改即使在in-use状态下仍然可以attach, nova为每一个attachment指定read-write或者read-only, cinder端修改在available和in-use状态下仍然可attach，multiattach标志设置可以被attach多次。attach之后将volume和instance的关系记录到attachment表中。libvirt端需要将这个volume设置shareable标, 这样hypervisor将不会在volume上设置独占锁及相关针对vm的SELinux隔离设置。</li>
-<li>在detach的时候，nova需要传递attachment_id到clinderclient告诉cinder哪个attahment需要detach, 然后cinder结合instance_id与attachment_id做detach。如果cinder设置了multiattach标志又没有传attachment_id(os-detach-&gt;attachment_id)过来应该失败。</li>
-</ul>
-<p>数据表设计：<br>volume_attachment(id, volume_id, attached_host, instance_uuid, mountpoint, attach_time, attach_mode, sttach_status, time)</p>
-<p>代码实现：<br>1, cinder side<br>   <a href="https://review.openstack.org/#/c/85847/" target="_blank" rel="external">https://review.openstack.org/#/c/85847/</a><br>2, cinderclient side<br>   <a href="https://review.openstack.org/#/c/85856/" target="_blank" rel="external">https://review.openstack.org/#/c/85856/</a><br>3, nova side<br>   <a href="https://review.openstack.org/#/c/526182/" target="_blank" rel="external">https://review.openstack.org/#/c/526182/</a><br>   <a href="https://review.openstack.org/#/c/525787/" target="_blank" rel="external">https://review.openstack.org/#/c/525787/</a><br>   <a href="https://review.openstack.org/#/c/330285/" target="_blank" rel="external">https://review.openstack.org/#/c/330285/</a><br>   <a href="https://review.openstack.org/#/c/527468/" target="_blank" rel="external">https://review.openstack.org/#/c/527468/</a>  </p>
-<p>CLI如何使用：<br>openstack volume create –size 1 –multi-attach multi_attach_test</p>
-<h2 id="已知问题"><a href="#已知问题" class="headerlink" title="已知问题"></a>已知问题</h2><p>RDB驱动不支持multiattach - <a href="https://review.openstack.org/#/c/283695/" target="_blank" rel="external">https://review.openstack.org/#/c/283695/</a>, 关于它的讨论 - <a href="https://openstack.nimeyo.com/103230/openstack-dev-multi-attach-volume-for-rbd，但根据这个说法（https://bugs.launchpad.net/cinder/+bug/1535815/comments/6）似乎用这个特性是安全的。" target="_blank" rel="external">https://openstack.nimeyo.com/103230/openstack-dev-multi-attach-volume-for-rbd，但根据这个说法（https://bugs.launchpad.net/cinder/+bug/1535815/comments/6）似乎用这个特性是安全的。</a></p>
-<h2 id="容器虚机通过multiattach特性使用同一个存储卷"><a href="#容器虚机通过multiattach特性使用同一个存储卷" class="headerlink" title="容器虚机通过multiattach特性使用同一个存储卷"></a>容器虚机通过multiattach特性使用同一个存储卷</h2><p>我们知道Docker容器本身是无状态的，意味着容器退出后不会保存任何数据。但实际使用场景，肯定是需要保存业务数据的，Docker通过volume实现数据的持久化存储以及共享。Docker有很多种使用OpenStack Cinder的驱动：</p>
-<ul>
-<li>Docker Cinder Driver - <a href="https://github.com/j-griffith/cinder-docker-driver" target="_blank" rel="external">https://github.com/j-griffith/cinder-docker-driver</a>, 如何使用见<a href="http://superuser.openstack.org/articles/how-to-use-openstack-cinder-for-docker/与http://superuser.openstack.org/articles/how-to-use-cinder-with-swarm/" target="_blank" rel="external">http://superuser.openstack.org/articles/how-to-use-openstack-cinder-for-docker/与http://superuser.openstack.org/articles/how-to-use-cinder-with-swarm/</a></li>
-<li>OpenStack Fuxi - 华为主导的OpenStack官方工程，让Docker容器使用Cinder和Manila - <a href="https://docs.openstack.org/fuxi/latest/readme.html" target="_blank" rel="external">https://docs.openstack.org/fuxi/latest/readme.html</a></li>
-<li>Flocker - 是一款针对容器的存储方案</li>
-<li>REX-Ray - 也是一款进一步封装之后针对容器的存储方案 - rexray/cinder驱动(<a href="https://rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/)实现了Docker的provider.Provider存储Plugin接口，rexray/cinder最终通过rexray的cinder驱动去挂载cinder" target="_blank" rel="external">https://rexray.readthedocs.io/en/stable/user-guide/schedulers/docker/plug-ins/)实现了Docker的provider.Provider存储Plugin接口，rexray/cinder最终通过rexray的cinder驱动去挂载cinder</a> volume (<a href="https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go)。" target="_blank" rel="external">https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go)。</a></li>
-</ul>
-<p>什么是REX-Ray:</p>
-<ul>
-<li>REX-Ray是一个开源的存储编排引擎(<a href="http://blog.daocloud.io/swarm-emc/" target="_blank" rel="external">http://blog.daocloud.io/swarm-emc/</a>), 进一步封装整合了不同的存储如Ceph, Cinder, EBS等，来主要为Docker, Mesos等容器来提供持续的存储访问, 似乎没有看到REX-Ray下挂到OpenStack Cinder的驱动（见: <a href="https://rexray.readthedocs.io/en/stable/）。" target="_blank" rel="external">https://rexray.readthedocs.io/en/stable/）。</a></li>
-<li>REX-Ray下可以直接挂ceph驱动, 见：<a href="http://www.stillhq.com/docker/000001.html和https://blog.thecodeteam.com/2017/01/27/rexray-ceph/" target="_blank" rel="external">http://www.stillhq.com/docker/000001.html和https://blog.thecodeteam.com/2017/01/27/rexray-ceph/</a></li>
-<li>REX-Ray下也可以挂cinder驱动，然后通过cinder ceph驱动来支持ceph。见：<a href="https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go" target="_blank" rel="external">https://github.com/thecodeteam/rexray/blob/master/libstorage/drivers/storage/cinder/storage/cinder_storage.go</a></li>
-</ul>
-<p>Cinder不仅是给nova用的，也可以绕开nova单独使用，见<a href="https://specs.openstack.org/openstack/cinder-specs/specs/mitaka/use-cinder-without-nova.html" target="_blank" rel="external">https://specs.openstack.org/openstack/cinder-specs/specs/mitaka/use-cinder-without-nova.html</a> ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cinder local-attach [--mountpoint /mnt/disk] [--multipath True] [--enforce-multipath True] [--mode rw] &lt;volume_id&gt;</span><br></pre></td></tr></table></figure></p>
-<p>如果通过rexray/cinder让Docker容器使用了cinder ceph volume的话，如果这个volume是有状态需要需要在容器和虚机间共享的话，这个volume也可以通过上面说的nova multiattach特性给nova instance使用的， 还可以使用这个特性’cinder local-attach’特性给non-nova instance使用。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/22/OpenStack-s-multiattach-Feature/" data-id="ck3tj9x300005t0bppdy5v985" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/" data-id="ck4jppqrl000q88bpmdk3z84d" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -653,7 +633,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -664,6 +644,10 @@
     <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/12/24/How-to-make-pure-text-presentation-ppt/">How to make pure text presentation/ppt</a>
+          </li>
         
           <li>
             <a href="/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/">How to test Neutron VRRP HA rapidly</a>
@@ -679,10 +663,6 @@
         
           <li>
             <a href="/2019/11/05/k8s-http-https-nginx-ingress/">k8s http/https nginx ingress</a>
-          </li>
-        
-          <li>
-            <a href="/2019/10/14/OpenStack开发过程中常用Git操作场景/">OpenStack开发过程中常用Git操作场景</a>
           </li>
         
       </ul>
