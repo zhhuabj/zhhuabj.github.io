@@ -68,6 +68,46 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-利用squid的tcp-outgoing-address特性选择第二块网卡出流量" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/" class="article-date">
+  <time datetime="2020-02-12T06:40:17.000Z" itemprop="datePublished">2020-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>作者：张华 发表于：2020-02-12<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器, 然后用到squid的tcp_outgoing_address特性, 但是tcp_outgoing_address这个特性做测试时可没那么容易成功的, 最终这个最小化的squid.conf如下, 底层原理可参照[2]:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install squid -y</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/squid/squid.conf</span><br><span class="line">http_port 192.168.99.135:3128</span><br><span class="line">dns_v4_first on</span><br><span class="line">#dns_nameservers 192.168.8.1</span><br><span class="line">acl gfw myip 192.168.8.101</span><br><span class="line">tcp_outgoing_address 192.168.8.101 gfw</span><br><span class="line">acl localip src 192.168.99.135</span><br><span class="line">http_access allow localip</span><br><span class="line">http_access deny all</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl reload squid</span><br><span class="line">sudo systemctl enable squid</span><br></pre></td></tr></table></figure>
+<p>[1] <a href="https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem" target="_blank" rel="external">https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem</a><br>[2] <a href="http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/" target="_blank" rel="external">http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/" data-id="ck6iy3pa2000rjhbpcxgkdu45" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Debian-Customer-PPA-RFC" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/01/13/Debian-Customer-PPA-RFC/" class="article-date">
@@ -220,7 +260,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/01/13/Debian-Customer-PPA-RFC/" data-id="ck5c79bgx00021abpvqj6pxl8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/01/13/Debian-Customer-PPA-RFC/" data-id="ck6iy3p9f0001jhbp5ypbp4nr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -260,7 +300,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/12/24/How-to-make-pure-text-presentation-ppt/" data-id="ck5c79bgz00041abpuw8wrvtd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/12/24/How-to-make-pure-text-presentation-ppt/" data-id="ck6iy3p9o0009jhbp5q53j2j8" class="article-share-link">Share</a>
       
       
     </footer>
@@ -417,7 +457,7 @@ done
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/" data-id="ck5c79bh000051abpdi4g8z97" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/" data-id="ck6iy3p9v000ijhbpcnn3p0en" class="article-share-link">Share</a>
       
       
     </footer>
@@ -490,7 +530,7 @@ done
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/08/Perf火焰图/" data-id="ck5c79bh6000c1abp0v6n2jra" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/08/Perf火焰图/" data-id="ck6iy3p9n0008jhbpzvdgwh01" class="article-share-link">Share</a>
       
       
     </footer>
@@ -551,7 +591,7 @@ done
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" data-id="ck5c79bht000v1abpmd7mcgnf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" data-id="ck6iy3pax0018jhbpt5hf5qt5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -618,7 +658,7 @@ done
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/" data-id="ck5c79bhm000q1abpv2roey8c" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/11/05/k8s-http-https-nginx-ingress/" data-id="ck6iy3pa0000pjhbp996dpqhh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -729,7 +769,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/" data-id="ck5c79bh4000a1abp7tlxz8no" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/" data-id="ck6iy3pam0016jhbpq45caccg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -797,7 +837,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck5c79bhb000h1abp2bn12xl0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" data-id="ck6iy3pa2000sjhbpwuj0yp7z" class="article-share-link">Share</a>
       
       
     </footer>
@@ -859,75 +899,7 @@ Fixed bug #161317
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck5c79bi4000z1abpzqezdweg" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-手机作为显示器及键鼠控制电脑棒" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/04/15/手机作为显示器及键鼠控制电脑棒/" class="article-date">
-  <time datetime="2019-04-15T00:56:05.000Z" itemprop="datePublished">2019-04-15</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/04/15/手机作为显示器及键鼠控制电脑棒/">手机作为显示器及键鼠控制电脑棒</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-04-14)</strong></p>
-<p>买了一款Intel compute stick core m3, 具有HDMI接口输出音频, 但如何使用手机临时地作为显示器及键盘鼠标控制它呢?</p>
-<h2 id="屏幕共享-vnc-amp-teamviewer-amp-anydesk"><a href="#屏幕共享-vnc-amp-teamviewer-amp-anydesk" class="headerlink" title="屏幕共享 - vnc &amp; teamviewer &amp; anydesk"></a>屏幕共享 - vnc &amp; teamviewer &amp; anydesk</h2><p>windows上有一款叫spacedesk的软件, 电脑和手机上都安装它之后, 在同一个局域网可以很方便地从手机控制电脑棒.<br>Ubuntu上可以使用vnc, teamviewer, anydesk.</p>
-<ul>
-<li>ubuntu上安装VNC<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># https://medium.com/@aldo_mx/simplest-way-to-configure-vnc-server-in-xubuntu-16-04-lts-and-newer-6c0b3ae21fe5</span><br><span class="line">sudo apt-get install vino</span><br><span class="line">gsettings list-recursively org.gnome.Vino</span><br><span class="line"># some clients like TightVNC for Windows do not work with encryption anymore</span><br><span class="line"># because older protocols like SSLv3 and TLSv1 have been deprecated.</span><br><span class="line"># dconf-editor - ORG &gt; GNOME &gt; DESKTOP &gt; REMOTE ACCESS</span><br><span class="line">gsettings set org.gnome.Vino require-encryption false</span><br><span class="line"># activate at startup, or set &quot;Settings -&gt; Sharing -&gt; screen Sharing&quot; in ubuntu</span><br><span class="line">sudo cp /usr/share/applications/vino-server.desktop /etc/xdg/autostart/vino-server.desktop</span><br><span class="line"># #enable &quot;Application Autostart -&gt; Desktop Sharing(Gnome Desktop Sharing Server)&quot;</span><br><span class="line">xfce4-session-settings</span><br><span class="line">/usr/lib/vino/vino-server --sm-disable</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>需注意两点：一是要<strong>设置require-encryption=false</strong>, 二是手机上使用realvnc client时不应该登陆，因为没用realvnc server，而是用的vino server</p>
-<ul>
-<li>安装使用anydesk使用屏幕, 鼠标, 键盘.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.anydesk.com/linux/anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo dpkg -i anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo apt --fix-broken install</span><br><span class="line">sudo dpkg -i anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo systemctl enable anydesk.service</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>最后, 设置anydesk, 设置允许随时连接查询, 并设置密码, 禁用掉声音传输.<br>但又遇到一个问题, 在笔记本上测试anydesk似乎没有问题. 但移到电脑棒上后, 电脑棒启动后经常无故死机. (<strong>无故死机的问题找到了, 一次是因为电源没插好接触不良, 另一次是应用了平时给手机充电的Type-A USB输出的充电器, 应该使用自带的APD亚源科技的Type-C输出口的充电器(输出则是5.2V 2.2A（Type-C对机身）、5V 0.9A（对两个Type-A）</strong>，这个问题真难查). 但仍然遇到一个问题 (手机上的anydesk发起连接时报: 连接已终止,. 状态: result_invalid_state，暂不清楚原因)</p>
-<ul>
-<li>切换为teamviewer, 也是遇到类似问题, 曾经成功过, 但之后手机上的teamviewer就一起报: teamviewer正在启动, 请稍候. （该问题原因已找到， 因为墙，用4G网络可以， 见： <a href="https://github.com/ywb94/openwrt-ssr/issues/31" target="_blank" rel="external">https://github.com/ywb94/openwrt-ssr/issues/31</a> 及 <a href="https://zvv.me/z/1366.html" target="_blank" rel="external">https://zvv.me/z/1366.html</a> ）</li>
-</ul>
-<p>还存在一个问题: **如果电脑棒不通过HDMI接口接一个显示器, 电脑棒重启之后通过远程桌面连接过去看到的是一屏黑色. 那是因为Linux服务器一般是不接显示器的，用ssh等文字界面连接管理即可, 可是有些软件需要GUI管理，若不接显示器，xwindows是默认无法启动的，从而导致vnc server连接失败, 可配置一块fake显示器解决:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"># https://askubuntu.com/questions/453109/add-fake-display-when-no-monitor-is-plugged-in</span><br><span class="line">sudo apt-get install xserver-xorg-video-dummy</span><br><span class="line">sudo bash -c &apos;cat &gt; /usr/share/X11/xorg.conf.d/xorg.conf&apos; &lt;&lt;EOF</span><br><span class="line">Section &quot;Device&quot;</span><br><span class="line">    Identifier  &quot;Configured Video Device&quot;</span><br><span class="line">    Driver      &quot;dummy&quot;</span><br><span class="line">EndSection</span><br><span class="line"></span><br><span class="line">Section &quot;Monitor&quot;</span><br><span class="line">    Identifier  &quot;Configured Monitor&quot;</span><br><span class="line">    HorizSync 31.5-48.5</span><br><span class="line">    VertRefresh 50-70</span><br><span class="line">EndSection</span><br><span class="line"></span><br><span class="line">Section &quot;Screen&quot;</span><br><span class="line">    Identifier  &quot;Default Screen&quot;</span><br><span class="line">    Monitor     &quot;Configured Monitor&quot;</span><br><span class="line">    Device      &quot;Configured Video Device&quot;</span><br><span class="line">    DefaultDepth 24</span><br><span class="line">    SubSection &quot;Display&quot;</span><br><span class="line">    Depth 24</span><br><span class="line">    Modes &quot;1024x800&quot;</span><br><span class="line">    EndSubSection</span><br><span class="line">EndSection</span><br><span class="line">EOF</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure></p>
-<p>但是使用上述的软件模拟的显示器, 会造成即使接了真显示器, 还是用得虚拟的, 所以不方便啊. 网上有硬件的Dummy HDMI可用.</p>
-<h2 id="kdeconnect"><a href="#kdeconnect" class="headerlink" title="kdeconnect"></a>kdeconnect</h2><p>kdeconnect可以用来在ubuntu与androd之间双向传输数据, 例如电脑使用手机的键盘鼠标, 电脑与手机相互传输数据, 手机上的短信通知发给电脑显示.<br>直接在电脑与手机上安装kdeconnect即可使用.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install kdeconnect</span><br></pre></td></tr></table></figure></p>
-<p>但kdeconnectd进程 (/etc/xdg/autostart/kdeconnectd.desktop)在ubuntu未登录之前是不会启动的, 所以禁用掉电脑棒的密码登录设置它为自动登录即可.</p>
-<h2 id="gsconnect-gshell-extension"><a href="#gsconnect-gshell-extension" class="headerlink" title="gsconnect gshell extension"></a>gsconnect gshell extension</h2><p>gsconnect与kdeconnect是类似的东西, 它不依赖kde的一些包, 但它依赖Gnome desk与chrome, 电脑棒启动后没有自动启动chrome的话用不了. 所以实际我用的还是kdeconnect, 但这里记录使用gsconnect的过程.</p>
-<ul>
-<li>安装gnome-shell-extension与chrome-gnome-shell<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">gnome-shell --version</span><br><span class="line">sudo apt install gnome-shell-extensions</span><br><span class="line">sudo apt install chrome-gnome-shell</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>离个题, 例如想显示各个不同时区的team member的上班时间的话, 可以添加~/people.json将每个人的时区按下列格式添加进去即可.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vim ~/people.json</span><br><span class="line">[</span><br><span class="line">&#123;</span><br><span class="line">      &quot;name&quot;: &quot;your name&quot;,</span><br><span class="line">      &quot;github&quot;: &quot;your lauchpd id&quot;,</span><br><span class="line">      &quot;city&quot;: &quot;Beijing&quot;,</span><br><span class="line">      &quot;tz&quot;: &quot;Asia/Shanghai&quot;</span><br><span class="line">&#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>访问这个网址<a href="https://extensions.gnome.org/extension/1319/gsconnect/" target="_blank" rel="external">https://extensions.gnome.org/extension/1319/gsconnect/</a> 方便地安装gsconnect即可 (注意: 如果出错, 多半是因为没有在chrome里访问 chrome://extensions/ 将GNOME Shell integration打开的原因).</li>
-<li>手机上在play里搜索安装KDE Connect, 并打开它, 和gsconnect为pair配对.</li>
-<li>还可以支持电脑上Nautilus来mount手机上的文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python-nautilus gir1.2-nautilus-3.0 sshfs</span><br><span class="line"># then send file to Android by first open the nautilus then right click one file &quot;Send to Mobile Device -&gt; Nokia&quot;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/15/手机作为显示器及键鼠控制电脑棒/" data-id="ck5c79bi900121abpoqds0zm4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/" data-id="ck6iy3pa5000wjhbpc8gywtk9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -958,7 +930,7 @@ Fixed bug #161317
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
     </div>
   </div>
 
@@ -969,6 +941,10 @@ Fixed bug #161317
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a>
+          </li>
         
           <li>
             <a href="/2020/01/13/Debian-Customer-PPA-RFC/">Debian Customer PPA RFC</a>
@@ -984,10 +960,6 @@ Fixed bug #161317
         
           <li>
             <a href="/2019/11/08/Perf火焰图/">Perf火焰图</a>
-          </li>
-        
-          <li>
-            <a href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">使用apt-mirror和simplestreams搭建本地源</a>
           </li>
         
       </ul>
