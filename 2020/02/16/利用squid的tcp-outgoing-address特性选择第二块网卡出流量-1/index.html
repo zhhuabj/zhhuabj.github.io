@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   
-  <title>三种方式使用vlan | 技术并艺术着</title>
+  <title>利用squid的tcp_outgoing_address特性选择第二块网卡出流量 | 技术并艺术着</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="作者：张华  发表于：2016-04-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 ( http://blog.csdn.net/quqi99 ) Use OVS port in QEMU sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapat">
+  <meta name="description" content="作者：张华 发表于：2020-02-12版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器,">
 <meta property="og:type" content="article">
-<meta property="og:title" content="三种方式使用vlan">
-<meta property="og:url" content="http://yoursite.com/2017/12/06/三种方式使用vlan/index.html">
+<meta property="og:title" content="利用squid的tcp_outgoing_address特性选择第二块网卡出流量">
+<meta property="og:url" content="http://yoursite.com/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="作者：张华  发表于：2016-04-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 ( http://blog.csdn.net/quqi99 ) Use OVS port in QEMU sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapat">
-<meta property="og:updated_time" content="2017-12-06T03:48:19.560Z">
+<meta property="og:description" content="作者：张华 发表于：2020-02-12版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器,">
+<meta property="og:updated_time" content="2020-02-16T15:24:02.569Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="三种方式使用vlan">
-<meta name="twitter:description" content="作者：张华  发表于：2016-04-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 ( http://blog.csdn.net/quqi99 ) Use OVS port in QEMU sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapat">
+<meta name="twitter:title" content="利用squid的tcp_outgoing_address特性选择第二块网卡出流量">
+<meta name="twitter:description" content="作者：张华 发表于：2020-02-12版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器,">
   
     <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
   
@@ -67,10 +67,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-三种方式使用vlan" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2017/12/06/三种方式使用vlan/" class="article-date">
-  <time datetime="2017-12-06T03:47:59.000Z" itemprop="datePublished">2017-12-06</time>
+    <a href="/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/" class="article-date">
+  <time datetime="2020-02-16T15:23:50.000Z" itemprop="datePublished">2020-02-16</time>
 </a>
     
   </div>
@@ -81,7 +81,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      三种方式使用vlan
+      利用squid的tcp_outgoing_address特性选择第二块网卡出流量
     </h1>
   
 
@@ -89,42 +89,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>作者：张华  发表于：2016-04-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
-<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>Use OVS port in QEMU</p>
-<p>sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapath-source openvswitch-controller openvswitch-switch virt-top virt-manager Python-libvirt</p>
-<p>sudo ovs-vsctl add-br br-mano<br>sudo ovs-vsctl add-port br-mano eth2</p>
-<p>sudo virsh net-destroy default<br>sudo virsh net-define /tmp/br-mano.xml</p>
-<p><network><br>  <name>br-mano</name><br>  <forward mode="bridge"><br>  <bridge name="br-mano"><br>  <virtualport type="openvswitch"><br></virtualport></bridge></forward></network></p>
-<p>#sudo virsh net-undefine default<br>sudo virsh net-start br-mano<br>sudo virsh net-autostart br-mano</p>
-<p>Linux Bridge VLAN</p>
-<p>sudo modprobe 8021q<br>sudo ip link add link eth1 name eth1.2 type vlan id 2</p>
-<p>#sudo vconfig add eth1 2</p>
-<p>#sudo ifconfig eth1.2 down</p>
-<p>#sudo vconfig rem eth1.2<br>sudo ip link set eth1.2 up<br>sudo brctl addbr br2<br>sudo brctl setfd br2 0<br>sudo brctl stp br2 on<br>sudo ip link set br2 up<br>sudo brctl addif br2 eth1.2<br>sudo ifconfig br2 192.168.9.122/24<br>sudo ip tuntap add gw2 mode tap<br>sudo ip link set gw2 up<br>sudo brctl addif br2 gw2<br>hua@node1:~$ ip -d link show eth1.2<br>22: eth1.2@eth1: <broadcast,multicast,up,lower_up> mtu 1500 qdisc noqueue master br2 state UP mode DEFAULT group default qlen 1000<br>    link/ether 2c:53:4a:02:20:3c brd ff:ff:ff:ff:ff:ff promiscuity 1<br>    vlan protocol 802.1Q id 2 <reorder_hdr></reorder_hdr></broadcast,multicast,up,lower_up></p>
-<p>可用如下方法定义VLAN</p>
-<p>auto eth0.2<br>iface eth0.2 inet static<br>    address 10.12.2.2/24<br>    netmask 255.255.255.0<br>    network 10.12.2.0/24<br>    broadcast 10.12.2.255</p>
-<p>如果失败，先确保安装了vlan包 （sudo apt install -y vlan），并且启用了vlan模块（sudo modprobe 8021q）， 如果还报下列错的话是因为需要将网卡名改成规范的eth0之类的。</p>
-<p>Dec  6 08:54:50 localhost ifup[29785]: Cannot find device “enp0s25.2”<br>Dec  6 08:54:50 localhost ifup[29785]: Failed to bring up enp0s25.2.<br>OVS Bridge VLAN</p>
-<p>sudo ovs-vsctl add-br br-veth0<br>sudo ovs-vsctl add-port br-veth0 eth1<br>sudo ip link add veth0 type veth peer name veth1<br>sudo ovs-vsctl add-port br-veth0 veth0<br>sudo ovs-vsctl add-port br-mano veth1<br>sudo ip link set veth0 up<br>sudo ip link set veth1 up</p>
-<p>#sudo ovs-vsctl add-port br-veth0 veth0 – set Interface veth0 type=patch options:peer=veth1</p>
-<p>#sudo ovs-vsctl add-port br-mano veth1 – set Interface veth1 type=patch options:peer=veth0</p>
-<p>#sudo ovs-vsctl del-port br-mano veth1</p>
-<p>#sudo ovs-vsctl del-port br-veth0 veth0</p>
-<p>#Create ACCESS VLAN:<br>sudo ovs-vsctl set port vnet0 tag=2</p>
-<p>#sudo ovs-vsctl remove port vnet0 tag 2</p>
-<p>#Enable both ACCESS VLAN as well as TRUNK VLAN:<br>sudo ovs-vsctl set port vnet0 vlan_mode=trunk trunks=2 #access, native-tagged, native-untagged, trunk</p>
-<p>#sudo ovs-vsctl set port eth2 vlan_mode=access trunks=[]</p>
-<p>Verify VLAN</p>
-<p>Inside VM: ping 10.0.3.1 -I eth0</p>
-<p>sudo  tcpdump -i eth1  -e -n ‘arp or icmp’ and src host 10.0.3.1</p>
-<p>listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes<br>11:38:20.754894 52:54:00:f2:17:37 &gt; ff:ff:ff:ff:ff:ff, ethertype 802.1Q (0x8100), length 46: vlan 2, p 0, ethertype ARP, Request who-has 10.0.3.1 tell 10.0.3.2, length 28<br>Conclusion</p>
-<p>OVS Bridge br-mano上的VM无论是采用在VM里打Tag还是在br-mano vnet0处打Tag后的vlan流量能到达eth1(vlan数据只在物理网卡上能使用tcpdump看到），但无法到达同一机器上linux bridge br2上的eth1.2，反之亦然</p>
+        <p><strong>作者：张华 发表于：2020-02-12<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器, 然后用到squid的tcp_outgoing_address特性, 但是tcp_outgoing_address这个特性做测试时可没那么容易成功的, 最终这个最小化的squid.conf如下, 底层原理可参照[2]:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install squid -y</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/squid/squid.conf</span><br><span class="line">http_port 192.168.99.135:3128</span><br><span class="line">dns_v4_first on</span><br><span class="line">#dns_nameservers 192.168.8.1</span><br><span class="line">acl gfw myip 192.168.8.101</span><br><span class="line">tcp_outgoing_address 192.168.8.101 gfw</span><br><span class="line">acl localip src 192.168.99.135</span><br><span class="line">http_access allow localip</span><br><span class="line">http_access deny all</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl reload squid</span><br><span class="line">sudo systemctl enable squid</span><br></pre></td></tr></table></figure>
+<p>如果是ssh呢，这样:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;9 ssh&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">sudo ip route add default via 192.168.8.1 dev wlp4s0 table ssh</span><br><span class="line">sudo ip rule add from 192.168.8.101/24 table ssh</span><br><span class="line">ssh ubuntu@xxx -b 192.168.8.101</span><br></pre></td></tr></table></figure></p>
+<p>[1] <a href="https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem" target="_blank" rel="external">https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem</a><br>[2] <a href="http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/" target="_blank" rel="external">http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/12/06/三种方式使用vlan/" data-id="ck6p6k5x0000r10bphjaxlhwv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/" data-id="ck6p6k5x1000s10bp5hnu1nnr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -133,19 +107,10 @@
     
 <nav id="article-nav">
   
-    <a href="/2017/12/06/如何修改网卡名称由enp0s25为eth0/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          如何修改网卡名称由enp0s25为eth0
-        
-      </div>
-    </a>
   
-  
-    <a href="/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">OpenWRT与QNAP上通过PXE安装Xenial</div>
+      <div class="article-nav-title">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</div>
     </a>
   
 </nav>
