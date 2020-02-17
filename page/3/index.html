@@ -121,7 +121,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#x3a;&#118;&#x65;&#x72;&#x79;&#x68;&#x75;&#x61;&#50;&#48;&#48;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;">&#118;&#x65;&#x72;&#x79;&#x68;&#x75;&#x61;&#50;&#48;&#48;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#x2e;&#x63;&#x6f;&#x6d;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#109;&#97;&#105;&#x6c;&#116;&#111;&#58;&#x76;&#101;&#114;&#121;&#x68;&#x75;&#97;&#50;&#48;&#48;&#54;&#64;&#103;&#109;&#x61;&#105;&#108;&#46;&#99;&#x6f;&#109;">&#x76;&#101;&#114;&#121;&#x68;&#x75;&#97;&#50;&#48;&#48;&#54;&#64;&#103;&#109;&#x61;&#105;&#108;&#46;&#99;&#x6f;&#109;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -144,7 +144,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="ck6puoyvu0016apbpqk5lav8a" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/" data-id="ck6q1pf1u00164ybp5868fwfg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -213,7 +213,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="ck6puoyv0000kapbpo0pdro1p" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/Set-up-k8s-development-env-by-quqi99/" data-id="ck6q1pf0y000k4ybpw8yddeq7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -273,7 +273,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="ck6puoyvu0015apbpvbqqo1zd" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/10/温故OpenStack中的测试-by-Joshua/" data-id="ck6q1pf1t00154ybpm98gi2w0" class="article-share-link">Share</a>
       
       
     </footer>
@@ -315,7 +315,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="ck6puoyux000gapbpj82hqe7g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/13/Play-with-ceph-radosgw/" data-id="ck6q1pf0u000g4ybpxo9uzkrk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -364,7 +364,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="ck6puoyuu000dapbpoztn6ao3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/08/Play-with-LDAP-Keystone-by-quqi99/" data-id="ck6q1pf0r000d4ybp1gprf80k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -429,7 +429,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="ck6puoyvl000yapbpzw4f2ovf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/15/回顾OpenStack中的测试/" data-id="ck6q1pf1j000y4ybpd17io6n4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -486,7 +486,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="ck6puoyun0005apbpgfu73g8d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" data-id="ck6q1pf0k00064ybp6fn1zuic" class="article-share-link">Share</a>
       
       
     </footer>
@@ -549,7 +549,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="ck6puoyup0007apbpmvq0pd4b" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/07/OpenStack-SSL/" data-id="ck6q1pf0m00084ybpcgescr45" class="article-share-link">Share</a>
       
       
     </footer>
@@ -614,7 +614,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck6puoyv0000japbpykxvh6dl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/06/Set-up-juju-development-env/" data-id="ck6q1pf0x000j4ybpeyuhrq7k" class="article-share-link">Share</a>
       
       
     </footer>
@@ -656,7 +656,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck6puoyul0003apbp41bwlxqv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" data-id="ck6q1pf0i00034ybp8a36pzqo" class="article-share-link">Share</a>
       
       
     </footer>
