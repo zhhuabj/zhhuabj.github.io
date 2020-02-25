@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>How to set up systemd-resolved + dnssec | 技术并艺术着</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="作者：张华 发表于：2020-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Set up test env1234567891011121314151617181920212223242526272829303132333435363738394041424344454647#first let us know 8.8.8.8 supports">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to set up systemd-resolved + dnssec">
+<meta property="og:url" content="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2020-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Set up test env1234567891011121314151617181920212223242526272829303132333435363738394041424344454647#first let us know 8.8.8.8 supports">
+<meta property="og:updated_time" content="2020-02-25T03:21:27.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How to set up systemd-resolved + dnssec">
+<meta name="twitter:description" content="作者：张华 发表于：2020-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Set up test env1234567891011121314151617181920212223242526272829303132333435363738394041424344454647#first let us know 8.8.8.8 supports">
+  
+    <link rel="alternate" href="/atom.xml" title="技术并艺术着" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">技术并艺术着</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">张华的技术博客 - blog.csdn.net/quqi99</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-How-to-set-up-systemd-resolved-dnssec" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" class="article-date">
+  <time datetime="2020-02-25T03:21:11.000Z" itemprop="datePublished">2020-02-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      How to set up systemd-resolved + dnssec
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><strong>作者：张华 发表于：2020-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="Set-up-test-env"><a href="#Set-up-test-env" class="headerlink" title="Set up test env"></a>Set up test env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#first let us know 8.8.8.8 supports dnssec, while 114.114.114.114 doesn&apos;t support</span><br><span class="line">dig paypal.com +dnssec @8.8.8.8 |grep RRSIG</span><br><span class="line">dig paypal.com +dnssec @114.114.114.114 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#set up dnsmasq as upstream dns server</span><br><span class="line">IFACE=dummy0</span><br><span class="line">SUBNET=10.0.0</span><br><span class="line">sudo ip link add $IFACE type dummy</span><br><span class="line">sudo ifconfig $IFACE $&#123;SUBNET&#125;.1/24</span><br><span class="line">#https://www.cnblogs.com/taoyuxuan/p/11205491.html</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo -S /test/ --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line"></span><br><span class="line">#sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/ --host-record=test.test,$&#123;SUBNET&#125;.1 --conf-file=/dev/null --log-queries &amp;</span><br><span class="line">sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/10.0.0.1 --host-record=test.test,$&#123;SUBNET&#125;.1 --log-queries \</span><br><span class="line">    --dnssec --conf-file=/usr/share/dnsmasq-base/trust-anchors.conf --dnssec-check-unsigned --dnssec-debug --server=8.8.8.8 &amp;</span><br><span class="line">dig paypal.com +dnssec @10.0.0.1 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#test dns server with dig</span><br><span class="line">ubuntu@bastion:~$ dig -t a test.test @10.0.0.1 | grep EDNS</span><br><span class="line">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="line">ubuntu@bastion:~$ dig -t aaaa test.test @10.0.0.1 | grep EDNS</span><br><span class="line"># again, should return &quot;; EDNS ...&quot; but doesn&apos;t</span><br><span class="line"></span><br><span class="line">#configure systemd-resolved to look at only 10.0.0.1</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos; /etc/systemd/resolved.conf</span><br><span class="line">[Resolve]</span><br><span class="line">DNS=10.0.0.1</span><br><span class="line">DNSSEC=yes</span><br><span class="line">Cache=no</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos;  /etc/resolv.conf</span><br><span class="line">nameserver 127.0.0.53</span><br><span class="line">options edns0</span><br><span class="line"></span><br><span class="line">#debug with systemd-resolved</span><br><span class="line">sudo systemctl disable systemd-resolved   #seems systemd-resolved always restart if not disable it as well</span><br><span class="line">sudo systemctl stop systemd-resolved</span><br><span class="line">sudo SYSTEMD_LOG_LEVEL=debug script -c /lib/systemd/systemd-resolved /tmp/debug.txt</span><br><span class="line">systemd-resolve --status --no-pager |egrep &apos;DNSSEC|DNS Servers&apos;</span><br><span class="line">#repeat the following 3 lines to test every time - ./src/resolve/resolved-dns-server.c</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve test.test -t A</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve test.test -t A   #don&apos;t reset, try directly</span><br><span class="line">systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve example.com ubuntu.com us.archive.ubuntu.com packages.icinga.com mirror.steadfast.net archive.ubuntu.com ppa.launchpad.net private-ppa.launchpad.net sigok.verteiltesysteme.net sigfail.verteiltesysteme.net verisign.com www.verisign.com</span><br></pre></td></tr></table></figure>
+<h2 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h2><ul>
+<li>LLMNR: 当dns服务不可用时, 支持使用组播dns协议(mDNS)继续在子网内局部查询dns直至网络连接还原为止.</li>
+<li>Knot-DNS: 类似于dnsmasq, bind9的dns server</li>
+<li>EDNS:允许将DNS消息大小从标准的512字节扩展（当UDP用作传输协议时），而无需切换到TCP. 它能提升访问CDN的性能，因为：标准DNS协议只能传递域名参数查IP,　而不能传递域名+用户参数来源查IP．查询下游的CDN, DNS服务器应该是根据用户的来源查询,而不是将上游DNS服务做为来源查询.由于国内的运营商之间互联的带宽是很低的,　所以造成访问速度超慢.</li>
+<li>EDNS0:可以将UDP包从512字节扩展到4096字节从而可以容纳DNSEC包, systemd-resolved通过/etc/resovled.conf里的’options edns0’通知dns server可以edns0, server再回的时候会将其+1, 所以: 雖然是EDNS0 封包，可是不代表這是 DNSSEC 封包，在EDNS0 中有一個 bit: DO 被設定為 1 的時候，才代表這是 DNSSEC 封包 (通过: dig +dnssec example.com ns |grep EDNS  命令可以查看)</li>
+</ul>
+<h2 id="Some-bugs"><a href="#Some-bugs" class="headerlink" title="Some bugs"></a>Some bugs</h2><p>1, <a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639</a><br>upstream dns能力被检测正确让dnssec工作(现在一旦突然检查错了, resovle就停止work了), 或者允许disable能力检查<br><a href="https://github.com/systemd/systemd/issues/6490" target="_blank" rel="external">https://github.com/systemd/systemd/issues/6490</a><br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br><a href="https://github.com/systemd/systemd/pull/8849" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8849</a><br>a, 第一种解决方案<br> resolve不能看到timeout or error了就降级(tcp-&gt;dns over tls -&gt; edns0)声称不支持某个特性, 它的特性应该独立于实际查询<br><a href="https://github.com/systemd/systemd/issues/9384" target="_blank" rel="external">https://github.com/systemd/systemd/issues/9384</a><br>b, 允许disable dnsec能力检查<br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br>c, 从resolved中移除dnssec</p>
+<p>如有些咖啡厅等公共网络不支持ends0查询，会响应domain not found, 即收到＇NXDOMAIN when queried with EDNS0＇消息时(the query is with EDNS0 enabled and D0 bit set to zero)需要继续只根据EDNS0继续重试<br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br><a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a>  - 代码<br>journalctl -b -u systemd-resolve | grep DVE-2018  - 确诊<br>Workaround:<br>sudo systemctl disable systemd-resolved.service<br>sudo service systemd-resolved stop<br>sudo rm /etc/resolv.conf<br>sudo nano /etc/NetworkManager/NetworkManager.conf<br> then add “dns=default” under [main]<br>sudo service network-manager restart</p>
+<p>上面的降级（resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch）应该只在DNSSEC=allow-downgrade or DNSSEC=no时运行．在真实世界中，NetworkManager’s在无法降级时会告诉用户关掉dnssec<br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501</a></p>
+<p>2, <a href="https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3" target="_blank" rel="external">https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3</a><br>systemd-resolved只是一个stub resovler, 它只是转发dns请求到upstream dns server并等待请求(等待时间为RTT)，它没有考虑到上游递归dns服务器(interative resolver, eg: dnsmasq)的query timeout(authoritative server是用内存来存储dns记录所以它快，但也不是所有的都快），这样systemd-resolved会经常错误的降级（Therefore it often mistakenly degrades the feature set of its　upstream resolvers if it takes them longer than usual to answer a query），特别当DNSSEC=yes不充许降级时就更严重，所以systemd-resolved应该使用RTT+上游的查询时间，而不是只用RTT (DNS_TIMEOUT_MAX_USEC=DNS_SERVER_FEATURE_RETRY_ATTEMPTS * DNS_TIMEOUT_MAX_USEC = 15s），当然，这也不是解决根本问题，但可以缓解．</p>
+<p>3, <a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a><br> <a href="https://github.com/systemd/systemd/issues/11171" target="_blank" rel="external">https://github.com/systemd/systemd/issues/11171</a><br><a href="https://github.com/systemd/systemd/issues/4315" target="_blank" rel="external">https://github.com/systemd/systemd/issues/4315</a> - <a href="https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb" target="_blank" rel="external">https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb</a><br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br>这个commit (7abcaa93ab - debian/patches/resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch)可以解决上面关于降级的问题，但是它又引入了回归bug, 没DNSSEC=yes时没有做安全检查 (为DNSSEC=yes时不从UDP+ends0(DNS_SERVER_FEATURE_LEVEL_EDNS0)降级互UDP(DNS_SERVER_FEATURE_LEVEL_UDP)但upstream还未接受patch，故先在debian/patches/resolved_disable-connection-downgrade-when-DNSSEC-yes.patch</p>
+<p>4, <a href="https://github.com/dns-violations/dns-violations/issues/62" target="_blank" rel="external">https://github.com/dns-violations/dns-violations/issues/62</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383</a><br>dnsmasq 2.79当返回空时省略了EDNS0 OPT记录 (例如访问无AAAA记录时 - patch - 1682d15a744880b0398af75eadf68fe66128af78)) , systemd-resolved能hang (但只是使用了dnsmasq的router会如此)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" data-id="ck71bpl030005eybpb3avzk9d" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">February 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">January 2020</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/12/">December 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">November 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">October 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">August 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">April 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">December 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/">How to set up systemd-resolved + dnssec</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a>
+          </li>
+        
+          <li>
+            <a href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a>
+          </li>
+        
+          <li>
+            <a href="/2020/01/13/Debian-Customer-PPA-RFC/">Debian Customer PPA RFC</a>
+          </li>
+        
+          <li>
+            <a href="/2019/12/24/How-to-make-pure-text-presentation-ppt/">How to make pure text presentation/ppt</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 张华<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
