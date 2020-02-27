@@ -231,6 +231,152 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/" itemprop="url">远程访问双层嵌套Openstack云下的Windows虚机</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-29T10:42:21+08:00">
+                2017-11-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>遇到这么一个奇葩组合问题，一个Bug只在Windows虚机上出现，实验环境是远程OpenStack云上再嵌套OpenStack云上提供的一个Windows虚机，两个OpenStack云都采用内网IP，现在的问题是如何远程登录到Windows虚机中。环境如下：</p>
+<ul>
+<li>Bastion中转机，是由Underlying OpenStack提供的一台虚机，它的floating ip是10.230.65.8，可通过VPN连接到该IP。众所周知的原因，VPN连接是容易断的。所以平时是先ssh连接到VPS，再在VPS启动VPN连接这台机器的。由于平时都是使用命令行所以没遇到问题，但是现在是采用RDP图形化界面连接Windows虚机的，那么网速就跟不上了。无奈，只能继续将VPN创建在本机上。</li>
+<li>Tenant OpenStack -  最上层的OpenStack是由Underlying OpenStack提供的虚机创建的。上层Tenant OpenStack的为这台Windows虚机提供的浮动IP是10.5.150.2</li>
+<li>如果我们将Windows虚机创建在Underlying OpenStack上，那么它可以分到10.230网段的IP，那么问题就简化了，登录VPN打通网络后直接通过remmina远程连接即可。但由于Underlying OpenStack我无权限控制，Windows虚机创建在Tenant OpenStack上，那样问题就复杂化了。 <h2 id="访问Tenant-OpenStack的Horizon界面"><a href="#访问Tenant-OpenStack的Horizon界面" class="headerlink" title="访问Tenant OpenStack的Horizon界面"></a>访问Tenant OpenStack的Horizon界面</h2>这个简单，登录VPN后，再在本机运行sshuttle命令即可访问horizon界面。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sshuttle -D -r ubuntu@10.230.65.8 10.5.0.0/24</span><br><span class="line">http://10.5.0.52/horizon</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="通过noVNC访问Tenant-OpenStack提供的Linux虚机"><a href="#通过noVNC访问Tenant-OpenStack提供的Linux虚机" class="headerlink" title="通过noVNC访问Tenant OpenStack提供的Linux虚机"></a>通过noVNC访问Tenant OpenStack提供的Linux虚机</h2><p>Linux虚机要是通过命令行来访问，那就没这些问题了。若要图形化访问，可以采用novnc方案。<br>1， 在控制节点上安装下列四个组件。计算节点不需要安装包。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install nova-consoleauth novnc python-novnc nova-novncproxy</span><br><span class="line">sudo service nova-consoleauth restart</span><br><span class="line">sudo service nova-novncproxy restart</span><br><span class="line">sudo service libvirt-bin restart</span><br></pre></td></tr></table></figure></p>
+<p>2， 在控制节点和计算节点上同时配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vnc_enabled = True</span><br><span class="line">novnc_enabled = True</span><br><span class="line">vncserver_proxyclient_address=10.5.0.49</span><br><span class="line">vncserver_listen=0.0.0.0</span><br><span class="line">novncproxy_base_url=http://10.5.0.43:6080/vnc_auto.html</span><br></pre></td></tr></table></figure></p>
+<p>3, 通过下列命令就可以获得novnc连接并访问了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nova get-vnc-console i1 novnc</span><br><span class="line">sshuttle -D -r ubuntu@10.230.65.8 10.5.0.0/24</span><br></pre></td></tr></table></figure></p>
+<p>上面命令相当于手动打开虚机的vnc支持：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo virsh edit i1</span><br><span class="line">   &lt;graphics type=&apos;vnc&apos; port=&apos;-1&apos; autoport=&apos;yes&apos; listen=&apos;192.168.99.124&apos; passwd=&apos;password&apos; keymap=&apos;en-us&apos;/&gt;</span><br><span class="line">sudo virsh shutdown i1 &amp;&amp; sudo virsh start i1</span><br><span class="line">#sudo virsh -c qemu+ssh://hua@node1/system vncdisplay i1</span><br><span class="line">sudo virsh vncdisplay i1</span><br><span class="line">vncviewer 192.168.99.124:1</span><br></pre></td></tr></table></figure></p>
+<p>如果本机开了VPN后通过’ssh -X’远程连接中转机，再通过上面的vncviewer也是可以连接Linux虚机的。<br>但是该Windows虚机不支持VNC，但它默认启动了RDP。同理，我们也可以本机开了VPN后通过’ssh -X’远程连接中转机，再通过remmina访问(或者采用rdesktop命令行方式 )，但是这种方式奇慢无比，于是有了本文的探讨。</p>
+<h2 id="通过tunnel-remmina访问Tenant-OpenStack提供的Windows虚机"><a href="#通过tunnel-remmina访问Tenant-OpenStack提供的Windows虚机" class="headerlink" title="通过tunnel+remmina访问Tenant OpenStack提供的Windows虚机"></a>通过tunnel+remmina访问Tenant OpenStack提供的Windows虚机</h2><p>设想的方案是通过如果的ssh正向隧道方式，本机上执行如下命令，本机的13389端口通过ssh server 10.230.65.8映射到远程的10.5.150.2:3389上。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh -p 22 -L localhost:13389:10.5.150.2:3389 ubuntu@10.230.65.8 -N -v</span><br><span class="line">#sudo rdesktop 127.0.0.1:13389</span><br><span class="line">sudo rdesktop -z -r sound:local -g workarea -D -K -a 16 -u Administrator -p password 127.0.0.1:13389</span><br></pre></td></tr></table></figure></p>
+<p>但是发现不好使，原因在于在中转机10.230.65.8上都无法运行telnet 10.5.150.2 3389’命令。<br>VNC的5900-5910这些端口与RDP的3389端口似乎还有点不一样，<strong>5900-5910是运行虚机的物理机上的端口，而3389是Windows虚机的端口</strong>。</p>
+<p>所以第一步，应该将Windows虚机所在的物理机的Security group规则打开，这个得在Tenant OpenStack环境中执行如下命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">nova secgroup-add-rule default tcp 3389 3389 0.0.0.0/0</span><br><span class="line">nova secgroup-add-rule default udp 3389 3389 0.0.0.0/0</span><br><span class="line">#secgroup=$&#123;1:-`openstack security group list --project admin| grep default| awk &apos;&#123;print $2&#125;&apos;`&#125;</span><br><span class="line">#openstack security group rule create $secgroup --protocol tcp --remote-ip 0.0.0.0/0 --dst-port 3389 --project admin</span><br><span class="line"></span><br><span class="line">#计算节点上通过下列命令验证：</span><br><span class="line">$ sudo iptables-save |grep 3389</span><br><span class="line">-A neutron-openvswi-i2f32d9bf-6 -p tcp -m tcp --dport 3389 -j RETURN</span><br><span class="line">-A neutron-openvswi-i2f32d9bf-6 -p udp -m udp --dport 3389 -j RETURN</span><br><span class="line"></span><br><span class="line">#网络节点上继续通过下列命令验证通过：</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 telnet 192.168.21.2 3389</span><br></pre></td></tr></table></figure></p>
+<p>第二步，要想通过192.168.21.2的floating ip (10.5.150.2)访问，还得将Tenant OpenStack的FWaaS服务中的3389端口打开。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">neutron firewall-rule-create --protocol tcp --destination-port 80 --action allow --name tcp_3389</span><br><span class="line">neutron firewall-rule-create --protocol udp --destination-port 80 --action allow --name udp_3389</span><br><span class="line">neutron firewall-policy-create --firewall-rules &quot;tcp_3389 udp_3389&quot; policy_3389</span><br><span class="line">neutron firewall-create policy_3389 --name myfirewall</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables-save |grep 3389</span><br><span class="line"></span><br><span class="line">#也可以通过下列命令直接手动添加：</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-iv49ecd7359 -p tcp -m tcp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-iv49ecd7359 -p udp -m udp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-ov49ecd7359 -p tcp -m tcp --dport 3389 -j ACCEPT</span><br><span class="line">sudo ip netns exec qrouter-d07093c5-f8b3-49c4-9f35-2f43a618b588 iptables -A neutron-vpn-agen-ov49ecd7359 -p udp -m udp --dport 3389 -j ACCEPT</span><br><span class="line"></span><br><span class="line">#添加成功后在网络节点上通过下列命令验证成功：</span><br><span class="line">telnet 10.5.150.2 3389</span><br></pre></td></tr></table></figure></p>
+<p>第三步，要想在中断机上也能成功运行’telnet 10.5.150.2 3389’, 由于中断机和Tenant OpenStack的网络节点都是由Underlying OpenStack提供的虚机，所以还需要在Underlying OpenStack中的Security Group设置3389支持。具体命令可以参考第一步，但由于我没有Underlying OpenStack的权限，所以这步做不了，此路不通，做罢，但理论应该是对的。</p>
+<h2 id="通过端口映射的方案访问Tenant-OpenStack提供的Windows虚机"><a href="#通过端口映射的方案访问Tenant-OpenStack提供的Windows虚机" class="headerlink" title="通过端口映射的方案访问Tenant OpenStack提供的Windows虚机"></a>通过端口映射的方案访问Tenant OpenStack提供的Windows虚机</h2><p>理论上也可以在中转机上将3389端口映射到Windows虚机的3389端口解决，但同样由于我没有Underlying OpenStack的权限无法解决在中转机上’telent 10.5.150.2 3389’，所以此方案也无法测试。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 3389 -j DNAT --to-destination 10.10.10.7:3389</span><br><span class="line">iptables -A FORWARD -p tcp --dport 3389 -j ACCEPT</span><br></pre></td></tr></table></figure></p>
+<h2 id="最后的方案"><a href="#最后的方案" class="headerlink" title="最后的方案"></a>最后的方案</h2><p>没了Underlying OpenStack的权限，这个实验似乎做不下去了，还剩下两个手段：</p>
+<ul>
+<li><p>一个使用Underlying OpenStack环境的tenant用户为Tenant OpenStack的网络节点再分配一个10.230打头的floating ip （如10.230.65.118)，因为Tenant Network上的网络节点上是可以运行’telent 10.5.150.2 3389’的，同时，10.230的IP也可以在登录VPN后直接访问。但是10.230.65.118代表的网络节点是由Tenant OpenStack提供的，所以从本机登录时应该从中转机拷贝~/.local/share/juju/ssh/juju_id_rsa。这种方式目前已经测试成功。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scp ubuntu@10.230.65.8:/home/ubuntu/.local/share/juju/ssh/juju_id_rsa /home/hua/.ssh/</span><br><span class="line">#ssh -i ~/.ssh/juju_id_rsa ubuntu@10.230.65.118</span><br><span class="line">ssh -i ~/.ssh/juju_id_rsa -p 22 -L localhost:13389:10.5.150.2:3389 ubuntu@10.230.65.118 -N -v</span><br><span class="line">#sudo rdesktop 127.0.0.1:13389</span><br><span class="line">sudo rdesktop -z -r sound:local -g workarea -D -K -a 16 -u Administrator -p password 127.0.0.1:13389</span><br></pre></td></tr></table></figure>
+<p>-在Windows虚机中通过下列命令打开Powershell Remote, 再通过pywinrm库(<a href="https://github.com/diyan/pywinrm)通过命令行或程序(https://gist.github.com/vtapia/c4a87289298c73b9f75afcf36ed6a89b)操作Windows，这种方式蛮麻烦。" target="_blank" rel="external">https://github.com/diyan/pywinrm)通过命令行或程序(https://gist.github.com/vtapia/c4a87289298c73b9f75afcf36ed6a89b)操作Windows，这种方式蛮麻烦。</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Set-ExecutionPolicy -ExecutionPolicy Bypass -Force</span><br><span class="line">Enable-PSRemoting -force</span><br><span class="line">Set-Item WSMan:\localhost\Client\TrustedHosts * -force</span><br><span class="line">winrm set winrm/config/service/auth &apos;@&#123;Basic=&quot;true&quot;&#125;&apos;</span><br><span class="line">winrm set winrm/config/service &apos;@&#123;AllowUnencrypted=&quot;true&quot;&#125;&apos;</span><br><span class="line">restart-Service winrm</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1575,7 +1721,7 @@ lxc profile device set default eth0 nictype macvlan
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">49</span>
+                  <span class="site-state-item-count">50</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
