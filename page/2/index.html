@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,150 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" itemprop="url">使用apt-mirror和simplestreams搭建本地源</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-06T17:49:49+08:00">
+                2019-11-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>你懂的，国内环境访问ubuntu-cloud.archive.canonical.com会非常慢(注： 其实下列方法可以同步UA, UCA, PPA)，本文将使用apt-mirror搭建一个本地apt服务器以提升办公效率。</p>
+<ul>
+<li>archive.ubuntu.com                   (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
+<li>security.ubuntu.com                  (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
+<li>ubuntu-cloud.archive.canonical.com (UCA)</li>
+<li>images.maas.io                       (juju , lxd, maas)</li>
+<li>cloud-images.ubuntu.com              (juju , lxd, maas, <a href="http://mirrors.cloud.tencent.com/ubuntu-cloud-images/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu-cloud-images/</a> instead)</li>
+<li>streams.canonical.com                (juju , lxd, maas)<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw disable</span><br><span class="line">sudo apt -y install apache2 apt-mirror</span><br><span class="line">mkdir -p /images/xenial-repo</span><br><span class="line"></span><br><span class="line">$ cat /etc/apt/mirror.list</span><br><span class="line">############# config ##################</span><br><span class="line">#</span><br><span class="line">set base_path /images/xenial-repo</span><br><span class="line">#set defaultarch amd64</span><br><span class="line">#</span><br><span class="line"># set mirror_path  $base_path/mirror</span><br><span class="line"># set skel_path    $base_path/skel</span><br><span class="line"># set var_path     $base_path/var</span><br><span class="line"># set cleanscript $var_path/clean.sh</span><br><span class="line"># set defaultarch  &lt;running host architecture&gt;</span><br><span class="line"># set postmirror_script $var_path/postmirror.sh</span><br><span class="line"># set run_postmirror 0</span><br><span class="line">set nthreads     30</span><br><span class="line">set _tilde 0</span><br><span class="line">#</span><br><span class="line">############# end config ##############</span><br><span class="line"></span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#see http://ubuntu-cloud.archive.canonical.com/ubuntu/dists/xenial-updates/</span><br><span class="line">deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/ocata main</span><br><span class="line">#deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/queens main</span><br><span class="line"></span><br><span class="line">#clean http://archive.ubuntu.com/ubuntu</span><br><span class="line">clean http://ubuntu-cloud.archive.canonical.com/ubuntu</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo touch /images/xenial-repo/var/postmirror.sh</span><br><span class="line">sudo apt-mirror</span><br></pre></td></tr></table></figure>
+<p>或者运行“sudo crontab -e”添加下列crob在每天四点半运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">30 4    * * *    root    /usr/bin/apt-mirror &gt;&gt; /var/log/apt-mirror.log</span><br></pre></td></tr></table></figure></p>
+<h2 id="配置Apache"><a href="#配置Apache" class="headerlink" title="配置Apache"></a>配置Apache</h2><p>Apache的已有配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sudo grep -r &apos;DocumentRoot&apos; /etc/apache2/sites-available/000-default.conf</span><br><span class="line">        DocumentRoot /var/www/html</span><br><span class="line"></span><br><span class="line">$ grep -r &apos;/var/www/&apos; /etc/apache2/apache2.conf -A 4</span><br><span class="line">&lt;Directory /var/www/&gt;</span><br><span class="line">	Options Indexes FollowSymLinks</span><br><span class="line">	AllowOverride All</span><br><span class="line">	Require all granted</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
+<p>创建软链及注意一个关键易犯问题</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /images/xenial-repo  /var/www/html/apt-mirror</span><br><span class="line">sudo chown -R www-data:www-data /images</span><br><span class="line">sudo service apache2 reload</span><br></pre></td></tr></table></figure>
+<p>注：上面这一句”chown -R www-data:www-data /images”异常关键，网上几乎所有能搜寻的答案全部是关于添加’Options FollowSymLinks’的，其实如上/etc/apache2/apache2.conf文件中已经包含该设置。apache 2.4使用的目录的用户名和组必须全部是www-data，否则/var/log/apache2/error.log会报这个错误“Symbolic link not allowed or link target not accessible”（WEB页上看到的错误是‘You don’t have permission to access”）。可用该命令“sudo -u www-data ls /var/www/html/apt-mirror”验证它是否成功。之前我一直在这个地方犯错是因为我执行的是“chown -R www-data:www-data /images/xenial-repo”，这样导致仍然无法顺利执行““sudo -u www-data ls /var/www/html/apt-mirror”命令。<br>也可创建/etc/apache2/sites-available/ubuntu-mirror.conf使用VirtualHost同时支持对UA, UCA, PPT的同步：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-repo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/archive.ubuntu.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-archive.ubuntu.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-archive.ubuntu.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-cloudrepo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-cloudarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-cloudarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-ppa.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ppa.launchpad.net/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-ppaarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-ppaarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure></p>
+<p>或要支持ssl，再添加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SSLCACertificatePath /etc/ssl/certs</span><br><span class="line">SSLCertificateFile /etc/pki/tls/certs/mirror.crt</span><br><span class="line">SSLEngine On</span><br><span class="line">SSLCertificateKeyFile /etc/pki/tls/private/mirror.key</span><br></pre></td></tr></table></figure>
+<p>之后执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a2enmod ssl</span><br><span class="line">a2ensite *</span><br><span class="line">systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用它"><a href="#使用它" class="headerlink" title="使用它"></a>使用它</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">touch /etc/apt/sources.list.d/mymirror.list</span><br><span class="line">cat &gt; /etc/apt/sources.list.d/mymirror.list &lt;&lt;EOF</span><br><span class="line">#deb http://node1/apt-mirror/mirror/cn.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://node1/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/ubuntu/ xenial-updates/ocata main</span><br><span class="line">EOF</span><br><span class="line">rm -rf /etc/apt/sources.list.d/cloudarchive-ocata.list*</span><br><span class="line">apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5EDB1B62EC4926EA</span><br><span class="line">apt update</span><br></pre></td></tr></table></figure>
+<h2 id="20171101更新"><a href="#20171101更新" class="headerlink" title="20171101更新"></a>20171101更新</h2><p>此次apt update慢的原因最后通过”Software &amp; Update -&gt; Ubuntu Software -&gt; Download from Other - Select Best Server”将之前的mirrors.aliyun.com改成mirrors.yun-idc.com就好了。之前各种源也都换过，为什么这次行了具体原因不明待下次遇到了待查。</p>
+<h2 id="20171115更新"><a href="#20171115更新" class="headerlink" title="20171115更新"></a>20171115更新</h2><p>今天在安装libvirt0时总是发生包依赖问题（libvirt0: Depends: libxen-4.6 (&gt;=4.6.5) but 4.6.0-1ubuntu4.3 is to be installed)，原来是mirrors.aliyun.com的问题，这个源更新不及时会造成众多问题。<br><strong>为了克服这种更新不及时造成的问题，看样子还是最好别搭私有源和使用国内源，所以换回官方源</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse</span><br></pre></td></tr></table></figure></p>
+<h2 id="20191106更新-搭建simplestreams本地源"><a href="#20191106更新-搭建simplestreams本地源" class="headerlink" title="20191106更新 - 搭建simplestreams本地源"></a>20191106更新 - 搭建simplestreams本地源</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install simplestreams</span><br><span class="line">sudo mkdir -p /var/spool/sstreams/maas &amp;&amp; sudo chown -R $USER /var/spool/sstreams/maas</span><br><span class="line"></span><br><span class="line">#MAAS images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/maas</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos;</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;os~(grub*|pxelinux)&apos;</span><br><span class="line"></span><br><span class="line">#Use MAAS images simplestreams</span><br><span class="line">maas root boot-source update 1 url=https://maas-images.yourdomain.com/ keyring_filename=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg</span><br><span class="line">maas root domains create name=&quot;yourdomain.com&quot;</span><br><span class="line">maas root dnsresources create fqdn=&quot;maas-images.yourdomain.com&quot; ip_addresses=&lt;your-mirror-ip&gt;  #orconfigure the mirror in infra.yaml</span><br><span class="line"></span><br><span class="line">#Juju agents simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/juju</span><br><span class="line">sstream-mirror --no-verify --progress --max=2 --path=streams/v1/index2.sjson https://streams.canonical.com/juju/tools/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;version~(2.6)&apos;</span><br><span class="line"></span><br><span class="line">#Use Juju agents simplestreams</span><br><span class="line">#let juju know where to get contrainers from, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config container-image-stream=released container-image-metadata-url=https://lxd-images.yourdomain.com/ image-metadata-url=https://lxd-images.yourdomain.com</span><br><span class="line">#let juju know where to fetach the agents, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config agent-metadata-url=https://juju-agents.yourdomain.com/ agent-stream=released</span><br><span class="line"></span><br><span class="line">#LXD and KVM images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/lxdkvm</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.json https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.sjson https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line"></span><br><span class="line">sudo apt install apache2 -y</span><br><span class="line">cat &lt;&lt;EOF &gt; /etc/apache2/sites-available/sstreams-mirror.conf</span><br><span class="line">&lt;VirtualHost *:443&gt;</span><br><span class="line">    ServerName maas-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/maas</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-maas-images-error.log</span><br><span class="line">     CustomLog /var/log/apache2/mirror-maas-images-access.log combined</span><br><span class="line">     &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">     Options Indexes FollowSymLinks</span><br><span class="line">     AllowOverride None</span><br><span class="line">     Require all granted</span><br><span class="line">     &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName lxdkvm-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/lxdkvm</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-lxdkvm-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-lxdkvm-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName juju-agents.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/juju</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-juju-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-juju-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +404,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-05T12:02:18+08:00">
                 2019-11-05
@@ -410,7 +554,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
                 2019-10-14
@@ -604,7 +748,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
                 2019-08-22
@@ -755,7 +899,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-24T20:24:20+08:00">
                 2019-04-24
@@ -900,7 +1044,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-15T08:56:05+08:00">
                 2019-04-15
@@ -1051,7 +1195,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-18T13:44:20+08:00">
                 2019-01-18
@@ -1218,7 +1362,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-02T11:08:22+08:00">
                 2019-01-02
@@ -1346,7 +1490,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-31T16:29:50+08:00">
                 2018-12-31
@@ -1529,7 +1673,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-29T17:37:02+08:00">
                 2018-10-29
@@ -1663,134 +1807,6 @@ Fixed bug #161317
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/10/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/10/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-10T13:57:54+08:00">
-                2018-09-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1841,8 +1857,8 @@ Fixed bug #161317
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">51</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1892,7 +1908,7 @@ Fixed bug #161317
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

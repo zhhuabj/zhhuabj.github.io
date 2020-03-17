@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2020-03-13版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 set up a test private registry123456789101112131415161718192021docker pull registry:2mkdir ~/registry/certs &amp;amp;&amp;amp; cd  ~/registry/ce">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to use private registry in docker and containerd and k8s">
+<meta property="og:url" content="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2020-03-13版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 set up a test private registry123456789101112131415161718192021docker pull registry:2mkdir ~/registry/certs &amp;amp;&amp;amp; cd  ~/registry/ce">
+<meta property="og:updated_time" content="2020-03-17T02:02:16.533Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="How to use private registry in docker and containerd and k8s">
+<meta name="twitter:description" content="作者：张华 发表于：2020-03-13版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 set up a test private registry123456789101112131415161718192021docker pull registry:2mkdir ~/registry/certs &amp;amp;&amp;amp; cd  ~/registry/ce">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/"/>
+
+
+
+
+
+  <title>How to use private registry in docker and containerd and k8s | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">How to use private registry in docker and containerd and k8s</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-17T10:01:59+08:00">
+                2020-03-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2020-03-13<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="set-up-a-test-private-registry"><a href="#set-up-a-test-private-registry" class="headerlink" title="set up a test private registry"></a>set up a test private registry</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry:2</span><br><span class="line">mkdir ~/registry/certs &amp;&amp; cd  ~/registry/certs</span><br><span class="line">openssl genrsa -passout pass:password -out ca.key</span><br><span class="line">openssl req -x509 -passin pass:password -new -nodes -key ca.key -days 3650 -out ca.crt -subj &quot;/C=CN/ST=BJ/O=STS/CN=zhhuabj-bastion.cloud.sts&quot;</span><br><span class="line">#openssl genrsa -passout pass:password -out server.key</span><br><span class="line">#openssl req -new -key server.key -out server.csr -subj &quot;/C=CN/ST=BJ/O=STS/CN=zhhuabj-bastion.cloud.sts&quot;</span><br><span class="line">#openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 3650</span><br><span class="line">#cat server.crt server.key &gt; server.pem</span><br><span class="line"></span><br><span class="line">cd ~/registry &amp;&amp; mkdir auth &amp;&amp; mkdir images</span><br><span class="line">sudo docker run --entrypoint htpasswd registry:2 -Bbn test password &gt; ./auth/htpasswd</span><br><span class="line">sudo docker run -d -p 5000:5000 -v `pwd`/images:/var/lib/registry --restart=always --name registry \</span><br><span class="line">-v `pwd`/auth:/auth \</span><br><span class="line">-e &quot;REGISTRY_AUTH=htpasswd&quot; \</span><br><span class="line">-e &quot;REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm&quot; \</span><br><span class="line">-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \</span><br><span class="line">-v `pwd`/certs:/certs \</span><br><span class="line">-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/ca.crt \</span><br><span class="line">-e REGISTRY_HTTP_TLS_KEY=/certs/ca.key \</span><br><span class="line">registry:2</span><br><span class="line">curl -X GET --cacert /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/ca.crt https://zhhuabj-bastion.cloud.sts:5000</span><br></pre></td></tr></table></figure>
+<h2 id="upload-a-test-image-into-test-private-registry"><a href="#upload-a-test-image-into-test-private-registry" class="headerlink" title="upload a test image into test private registry"></a>upload a test image into test private registry</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">scp -r root@zhhuabj-bastion.cloud.sts:/root/registry/certs/ca.crt .</span><br><span class="line">sudo mkdir -p /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo cp ca.crt /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/</span><br><span class="line">#must restart docker, or it will throw x509 related errors when running &apos;docker push&apos;</span><br><span class="line">sudo systemctl restart docker</span><br><span class="line">#another error when running &apos;docker login&apos; - cannot autolaunch D-Bus without X11 $DISPLAY</span><br><span class="line">#sudo apt autoremove --purge docker-compose -y</span><br><span class="line"></span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line"># cat ~/.docker/config.json</span><br><span class="line">&#123;</span><br><span class="line">        &quot;auths&quot;: &#123;</span><br><span class="line">                &quot;https://index.docker.io/v1/&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;emhodWFiajpuYW50aW5nNDEz&quot;</span><br><span class="line">                &#125;,</span><br><span class="line">                &quot;zhhuabj-bastion.cloud.sts:5000&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;HttpHeaders&quot;: &#123;</span><br><span class="line">                &quot;User-Agent&quot;: &quot;Docker-Client/18.09.7 (linux)&quot;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">sudo docker pull busybox &amp;&amp; sudo docker tag docker.io/busybox zhhuabj-bastion.cloud.sts:5000/busybox</span><br><span class="line">sudo docker push zhhuabj-bastion.cloud.sts:5000/busybox</span><br><span class="line">sudo docker logout zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">#docker save zhhuabj-bastion.cloud.sts:5000/busybox &gt; busybox.tar</span><br><span class="line">curl -X GET --cacert /etc/containerd/ca.crt https://zhhuabj-bastion.cloud.sts:5000/v2/busybox/manifests/latest --user test:password</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-docker"><a href="#test-it-in-docker" class="headerlink" title="test it in docker"></a>test it in docker</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo cp ca.crt /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/</span><br><span class="line">sudo systemctl restart docker</span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo docker pull zhhuabj-bastion.cloud.sts:5000/busybox</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-containerd"><a href="#test-it-in-containerd" class="headerlink" title="test it in containerd"></a>test it in containerd</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install containerd  #it will stop docker automatically</span><br><span class="line">sudo mkdir -p /etc/containerd</span><br><span class="line">containerd config default |sudo tee /etc/containerd/config.toml</span><br><span class="line">#juju scp ./certs/ca.crt kubernetes-worker/1:/home/ubuntu/</span><br><span class="line">sudo vim /etc/containerd/config.toml</span><br><span class="line">change</span><br><span class="line">    [plugins.cri.registry]</span><br><span class="line">      [plugins.cri.registry.mirrors]</span><br><span class="line">        [plugins.cri.registry.mirrors.&quot;docker.io&quot;]</span><br><span class="line">          endpoint = [&quot;https://registry-1.docker.io&quot;]</span><br><span class="line">to</span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry]</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors.&quot;docker.io&quot;]</span><br><span class="line">          endpoint = [&quot;https://registry-1.docker.io&quot;]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          endpoint = [&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.auths]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.auths.&quot;https://zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          auth = &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">          username = &quot;test&quot;</span><br><span class="line">          password = &quot;password&quot;</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.tls_configs]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.tls_configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          ca_file = &quot;/etc/containerd/ca.crt&quot;</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;.tls]</span><br><span class="line">            insecure_skip_verify = true</span><br><span class="line">          [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;.auth]</span><br><span class="line">            auth = &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">            username = &quot;test&quot;</span><br><span class="line">            password = &quot;password&quot;</span><br><span class="line">sudo systemctl restart containerd</span><br><span class="line">#sudo ctr -n k8s.io image import busybox.tar</span><br><span class="line">curl -X GET --cacert /etc/containerd/ca.crt https://zhhuabj-bastion.cloud.sts:5000/v2/busybox/manifests/latest --user test:password</span><br><span class="line">echo -n | openssl s_client -showcerts -connect zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo cp /home/ubuntu/ca.crt /etc/containerd/</span><br><span class="line">sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest --skip-verify</span><br><span class="line">sudo ctr --namespace k8s.io image ls |grep busybox</span><br><span class="line">sudo ctr image ls  |grep zhhuabj</span><br><span class="line"></span><br><span class="line">#seems there is a bug with insecure_skip_verify=true, finally we run update-ca-certificates, then remove &apos;skip-verify&apos;</span><br><span class="line">cp /etc/containerd/ca.crt /usr/local/share/ca-certificates/</span><br><span class="line">update-ca-certificates</span><br><span class="line">#sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest --skip-verify</span><br><span class="line">sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-k8s"><a href="#test-it-in-k8s" class="headerlink" title="test it in k8s"></a>test it in k8s</h2><p>Before running the following commands, we need first to modify above /etc/containerd/config.toml, custom_registries of containerd charm will do it<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju config containerd custom_registries=&apos;[&#123;&quot;url&quot;: &quot;https://zhhuabj-bastion.cloud.sts:5000&quot;, &quot;username&quot;: &quot;test&quot;, &quot;password&quot;: &quot;password&quot;&#125;]&apos;</span><br></pre></td></tr></table></figure></p>
+<p>But how to run update-ca-certificates with ca.crt ? we search ‘ca_crt_path’ option from charm code. but how to do ?<br>then we can run:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">#kubectl create secret docker-registry regcred --docker-server=zhhuabj-bastion.cloud.sts:5000 --docker-username=test --docker-password=password --docker-email=&apos;admin@demo.com&apos;</span><br><span class="line">sudo bash -c &apos;cat &gt;config.json&apos; &lt;&lt;EOF</span><br><span class="line">&#123;</span><br><span class="line">        &quot;auths&quot;: &#123;</span><br><span class="line">                &quot;zhhuabj-bastion.cloud.sts:5000&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;HttpHeaders&quot;: &#123;</span><br><span class="line">                &quot;User-Agent&quot;: &quot;Docker-Client/18.09.7 (linux)&quot;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">kubectl create secret generic regcred \</span><br><span class="line">    --from-file=.dockerconfigjson=./config.json \</span><br><span class="line">    --type=kubernetes.io/dockerconfigjson</span><br><span class="line">kubectl get secret regcred --output=&quot;jsonpath=&#123;.data.\.dockerconfigjson&#125;&quot; | base64 --decode</span><br><span class="line">sudo bash -c &apos;cat &gt;busybox.yaml&apos; &lt;&lt;EOF</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: busybox</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: busybox</span><br><span class="line">    image: zhhuabj-bastion.cloud.sts:5000/busybox:latest</span><br><span class="line">    command:</span><br><span class="line">      - sleep</span><br><span class="line">      - &quot;3600&quot;</span><br><span class="line">  imagePullSecrets:</span><br><span class="line">  - name: regcred</span><br><span class="line">  restartPolicy: Always</span><br><span class="line">EOF</span><br><span class="line">kubectl create -f busybox.yaml</span><br><span class="line">kubectl get events</span><br></pre></td></tr></table></figure></p>
+<h2 id="appendix-create-another-test-image"><a href="#appendix-create-another-test-image" class="headerlink" title="appendix - create another test image"></a>appendix - create another test image</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt;simple-http-server.py&apos; &lt;&lt;EOF</span><br><span class="line">import SimpleHTTPServer</span><br><span class="line">import SocketServer</span><br><span class="line">PORT = 8000</span><br><span class="line">Handler = SimpleHTTPServer.SimpleHTTPRequestHandler</span><br><span class="line">httpd = SocketServer.TCPServer((&quot;0.0.0.0&quot;, PORT), Handler)</span><br><span class="line">print &quot;serving at port&quot;, PORT</span><br><span class="line">httpd.serve_forever()</span><br><span class="line">EOF</span><br><span class="line">sudo bash -c &apos;cat &gt;Dockerfile&apos; &lt;&lt;EOF</span><br><span class="line">FROM python:2.7-alpine</span><br><span class="line">ADD simple-http-server.py /</span><br><span class="line">RUN apk update &amp;&amp; apk add bash</span><br><span class="line">RUN pip install simple_http_server</span><br><span class="line">CMD [ &quot;python&quot;, &quot;./simple-http-server.py&quot; ]</span><br><span class="line">EOF</span><br><span class="line">sudo docker build -t simple-http-server .</span><br><span class="line">sudo docker tag simple-http-server zhhuabj-bastion.cloud.sts:5000/simple-http-server</span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo docker push zhhuabj-bastion.cloud.sts/simple-http-server</span><br><span class="line">sudo docker logout zhhuabj-bastion.cloud.sts:5000</span><br></pre></td></tr></table></figure>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://itnext.io/working-with-image-registries-and-containerd-in-kubernetes-63c311b86368" target="_blank" rel="external">https://itnext.io/working-with-image-registries-and-containerd-in-kubernetes-63c311b86368</a><br>[2] <a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/" target="_blank" rel="external">https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/</a><br>[3] <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04" target="_blank" rel="external">https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04</a><br>[4] <a href="https://kubernetes.io/zh/docs/setup/production-environment/container-runtimes/" target="_blank" rel="external">https://kubernetes.io/zh/docs/setup/production-environment/container-runtimes/</a><br>[5] <a href="https://github.com/containerd/cri/blob/master/docs/registry.md#configure-registry-tls-communication" target="_blank" rel="external">https://github.com/containerd/cri/blob/master/docs/registry.md#configure-registry-tls-communication</a><br>[6] <a href="https://blog.csdn.net/y_chen_007/article/details/97525206" target="_blank" rel="external">https://blog.csdn.net/y_chen_007/article/details/97525206</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/03/03/Using-4G-NIC-in-OpenWRT/" rel="next" title="Using 4G NIC in OpenWRT">
+                <i class="fa fa-chevron-left"></i> Using 4G NIC in OpenWRT
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#set-up-a-test-private-registry"><span class="nav-number">1.</span> <span class="nav-text">set up a test private registry</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#upload-a-test-image-into-test-private-registry"><span class="nav-number">2.</span> <span class="nav-text">upload a test image into test private registry</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#test-it-in-docker"><span class="nav-number">3.</span> <span class="nav-text">test it in docker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#test-it-in-containerd"><span class="nav-number">4.</span> <span class="nav-text">test it in containerd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#test-it-in-k8s"><span class="nav-number">5.</span> <span class="nav-text">test it in k8s</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#appendix-create-another-test-image"><span class="nav-number">6.</span> <span class="nav-text">appendix - create another test image</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#reference"><span class="nav-number">7.</span> <span class="nav-text">reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
