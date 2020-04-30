@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2020-04-18版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题新入手了一台笔记本电脑，默认安装了win10，用了十几年linux了，也一大堆linux的vps维护的太麻烦，还是就只使用单系统的win10吧。那样，问题来了，如何像平时使用ubuntu的习惯一样使用linux呢？ CLI工具的选择国内网络太慢，所以从来不在国内的机器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用ubuntu的使用习惯使用windows">
+<meta property="og:url" content="http://yoursite.com/2020/04/18/用ubuntu的使用习惯使用windows/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2020-04-18版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题新入手了一台笔记本电脑，默认安装了win10，用了十几年linux了，也一大堆linux的vps维护的太麻烦，还是就只使用单系统的win10吧。那样，问题来了，如何像平时使用ubuntu的习惯一样使用linux呢？ CLI工具的选择国内网络太慢，所以从来不在国内的机器">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200418153925206.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020041815444182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200418155154203.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200418155253484.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200418155839452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200418161126265.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+<meta property="og:updated_time" content="2020-04-18T08:25:36.537Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用ubuntu的使用习惯使用windows">
+<meta name="twitter:description" content="作者：张华 发表于：2020-04-18版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题新入手了一台笔记本电脑，默认安装了win10，用了十几年linux了，也一大堆linux的vps维护的太麻烦，还是就只使用单系统的win10吧。那样，问题来了，如何像平时使用ubuntu的习惯一样使用linux呢？ CLI工具的选择国内网络太慢，所以从来不在国内的机器">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200418153925206.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/04/18/用ubuntu的使用习惯使用windows/"/>
+
+
+
+
+
+  <title>用ubuntu的使用习惯使用windows | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/18/用ubuntu的使用习惯使用windows/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">用ubuntu的使用习惯使用windows</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-18T16:25:23+08:00">
+                2020-04-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2020-04-18<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>新入手了一台笔记本电脑，默认安装了win10，用了十几年linux了，也一大堆linux的vps维护的太麻烦，还是就只使用单系统的win10吧。那样，问题来了，如何像平时使用ubuntu的习惯一样使用linux呢？</p>
+<h2 id="CLI工具的选择"><a href="#CLI工具的选择" class="headerlink" title="CLI工具的选择"></a>CLI工具的选择</h2><p>国内网络太慢，所以从来不在国内的机器上跑程序，都是ssh到国外vps上来办公的， 这样主要是使用CLI命令，很少或几乎没有使用GUI工具的习惯。所以选择一个好的CLI工具是决定能否继续使用windows的关键。</p>
+<ul>
+<li>能用wsl吗？wsl将linux系统调用翻译成windows调用, 决定了它仅支持CLI， 当然也可以通过windows上安装xming之类的x server来运行某一些GUI（wsl内运行:export DISPLAY=:0.0)，但很多GUI是不支持的如chrome与firefox; 另外，wsl也不支持访问底层硬件所以无法运行python pyaudio之类的程序。wsl的优点它可以通过运行’wsl’快速切换到ubuntu bash；也可以通过’wsl ls’之类的命令实现在windows上直接运行bash命令， 这对我这种只熟悉unix命令不熟悉windows命令的人来说吸引力是很大的。所以wsl要结合着用，但主要就是用它的’wsl ls’之类的方便（后面会讲如何通过alias来使用它）。</li>
+<li>能用powershell吗？要运行访问硬件之类的python pyaudio程序只能通过powershell, 不能使用ubuntu wsl shell或者cgwin shell. 使用powershell不支持自定义快捷键让我像使用bash的快捷键习惯一样使用它，这个缺点是对我来说是致命的，所以我不能用它。</li>
+<li>能用mabaxterm吗？mabaxterm同时集成了wsl shell, cgwin shell, powershell， 但这些全如上面说的不合我的需求。所以只能将它作为备用，偶尔用用它好用的x server, scp等功能。我很少用GUI，所以这对我来说也属于低概率事件，备用着吧。</li>
+<li>cmder是我最终选用的工具，它的cmder shell支持使用python pyaudio程序，和bash一样的快捷键使用习惯。也集成了git, ssh这些常用的功能，也能通过定义alias别名方便使用wsl bash命令， 也支持tabs。很好，就是它了，现在需要设置它让它更符合我平时使用linux的习惯。<h2 id="设置cmder的home-dir"><a href="#设置cmder的home-dir" class="headerlink" title="设置cmder的home dir"></a>设置cmder的home dir</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">D:\&gt;wsl</span><br><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# grep -r &apos;home pat&apos; /mnt/d/soft/cmder/vendor/init.bat -A 3</span><br><span class="line">:: Set home path</span><br><span class="line">if not defined HOME set &quot;HOME=%USERPROFILE%&quot;</span><br><span class="line">%lib_console% debug_output init.bat &quot;Env Var - HOME=%HOME%&quot;</span><br><span class="line">@cd /d &quot;D:/&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="定义-bak软链与ubuntu的路径使用习惯相同"><a href="#定义-bak软链与ubuntu的路径使用习惯相同" class="headerlink" title="定义/bak软链与ubuntu的路径使用习惯相同"></a>定义/bak软链与ubuntu的路径使用习惯相同</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# ln -s /mnt/d /bak</span><br><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# ls /bak/soft/cmder/vendor/init.bat</span><br><span class="line">/bak/soft/cmder/vendor/init.bat</span><br></pre></td></tr></table></figure>
+<p><strong>定义alias别名在cmder shell更方便直接使用wsl bash命令</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">D:\&gt;cat soft/cmder/config/user_aliases.cmd |tail -n 20</span><br><span class="line">sshxxx=ssh ubuntu@xxx -b 192.168.8.101</span><br><span class="line">ifconfig=wsl ifconfig</span><br><span class="line">awk=wsl awk</span><br><span class="line">head=wsl head</span><br><span class="line">less=wsl less</span><br><span class="line">ls=wsl ls</span><br><span class="line">man=wsl man</span><br><span class="line">sed=wsl sed</span><br><span class="line">tail=wsl tail</span><br><span class="line">route=wsl route</span><br><span class="line">ping=wsl ping</span><br><span class="line">nslookup=wsl nslookup</span><br><span class="line">dig=wsl dig</span><br><span class="line">tar=wsl tar</span><br><span class="line">cat=wsl cat</span><br><span class="line">tee=wsl tee</span><br></pre></td></tr></table></figure></p>
+<h2 id="设置默认使用cmder-shell"><a href="#设置默认使用cmder-shell" class="headerlink" title="设置默认使用cmder shell"></a>设置默认使用cmder shell</h2><p>注： win+shift+s可以快速截屏<br><img src="https://img-blog.csdnimg.cn/20200418153925206.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="标题在General-gt-Confirm中去掉警告"><a href="#标题在General-gt-Confirm中去掉警告" class="headerlink" title="标题在General -&gt; Confirm中去掉警告"></a>标题在General -&gt; Confirm中去掉警告</h2><h2 id="设置tab相关的快捷键与chrome-vimum"><a href="#设置tab相关的快捷键与chrome-vimum" class="headerlink" title="设置tab相关的快捷键与chrome vimum"></a>设置tab相关的快捷键与chrome vimum</h2><p><img src="https://img-blog.csdnimg.cn/2020041815444182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="其他-让windows支持内录"><a href="#其他-让windows支持内录" class="headerlink" title="其他 - 让windows支持内录"></a>其他 - 让windows支持内录</h2><p>thinkpad x1 yoga只有一个音频口，喇叭在放音的时候就单工了麦克风不能录音了，能让声音内部从喇叭路由到pyaudio程序处理了再内部路由到麦克风吗？答案是需要安装虚拟路由，同时得支持路由在虚拟设备和物理设备间路由。有款叫voicemeeter的软件就是做这件事的。路由设置如下图：</p>
+<ul>
+<li>在1处选内装麦克风，同时将A去掉，A代表可以从麦克风处输入声音</li>
+<li>2处不选 ，因为只有一个音频物理设备</li>
+<li>3处是选虚拟设备的，A,B两处默认都选<br>最右侧输出到扬声器<br><img src="https://img-blog.csdnimg.cn/20200418155154203.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>需要将声音的输入和输出默认都走虚拟设备<br><img src="https://img-blog.csdnimg.cn/20200418155253484.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>注意：这样，声音就被内部路由到python pyaudio了， 如果外部也能从物理设备录音的话，必须一直开着voicemeeter, 所以按win+r键输入 shell:startup 进入 C:\Users\ThinkPad\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup 目录， 将voicemeeter的链接加到这个目录开机就自动启动了. 不过， 我不是这样做的，voicemeeter菜单中有如下的两项开机自动启动并放入拖盘的设置，如下图。<br><img src="https://img-blog.csdnimg.cn/20200418155839452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><h2 id="粘贴到vim全变成一行的问题"><a href="#粘贴到vim全变成一行的问题" class="headerlink" title="粘贴到vim全变成一行的问题"></a>粘贴到vim全变成一行的问题</h2>如从记事本复制多行内容，然后粘贴到vim却变成了多行，将下图中Ctrl+Shift+V的快捷键设置成Multi lines模式即可。<br><img src="https://img-blog.csdnimg.cn/20200418161126265.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<h2 id="另一个开机自启的方法"><a href="#另一个开机自启的方法" class="headerlink" title="另一个开机自启的方法"></a>另一个开机自启的方法</h2><p>上面介绍了一种开机自启的方法，但对于cmd命令的自启还要写脚本打开shell，再后台运行程序，再关shell。但我的windows shell不熟悉啊。有一种简单的将自己的应用放入服务的方法， 以开机自启frpc为例：</p>
+<ul>
+<li>将nssm.exe下载放到和frpc同一级目录</li>
+<li>运行：nssm install frpc 会弹出配置服务界面，照着配置就行了</li>
+<li><p>到服务目录设置自动启动它。</p>
+<h2 id="安装clink增强cmder的像bash-completion一样的命令提示"><a href="#安装clink增强cmder的像bash-completion一样的命令提示" class="headerlink" title="安装clink增强cmder的像bash completion一样的命令提示"></a>安装clink增强cmder的像bash completion一样的命令提示</h2><h2 id="安装类似于proxychain的proxycap"><a href="#安装类似于proxychain的proxycap" class="headerlink" title="安装类似于proxychain的proxycap"></a>安装类似于proxychain的proxycap</h2><h2 id="安装winaera-tweaker设置系统代替设置注册表"><a href="#安装winaera-tweaker设置系统代替设置注册表" class="headerlink" title="安装winaera tweaker设置系统代替设置注册表"></a>安装winaera tweaker设置系统代替设置注册表</h2><h2 id="使用qnap-nas"><a href="#使用qnap-nas" class="headerlink" title="使用qnap nas"></a>使用qnap nas</h2><p>qnap nas设置了nfs server, wsl中由于没nfs内核模块，无法通过autofs设置nfs.<br>所以直接在浏览器上通过\<nas-ip>就可以访问nas了, 或者安装qfinder pro</nas-ip></p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/04/14/猫盘安装群晖synology/" rel="next" title="猫盘安装群晖synology">
+                <i class="fa fa-chevron-left"></i> 猫盘安装群晖synology
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CLI工具的选择"><span class="nav-number">2.</span> <span class="nav-text">CLI工具的选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置cmder的home-dir"><span class="nav-number">3.</span> <span class="nav-text">设置cmder的home dir</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定义-bak软链与ubuntu的路径使用习惯相同"><span class="nav-number">4.</span> <span class="nav-text">定义/bak软链与ubuntu的路径使用习惯相同</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置默认使用cmder-shell"><span class="nav-number">5.</span> <span class="nav-text">设置默认使用cmder shell</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#标题在General-gt-Confirm中去掉警告"><span class="nav-number">6.</span> <span class="nav-text">标题在General -> Confirm中去掉警告</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置tab相关的快捷键与chrome-vimum"><span class="nav-number">7.</span> <span class="nav-text">设置tab相关的快捷键与chrome vimum</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他-让windows支持内录"><span class="nav-number">8.</span> <span class="nav-text">其他 - 让windows支持内录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#粘贴到vim全变成一行的问题"><span class="nav-number">9.</span> <span class="nav-text">粘贴到vim全变成一行的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个开机自启的方法"><span class="nav-number">10.</span> <span class="nav-text">另一个开机自启的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装clink增强cmder的像bash-completion一样的命令提示"><span class="nav-number">11.</span> <span class="nav-text">安装clink增强cmder的像bash completion一样的命令提示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装类似于proxychain的proxycap"><span class="nav-number">12.</span> <span class="nav-text">安装类似于proxychain的proxycap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装winaera-tweaker设置系统代替设置注册表"><span class="nav-number">13.</span> <span class="nav-text">安装winaera tweaker设置系统代替设置注册表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用qnap-nas"><span class="nav-number">14.</span> <span class="nav-text">使用qnap nas</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
