@@ -231,6 +231,130 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/" itemprop="url">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-16T23:23:50+08:00">
+                2020-02-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-02-12<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器, 然后用到squid的tcp_outgoing_address特性, 但是tcp_outgoing_address这个特性做测试时可没那么容易成功的, 最终这个最小化的squid.conf如下, 底层原理可参照[2]:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install squid -y</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/squid/squid.conf</span><br><span class="line">http_port 192.168.99.135:3128</span><br><span class="line">dns_v4_first on</span><br><span class="line">#dns_nameservers 192.168.8.1</span><br><span class="line">acl gfw myip 192.168.8.101</span><br><span class="line">tcp_outgoing_address 192.168.8.101 gfw</span><br><span class="line">acl localip src 192.168.99.135</span><br><span class="line">http_access allow localip</span><br><span class="line">http_access deny all</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl reload squid</span><br><span class="line">sudo systemctl enable squid</span><br></pre></td></tr></table></figure>
+<p>如果是ssh呢，这样:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;9 ssh&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">sudo ip route add default via 192.168.8.1 dev wlp4s0 table ssh</span><br><span class="line">sudo ip rule add from 192.168.8.101/24 table ssh</span><br><span class="line">ssh ubuntu@xxx -b 192.168.8.101</span><br></pre></td></tr></table></figure></p>
+<p>[1] <a href="https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem" target="_blank" rel="external">https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem</a><br>[2] <a href="http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/" target="_blank" rel="external">http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1753,151 +1877,6 @@ Fixed bug #161317
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/24/如何让OpenStack支持多个FIP/" itemprop="url">如何让OpenStack支持多个FIP</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-24T20:24:20+08:00">
-                2019-04-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-04-24)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>OpenStack可以支持多个公网IP吗?<br>OpenStack CLI不支持将同一个子网的多个FIPs分配给同一个fixed_ip的接口. 最简单的方法是直接分配FIP后手工配置在qrouter-xxx上, 并且手工做DNAT/SNAT. 但还有其他更好的方法吗?</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo ip netns exec qrouter-9843a7c4-f1e7-4ea0-b031-c1a0428795be ip addr add 10.5.150.15 dev qg-60d62ebb-47</span><br><span class="line"></span><br><span class="line">sudo ip netns exec qrouter-9843a7c4-f1e7-4ea0-b031-c1a0428795be iptables -t nat -A neutron-l3-agent-OUTPUT -d 10.5.150.15/32 -j DNAT --to-destination 192.168.22.53</span><br><span class="line">sudo ip netns exec qrouter-9843a7c4-f1e7-4ea0-b031-c1a0428795be iptables -t nat -A neutron-l3-agent-PREROUTING -d 10.5.150.15/32 -j DNAT --to-destination 192.168.22.53</span><br><span class="line">sudo ip netns exec qrouter-9843a7c4-f1e7-4ea0-b031-c1a0428795be iptables -t nat -A neutron-l3-agent-float-snat -s 192.168.22.53/32 -j SNAT --to-source 10.5.150.15</span><br><span class="line"></span><br><span class="line">ubuntu@juju-54f223-pike-5:~$ ping 10.5.150.15</span><br><span class="line">PING 10.5.150.15 (10.5.150.15) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.150.15: icmp_seq=1 ttl=63 time=3.25 ms</span><br></pre></td></tr></table></figure>
-<h2 id="创建多个tenant子网"><a href="#创建多个tenant子网" class="headerlink" title="创建多个tenant子网"></a>创建多个tenant子网</h2><p>创建多个tenant子网(fixed_ip), 将这些子网分配给VM, 然后再将多个FIP分别和这些tenant port关联. 结果是虚机内部多个网卡造成了不对称路由问题, 引入policy route之后解决了outbound的问题, 但仍然无法解决inbound的问题.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">step 1, created a test VM with the network private (192.168.21.0/24) and a fix_ip 192.168.21.5 and a FIP 10.5.150.2</span><br><span class="line"></span><br><span class="line">openstack server create --wait --image bionic --flavor m1.small --key-name mykey --nic net-id=e4074ac4-3c48-41f2-81e2-5a798468bf88 --min 1 --max 1 test</span><br><span class="line">fix_ip=&quot;192.168.21.5&quot;</span><br><span class="line">public_network=$(openstack network show ext_net -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $public_network -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address $fix_ip --port $(openstack port list --fixed-ip ip-address=$fix_ip -c id -f value)</span><br><span class="line"></span><br><span class="line">step 2, created another network private2 (192.168.22.0/24) and attach another interface into the test VM, then allocated a FIP (192.168.22.53) for it (192.168.22.51)</span><br><span class="line"></span><br><span class="line">openstack network create private2</span><br><span class="line">openstack subnet create --subnet-range 192.168.22.0/24 --network private2 --allocation-pool start=192.168.22.50,end=192.168.22.100 --gateway 192.168.22.1 priavte2-subnet</span><br><span class="line">openstack router add subnet provider-router priavte2-subnet</span><br><span class="line">nova interface-attach $(openstack server list -f value |awk &apos;/test/ &#123;print $1&#125;&apos;) --net-id=$(openstack network list -f value |awk &apos;/private2/ &#123;print $1&#125;&apos;)</span><br><span class="line">ssh ubuntu@10.5.150.2 -- sudo ifconfig ens5 up</span><br><span class="line"># then connection is disconnect because the default route moves from ens2 to ens5</span><br><span class="line">ssh ubuntu@10.5.150.2 -- dhcpclient ens5</span><br><span class="line"></span><br><span class="line">Finally it looks like - https://paste.ubuntu.com/p/yMJpJXYqDY/</span><br><span class="line"></span><br><span class="line">step 3, now the default gw is in ens5 so we can ping external inside test VM</span><br><span class="line"></span><br><span class="line">root@test:~# ping -I ens2 10.230.65.38</span><br><span class="line">PING 10.230.65.38 (10.230.65.38) from 192.168.21.5 ens2: 56(84) bytes of data.</span><br><span class="line">root@test:~# ping -I ens5 10.230.65.38</span><br><span class="line">PING 10.230.65.38 (10.230.65.38) from 192.168.22.53 ens5: 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.230.65.38: icmp_seq=1 ttl=62 time=3.34 ms</span><br><span class="line"></span><br><span class="line">step 4, outbound traffic works after adding policy router rules.</span><br><span class="line"></span><br><span class="line">echo &quot;1 t21&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">ip route add 192.168.21.0/24 dev ens2 src 192.168.21.5 table t21</span><br><span class="line">ip route add default via 192.168.21.5 dev ens2 table t21</span><br><span class="line">ip rule add from 192.168.21.5/24 table t21</span><br><span class="line"></span><br><span class="line">root@test:~# ping -I ens2 10.230.65.38</span><br><span class="line">PING 10.230.65.38 (10.230.65.38) from 192.168.21.5 ens2: 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.230.65.38: icmp_seq=1 ttl=62 time=6.28 ms</span><br><span class="line">root@test:~# ping -I ens5 10.230.65.38</span><br><span class="line">PING 10.230.65.38 (10.230.65.38) from 192.168.22.53 ens5: 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.230.65.38: icmp_seq=1 ttl=62 time=4.90 ms</span><br><span class="line"></span><br><span class="line">step 5, but inbound traffic for two FIPs can&apos;t work at the same time</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~$ ping -c 1 10.5.150.2</span><br><span class="line">PING 10.5.150.2 (10.5.150.2) 56(84) bytes of data.</span><br><span class="line">ubuntu@zhhuabj-bastion:~$ ping -c 1 10.5.150.8</span><br><span class="line">PING 10.5.150.8 (10.5.150.8) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.150.8: icmp_seq=1 ttl=63 time=3.41 ms</span><br></pre></td></tr></table></figure></p>
-<h2 id="创建多个FIP子网"><a href="#创建多个FIP子网" class="headerlink" title="创建多个FIP子网"></a>创建多个FIP子网</h2><p>创建多个外部网络的方法也不可行, 因为多个外部网络意味着多个router, 但无法将一个tenant subnet添加到多个routers中去:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ neutron router-interface-add provider-router2 private_subnet</span><br><span class="line">IP address 192.168.21.1 already allocated in subnet ada0b5b0-6780-4131-b07b-cee7069eab8d</span><br><span class="line">Neutron server returns request_ids: [&apos;req-8110ac5c-94ca-4b15-bf72-e199b635aa6f&apos;]</span><br></pre></td></tr></table></figure></p>
-<p>这样在为一个port关联多个FIPs时报下列错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ neutron floatingip-associate $(neutron floatingip-list |grep $fip2 |awk &apos;&#123;print $2&#125;&apos;) $(neutron port-list |grep $fix_ip |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">External network 30769889-a664-4d99-8035-047773d2031c is not reachable from subnet ada0b5b0-6780-4131-b07b-cee7069eab8d.  Therefore, cannot associate Port 7e8d017b-8e1d-4f8f-98cd-9de3fe52c687 with a Floating IP.</span><br><span class="line">Neutron server returns request_ids: [&apos;req-76951e0d-aff8-4106-826c-72d99fe03c2d&apos;]</span><br></pre></td></tr></table></figure></p>
-<p>具体测试方法如下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"># Created another FIP network for test</span><br><span class="line"></span><br><span class="line"># first provides the physical network in the underlying OpenStack of sts-stack</span><br><span class="line">source ~/novarc</span><br><span class="line">openstack router create zhhuabj_router2</span><br><span class="line">openstack network create --disable-port-security zhhuabj_admin_net2</span><br><span class="line">openstack subnet create --subnet-range 10.10.0.0/24 --network zhhuabj_admin_net2 --allocation-pool start=10.10.0.50,end=10.10.0.100 --gateway 10.10.0.1 zhhuabj_admin_net2_subnet</span><br><span class="line">openstack router add subnet zhhuabj_router2 zhhuabj_admin_net2</span><br><span class="line">openstack router set --external-gateway zhhuabj_admin_net2 zhhuabj_router2</span><br><span class="line"></span><br><span class="line"># For convenience of management, add a ip address from this network into bastion</span><br><span class="line">source ~/novarc</span><br><span class="line">nova interface-attach $(nova list |grep zhhuabj-bastion |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show zhhuabj_admin_net2 -c id -f value)</span><br><span class="line">sudo ip addr add 10.10.0.58/24 dev ens9</span><br><span class="line">sudo ip link set dev ens9 up</span><br><span class="line"></span><br><span class="line"># then defines the flat provider network in the upper OpenStack of sts-stack</span><br><span class="line">juju deploy ./b/openstack.yaml</span><br><span class="line">./configre</span><br><span class="line">source ~/novarc &amp;&amp; nova interface-attach $(nova list |grep $(juju ssh neutron-gateway/0 -- hostname) |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show zhhuabj_admin_net2 -c id -f value)</span><br><span class="line">juju ssh neutron-gateway/0 -- sudo ovs-vsctl add-br br-data2</span><br><span class="line">juju ssh neutron-gateway/0 -- sudo ovs-vsctl add-port br-data2 ens7</span><br><span class="line">juju ssh neutron-gateway/0 -- sudo ifconfig ens7 up</span><br><span class="line">juju config neutron-gateway bridge-mappings=&quot;physnet1:br-data physnet2:br-data2&quot;</span><br><span class="line">juju config neutron-gateway data-port=&quot;br-data:fa:16:3e:45:fc:23 br-data2:ens7&quot;</span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1 physnet2&quot;</span><br><span class="line">juju ssh neutron-gateway/0 -- sudo systemctl restart neutron-openvswitch-agent.service</span><br><span class="line"></span><br><span class="line">source stsstack-bundles/openstack/novarc</span><br><span class="line">neutron net-create --shared --router:external --provider:network_type flat --provider:physical_network physnet2 ext_net2</span><br><span class="line">neutron subnet-create --name ext_net2_subnet --gateway 10.10.0.1 --allocation-pool start=10.10.0.60,end=10.10.0.70 --disable-dhcp ext_net2 10.10.0.0/24</span><br><span class="line">neutron router-create provider-router2</span><br><span class="line">neutron router-gateway-set provider-router2 ext_net2</span><br><span class="line"># OpenStack doesn&apos;t support add the same subnet into multiple routers</span><br><span class="line"># neutron router-interface-add provider-router2 private_subnet</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~$ neutron router-interface-add provider-router2 private_subnet</span><br><span class="line">IP address 192.168.21.1 already allocated in subnet ada0b5b0-6780-4131-b07b-cee7069eab8d</span><br><span class="line">Neutron server returns request_ids: [&apos;req-8110ac5c-94ca-4b15-bf72-e199b635aa6f&apos;]</span><br><span class="line"></span><br><span class="line"># Create a test VM and allocate two FIPs to it from two FIP pool</span><br><span class="line">./tools/instance_launch.sh 1 xenial</span><br><span class="line">./tools/sec_groups.sh</span><br><span class="line">fix_ip=$(openstack server list -f value |awk &apos;/xenial/ &#123;print $4&#125;&apos; |awk -F &apos;=&apos; &apos;&#123;print $2&#125;&apos; |awk -F &apos;,&apos; &apos;&#123;print $1&#125;&apos;)</span><br><span class="line">ext_net=$(openstack network show ext_net -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $ext_net -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address $fix_ip --port $(openstack port list --fixed-ip ip-address=$fix_ip -c id -f value)</span><br><span class="line">ext_net2=$(openstack network show ext_net2 -f value -c id)</span><br><span class="line">fip2=$(openstack floating ip create $ext_net2 -f value -c floating_ip_address)</span><br><span class="line">neutron floatingip-associate $(neutron floatingip-list |grep $fip2 |awk &apos;&#123;print $2&#125;&apos;) $(neutron port-list |grep $fix_ip |awk &apos;&#123;print $2&#125;&apos;)</span><br></pre></td></tr></table></figure>
-<h2 id="使用flat-provider-network"><a href="#使用flat-provider-network" class="headerlink" title="使用flat provider network"></a>使用flat provider network</h2><p>使用flat provider network, 虚机内虽然也有多个网卡, 但因为虚机内的网卡和虚机外的网卡属于同一相flat网络并不存在路径选择问题, 结果证明可行.<br>第一步, 继续需要为计算结点准备外部网卡<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">source ~/novarc &amp;&amp; nova interface-attach $(nova list |grep $(juju ssh nova-compute/0 -- hostname) |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show zhhuabj_admin_net2 -c id -f value)</span><br><span class="line">juju ssh nova-compute/0 -- sudo ovs-vsctl add-br br-data2</span><br><span class="line">juju ssh nova-compute/0 -- sudo ovs-vsctl add-port br-data2 ens7</span><br><span class="line">juju ssh nova-compute/0 -- sudo ifconfig ens7 up</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data physnet2:br-data2&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data2:ens7&quot;</span><br><span class="line">#juju config neutron-api flat-network-providers=&quot;physnet1 physnet2&quot;</span><br><span class="line"></span><br><span class="line">source ~/novarc &amp;&amp; nova interface-attach $(nova list |grep $(juju ssh nova-compute/0 -- hostname) |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show zhhuabj_admin_net -c id -f value)</span><br><span class="line">#juju ssh nova-compute/0 -- sudo ovs-vsctl add-br br-data</span><br><span class="line">juju ssh nova-compute/0 -- sudo ovs-vsctl add-port br-data ens9</span><br><span class="line">juju ssh nova-compute/0 -- sudo ifconfig ens9 up</span><br><span class="line">#juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data physnet2:br-data2&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9 br-data2:ens7&quot;</span><br><span class="line">#juju config neutron-api flat-network-providers=&quot;physnet1 physnet2&quot;</span><br></pre></td></tr></table></figure></p>
-<p>第二步, 创建flat网络</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source ~/stsstack-bundles/openstack/novarc</span><br><span class="line">neutron net-create ext_net2 --provider:network_type flat --provider:physical_network physnet2 --router:external=True --shared</span><br><span class="line">neutron subnet-create --name ext_net2_subnet --enable_dhcp=False --allocation_pool start=10.10.0.60,end=10.10.0.70 --gateway=10.10.0.1 ext_net2 10.10.0.0/24</span><br></pre></td></tr></table></figure>
-<p>第三步, 创建测试虚机, 记得使用一个tenant private network避免引入metadata的问题.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image xenial --flavor m1.small --key-name mykey --network=private i1</span><br><span class="line">nova interface-attach $(nova list |grep i1 |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show ext_net -c id -f value)</span><br><span class="line">nova interface-attach $(nova list |grep i1 |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show ext_net2 -c id -f value)</span><br></pre></td></tr></table></figure></p>
-<p>第四步, 因为我们的外部网络都没有使用dhcp, 所以需要登录虚机手动设置IP.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ nova list</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">| ID                                   | Name | Status | Task State | Power State | Networks                                                       |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">| 45083dc2-c72e-4201-b35c-6d0f6ef3712a | i1   | ACTIVE | -          | Running     | ext_net=10.5.150.8; ext_net2=10.10.0.64; private=192.168.21.13 |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+----------------------------------------------------------------+</span><br><span class="line">juju ssh neutron-gateway/0</span><br><span class="line">sudo ip netns exec qrouter-8b597dd0-49b3-40e3-8e0e-c035d8535cae ssh -i /home/ubuntu/id_rsa ubuntu@192.168.21.13</span><br><span class="line">$ sudo ifconfig ens5 up</span><br><span class="line">$ sudo ifconfig ens6 up</span><br><span class="line">$ sudo ip addr add 10.5.150.8/16 dev ens5</span><br><span class="line">$ sudo ip addr add 10.10.0.64/24 dev ens6</span><br></pre></td></tr></table></figure>
-<p>第五步, 测试.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ ping 10.5.150.8</span><br><span class="line">PING 10.5.150.8 (10.5.150.8) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.150.8: icmp_seq=1 ttl=64 time=5.07 ms</span><br><span class="line">ubuntu@zhhuabj-bastion:~$ ping 10.10.0.64</span><br><span class="line">PING 10.10.0.64 (10.10.0.64) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.10.0.64: icmp_seq=1 ttl=64 time=4.16 ms</span><br><span class="line"></span><br><span class="line">ubuntu@i1:~$ ping -c 1 10.10.0.58</span><br><span class="line">PING 10.10.0.58 (10.10.0.58) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.10.0.58: icmp_seq=1 ttl=64 time=2.21 ms</span><br><span class="line">ubuntu@i1:~$ ping -c 1 10.5.0.8</span><br><span class="line">PING 10.5.0.8 (10.5.0.8) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.5.0.8: icmp_seq=1 ttl=64 time=2.18 ms</span><br></pre></td></tr></table></figure></p>
-<p>注: 若报下列这种错误, 是因为没有做第一步创建br-data2及相关的NIC.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@zhhuabj-bastion:~$ nova interface-attach $(nova list |grep i1 |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show ext_net2 -c id -f value)</span><br><span class="line">neutron CLI is deprecated and will be removed in the future. Use openstack CLI instead.</span><br><span class="line">ERROR (ClientException): Unexpected API Error. Please report this at http://bugs.launchpad.net/nova/ and attach the Nova API log if possible.</span><br><span class="line">&lt;class &apos;PortBindingFailed_Remote&apos;&gt; (HTTP 500) (Request-ID: req-38c9faad-872c-43c4-921d-798b31bff548)</span><br></pre></td></tr></table></figure></p>
-<h2 id="更近一步考虑"><a href="#更近一步考虑" class="headerlink" title="更近一步考虑"></a>更近一步考虑</h2><p>如果设置”juju config neutron-openvswitch enable-local-dhcp-and-metadata=True”这样可以省掉计算节点的网卡, 这样计算节点原先用于连l3-agent的网卡(现在不需要l3-agent了, 同时dhcp-agent与metadata-agent挪到了计算节点上)可以挪出来用于provider network. (<strong>注意: 至少需要两个网卡的, 一个管理用的, 一个用来做data-port的, data-port最终用在bridge-mapping中用在vlan与flat之类的provider network中, 但是对在dvr这种provider network是必须要一个的</strong>) 所以对于flat之前的:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=False</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data physnet2:br-data2&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9 br-data2:ens7&quot;</span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1 physnet2&quot;</span><br></pre></td></tr></table></figure></p>
-<p>变成了:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=True</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9&quot;</span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1&quot;</span><br></pre></td></tr></table></figure></p>
-<p>或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh --name octavia --create-model --run --octavia -r stein --dvr-snat --num-compute 2</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens7&quot;</span><br><span class="line">./bin/add-data-ports.sh</span><br></pre></td></tr></table></figure></p>
-<p>如果是vlan, 则:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=True</span><br><span class="line">juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens9&quot;</span><br><span class="line">juju config neutron-api vlan-ranges=&quot;physnet1:1000:2000&quot;</span><br><span class="line"># must configure external switch to truck mode to allow vlan 1000 to 2000</span><br><span class="line">neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1001</span><br><span class="line">neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1002</span><br></pre></td></tr></table></figure></p>
-<p>如果将provider network 共享给其他tenant的话, 可以加–shared参数:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">neutron net-create ext_net2 --provider:network_type flat --provider:physical_network physnet2 --router:external=True --shared</span><br></pre></td></tr></table></figure></p>
-<p>或者使用rbac特性 (<a href="https://docs.openstack.org/neutron/pike/admin/config-rbac.html" target="_blank" rel="external">https://docs.openstack.org/neutron/pike/admin/config-rbac.html</a> )<br>如果使用dvr, 还可以让l3ha与dvr共存, 并且使用use-dvr-snat=true充许将网关运行在计算节点(<strong>dvr_snat模式会在计算节点上也创建snat-xxx名空间作为主, 同时neutron-gateway上的snat-xxx由l3ha特性作为副</strong> )上. 见: <a href="https://review.opendev.org/#/c/624495/" target="_blank" rel="external">https://review.opendev.org/#/c/624495/</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-api enable-dvr=True</span><br><span class="line">juju config neutron-api enable-l3ha=true</span><br><span class="line">juju config neutron-openvswitch use-dvr-snat=True</span><br></pre></td></tr></table></figure></p>
-<p>测试DVR的情况如下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh --series xenial --release queens</span><br><span class="line">juju add-model dvr-lp1825966</span><br><span class="line">juju deploy ./b/openstack.yaml</span><br><span class="line"># just flat/vlan need this extra NIC</span><br><span class="line">#source ~/novarc &amp;&amp; nova interface-attach $(nova list |grep $(juju ssh nova-compute/1 -- hostname) |awk &apos;&#123;print $2&#125;&apos;) --net-id=$(neutron net-show zhhuabj_admin_net -c id -f value)</span><br><span class="line">./bin/add-data-ports.sh</span><br><span class="line"></span><br><span class="line">#juju config neutron-openvswitch bridge-mappings=&quot;physnet1:br-data&quot;</span><br><span class="line">#juju config neutron-api flat-network-providers=&quot;physnet1&quot;</span><br><span class="line">juju config neutron-openvswitch data-port=&quot;br-data:ens7&quot;</span><br><span class="line"></span><br><span class="line">juju config neutron-api flat-network-providers=&quot;physnet1&quot;</span><br><span class="line"># vlan - must configure external switch to truck mode to allow vlan 1000 to 2000</span><br><span class="line">#juju config neutron-api vlan-ranges=&quot;physnet1:1000:2000&quot;</span><br><span class="line">#neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1001</span><br><span class="line">#neutron net-create net1 --provider:network_type vlan --provider:physical_network physnet1 --provider:segmentation_id 1002</span><br><span class="line"></span><br><span class="line">git clone https://github.com/openstack/charm-neutron-openvswitch.git neutron-openvswitch</span><br><span class="line">cd neutron-openvswitch/</span><br><span class="line">patch -p1 &lt; 0001-Enable-keepalived-VRRP-health-check.patch</span><br><span class="line">juju upgrade-charm neutron-openvswitch --path $PWD</span><br><span class="line"></span><br><span class="line">juju config neutron-api enable-dvr=True</span><br><span class="line">juju config neutron-openvswitch use-dvr-snat=True</span><br><span class="line">juju config neutron-api enable-l3ha=true</span><br><span class="line">juju config neutron-openvswitch enable-local-dhcp-and-metadata=True</span><br><span class="line"></span><br><span class="line">./configure</span><br><span class="line">./tools/sec_groups.sh</span><br><span class="line">source ~/stsstack-bundles/openstack/novarc</span><br><span class="line"># non-flat tenant router</span><br><span class="line">neutron router-show provider-router</span><br><span class="line">#neutron router-update --admin-state-up False provider-router</span><br><span class="line">#neutron router-update provider-router --distributed True --ha=True</span><br><span class="line">#neutron router-update --admin-state-up True provider-router</span><br><span class="line"></span><br><span class="line"># can use flat network ext_net directly by using enable-local-dhcp-and-metadata=True to bypass metadata feature instead of using tenant network</span><br><span class="line"># but ext_net without dhcp, so vm can&apos;t get IP</span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">nova boot --key-name mykey --image xenial --flavor m1.small --nic net-id=$(neutron net-list |grep &apos; ext_net &apos; |awk &apos;&#123;print $2&#125;&apos;) i1</span><br><span class="line">nova boot --key-name mykey --image xenial --flavor m1.small --nic net-id=$(neutron net-list |grep &apos; private &apos; |awk &apos;&#123;print $2&#125;&apos;) --nic net-id=$(neutron net-list |grep &apos; ext_net &apos; |awk &apos;&#123;print $2&#125;&apos;) i1</span><br><span class="line"></span><br><span class="line"># in nova-compute/1 unit. compute node will have snat-xxx namespace due to use-dvr-snat=True</span><br><span class="line">wget https://gist.githubusercontent.com/dosaboy/cf8422f16605a76affa69a8db47f0897/raw/8e045160440ecf0f9dc580c8927b2bff9e9139f6/check_router_vrrp_transitions.sh</span><br><span class="line">chmod +x check_router_vrrp_transitions.sh</span><br><span class="line"># https://paste.ubuntu.com/p/PYPptZRhrn/</span><br><span class="line">date; neutron l3-agent-list-hosting-router $(neutron router-show provider-router -c id -f value); juju ssh nova-compute/1 -- bash /home/ubuntu/check_router_vrrp_transitions.sh; juju ssh nova-compute/1 -- bash /home/ubuntu/check_router_vrrp_transitions.sh; sleep 40; date; neutron l3-agent-list-hosting-router $(neutron router-show provider-router -c id -f value); juju ssh nova-compute/1 -- bash /home/ubuntu/check_router_vrrp_transitions.sh; juju ssh nova-compute/1 -- bash /home/ubuntu/check_router_vrrp_transitions.sh;</span><br></pre></td></tr></table></figure>
-<h2 id="更新-20190717"><a href="#更新-20190717" class="headerlink" title="更新 20190717"></a>更新 20190717</h2><p>dpdk环境, 没neutron-gateway, dhcp-agent与metadata-agent均在计算节点上, 计算节点上因为memory不足导致ovs死掉, 在迁移一些虚机到其他机器并重启这台计算节点之后仍然发现虚机无法从dhcp处获取IP, 在使用config-drive静态指定IP后无问题, 所以后来发现原来是服务这些虚机的dhcp已经迁移到其他host, 在重启这个host后问题解决.</p>
-<h2 id="20200110更新-dmz测试"><a href="#20200110更新-dmz测试" class="headerlink" title="20200110更新 - dmz测试"></a>20200110更新 - dmz测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">openstack router create externalrouter</span><br><span class="line">openstack network create dmznet --external</span><br><span class="line">openstack subnet create --subnet-range 172.21.8.0/24 --network dmznet --allocation-pool start=172.21.8.86,end=172.21.8.100 --gateway 172.21.8.1 dmzsubnetinternal</span><br><span class="line">openstack subnet create --subnet-range 193.169.205.0/24 --network dmznet --allocation-pool start=193.169.205.87,end=193.169.205.100 --gateway 193.169.205.1 dmzsubnetexternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetinternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetexternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterinternal</span><br><span class="line">openstack network create tenantnet</span><br><span class="line">openstack subnet create --subnet-range 192.168.4.0/24 --network tenantnet --allocation-pool start=192.168.4.87,end=192.168.4.100 --gateway 192.168.4.1 tenantsubnet</span><br><span class="line">openstack router add subnet dmzrouterinternal tenantsubnet</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetinternal,ip-address=172.21.8.87 dmzrouterinternal</span><br><span class="line">#openstack router set --enable dmzrouterinternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterexternal</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetexternal,ip-address=193.169.205.100 dmzrouterexternal</span><br><span class="line"></span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --nic net-id=$(openstack network show dmznet -c id -f value),v4-fixed-ip=193.169.205.99 externaldns</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show tenantnet -c id -f value) i1</span><br><span class="line">dmznet_id=$(openstack network show dmznet -f value -c id)</span><br><span class="line">dmzsubnetinternal_id=$(openstack subnet show dmzsubnetinternal -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create --subnet $dmzsubnetinternal_id $dmznet_id -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.4.100 --port $(openstack port list --fixed-ip ip-address=192.168.4.100 -c id -f value)</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1948,7 +1927,7 @@ Fixed bug #161317
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">57</span>
+                  <span class="site-state-item-count">58</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
