@@ -231,6 +231,135 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/04/Autoinstall-Ubuntu20-04-KVM-Instance/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/04/Autoinstall-Ubuntu20-04-KVM-Instance/" itemprop="url">Autoinstall Ubuntu20.04 KVM Instance</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-04T15:22:49+08:00">
+                2020-07-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-07-04<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我们将使用 non-GUI (text or console)的方式尽可能的自动通过KVM安装Ubuntu20.04虚机．<br>目前，Ubuntu20.04已经默认使用subiquity作为安装工具了 (之前使用debian-installer，使用preseed机制进行自动安装），subiquity使用cloud-init进行自动安装．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget http://cdimage.ubuntu.com/ubuntu/releases/20.04/release/ubuntu-20.04-live-server-arm64.iso</span><br><span class="line">wget http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso</span><br></pre></td></tr></table></figure></p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>打开硬件虚拟化，及安装KVM相关包．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install cpu-checker -y</span><br><span class="line">sudo kvm-ok  #remember to enable VT-x and VT-d in BIOS</span><br><span class="line">sudo apt install qemu qemu-kvm libvirt-daemon libvirt-clients bridge-utils virt-manager libosinfo-bin</span><br><span class="line">sudo systemctl status libvirtd</span><br><span class="line">lsmod |grep -i kvm</span><br><span class="line">egrep -c &apos;(vmx|svm)&apos; /proc/cpuinfo</span><br><span class="line">osinfo-query os|grep ubuntu</span><br></pre></td></tr></table></figure></p>
+<h2 id="virt-install-console-only模式安装kvm虚机"><a href="#virt-install-console-only模式安装kvm虚机" class="headerlink" title="virt-install + console only模式安装kvm虚机"></a>virt-install + console only模式安装kvm虚机</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo virt-install --name=demo --ram=8192 --vcpus=2 --hvm --virt-type=kvm \</span><br><span class="line">    --connect=qemu:///system --os-variant=ubuntu20.04 --os-type=linux --accelerate \</span><br><span class="line">    --disk=/game/demo.qcow2,bus=virtio,format=qcow2,cache=none,sparse=true,size=32 \</span><br><span class="line">    --network=bridge=virbr0,model=rtl8139 --nographics -v \</span><br><span class="line">    --location &apos;http://mirrors.cloud.tencent.com/ubuntu/dists/bionic/main/installer-amd64/&apos; --extra-args=&apos;console=ttyS0,115200n8 serial&apos;</span><br></pre></td></tr></table></figure>
+<p>正常情况下，上面使用（–extra-args=’console=ttyS0,115200n8 serial’）参数应该就能自动通过console连接的(sudo virsh console demo), 但暂不清楚为什么不行 (实际上在后来调试时发现上面命令其实已经将下列内容添加到了虚机内部的/etc/default/grub文件).<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GRUB_TERMINAL=serial</span><br><span class="line">GRUB_SERIAL_COMMAND=&quot;serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1&quot;</span><br></pre></td></tr></table></figure></p>
+<p>OK, 我们可以继续采用下列两种方法之一在虚机内部enable console, 方法一如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ arp -an |grep $(sudo virsh domiflist demo |awk &apos;/default/ &#123;print $5&#125;&apos;)</span><br><span class="line">? (192.168.122.62) at 52:54:00:e8:fb:47 [ether] on virbr0</span><br><span class="line">ssh demo@192.168.122.62</span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;quiet splash console=ttyS0&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line">init 6</span><br></pre></td></tr></table></figure></p>
+<p>方法二如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sudo virsh destroy demo</span><br><span class="line">sudo guestmount -d demo -i /mnt</span><br><span class="line">$ sudo cat /mnt/etc/default/grub |tail -n2</span><br><span class="line">GRUB_TERMINAL=serial</span><br><span class="line">GRUB_SERIAL_COMMAND=&quot;serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1&quot;</span><br><span class="line"></span><br><span class="line"># but above GRUB_SERIAL_COMMAND doesn&apos;t work, so remove them and use the following</span><br><span class="line">sudo vim /mnt/etc/default/grub</span><br><span class="line">#GRUB_CMDLINE_LINUX=&quot;&quot;</span><br><span class="line">GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,19200n8&quot;</span><br><span class="line"></span><br><span class="line">sudo vim /mnt/boot/grub/grub.cfg</span><br><span class="line">menuentry &apos;Ubuntu&apos; --class ubuntu --class gnu-linux --class gnu ...</span><br><span class="line">...</span><br><span class="line">        #linux  /boot/vmlinuz-5.4.0-40-generic root=UUID=646ea42b-f96e-465a-b20a-546ba34b03d6 ro  quiet splash $vt_handoff</span><br><span class="line">        linux   /boot/vmlinuz-5.4.0-40-generic root=UUID=646ea42b-f96e-465a-b20a-546ba34b03d6 ro console=ttyS0,19200 earlyprint=serial,ttyS0,19200 quiet splash $vt_handoff</span><br><span class="line"></span><br><span class="line">sudo guestunmount /mnt</span><br><span class="line">sudo virsh start demo &amp;&amp; sudo virsh --connect qemu:///system console demo</span><br></pre></td></tr></table></figure></p>
+<h2 id="基于legacy-d-i-preseed机制自动安装"><a href="#基于legacy-d-i-preseed机制自动安装" class="headerlink" title="基于legacy d-i/preseed机制自动安装"></a>基于legacy d-i/preseed机制自动安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: we use legacy iso (legacy way uses debian-installer + preseed, new way uses subiquity + init-cloud)</span><br><span class="line">#       for new way pls refer - https://ubuntu.com/server/docs/install/autoinstall-quickstart</span><br><span class="line"># wget http://releases.ubuntu.com/20.04/ubuntu-20.04-live-server-amd64.iso</span><br><span class="line">wget http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso</span><br><span class="line">wget http://mirrors.cloud.tencent.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/initrd.gz</span><br><span class="line">wget http://mirrors.cloud.tencent.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/linux</span><br><span class="line">wget https://help.ubuntu.com/lts/installation-guide/example-preseed.txt</span><br><span class="line">sed -e &quot;s/#.*//g&quot; example-preseed.txt  |awk &apos;&#123;if (length!=0) print $0&#125;&apos; &gt; preseed.cfg</span><br><span class="line">sed -i &quot;s/archive.ubuntu.com/mirrors.cloud.tencent.com/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/unassigned-hostname/openstack/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/unassigned-domain/lan/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/US\/Eastern/Asia\/Shanghai/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/ubuntu-desktop/standard, ubuntu-server/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/ubuntu-server/a\d-i pkgsel\/include string openssh-server&quot; preseed.cfg  #append a line after the matched line</span><br><span class="line">sed -i &quot;/openssh-server/a\d-i pkgsel\/upgrade select none&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/confirm_nooverwrite/a\d-i passwd\/user-fullname string demo&quot; preseed.cfg #create a new user demo</span><br><span class="line">sed -i &quot;/demo/a\d-i passwd\/user-password password password&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/user-password/a\d-i passwd\/user-password-again password password&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/user-password-again/a\d-i user-setup\/allow-password-weak boolean true&quot; preseed.cfg</span><br><span class="line">sudo python -m http.server  #http://localhost:8000/preseed.cfg</span><br><span class="line">sudo mount -o ro /bak/images/ubuntu-20.04-legacy-server-amd64.iso /mnt/</span><br><span class="line">sudo virt-install --name demo --ram 8192 --vcpus 2 --virt-type kvm \</span><br><span class="line">   --connect=qemu:///system --os-variant=ubuntu20.04 --os-type=linux --accelerate \</span><br><span class="line">   --disk=/game/demo.qcow2,bus=virtio,format=qcow2,cache=none,sparse=true,size=32 \</span><br><span class="line">   --network bridge=virbr0 --graphics none --force --debug \</span><br><span class="line">   --cdrom=/bak/images/ubuntu-20.04-legacy-server-amd64.iso \</span><br><span class="line">   --boot kernel=./linux,initrd=./initrd.gz,kernel_args=&quot;console=ttyS0 url=http://192.168.99.135:8080/preseed.cfg debian-installer/allow_unauthenticated_ssl=true&quot;</span><br><span class="line"></span><br><span class="line">NOTE: 实际安装中，报找不着http://192.168.99.135:8080/preseed.cfg以致无法自动安装，奇怪．</span><br></pre></td></tr></table></figure>
+<h2 id="基于subiquity-cloud-init新机制自动安装"><a href="#基于subiquity-cloud-init新机制自动安装" class="headerlink" title="基于subiquity/cloud-init新机制自动安装"></a>基于subiquity/cloud-init新机制自动安装</h2><p>参考 - <a href="https://ubuntu.com/server/docs/install/autoinstall-quickstart" target="_blank" rel="external">https://ubuntu.com/server/docs/install/autoinstall-quickstart</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"># The crypted password is just &quot;ubuntu&quot;.</span><br><span class="line">cat &gt; user-data &lt;&lt; &apos;EOF&apos;</span><br><span class="line">#cloud-config</span><br><span class="line">autoinstall:</span><br><span class="line">  version: 1</span><br><span class="line">  identity:</span><br><span class="line">    hostname: openstack</span><br><span class="line">    password: &quot;$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0&quot;</span><br><span class="line">    username: ubuntu</span><br><span class="line">EOF</span><br><span class="line">touch meta-data</span><br><span class="line"></span><br><span class="line">sudo python -m http.server</span><br><span class="line"></span><br><span class="line"># Install ubuntu 20.04 with subiquity/cloud-init</span><br><span class="line">sudo umount /mnt</span><br><span class="line">sudo mount -o ro /bak/images/ubuntu-20.04-live-server-amd64.iso /mnt/   #remember to use live rather than legacy</span><br><span class="line">truncate -s 20G /game/demo.img</span><br><span class="line">sudo qemu-system-x86_64 -cdrom /bak/images/ubuntu-20.04-live-server-amd64.iso -bios /usr/share/qemu/OVMF.fd -nographic -serial mon:stdio -m 8096 -kernel /mnt/casper/vmlinuz -initrd /mnt/casper/initrd -append &apos;autoinstall ds=nocloud-net;s=http://localhost:8000/ console=ttyS0,115200n8&apos; -hda /game/demo.img</span><br><span class="line"></span><br><span class="line"># Boot the installed system</span><br><span class="line">kvm -no-reboot -m 8092 -drive file=/game/demo.img,format=raw,cache=none,if=virtio</span><br></pre></td></tr></table></figure></p>
+<h2 id="Hack-Ubiquity’s-source-code"><a href="#Hack-Ubiquity’s-source-code" class="headerlink" title="Hack Ubiquity’s source code"></a>Hack Ubiquity’s source code</h2><p>see - <a href="https://blog.csdn.net/quqi99/article/details/76553404" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/76553404</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/30/juju-reactive-charm/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1505,139 +1634,6 @@ serviceAccountName: &quot;&quot;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" itemprop="url">How to set up systemd-resolved + dnssec</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
-                2020-02-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="Set-up-test-env"><a href="#Set-up-test-env" class="headerlink" title="Set up test env"></a>Set up test env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#first let us know 8.8.8.8 supports dnssec, while 114.114.114.114 doesn&apos;t support</span><br><span class="line">dig paypal.com +dnssec @8.8.8.8 |grep RRSIG</span><br><span class="line">dig paypal.com +dnssec @114.114.114.114 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#set up dnsmasq as upstream dns server</span><br><span class="line">IFACE=dummy0</span><br><span class="line">SUBNET=10.0.0</span><br><span class="line">sudo ip link add $IFACE type dummy</span><br><span class="line">sudo ifconfig $IFACE $&#123;SUBNET&#125;.1/24</span><br><span class="line">#https://www.cnblogs.com/taoyuxuan/p/11205491.html</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo -S /test/ --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line"></span><br><span class="line">#sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/ --host-record=test.test,$&#123;SUBNET&#125;.1 --conf-file=/dev/null --log-queries &amp;</span><br><span class="line">sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/10.0.0.1 --host-record=test.test,$&#123;SUBNET&#125;.1 --log-queries \</span><br><span class="line">    --dnssec --conf-file=/usr/share/dnsmasq-base/trust-anchors.conf --dnssec-check-unsigned --dnssec-debug --server=8.8.8.8 &amp;</span><br><span class="line">dig paypal.com +dnssec @10.0.0.1 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#test dns server with dig</span><br><span class="line">ubuntu@bastion:~$ dig -t a test.test @10.0.0.1 | grep EDNS</span><br><span class="line">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="line">ubuntu@bastion:~$ dig -t aaaa test.test @10.0.0.1 | grep EDNS</span><br><span class="line"># again, should return &quot;; EDNS ...&quot; but doesn&apos;t</span><br><span class="line"></span><br><span class="line">#configure systemd-resolved to look at only 10.0.0.1</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos; /etc/systemd/resolved.conf</span><br><span class="line">[Resolve]</span><br><span class="line">DNS=10.0.0.1</span><br><span class="line">DNSSEC=yes</span><br><span class="line">Cache=no</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos;  /etc/resolv.conf</span><br><span class="line">nameserver 127.0.0.53</span><br><span class="line">options edns0</span><br><span class="line"></span><br><span class="line">#debug with systemd-resolved</span><br><span class="line">sudo systemctl disable systemd-resolved   #seems systemd-resolved always restart if not disable it as well</span><br><span class="line">sudo systemctl stop systemd-resolved</span><br><span class="line">sudo SYSTEMD_LOG_LEVEL=debug script -c /lib/systemd/systemd-resolved /tmp/debug.txt</span><br><span class="line">systemd-resolve --status --no-pager |egrep &apos;DNSSEC|DNS Servers&apos;</span><br><span class="line">#repeat the following 3 lines to test every time - ./src/resolve/resolved-dns-server.c</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve test.test -t A</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve test.test -t A   #don&apos;t reset, try directly</span><br><span class="line">systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve example.com ubuntu.com us.archive.ubuntu.com packages.icinga.com mirror.steadfast.net archive.ubuntu.com ppa.launchpad.net private-ppa.launchpad.net sigok.verteiltesysteme.net sigfail.verteiltesysteme.net verisign.com www.verisign.com</span><br></pre></td></tr></table></figure>
-<h2 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h2><ul>
-<li>LLMNR: 当dns服务不可用时, 支持使用组播dns协议(mDNS)继续在子网内局部查询dns直至网络连接还原为止.</li>
-<li>Knot-DNS: 类似于dnsmasq, bind9的dns server</li>
-<li>EDNS:允许将DNS消息大小从标准的512字节扩展（当UDP用作传输协议时），而无需切换到TCP. 它能提升访问CDN的性能，因为：标准DNS协议只能传递域名参数查IP,　而不能传递域名+用户参数来源查IP．查询下游的CDN, DNS服务器应该是根据用户的来源查询,而不是将上游DNS服务做为来源查询.由于国内的运营商之间互联的带宽是很低的,　所以造成访问速度超慢.</li>
-<li>EDNS0:可以将UDP包从512字节扩展到4096字节从而可以容纳DNSEC包, systemd-resolved通过/etc/resovled.conf里的’options edns0’通知dns server可以edns0, server再回的时候会将其+1, 所以: 雖然是EDNS0 封包，可是不代表這是 DNSSEC 封包，在EDNS0 中有一個 bit: DO 被設定為 1 的時候，才代表這是 DNSSEC 封包 (通过: dig +dnssec example.com ns |grep EDNS  命令可以查看)</li>
-</ul>
-<h2 id="Some-bugs"><a href="#Some-bugs" class="headerlink" title="Some bugs"></a>Some bugs</h2><p>1, <a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639</a><br>upstream dns能力被检测正确让dnssec工作(现在一旦突然检查错了, resovle就停止work了), 或者允许disable能力检查<br><a href="https://github.com/systemd/systemd/issues/6490" target="_blank" rel="external">https://github.com/systemd/systemd/issues/6490</a><br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br><a href="https://github.com/systemd/systemd/pull/8849" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8849</a><br>a, 第一种解决方案<br> resolve不能看到timeout or error了就降级(tcp-&gt;dns over tls -&gt; edns0)声称不支持某个特性, 它的特性应该独立于实际查询<br><a href="https://github.com/systemd/systemd/issues/9384" target="_blank" rel="external">https://github.com/systemd/systemd/issues/9384</a><br>b, 允许disable dnsec能力检查<br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br>c, 从resolved中移除dnssec</p>
-<p>如有些咖啡厅等公共网络不支持ends0查询，会响应domain not found, 即收到＇NXDOMAIN when queried with EDNS0＇消息时(the query is with EDNS0 enabled and D0 bit set to zero)需要继续只根据EDNS0继续重试<br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br><a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a>  - 代码<br>journalctl -b -u systemd-resolve | grep DVE-2018  - 确诊<br>Workaround:<br>sudo systemctl disable systemd-resolved.service<br>sudo service systemd-resolved stop<br>sudo rm /etc/resolv.conf<br>sudo nano /etc/NetworkManager/NetworkManager.conf<br> then add “dns=default” under [main]<br>sudo service network-manager restart</p>
-<p>上面的降级（resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch）应该只在DNSSEC=allow-downgrade or DNSSEC=no时运行．在真实世界中，NetworkManager’s在无法降级时会告诉用户关掉dnssec<br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501</a></p>
-<p>2, <a href="https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3" target="_blank" rel="external">https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3</a><br>systemd-resolved只是一个stub resovler, 它只是转发dns请求到upstream dns server并等待请求(等待时间为RTT)，它没有考虑到上游递归dns服务器(interative resolver, eg: dnsmasq)的query timeout(authoritative server是用内存来存储dns记录所以它快，但也不是所有的都快），这样systemd-resolved会经常错误的降级（Therefore it often mistakenly degrades the feature set of its　upstream resolvers if it takes them longer than usual to answer a query），特别当DNSSEC=yes不充许降级时就更严重，所以systemd-resolved应该使用RTT+上游的查询时间，而不是只用RTT (DNS_TIMEOUT_MAX_USEC=DNS_SERVER_FEATURE_RETRY_ATTEMPTS * DNS_TIMEOUT_MAX_USEC = 15s），当然，这也不是解决根本问题，但可以缓解．</p>
-<p>3, <a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a><br> <a href="https://github.com/systemd/systemd/issues/11171" target="_blank" rel="external">https://github.com/systemd/systemd/issues/11171</a><br><a href="https://github.com/systemd/systemd/issues/4315" target="_blank" rel="external">https://github.com/systemd/systemd/issues/4315</a> - <a href="https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb" target="_blank" rel="external">https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb</a><br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br>这个commit (7abcaa93ab - debian/patches/resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch)可以解决上面关于降级的问题，但是它又引入了回归bug, 没DNSSEC=yes时没有做安全检查 (为DNSSEC=yes时不从UDP+ends0(DNS_SERVER_FEATURE_LEVEL_EDNS0)降级互UDP(DNS_SERVER_FEATURE_LEVEL_UDP)但upstream还未接受patch，故先在debian/patches/resolved_disable-connection-downgrade-when-DNSSEC-yes.patch</p>
-<p>4, <a href="https://github.com/dns-violations/dns-violations/issues/62" target="_blank" rel="external">https://github.com/dns-violations/dns-violations/issues/62</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383</a><br>dnsmasq 2.79当返回空时省略了EDNS0 OPT记录 (例如访问无AAAA记录时 - patch - 1682d15a744880b0398af75eadf68fe66128af78)) , systemd-resolved能hang (但只是使用了dnsmasq的router会如此)</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1688,7 +1684,7 @@ serviceAccountName: &quot;&quot;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">58</span>
+                  <span class="site-state-item-count">59</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
