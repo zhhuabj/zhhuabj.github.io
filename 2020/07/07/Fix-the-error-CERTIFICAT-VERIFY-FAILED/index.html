@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
+<meta name="description" content="作者：张华 发表于：2020-07-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题在测试rbac时, 下列rbac调用candid时会报CERTIFICATE_VERIFY_FAILED这个错. 在读了rbac的代码之后, 确定rbac是在调用 https://node1.lan:8081/discharge/info 时抛的错.1maas (ma">
 <meta property="og:type" content="article">
-<meta property="og:title" content="调研NFV编排工具">
-<meta property="og:url" content="http://yoursite.com/2017/11/10/调研NFV编排工具/index.html">
+<meta property="og:title" content="Fix the error CERTIFICAT_VERIFY_FAILED">
+<meta property="og:url" content="http://yoursite.com/2020/07/07/Fix-the-error-CERTIFICAT-VERIFY-FAILED/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
-<meta property="og:updated_time" content="2017-11-11T03:15:39.982Z">
+<meta property="og:description" content="作者：张华 发表于：2020-07-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题在测试rbac时, 下列rbac调用candid时会报CERTIFICATE_VERIFY_FAILED这个错. 在读了rbac的代码之后, 确定rbac是在调用 https://node1.lan:8081/discharge/info 时抛的错.1maas (ma">
+<meta property="og:updated_time" content="2020-07-07T07:54:16.708Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="调研NFV编排工具">
-<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 裸机配置工具 Cobbler, Dell开源的基于PXE的裸机部署工具 Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具 MAAS, Canonical的基于PXE的裸机部署工具，电源管理(https://docs.ubuntu">
+<meta name="twitter:title" content="Fix the error CERTIFICAT_VERIFY_FAILED">
+<meta name="twitter:description" content="作者：张华 发表于：2020-07-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 问题在测试rbac时, 下列rbac调用candid时会报CERTIFICATE_VERIFY_FAILED这个错. 在读了rbac的代码之后, 确定rbac是在调用 https://node1.lan:8081/discharge/info 时抛的错.1maas (ma">
 
 
 
@@ -118,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/11/10/调研NFV编排工具/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/07/07/Fix-the-error-CERTIFICAT-VERIFY-FAILED/"/>
 
 
 
 
 
-  <title>调研NFV编排工具 | 技术并艺术着</title>
+  <title>Fix the error CERTIFICAT_VERIFY_FAILED | 技术并艺术着</title>
   
 
 
@@ -231,7 +231,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/10/调研NFV编排工具/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/07/Fix-the-error-CERTIFICAT-VERIFY-FAILED/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="张华">
@@ -248,7 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">调研NFV编排工具</h1>
+          <h1 class="post-title" itemprop="name headline">Fix the error CERTIFICAT_VERIFY_FAILED</h1>
         
 
         <div class="post-meta">
@@ -260,8 +260,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-10T22:27:51+08:00">
-                2017-11-10
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-07T15:54:08+08:00">
+                2020-07-07
               </time>
             
 
@@ -298,37 +298,15 @@
       
 
       
-        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="裸机配置工具"><a href="#裸机配置工具" class="headerlink" title="裸机配置工具"></a>裸机配置工具</h2><ul>
-<li>Cobbler, Dell开源的基于PXE的裸机部署工具</li>
-<li>Ironic, OpenStack官方其于PXE+IPMI的裸机部署工具</li>
-<li>MAAS, Canonical的基于PXE的裸机部署工具，电源管理(<a href="https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等" target="_blank" rel="external">https://docs.ubuntu.com/maas/2.0/en/installconfig-power-types)方面既支持IPMI、HMC等也支持虚拟化的如virsh、VMware等</a> - <a href="http://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/37990507</a><h2 id="通用配置管理工具"><a href="#通用配置管理工具" class="headerlink" title="通用配置管理工具"></a>通用配置管理工具</h2></li>
-<li>Puppet, 配置管理工具的鼻祖，由Ruby语言编写，使用基于XML的自有的puppet描述语言管理配置文件、用户、cron任务、软件包、系统服务等，语法复杂，可移植性差。</li>
-<li>Chef, 一个类似于Puppet用来快速部署软件及其依赖包的脚本工具，将配置步骤通过脚本写出来(Puppet用基于XML的专用方法书写，Chef用Ruby书写），客户端从服务器端获取脚本并执行 - <a href="http://blog.csdn.net/quqi99/article/details/21247111" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/21247111</a></li>
-<li>Ansible, 它应该是吸引了Juju通过SSH进行所有的操作的思想让它可以并行运行任何标准脚本语言(Python, Bash, Ruby等等），Ansible剧本(YAML语言编写)角色映射到节点/虚机上对它们进行编排有序的执行。另外它和Juju不同的是它是agentless的。</li>
-<li>Salt, 又叫SaltStack，同时支持agent与agentless两种模式，在后一种模式下，Salt也使用SSH连接到受管理的节点/虚机执行以Python语言编写的模块。</li>
-<li>Docker, 可将软件及软件依赖的运行环境与安装包统统打包一起部署，从而实现软件与基础架构的解偶。<h2 id="OpenStack部署工具"><a href="#OpenStack部署工具" class="headerlink" title="OpenStack部署工具"></a>OpenStack部署工具</h2></li>
-<li>Devstack, 部署OpenStack开发环境</li>
-<li>Packstack, 使用Puppet经SSH部署OpenStack到RHEL/CentOS上，见：<a href="https://wiki.openstack.org/wiki/Packstack" target="_blank" rel="external">https://wiki.openstack.org/wiki/Packstack</a></li>
-<li>Redhat RDO, 使用Ansible部署OpenStack到RHEL/CentOS上</li>
-<li>Suse Crowbar, 使用Chef部署OpenStack到Suse上</li>
-<li>Rackspace OpenStack-Ansible, 使用Ansible部署OpenStack到Ubuntu和CentOS上</li>
-<li>Mirantis Fuel, 使用Puppet部署OpenStack到Ubuntu上</li>
-<li>HPE Helion, 使用Ansible部署OpenStack到Debian上</li>
-<li>OpenStack TripleO, 使用OpenStack本来的基础设施(Nova, Neutron, Ironic, Heat)来自动化部署和伸缩OpenStack集群，即OpenStack over OpenStack。见：<a href="http://blog.csdn.net/quqi99/article/details/9530627" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/9530627</a></li>
-<li>OpenStack Kolla, 上面工具只是实现了部署OpenStack的自动化，但没有简化OpenStack部署，如包依赖和升级困难等。Kolla项目起源于TripleO项目，实现OpenStack部署的容器化(即把目前OpenStack项目用到的所有组件部署在容器里)，因此具有原子性回滚升级特性。它既可以利用Ansible去伸缩OpenStack容器节点，也可以利用Kubernetes去伸缩OpenStack容器节点。<h2 id="NFV编排"><a href="#NFV编排" class="headerlink" title="NFV编排"></a>NFV编排</h2></li>
-<li>OpenStack Heat, Heat根据配置文件模板(HOT, heat orchestration template)实例化一组符合要求的虚机。也能够在其上对应用软件进行配置与编排。对支持对一个组件部署后的负载均衡进行编排。见： <a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/50359289</a></li>
-<li>Canonical Juju, 使用OPNFV JOID去编排VNFM与NFVO</li>
-<li>配置管理工具，上述的通用型的配置管理工具如Puppet、Chef、Ansible都可以用于去编排VNFM与NFVO</li>
-<li>Kebernetes或者Kolar, 可作为编排工具将VNFM与NFVO部署到容器里<h2 id="Mesos-Marathon"><a href="#Mesos-Marathon" class="headerlink" title="Mesos + Marathon"></a>Mesos + Marathon</h2>应用部署方面也可以采用Mesos + Marthon:</li>
-<li>Mesos是一个两阶段集群管理器（也叫数据中心操作系统)，Master第一阶段通过Framework注册的Schedule将资源分配给Framework (Framework可以支持Hadoop, Elasticsearch, Spark, Stom, Kafka, Marathon等, 也通过K8SM支持将容器集群管理器Kubernetest集成到Mesos)，Slave第二阶段在容器中调用Executor运行Framework的内部任务。</li>
-<li>Marathon作为一个Mesos Framework，用来支持长期服务，比如Web应用，它相当于分布式的init.d，能够在分布式集群上像原有单机那样运行二进制程序，所以说它也是一种私有的PaaS，能提供REST API服务，实现服务的发现，通过HAProxy实现服务发现和负载均衡。</li>
-<li>使用Mesos + Marathon来编排一些应用还行，但用来编排NFV似乎热度不高网上很难找到相关资料，社区缺乏活力</li>
-<li>Mesos的所有Schdule都没有像Kubernetes那样针对微服务进行了数据模型的抽象（如Pod, Service, Namespace等），所以Mesos的API没有Kubernetes精良易用。另外，Mesos涉及的组件使用的编程语言太多，如Mesos(C++)、Marathon（Scala）、Mesos-DNS（Golang）等。<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2></li>
-<li>做NFV的虚机编排用Juju或者Heat</li>
-<li>做NFV的容器编排用Juju或者Kolar或者Kebernetes</li>
-<li>当然，其他如Ansible这些其他配置软件也能用</li>
-</ul>
+        <p><strong>作者：张华 发表于：2020-07-07<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>在测试rbac时, 下列rbac调用candid时会报CERTIFICATE_VERIFY_FAILED这个错. 在读了rbac的代码之后, 确定rbac是在调用 <a href="https://node1.lan:8081/discharge/info" target="_blank" rel="external">https://node1.lan:8081/discharge/info</a> 时抛的错.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">maas (maas configauth --rbac-url https://node1.lan:5000/ --rbac-service-name maastest) -&gt; rbac with http (http://node1.lan:8081) -&gt; candid with https (https://node1.lan:8081/discharge/info) -&gt; ldap with https</span><br></pre></td></tr></table></figure></p>
+<p>奇怪的是, 我已经运行过这个命令( cp ~/certs/ca.crt /usr/share/ca-certificates/extras/ldap.crt &amp;&amp; dpkg-reconfigure ca-certificates )了. 不应该啊.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo update-ca-certificates --fresh</span><br><span class="line">$ export SSL_CERT_DIR=/etc/ssl/certs</span><br></pre></td></tr></table></figure></p>
+<h2 id="curl测试"><a href="#curl测试" class="headerlink" title="curl测试"></a>curl测试</h2><p>运行下列三个命令均无问题:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl https://node1.lan:8081/discharge/info</span><br><span class="line">curl https://node1.lan:8081/discharge/info -k</span><br><span class="line">curl https://node1.lan:8081/discharge/info --cacert ~/certs/ca.crt</span><br></pre></td></tr></table></figure></p>
+<h2 id="python测试-urllib2-request"><a href="#python测试-urllib2-request" class="headerlink" title="python测试 - urllib2.request"></a>python测试 - urllib2.request</h2><p>下列python代码测试也没问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt; test.py&apos; &lt;&lt; EOF</span><br><span class="line">#!/usr/bin/env python</span><br><span class="line"></span><br><span class="line">import sys</span><br><span class="line">import ssl</span><br><span class="line">try:</span><br><span class="line">    import urllib2 #python2</span><br><span class="line">except:</span><br><span class="line">    import urllib.request as urllib2 #python3</span><br><span class="line"></span><br><span class="line">req = urllib2.Request(sys.argv[1], headers=&#123;&apos;Bakery-Protocol-Version&apos;:&apos;3&apos;&#125;)</span><br><span class="line">print(urllib2.urlopen(req).read())</span><br><span class="line">EOF</span><br><span class="line">mkdir /usr/share/ca-certificates/extras</span><br><span class="line">cp ~/certs//ca.crt /usr/share/ca-certificates/extras/ldap.crt &amp;&amp; dpkg-reconfigure ca-certificates</span><br><span class="line">python test.py https://node1.lan:8081/discharge/info</span><br></pre></td></tr></table></figure></p>
+<h2 id="python测试-requests"><a href="#python测试-requests" class="headerlink" title="python测试 - requests"></a>python测试 - requests</h2><p>奇了怪了, 只好继续调试代码, 发现rbac使用了pymacaroons (<a href="https://github.com/ecordell/pymacaroons" target="_blank" rel="external">https://github.com/ecordell/pymacaroons</a>), pymacaroons它又会调用requests (不是urllib2.request)<br>所以继续写了一个python测试, 问题就重现了:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">bash -c &apos;cat &gt; test2.py&apos; &lt;&lt; EOF</span><br><span class="line">#!/bin/env python</span><br><span class="line"></span><br><span class="line">import sys</span><br><span class="line">import requests</span><br><span class="line"></span><br><span class="line">url = sys.argv[1]</span><br><span class="line">print(requests.get(url).read())</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">$ python test2.py https://node1.lan:8081/discharge/info</span><br><span class="line">...</span><br><span class="line">requests.exceptions.SSLError: HTTPSConnectionPool(host=&apos;node1.lan&apos;, port=8081): Max retries exceeded with url: /discharge/info (Caused by SSLError(SSLError(1, &apos;[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:852)&apos;),))</span><br></pre></td></tr></table></figure></p>
+<p>添加REQUESTS_CA_BUNDLE=/etc/ssl/certs/ldap.pem 问题解决.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ REQUESTS_CA_BUNDLE=/etc/ssl/certs/ldap.pem  python test2.py https://node1.lan:8081/discharge/info</span><br><span class="line">200</span><br></pre></td></tr></table></figure>
+<h2 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h2><p>改为下列使命启动rbac<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">REQUESTS_CA_BUNDLE=/etc/ssl/certs/ldap.pem crbs-devserver --debug run -P 5000</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -353,8 +331,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/11/08/CSDN博客地址/" rel="next" title="CSDN博客地址">
-                <i class="fa fa-chevron-left"></i> CSDN博客地址
+              <a href="/2020/07/05/开发用的devstack/" rel="next" title="开发用的devstack">
+                <i class="fa fa-chevron-left"></i> 开发用的devstack
               </a>
             
           </div>
@@ -362,10 +340,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/11/12/Play-with-LXD/" rel="prev" title="Play with LXD">
-                Play with LXD <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -479,7 +453,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#裸机配置工具"><span class="nav-number">1.</span> <span class="nav-text">裸机配置工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用配置管理工具"><span class="nav-number">2.</span> <span class="nav-text">通用配置管理工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack部署工具"><span class="nav-number">3.</span> <span class="nav-text">OpenStack部署工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NFV编排"><span class="nav-number">4.</span> <span class="nav-text">NFV编排</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mesos-Marathon"><span class="nav-number">5.</span> <span class="nav-text">Mesos + Marathon</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">6.</span> <span class="nav-text">结论</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#curl测试"><span class="nav-number">2.</span> <span class="nav-text">curl测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#python测试-urllib2-request"><span class="nav-number">3.</span> <span class="nav-text">python测试 - urllib2.request</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#python测试-requests"><span class="nav-number">4.</span> <span class="nav-text">python测试 - requests</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题解决"><span class="nav-number">5.</span> <span class="nav-text">问题解决</span></a></li></ol></div>
             
 
           </div>
