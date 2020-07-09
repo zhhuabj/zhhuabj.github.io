@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="问题四年前写了一篇关于MAAS的博客 [1]，但好几年没用它了，今天发现GUI的操作流程变化还有点，记录一下。Host机配置了下面的网络：12345678auto eth0iface eth0 inet manualauto br-eth0iface br-eth0 inet static    address 192.168.99.124/24    gateway 192.168.99.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Play with MAAS">
+<meta property="og:url" content="http://yoursite.com/2020/07/09/Play-with-MAAS/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="问题四年前写了一篇关于MAAS的博客 [1]，但好几年没用它了，今天发现GUI的操作流程变化还有点，记录一下。Host机配置了下面的网络：12345678auto eth0iface eth0 inet manualauto br-eth0iface br-eth0 inet static    address 192.168.99.124/24    gateway 192.168.99.1">
+<meta property="og:image" content="https://img-blog.csdn.net/20180724115011109?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="https://img-blog.csdn.net/20180724131740628?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="https://img-blog.csdn.net/20180724121359167?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="https://img-blog.csdn.net/20180724122506159?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:image" content="https://img-blog.csdn.net/20180724141419499?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="og:updated_time" content="2020-07-09T02:26:01.015Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Play with MAAS">
+<meta name="twitter:description" content="问题四年前写了一篇关于MAAS的博客 [1]，但好几年没用它了，今天发现GUI的操作流程变化还有点，记录一下。Host机配置了下面的网络：12345678auto eth0iface eth0 inet manualauto br-eth0iface br-eth0 inet static    address 192.168.99.124/24    gateway 192.168.99.1">
+<meta name="twitter:image" content="https://img-blog.csdn.net/20180724115011109?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/07/09/Play-with-MAAS/"/>
+
+
+
+
+
+  <title>Play with MAAS | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/09/Play-with-MAAS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Play with MAAS</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-09T10:25:42+08:00">
+                2020-07-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>问题</strong><br>四年前写了一篇关于MAAS的博客 [1]，但好几年没用它了，今天发现GUI的操作流程变化还有点，记录一下。<br><strong>Host机</strong><br>配置了下面的网络：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">auto eth0</span><br><span class="line">iface eth0 inet manual</span><br><span class="line">auto br-eth0</span><br><span class="line">iface br-eth0 inet static</span><br><span class="line">    address 192.168.99.124/24</span><br><span class="line">    gateway 192.168.99.1</span><br><span class="line">    bridge_ports eth0</span><br><span class="line">    dns-nameservers 192.168.99.1</span><br></pre></td></tr></table></figure></p>
+<p>然后在virt-manger里创建了一个名为cloud的虚拟网络(192.168.100.0/24)，未使用DHCP。<br>最后，使用virt-manager创建了一个名为maas的虚机,给它分配了两个网卡(ens3=192.168.100.3用作MAAS的IP,另一个网卡ens8=192.168.99.1纯粹为了方便管理之用)<br><strong>maas虚机</strong><br>网络配置如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/resolvconf/resolv.conf.d/base</span><br><span class="line">search maas</span><br><span class="line">nameserver 192.168.100.3</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">auto ens3</span><br><span class="line">iface ens3 inet static</span><br><span class="line">address 192.168.100.3</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 192.168.100.1</span><br><span class="line"></span><br><span class="line">auto ens8</span><br><span class="line">iface ens8 inet static</span><br><span class="line">address 192.168.99.3</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 192.168.99.1</span><br></pre></td></tr></table></figure>
+<p>安装maas:<br>NOTE: 千万要注意，<strong>最好使用debian包安装</strong>，使用snap包安装里会造成snap container里没有设置REQUESTS_CA_BUNDLE环境变量由于python-requests的一个bug导致maas无法使用https服务，例如运行＂maas configauth –rbac-url <a href="https://node1.lan:5000/" target="_blank" rel="external">https://node1.lan:5000/</a> –rbac-service-name maastest＂就会抛错CERTIFICATE_VERIFY_FAILED, 具体见：　<a href="https://zhhuabj.blog.csdn.net/article/details/107182847" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/107182847</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#sudo snap install maas --channel=2.8</span><br><span class="line">#sudo snap install maas-test-db                              #enter shell - maas-test-db.psql</span><br><span class="line">sudo add-apt-repository ppa:maas/2.8   #https://launchpad.net/~maas</span><br><span class="line">sudo apt install maas</span><br></pre></td></tr></table></figure></p>
+<p>配置maas虚机可以无密码访问物理机上的libvirt:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo chsh maas -s /bin/bash</span><br><span class="line">sudo su - maas</span><br><span class="line">ssh-keygen</span><br><span class="line">ssh-copy-id -i ~/.ssh/id_rsa hua@192.168.100.1</span><br><span class="line">sudo -u maas virsh -c qemu+ssh://hua@192.168.100.1/system list --all</span><br></pre></td></tr></table></figure></p>
+<p>创建maas管理员用户之后就可以通过<a href="http://192.168.99.3:5240/MAAS登录GUI管理界面了" target="_blank" rel="external">http://192.168.99.3:5240/MAAS登录GUI管理界面了</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo maas createadmin</span><br><span class="line">apikey=$(sudo maas apikey --username admin)</span><br><span class="line">maas login admin http://192.168.100.3:5240/MAAS $apikey</span><br><span class="line">maas login admin http://127.0.0.1:5240/MAAS $apikey</span><br><span class="line">maas admin boot-resources import</span><br></pre></td></tr></table></figure></p>
+<p>在’Subnets’点击subnet 192.168.100.0/24对应的vlan(untagged)后’Take action -&gt; configure dhcp’才能enable PXE.<br><strong>注册maas节点</strong><br>创建一块空磁盘(truncate –size 10G /images/kvm/controller.raw)，然后在virt-manager里创建一个名为controller的新虚机(设置从PXE启动、使用truncate定义的空磁盘，同时<strong>从cloud network中定义四块网卡)</strong>, 我们能从virt-manager中看到pxe的启动过程，但最后却一闪而过了那是因为需要从maas里来启动它。好，从virt-manager中关闭该虚机，同时<strong>记得再将启动模式改回PXE</strong>。<br><img src="https://img-blog.csdn.net/20180724115011109?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
+<p>然后访问GUI的”Nodes -&gt; Add hardware -&gt; Machine”定义节点(注意：<strong>四块网卡的MAC地址一次性定义，如果后续此处添加网卡的话还得再执行commission操作</strong>）:<br><img src="https://img-blog.csdn.net/20180724131740628?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
+<p>commission过程可从下列几个方式调试：</p>
+<ul>
+<li>virt-manager vnc可以看到</li>
+<li>maas节点上的/var/log/maas/maas.log</li>
+<li>controller虚机(IP可从GUI里找到)里的cloud-init日志</li>
+</ul>
+<p>然后根据在virt-manager中定义的四块网卡的MAC地址在maas中也如下图定义一下：<br><img src="https://img-blog.csdn.net/20180724121359167?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
+<p>四块网卡定义好了之后得重新点击一下”Take action -&gt; Commision”，然后将看到如下界面：<br><img src="https://img-blog.csdn.net/20180724122506159?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
+<p>然后我们将看到”Add Interface”、”Create bond”、”Create Bridge”等按钮，先将ens8和ens9做成bond0，再在bond0上创建一些vlan（先建vlan再建bridge顺序不能变)，最后将bond0做成br-bond0，最后如下图：<br><img src="https://img-blog.csdn.net/20180724141419499?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
+<p>接着还要再点击”Take action -&gt; Deploy” (<strong>注意: 此处不是点commissioning</strong>) 重新部署，最后就可以从GUI界面中找到IP后通过ssh ubuntu@IP访问了</p>
+<h2 id="附录-CLI"><a href="#附录-CLI" class="headerlink" title="附录 - CLI"></a>附录 - CLI</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">https://docs.maas.io/2.5/en/manage-cli-advanced</span><br><span class="line">rack下关联node, interfaces, fabric; interface关联subnets, subnets有vlan</span><br><span class="line">fabric下再关联vlan; vlan关联space</span><br><span class="line">interfaces下link到subnet, subnet有vlan</span><br><span class="line"></span><br><span class="line">maas login admin http://localhost/MAAS/api/2.0 $(sudo maas-region apikey --username admin)</span><br><span class="line"></span><br><span class="line">#machine_id=$(maas admin machines read | jq -r &apos;.[] | select(.hostname==&quot;controller&quot;).system_id&apos;)</span><br><span class="line">#maas admin interfaces read $machine_id &gt; interface.txt</span><br><span class="line"></span><br><span class="line">maas admin rack-controllers read</span><br><span class="line">system_id=$(maas admin rack-controllers read | jq -r .[].system_id)</span><br><span class="line"></span><br><span class="line">maas admin machines read</span><br><span class="line">machine_id=$(maas admin machines read | jq -r &apos;.[] | select(.hostname==&quot;controller&quot;).system_id&apos;)</span><br><span class="line">maas admin machines read |jq &quot;.[] | &#123;hostname:.hostname, system_id: .system_id, status:.status&#125;&quot; --compact-output</span><br><span class="line"></span><br><span class="line">maas admin interfaces read &quot;$system_id&quot;</span><br><span class="line">maas admin interfaces read $system_id | jq &quot;.[] |&#123;id:.id, name:.name, mac:.mac_address, vid:.vlan.vid, fabric:.vlan.fabric&#125;&quot; --compact-output</span><br><span class="line">maas admin interface update &quot;$system_id&quot; $interface vlan=5001</span><br><span class="line">#maas admin interface unlink-subnet &quot;$system_id&quot; &quot;$iface_id&quot; id=&quot;$link_id&quot;</span><br><span class="line">#maas admin interface delete &quot;$system_id&quot; &quot;$vlan_iface_id&quot;</span><br><span class="line">#maas admin interface link-subnet &quot;$system_id&quot; &quot;$iface_id&quot; mode=AUTO subnet=&quot;$iface_subnet_cidr&quot;</span><br><span class="line">interfaces=$(maas admin interfaces read &quot;$system_id&quot;)</span><br><span class="line">iface_name=&quot;ens3&quot;</span><br><span class="line">iface_id=$(echo &quot;$interfaces&quot; | jq -r &quot;.[] | select(.name==\&quot;$iface_name\&quot;) | .id&quot;)</span><br><span class="line">link_ids=$(maas admin interface read &quot;$system_id&quot; &quot;$iface_id&quot; | jq -r &apos;.links | .[].id&apos;)</span><br><span class="line">for link_id in $link_ids; do</span><br><span class="line">   maas admin interface unlink-subnet &quot;$system_id&quot; &quot;$iface_id&quot; id=&quot;$link_id&quot;</span><br><span class="line">done</span><br><span class="line">vlan_iface_ids=$(maas admin interfaces read &quot;$system_id&quot; | jq -r &apos;.[] | select(.type==&quot;vlan&quot;).id&apos;)</span><br><span class="line">for vlan_iface_id in $vlan_iface_ids; do</span><br><span class="line">   maas admin interface delete &quot;$system_id&quot; &quot;$vlan_iface_id&quot;</span><br><span class="line">done</span><br><span class="line">iface_subnet_cidr=$(maas admin subnets read | jq -r &quot;.[] | select(.name==\&quot;$iface_subnet_name\&quot;).cidr&quot;)</span><br><span class="line">maas admin interface link-subnet &quot;$system_id&quot; &quot;$iface_id&quot; mode=AUTO subnet=&quot;$iface_subnet_cidr&quot;</span><br><span class="line"></span><br><span class="line">maas admin fabrics read</span><br><span class="line">maas admin fabrics read | jq &quot;.[] |&#123;name:.name, vlans:.vlans[] | &#123;id:.id, vid:.vid&#125;&#125;&quot; --compact-output</span><br><span class="line">maas admin fabric update 0 name=maas-management</span><br><span class="line">fabric_name=&quot;maas-management&quot;</span><br><span class="line">mag_fabric_id=$(maas admin fabrics read| jq -r &quot;.[] | select(.name==\&quot;$fabric_name\&quot;).id&quot;)</span><br><span class="line"></span><br><span class="line">vid=$(maas admin subnets read | jq -M &apos;.[] | select(.cidr==&quot;10.12.1.0/24&quot;).vlan.vid&apos;)</span><br><span class="line">fabric=$(maas admin subnets read| jq -r &apos;.[] | select(.cidr==&quot;10.12.1.0/24&quot;).vlan.fabric&apos;)</span><br><span class="line">fabric_id=$(maas admin fabrics read | jq -M &apos;.[] | select(.name==&quot;`echo $fabric`&quot;).id&apos;)  #$fabric=fabric-1</span><br><span class="line">maas admin vlan read $fabric_id $vid</span><br><span class="line"></span><br><span class="line">maas admin spaces create name=os-floating</span><br><span class="line">os_floating_spaceid=$(maas admin spaces read | jq &apos;.[] | select(.name == &quot;&apos;os-floating&apos;&quot;)&apos;.id)</span><br><span class="line">maas admin vlan update $mag_fabric_id 5 space=$os_floating_spaceid mtu=1500</span><br><span class="line"></span><br><span class="line">maas admin subnets read</span><br><span class="line">maas admin subnet update $(maas admin subnets read| jq -r &quot;.[] | select(.cidr==\&quot;10.231.16.0/24\&quot;).id&quot;) cidr=10.231.16.0/21</span><br><span class="line">pxe_subnet_id=$(maas admin subnets read| jq -r &quot;.[] | select(.cidr==\&quot;10.231.16.0/21\&quot;).id&quot;)</span><br><span class="line">maas admin subnet update $pxe_subnet_id name=maas-management</span><br></pre></td></tr></table></figure>
+<h2 id="附录-MAAS-Region-HA"><a href="#附录-MAAS-Region-HA" class="headerlink" title="附录 - MAAS Region HA"></a>附录 - MAAS Region HA</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br></pre></td><td class="code"><pre><span class="line"># https://sites.google.com/site/openstackinthebasement3/maasha</span><br><span class="line"># https://cloud.google.com/community/tutorials/setting-up-postgres-hot-standby</span><br><span class="line">sudo apt remove --purge postgresql maas*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt install maas-region-controller</span><br><span class="line">#sudo dpkg-reconfigure maas-region-controller</span><br><span class="line">#sudo dpkg-reconfigure maas-rack-controller</span><br><span class="line"></span><br><span class="line"># on maas to create user</span><br><span class="line">sudo maas createadmin --username admin --password ubuntu --email root@example.com</span><br><span class="line"></span><br><span class="line"># on maas and maas2</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/postgresql/9.5/main/pg_hba.conf&apos; &lt;&lt; EOF</span><br><span class="line">host     replication     repuser         192.168.100.3/32        md5</span><br><span class="line">host     replication     repuser         192.168.100.4/32        md5</span><br><span class="line">host     all             all             192.168.100.3/32        md5</span><br><span class="line">host     all             all             192.168.100.4/32        md5</span><br><span class="line">host     replication     repuser         192.168.99.3/32        md5</span><br><span class="line">host     replication     repuser         192.168.99.4/32        md5</span><br><span class="line">host     all             all             192.168.99.3/32        md5</span><br><span class="line">host     all             all             192.168.99.4/32        md5</span><br><span class="line">host     all             all             192.168.0.0/16        md5</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># on both maas and maas2</span><br><span class="line">sudo -u postgres createuser -U postgres repuser -P -c 5 --replication</span><br><span class="line">#sudo mkdir -p /var/lib/postgresql/9.5/main/mnt/server/archivedir</span><br><span class="line">#sudo chown postgres:postgres /var/lib/postgresql/9.5/main/mnt/server/archivedir</span><br><span class="line"></span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/postgresql/9.5/main/postgresql.conf&apos; &lt;&lt; EOF</span><br><span class="line">listen_addresses = &apos;*&apos;</span><br><span class="line">max_connections = 300</span><br><span class="line">wal_level = hot_standby</span><br><span class="line">synchronous_commit = on</span><br><span class="line">archive_mode = off</span><br><span class="line">#archive_mode = on</span><br><span class="line">#archive_command = &apos;test ! -f /var/lib/postgresql/9.5/main/mnt/server/archivedir/%f &amp;&amp; cp %p /var/lib/postgresql/9.5/main/mnt/server/archivedir/%f&apos;</span><br><span class="line">max_wal_senders = 10</span><br><span class="line">wal_keep_segments = 256</span><br><span class="line">hot_standby = on</span><br><span class="line">restart_after_crash = off</span><br><span class="line">hot_standby_feedback = on</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"># on maas, restart postgresql</span><br><span class="line">sudo systemctl restart postgresql.service</span><br><span class="line"></span><br><span class="line"># on maas2 run the db backup</span><br><span class="line">sudo systemctl stop postgresql</span><br><span class="line">sudo mv /var/lib/postgresql/9.5/main /var/lib/postgresql/9.5/main.old</span><br><span class="line">sudo -u postgres pg_basebackup -h 192.168.100.3 -D /var/lib/postgresql/9.5/main -U repuser -v -P --xlog-method=stream</span><br><span class="line"></span><br><span class="line">sudo cp /usr/share/postgresql/9.5/recovery.conf.sample /var/lib/postgresql/9.5/main/recovery.conf</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /var/lib/postgresql/9.5/main/recovery.conf&apos; &lt;&lt; EOF</span><br><span class="line">standby_mode = on</span><br><span class="line">primary_conninfo = &apos;host=192.168.100.3 port=5432 user=repuser password=password&apos;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"># on maas2 configure the region to point at the main database</span><br><span class="line">sudo systemctl stop maas-regiond</span><br><span class="line">sudo rm /var/lib/maas/&#123;maas_id,secret&#125;</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/maas/regiond.conf&apos; &lt;&lt; EOF</span><br><span class="line">database_host: 192.168.100.3</span><br><span class="line">database_name: maasdb</span><br><span class="line">database_pass: FiPQSKlBpAvs</span><br><span class="line">database_port: 5432</span><br><span class="line">database_user: maas</span><br><span class="line">maas_url: http://192.168.99.4:5240/MAAS</span><br><span class="line">EOF</span><br><span class="line">sudo chown root:maas /etc/maas/regiond.conf</span><br><span class="line">sudo chmod 640 /etc/maas/regiond.conf</span><br><span class="line">sudo systemctl restart maas-regiond</span><br><span class="line"></span><br><span class="line"># on maas2 start postgres, now you should see the second region controller in the maas gui</span><br><span class="line">sudo systemctl restart postgresql</span><br><span class="line">sudo tail -f /var/log/postgresql/postgresql-9.5-main.log</span><br><span class="line">#2019-06-11 12:38:26 JST [29904-4] LOG:  consistent recovery state reached at 0/230000F8</span><br><span class="line">#2019-06-11 12:38:26 JST [29903-1] LOG:  database system is ready to accept read only connections</span><br><span class="line">#2019-06-11 12:38:26 JST [29908-1] LOG:  started streaming WAL from primary at 0/24000000 on timeline 1</span><br><span class="line">sudo -u postgres psql maasdb -c &apos;SELECT hostname,status,power_state FROM maasserver_node&apos;</span><br><span class="line"></span><br><span class="line"># we don&apos;t enable maas-dns in this test, on both maas and maas2 servers, clean up the bind9 conflicts:</span><br><span class="line">sudo maas-region edit_named_options --migrate-conflicting-options</span><br><span class="line">sudo systemctl restart bind9</span><br><span class="line"># and also modifty /etc/resolv.conf to use maas dns</span><br><span class="line"></span><br><span class="line"># setup HAproxy for load balancing on both maas and maas2 servers</span><br><span class="line"># then refresh the gui you will see the region jump from one server to the other back and forth.</span><br><span class="line">sudo systemctl stop apache2</span><br><span class="line">sudo systemctl disable apache2</span><br><span class="line">sudo apt install haproxy -y</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/haproxy/haproxy.cfg&apos; &lt;&lt; EOF</span><br><span class="line">frontend maas</span><br><span class="line">    bind    *:80</span><br><span class="line">    retries 3</span><br><span class="line">    option  redispatch</span><br><span class="line">    option  http-server-close</span><br><span class="line">    default_backend maas</span><br><span class="line">backend maas</span><br><span class="line">    timeout server 30s</span><br><span class="line">    balance roundrobin</span><br><span class="line">    server localhost localhost:5240 check</span><br><span class="line">    server maas 192.168.99.3:5240 check</span><br><span class="line">    server maas2 192.168.99.4:5240 check</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart haproxy</span><br><span class="line"></span><br><span class="line"># setup keepalived (vip) on both maas and maas2, NOTE: fce use packemaker+corosync instead</span><br><span class="line">sudo apt install keepalived -y</span><br><span class="line">sudo modprobe ip_vs</span><br><span class="line">sudo sh -c &apos;echo modprobe ip_vs &gt;&gt; /etc/modules&apos;</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/sysctl.d/60-keepalived-nonlocal.conf&apos; &lt;&lt; EOF</span><br><span class="line">net.ipv4.ip_nonlocal_bind=1</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart procps</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/keepalived/keepalived.conf&apos; &lt;&lt; EOF</span><br><span class="line"># https://docs.maas.io/2.3/en/manage-ha</span><br><span class="line"># Un-comment next 4 lines if using haproxy</span><br><span class="line">vrrp_script chk_haproxy &#123;</span><br><span class="line">    script &quot;killall -0 haproxy&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line"># Un-comment next 4 lines if using apache2</span><br><span class="line">vrrp_script chk_apache2 &#123;</span><br><span class="line">    script &quot;killall -0 apache2&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line">vrrp_script chk_named &#123;</span><br><span class="line">    script &quot;killall -0 named&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line">vrrp_instance maas_region &#123;</span><br><span class="line">    state MASTER</span><br><span class="line">    interface ens8</span><br><span class="line">    priority 150</span><br><span class="line">    virtual_router_id 51</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS</span><br><span class="line">        auth_pass password</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        ### Un-comment next line if using haproxy</span><br><span class="line">        chk_haproxy</span><br><span class="line">        ### Un-comment next line if using apache2</span><br><span class="line">        #chk_apache2</span><br><span class="line">        chk_named</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.99.5</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart keepalived</span><br><span class="line"></span><br><span class="line"># adjust an API server to use VIP=192.168.99.5  (http://192.168.99.5/MAAS)</span><br><span class="line">sudo maas-region local_config_set --maas-url http://192.168.99.5/MAAS</span><br><span class="line">sudo systemctl restart maas-regiond</span><br><span class="line"></span><br><span class="line"># install rack on maas and maas2, and adjust api server to use VIP=192.168.99.5</span><br><span class="line">sudo apt install -y maas-rack-controller</span><br><span class="line">sudo maas-rack register --url http://192.168.99.5/MAAS --secret $(sudo cat /var/lib/maas/secret)</span><br><span class="line">#sudo maas-rack config --region-url http://192.168.99.5/MAAS</span><br><span class="line">#sudo systemctl restart maas-rackd.service</span><br><span class="line">maas login admin http://192.168.99.5/MAAS/api/2.0 $(sudo maas-region apikey --username admin)</span><br><span class="line">maas admin rack-controllers read | grep hostname | cut -d &apos;&quot;&apos; -f 4</span><br><span class="line"></span><br><span class="line"># actuall we didn&apos;t enable maas-dns service in this test</span><br><span class="line">sudo systemctl list-unit-files --type=service | grep maas-dhcp</span><br><span class="line">ubuntu@maas:~$ cat /etc/resolv.conf</span><br><span class="line">nameserver 192.168.99.1</span><br><span class="line">#nameserver 192.168.100.3</span><br><span class="line">#search maas</span><br><span class="line">ubuntu@maas2:~$ cat /etc/resolv.conf</span><br><span class="line">nameserver 192.168.99.1</span><br><span class="line">#nameserver 192.168.100.4</span><br><span class="line">#search maas</span><br><span class="line"></span><br><span class="line"># the following error is because I accidentally created recovery.conf on the master server instead of the standby.</span><br><span class="line">2019-06-11 15:25:05 JST [15474-1] maas@maasdb ERROR:  cannot execute INSERT in a read-only transaction</span><br><span class="line">2019-06-11 15:31:44 JST [18618-1] maas@maasdb ERROR:  cannot execute LISTEN during recovery</span><br><span class="line"></span><br><span class="line"># present problem</span><br><span class="line">1, can&apos;t add the second rack-controller</span><br><span class="line">2, there is maas-dns and maas-dns ha</span><br><span class="line">3, lots of errors - django.db.utils.InternalError: cannot execute UPDATE in a read-only transaction</span><br><span class="line"></span><br><span class="line">sudo maas-region dbshell --installed</span><br><span class="line">maasdb=# \x</span><br><span class="line">maasdb=# select system_id, hostname from maasserver_node;</span><br><span class="line">maasdb=# \?</span><br><span class="line">maasdb=# \l</span><br><span class="line">maasdb=# \c maasdb</span><br><span class="line">maasdb=# \dtq</span><br></pre></td></tr></table></figure>
+<h2 id="附录-Postgres-HA-replication-mode"><a href="#附录-Postgres-HA-replication-mode" class="headerlink" title="附录 - Postgres HA replication mode"></a>附录 - Postgres HA replication mode</h2><p>postgres HA的replication方式有3种:</p>
+<ol>
+<li>基于日志的复制, master完完WAL日志后再发给slave,<br>这样如果还没写完日志master就宕机的话未发的日志内的事务将全部丢失<br>2, 异步流模式,master库以stream的模式向slave发日志, 不需要等待整个日志填充完毕再发大大降低了丢失数据的风险.但在master提交事务之后standby等待流数据时发生宕机也会导致最后一个事务丢失. 同时备库可以配置成host standby模式向外提供查询服务供分担负载.<br>3, 流同步复制模式(synchronous replication),流复制的同步版本, 向master发生commit命令之后, 该命令会被阻塞,直到WAL日志流在所有被配置为同步节点(synchronous_standby_names)的数据库上提交后才会真正提交.因为只有master库和standby库同时宕机才会丢数据. 多层事务嵌套时，子事务不受此保护，只有最上层事务受此保护。纯读操作和回滚不受此影响。同时备库可以配置成HOT Standby，可以向外提供查询服务，供分担负载。采用这种模式的性能损耗依据网络情况和系统繁忙程度而定，网络越差越繁忙的系统性能损耗越严重。</li>
+</ol>
+<p><strong>Reference</strong><br>[1] <a href="https://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/37990507</a><br>[2] <a href="https://www.cnblogs.com/aegis1019/p/8870251.html" target="_blank" rel="external">https://www.cnblogs.com/aegis1019/p/8870251.html</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/07/Fix-the-error-CERTIFICAT-VERIFY-FAILED/" rel="next" title="Fix the error CERTIFICAT_VERIFY_FAILED">
+                <i class="fa fa-chevron-left"></i> Fix the error CERTIFICAT_VERIFY_FAILED
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-CLI"><span class="nav-number">1.</span> <span class="nav-text">附录 - CLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-MAAS-Region-HA"><span class="nav-number">2.</span> <span class="nav-text">附录 - MAAS Region HA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-Postgres-HA-replication-mode"><span class="nav-number">3.</span> <span class="nav-text">附录 - Postgres HA replication mode</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

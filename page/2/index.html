@@ -231,6 +231,134 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/" itemprop="url">How to use private registry in docker and containerd and k8s</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-17T10:01:59+08:00">
+                2020-03-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-03-13<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="set-up-a-test-private-registry"><a href="#set-up-a-test-private-registry" class="headerlink" title="set up a test private registry"></a>set up a test private registry</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry:2</span><br><span class="line">mkdir ~/registry/certs &amp;&amp; cd  ~/registry/certs</span><br><span class="line">openssl genrsa -passout pass:password -out ca.key</span><br><span class="line">openssl req -x509 -passin pass:password -new -nodes -key ca.key -days 3650 -out ca.crt -subj &quot;/C=CN/ST=BJ/O=STS/CN=zhhuabj-bastion.cloud.sts&quot;</span><br><span class="line">#openssl genrsa -passout pass:password -out server.key</span><br><span class="line">#openssl req -new -key server.key -out server.csr -subj &quot;/C=CN/ST=BJ/O=STS/CN=zhhuabj-bastion.cloud.sts&quot;</span><br><span class="line">#openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 3650</span><br><span class="line">#cat server.crt server.key &gt; server.pem</span><br><span class="line"></span><br><span class="line">cd ~/registry &amp;&amp; mkdir auth &amp;&amp; mkdir images</span><br><span class="line">sudo docker run --entrypoint htpasswd registry:2 -Bbn test password &gt; ./auth/htpasswd</span><br><span class="line">sudo docker run -d -p 5000:5000 -v `pwd`/images:/var/lib/registry --restart=always --name registry \</span><br><span class="line">-v `pwd`/auth:/auth \</span><br><span class="line">-e &quot;REGISTRY_AUTH=htpasswd&quot; \</span><br><span class="line">-e &quot;REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm&quot; \</span><br><span class="line">-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \</span><br><span class="line">-v `pwd`/certs:/certs \</span><br><span class="line">-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/ca.crt \</span><br><span class="line">-e REGISTRY_HTTP_TLS_KEY=/certs/ca.key \</span><br><span class="line">registry:2</span><br><span class="line">curl -X GET --cacert /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/ca.crt https://zhhuabj-bastion.cloud.sts:5000</span><br></pre></td></tr></table></figure>
+<h2 id="upload-a-test-image-into-test-private-registry"><a href="#upload-a-test-image-into-test-private-registry" class="headerlink" title="upload a test image into test private registry"></a>upload a test image into test private registry</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">scp -r root@zhhuabj-bastion.cloud.sts:/root/registry/certs/ca.crt .</span><br><span class="line">sudo mkdir -p /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo cp ca.crt /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/</span><br><span class="line">#must restart docker, or it will throw x509 related errors when running &apos;docker push&apos;</span><br><span class="line">sudo systemctl restart docker</span><br><span class="line">#another error when running &apos;docker login&apos; - cannot autolaunch D-Bus without X11 $DISPLAY</span><br><span class="line">#sudo apt autoremove --purge docker-compose -y</span><br><span class="line"></span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line"># cat ~/.docker/config.json</span><br><span class="line">&#123;</span><br><span class="line">        &quot;auths&quot;: &#123;</span><br><span class="line">                &quot;https://index.docker.io/v1/&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;emhodWFiajpuYW50aW5nNDEz&quot;</span><br><span class="line">                &#125;,</span><br><span class="line">                &quot;zhhuabj-bastion.cloud.sts:5000&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;HttpHeaders&quot;: &#123;</span><br><span class="line">                &quot;User-Agent&quot;: &quot;Docker-Client/18.09.7 (linux)&quot;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">sudo docker pull busybox &amp;&amp; sudo docker tag docker.io/busybox zhhuabj-bastion.cloud.sts:5000/busybox</span><br><span class="line">sudo docker push zhhuabj-bastion.cloud.sts:5000/busybox</span><br><span class="line">sudo docker logout zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">#docker save zhhuabj-bastion.cloud.sts:5000/busybox &gt; busybox.tar</span><br><span class="line">curl -X GET --cacert /etc/containerd/ca.crt https://zhhuabj-bastion.cloud.sts:5000/v2/busybox/manifests/latest --user test:password</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-docker"><a href="#test-it-in-docker" class="headerlink" title="test it in docker"></a>test it in docker</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo cp ca.crt /etc/docker/certs.d/zhhuabj-bastion.cloud.sts:5000/</span><br><span class="line">sudo systemctl restart docker</span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo docker pull zhhuabj-bastion.cloud.sts:5000/busybox</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-containerd"><a href="#test-it-in-containerd" class="headerlink" title="test it in containerd"></a>test it in containerd</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install containerd  #it will stop docker automatically</span><br><span class="line">sudo mkdir -p /etc/containerd</span><br><span class="line">containerd config default |sudo tee /etc/containerd/config.toml</span><br><span class="line">#juju scp ./certs/ca.crt kubernetes-worker/1:/home/ubuntu/</span><br><span class="line">sudo vim /etc/containerd/config.toml</span><br><span class="line">change</span><br><span class="line">    [plugins.cri.registry]</span><br><span class="line">      [plugins.cri.registry.mirrors]</span><br><span class="line">        [plugins.cri.registry.mirrors.&quot;docker.io&quot;]</span><br><span class="line">          endpoint = [&quot;https://registry-1.docker.io&quot;]</span><br><span class="line">to</span><br><span class="line">    [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry]</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors.&quot;docker.io&quot;]</span><br><span class="line">          endpoint = [&quot;https://registry-1.docker.io&quot;]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.mirrors.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          endpoint = [&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.auths]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.auths.&quot;https://zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          auth = &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">          username = &quot;test&quot;</span><br><span class="line">          password = &quot;password&quot;</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.tls_configs]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.tls_configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          ca_file = &quot;/etc/containerd/ca.crt&quot;</span><br><span class="line">      [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs]</span><br><span class="line">        [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;]</span><br><span class="line">          [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;.tls]</span><br><span class="line">            insecure_skip_verify = true</span><br><span class="line">          [plugins.&quot;io.containerd.grpc.v1.cri&quot;.registry.configs.&quot;zhhuabj-bastion.cloud.sts:5000&quot;.auth]</span><br><span class="line">            auth = &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">            username = &quot;test&quot;</span><br><span class="line">            password = &quot;password&quot;</span><br><span class="line">sudo systemctl restart containerd</span><br><span class="line">#sudo ctr -n k8s.io image import busybox.tar</span><br><span class="line">curl -X GET --cacert /etc/containerd/ca.crt https://zhhuabj-bastion.cloud.sts:5000/v2/busybox/manifests/latest --user test:password</span><br><span class="line">echo -n | openssl s_client -showcerts -connect zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo cp /home/ubuntu/ca.crt /etc/containerd/</span><br><span class="line">sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest --skip-verify</span><br><span class="line">sudo ctr --namespace k8s.io image ls |grep busybox</span><br><span class="line">sudo ctr image ls  |grep zhhuabj</span><br><span class="line"></span><br><span class="line">#seems there is a bug with insecure_skip_verify=true, finally we run update-ca-certificates, then remove &apos;skip-verify&apos;</span><br><span class="line">cp /etc/containerd/ca.crt /usr/local/share/ca-certificates/</span><br><span class="line">update-ca-certificates</span><br><span class="line">#sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest --skip-verify</span><br><span class="line">sudo ctr --debug images pull --user test:password zhhuabj-bastion.cloud.sts:5000/busybox:latest</span><br></pre></td></tr></table></figure>
+<h2 id="test-it-in-k8s"><a href="#test-it-in-k8s" class="headerlink" title="test it in k8s"></a>test it in k8s</h2><p>Before running the following commands, we need first to modify above /etc/containerd/config.toml, custom_registries of containerd charm will do it<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju config containerd custom_registries=&apos;[&#123;&quot;url&quot;: &quot;https://zhhuabj-bastion.cloud.sts:5000&quot;, &quot;username&quot;: &quot;test&quot;, &quot;password&quot;: &quot;password&quot;&#125;]&apos;</span><br></pre></td></tr></table></figure></p>
+<p>But how to run update-ca-certificates with ca.crt ? we search ‘ca_crt_path’ option from charm code. but how to do ?<br>then we can run:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">#kubectl create secret docker-registry regcred --docker-server=zhhuabj-bastion.cloud.sts:5000 --docker-username=test --docker-password=password --docker-email=&apos;admin@demo.com&apos;</span><br><span class="line">sudo bash -c &apos;cat &gt;config.json&apos; &lt;&lt;EOF</span><br><span class="line">&#123;</span><br><span class="line">        &quot;auths&quot;: &#123;</span><br><span class="line">                &quot;zhhuabj-bastion.cloud.sts:5000&quot;: &#123;</span><br><span class="line">                        &quot;auth&quot;: &quot;dGVzdDpwYXNzd29yZA==&quot;</span><br><span class="line">                &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;HttpHeaders&quot;: &#123;</span><br><span class="line">                &quot;User-Agent&quot;: &quot;Docker-Client/18.09.7 (linux)&quot;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">kubectl create secret generic regcred \</span><br><span class="line">    --from-file=.dockerconfigjson=./config.json \</span><br><span class="line">    --type=kubernetes.io/dockerconfigjson</span><br><span class="line">kubectl get secret regcred --output=&quot;jsonpath=&#123;.data.\.dockerconfigjson&#125;&quot; | base64 --decode</span><br><span class="line">sudo bash -c &apos;cat &gt;busybox.yaml&apos; &lt;&lt;EOF</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Pod</span><br><span class="line">metadata:</span><br><span class="line">  name: busybox</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - name: busybox</span><br><span class="line">    image: zhhuabj-bastion.cloud.sts:5000/busybox:latest</span><br><span class="line">    command:</span><br><span class="line">      - sleep</span><br><span class="line">      - &quot;3600&quot;</span><br><span class="line">  imagePullSecrets:</span><br><span class="line">  - name: regcred</span><br><span class="line">  restartPolicy: Always</span><br><span class="line">EOF</span><br><span class="line">kubectl create -f busybox.yaml</span><br><span class="line">kubectl get events</span><br></pre></td></tr></table></figure></p>
+<h2 id="appendix-create-another-test-image"><a href="#appendix-create-another-test-image" class="headerlink" title="appendix - create another test image"></a>appendix - create another test image</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt;simple-http-server.py&apos; &lt;&lt;EOF</span><br><span class="line">import SimpleHTTPServer</span><br><span class="line">import SocketServer</span><br><span class="line">PORT = 8000</span><br><span class="line">Handler = SimpleHTTPServer.SimpleHTTPRequestHandler</span><br><span class="line">httpd = SocketServer.TCPServer((&quot;0.0.0.0&quot;, PORT), Handler)</span><br><span class="line">print &quot;serving at port&quot;, PORT</span><br><span class="line">httpd.serve_forever()</span><br><span class="line">EOF</span><br><span class="line">sudo bash -c &apos;cat &gt;Dockerfile&apos; &lt;&lt;EOF</span><br><span class="line">FROM python:2.7-alpine</span><br><span class="line">ADD simple-http-server.py /</span><br><span class="line">RUN apk update &amp;&amp; apk add bash</span><br><span class="line">RUN pip install simple_http_server</span><br><span class="line">CMD [ &quot;python&quot;, &quot;./simple-http-server.py&quot; ]</span><br><span class="line">EOF</span><br><span class="line">sudo docker build -t simple-http-server .</span><br><span class="line">sudo docker tag simple-http-server zhhuabj-bastion.cloud.sts:5000/simple-http-server</span><br><span class="line">sudo docker login -u=test -p=password zhhuabj-bastion.cloud.sts:5000</span><br><span class="line">sudo docker push zhhuabj-bastion.cloud.sts/simple-http-server</span><br><span class="line">sudo docker logout zhhuabj-bastion.cloud.sts:5000</span><br></pre></td></tr></table></figure>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://itnext.io/working-with-image-registries-and-containerd-in-kubernetes-63c311b86368" target="_blank" rel="external">https://itnext.io/working-with-image-registries-and-containerd-in-kubernetes-63c311b86368</a><br>[2] <a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/" target="_blank" rel="external">https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/</a><br>[3] <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04" target="_blank" rel="external">https://www.digitalocean.com/community/tutorials/how-to-set-up-a-private-docker-registry-on-ubuntu-18-04</a><br>[4] <a href="https://kubernetes.io/zh/docs/setup/production-environment/container-runtimes/" target="_blank" rel="external">https://kubernetes.io/zh/docs/setup/production-environment/container-runtimes/</a><br>[5] <a href="https://github.com/containerd/cri/blob/master/docs/registry.md#configure-registry-tls-communication" target="_blank" rel="external">https://github.com/containerd/cri/blob/master/docs/registry.md#configure-registry-tls-communication</a><br>[6] <a href="https://blog.csdn.net/y_chen_007/article/details/97525206" target="_blank" rel="external">https://blog.csdn.net/y_chen_007/article/details/97525206</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/03/Using-4G-NIC-in-OpenWRT/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1628,150 +1756,6 @@ done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" itemprop="url">使用apt-mirror和simplestreams搭建本地源</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-06T17:49:49+08:00">
-                2019-11-06
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>你懂的，国内环境访问ubuntu-cloud.archive.canonical.com会非常慢(注： 其实下列方法可以同步UA, UCA, PPA)，本文将使用apt-mirror搭建一个本地apt服务器以提升办公效率。</p>
-<ul>
-<li>archive.ubuntu.com                   (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
-<li>security.ubuntu.com                  (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
-<li>ubuntu-cloud.archive.canonical.com (UCA)</li>
-<li>images.maas.io                       (juju , lxd, maas)</li>
-<li>cloud-images.ubuntu.com              (juju , lxd, maas, <a href="http://mirrors.cloud.tencent.com/ubuntu-cloud-images/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu-cloud-images/</a> instead)</li>
-<li>streams.canonical.com                (juju , lxd, maas)<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw disable</span><br><span class="line">sudo apt -y install apache2 apt-mirror</span><br><span class="line">mkdir -p /images/xenial-repo</span><br><span class="line"></span><br><span class="line">$ cat /etc/apt/mirror.list</span><br><span class="line">############# config ##################</span><br><span class="line">#</span><br><span class="line">set base_path /images/xenial-repo</span><br><span class="line">#set defaultarch amd64</span><br><span class="line">#</span><br><span class="line"># set mirror_path  $base_path/mirror</span><br><span class="line"># set skel_path    $base_path/skel</span><br><span class="line"># set var_path     $base_path/var</span><br><span class="line"># set cleanscript $var_path/clean.sh</span><br><span class="line"># set defaultarch  &lt;running host architecture&gt;</span><br><span class="line"># set postmirror_script $var_path/postmirror.sh</span><br><span class="line"># set run_postmirror 0</span><br><span class="line">set nthreads     30</span><br><span class="line">set _tilde 0</span><br><span class="line">#</span><br><span class="line">############# end config ##############</span><br><span class="line"></span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#see http://ubuntu-cloud.archive.canonical.com/ubuntu/dists/xenial-updates/</span><br><span class="line">deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/ocata main</span><br><span class="line">#deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/queens main</span><br><span class="line"></span><br><span class="line">#clean http://archive.ubuntu.com/ubuntu</span><br><span class="line">clean http://ubuntu-cloud.archive.canonical.com/ubuntu</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo touch /images/xenial-repo/var/postmirror.sh</span><br><span class="line">sudo apt-mirror</span><br></pre></td></tr></table></figure>
-<p>或者运行“sudo crontab -e”添加下列crob在每天四点半运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">30 4    * * *    root    /usr/bin/apt-mirror &gt;&gt; /var/log/apt-mirror.log</span><br></pre></td></tr></table></figure></p>
-<h2 id="配置Apache"><a href="#配置Apache" class="headerlink" title="配置Apache"></a>配置Apache</h2><p>Apache的已有配置如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sudo grep -r &apos;DocumentRoot&apos; /etc/apache2/sites-available/000-default.conf</span><br><span class="line">        DocumentRoot /var/www/html</span><br><span class="line"></span><br><span class="line">$ grep -r &apos;/var/www/&apos; /etc/apache2/apache2.conf -A 4</span><br><span class="line">&lt;Directory /var/www/&gt;</span><br><span class="line">	Options Indexes FollowSymLinks</span><br><span class="line">	AllowOverride All</span><br><span class="line">	Require all granted</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
-<p>创建软链及注意一个关键易犯问题</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /images/xenial-repo  /var/www/html/apt-mirror</span><br><span class="line">sudo chown -R www-data:www-data /images</span><br><span class="line">sudo service apache2 reload</span><br></pre></td></tr></table></figure>
-<p>注：上面这一句”chown -R www-data:www-data /images”异常关键，网上几乎所有能搜寻的答案全部是关于添加’Options FollowSymLinks’的，其实如上/etc/apache2/apache2.conf文件中已经包含该设置。apache 2.4使用的目录的用户名和组必须全部是www-data，否则/var/log/apache2/error.log会报这个错误“Symbolic link not allowed or link target not accessible”（WEB页上看到的错误是‘You don’t have permission to access”）。可用该命令“sudo -u www-data ls /var/www/html/apt-mirror”验证它是否成功。之前我一直在这个地方犯错是因为我执行的是“chown -R www-data:www-data /images/xenial-repo”，这样导致仍然无法顺利执行““sudo -u www-data ls /var/www/html/apt-mirror”命令。<br>也可创建/etc/apache2/sites-available/ubuntu-mirror.conf使用VirtualHost同时支持对UA, UCA, PPT的同步：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-repo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/archive.ubuntu.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-archive.ubuntu.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-archive.ubuntu.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-cloudrepo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-cloudarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-cloudarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-ppa.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ppa.launchpad.net/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-ppaarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-ppaarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure></p>
-<p>或要支持ssl，再添加：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SSLCACertificatePath /etc/ssl/certs</span><br><span class="line">SSLCertificateFile /etc/pki/tls/certs/mirror.crt</span><br><span class="line">SSLEngine On</span><br><span class="line">SSLCertificateKeyFile /etc/pki/tls/private/mirror.key</span><br></pre></td></tr></table></figure>
-<p>之后执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a2enmod ssl</span><br><span class="line">a2ensite *</span><br><span class="line">systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
-<h2 id="使用它"><a href="#使用它" class="headerlink" title="使用它"></a>使用它</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">touch /etc/apt/sources.list.d/mymirror.list</span><br><span class="line">cat &gt; /etc/apt/sources.list.d/mymirror.list &lt;&lt;EOF</span><br><span class="line">#deb http://node1/apt-mirror/mirror/cn.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://node1/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/ubuntu/ xenial-updates/ocata main</span><br><span class="line">EOF</span><br><span class="line">rm -rf /etc/apt/sources.list.d/cloudarchive-ocata.list*</span><br><span class="line">apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5EDB1B62EC4926EA</span><br><span class="line">apt update</span><br></pre></td></tr></table></figure>
-<h2 id="20171101更新"><a href="#20171101更新" class="headerlink" title="20171101更新"></a>20171101更新</h2><p>此次apt update慢的原因最后通过”Software &amp; Update -&gt; Ubuntu Software -&gt; Download from Other - Select Best Server”将之前的mirrors.aliyun.com改成mirrors.yun-idc.com就好了。之前各种源也都换过，为什么这次行了具体原因不明待下次遇到了待查。</p>
-<h2 id="20171115更新"><a href="#20171115更新" class="headerlink" title="20171115更新"></a>20171115更新</h2><p>今天在安装libvirt0时总是发生包依赖问题（libvirt0: Depends: libxen-4.6 (&gt;=4.6.5) but 4.6.0-1ubuntu4.3 is to be installed)，原来是mirrors.aliyun.com的问题，这个源更新不及时会造成众多问题。<br><strong>为了克服这种更新不及时造成的问题，看样子还是最好别搭私有源和使用国内源，所以换回官方源</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse</span><br></pre></td></tr></table></figure></p>
-<h2 id="20191106更新-搭建simplestreams本地源"><a href="#20191106更新-搭建simplestreams本地源" class="headerlink" title="20191106更新 - 搭建simplestreams本地源"></a>20191106更新 - 搭建simplestreams本地源</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install simplestreams</span><br><span class="line">sudo mkdir -p /var/spool/sstreams/maas &amp;&amp; sudo chown -R $USER /var/spool/sstreams/maas</span><br><span class="line"></span><br><span class="line">#MAAS images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/maas</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos;</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;os~(grub*|pxelinux)&apos;</span><br><span class="line"></span><br><span class="line">#Use MAAS images simplestreams</span><br><span class="line">maas root boot-source update 1 url=https://maas-images.yourdomain.com/ keyring_filename=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg</span><br><span class="line">maas root domains create name=&quot;yourdomain.com&quot;</span><br><span class="line">maas root dnsresources create fqdn=&quot;maas-images.yourdomain.com&quot; ip_addresses=&lt;your-mirror-ip&gt;  #orconfigure the mirror in infra.yaml</span><br><span class="line"></span><br><span class="line">#Juju agents simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/juju</span><br><span class="line">sstream-mirror --no-verify --progress --max=2 --path=streams/v1/index2.sjson https://streams.canonical.com/juju/tools/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;version~(2.6)&apos;</span><br><span class="line"></span><br><span class="line">#Use Juju agents simplestreams</span><br><span class="line">#let juju know where to get contrainers from, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config container-image-stream=released container-image-metadata-url=https://lxd-images.yourdomain.com/ image-metadata-url=https://lxd-images.yourdomain.com</span><br><span class="line">#let juju know where to fetach the agents, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config agent-metadata-url=https://juju-agents.yourdomain.com/ agent-stream=released</span><br><span class="line"></span><br><span class="line">#LXD and KVM images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/lxdkvm</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.json https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.sjson https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line"></span><br><span class="line">sudo apt install apache2 -y</span><br><span class="line">cat &lt;&lt;EOF &gt; /etc/apache2/sites-available/sstreams-mirror.conf</span><br><span class="line">&lt;VirtualHost *:443&gt;</span><br><span class="line">    ServerName maas-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/maas</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-maas-images-error.log</span><br><span class="line">     CustomLog /var/log/apache2/mirror-maas-images-access.log combined</span><br><span class="line">     &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">     Options Indexes FollowSymLinks</span><br><span class="line">     AllowOverride None</span><br><span class="line">     Require all granted</span><br><span class="line">     &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName lxdkvm-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/lxdkvm</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-lxdkvm-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-lxdkvm-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName juju-agents.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/juju</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-juju-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-juju-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1822,7 +1806,7 @@ done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-count">62</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

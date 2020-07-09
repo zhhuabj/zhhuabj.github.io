@@ -231,6 +231,152 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/08/Play-with-Tacker-by-quqi99/" itemprop="url">Play with Tacker(by quqi99)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-08T10:11:21+08:00">
+                2017-11-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="Install-via-devstack"><a href="#Install-via-devstack" class="headerlink" title="Install via devstack"></a>Install via devstack</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#Enable tacker</span><br><span class="line">BRANCH=master</span><br><span class="line">enable_plugin heat https://git.openstack.org/openstack/heat $BRANCH</span><br><span class="line">enable_plugin networking-sfc https://git.openstack.org/openstack/networking-sfc $BRANCH</span><br><span class="line">enable_plugin barbican https://git.openstack.org/openstack/barbican $BRANCH</span><br><span class="line">enable_plugin mistral https://git.openstack.org/openstack/mistral $BRANCH</span><br><span class="line">enable_plugin tacker https://git.openstack.org/openstack/tacker $BRANCH</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">source openrc</span><br><span class="line">export OS_USERNAME=admin</span><br><span class="line">$ env |grep OS_</span><br><span class="line">OS_PROJECT_DOMAIN_ID=default</span><br><span class="line">OS_REGION_NAME=RegionOne</span><br><span class="line">OS_USER_DOMAIN_ID=default</span><br><span class="line">OS_PROJECT_NAME=demo</span><br><span class="line">OS_IDENTITY_API_VERSION=3</span><br><span class="line">OS_PASSWORD=password</span><br><span class="line">OS_AUTH_TYPE=password</span><br><span class="line">OS_AUTH_URL=http://172.16.1.1/identity</span><br><span class="line">OS_USERNAME=admin</span><br><span class="line">OS_TENANT_NAME=demo</span><br><span class="line">OS_VOLUME_API_VERSION=2</span><br></pre></td></tr></table></figure>
+<p>Devstack会自动配置下列镜像与网络：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img</span><br><span class="line">openstack image create &quot;cirros&quot; --file cirros-0.3.5-x86_64-disk.img --disk-format qcow2 --container-format bare --public</span><br><span class="line">$ glance image-list</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line">| ID                                   | Name                     |</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line">| 55444fe2-4b26-4908-ba1b-4c5e95bd0b83 | cirros-0.3.5-x86_64-disk |</span><br><span class="line">| 26e711a9-d5c8-4991-a81d-5ebf5d2724d1 | OpenWRT                  |</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line"></span><br><span class="line">$ neutron net-list</span><br><span class="line">neutron CLI is deprecated and will be removed in the future. Use openstack CLI instead.</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br><span class="line">| id                                   | name     | tenant_id                        | subnets                                               |</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br><span class="line">| 43f2cbec-367c-45e8-bf37-26e66366b9eb | private  | 1e99096c578a4b2786c6a44ffd6bed44 | ab7d15c8-03d5-429a-926f-2ba07d0fb77f 10.0.0.0/26      |</span><br><span class="line">| 57c739b9-6e61-4795-a72f-29d9f3ee5ab2 | net0     | b9c12c1af30349b987fe9ab638659e48 | ab177e6d-94ea-4d93-bbc6-d9e4c2bba90e 10.10.0.0/24     |</span><br><span class="line">| 5c6dc85e-9fd0-49f6-8fc2-3386709b4a09 | net_mgmt | b9c12c1af30349b987fe9ab638659e48 | 7525b4e6-1bff-4b68-a2c6-d5633a155a7f 192.168.120.0/24 |</span><br><span class="line">| 63d88cd7-d540-446d-9538-4676b30cb494 | public   | b9c12c1af30349b987fe9ab638659e48 | 7a2873fc-607b-4f9e-bd94-7ed91a746553 192.168.101.0/24 |</span><br><span class="line">| 95717e35-d3bc-4c6a-937c-b47c566a3666 | net1     | b9c12c1af30349b987fe9ab638659e48 | 0ecbc79b-c103-464f-ad59-2c7733c43e39 10.10.1.0/24     |</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br></pre></td></tr></table></figure>
+<h2 id="概念与步骤"><a href="#概念与步骤" class="headerlink" title="概念与步骤"></a>概念与步骤</h2><p>Tacker中有这些概念： </p>
+<ul>
+<li>VIM： 相当于OpenStack </li>
+<li>VNFD: VNF Descriptor</li>
+<li>VNF:  Virtual Network Function<br>所以依次需要：</li>
+<li><p>创建VIM</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; vim_config.yaml &lt;&lt; EOF</span><br><span class="line">auth_url: &apos;http://172.16.1.1/identity&apos;</span><br><span class="line">username: &apos;nfv_user&apos;</span><br><span class="line">password: &apos;devstack&apos;</span><br><span class="line">project_name: &apos;nfv&apos;</span><br><span class="line">project_domain_name: &apos;Default&apos;</span><br><span class="line">user_domain_name: &apos;Default&apos;</span><br><span class="line">EOF</span><br><span class="line">tacker vim-register --is-default --config-file vim_config.yaml test-vim</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建vnfd</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tacker vnfd-create --vnfd-file ./sample-vnfd.yaml sample-vnfd</span><br><span class="line">tacker vnfd-list</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建vnf</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tacker vnf-create --vnfd-name sample-vnfd sample-vnf</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="TOSCA-VNFD语法"><a href="#TOSCA-VNFD语法" class="headerlink" title="TOSCA VNFD语法"></a>TOSCA VNFD语法</h2><p>VNFD和juju的yaml类似, 语法见下面sample-vnfd.yaml中的注释：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">$ cat sample-vnfd.yaml </span><br><span class="line">tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0</span><br><span class="line">description: Demo example</span><br><span class="line">metadata:</span><br><span class="line">  template_name: sample-tosca-vnfd</span><br><span class="line">topology_template:</span><br><span class="line">  # VDU1 represents a node provided by underlying VIM</span><br><span class="line">  node_templates:</span><br><span class="line">    VDU1:</span><br><span class="line">      type: tosca.nodes.nfv.VDU.Tacker</span><br><span class="line">      # Define flavor</span><br><span class="line">      capabilities:</span><br><span class="line">        nfv_compute:</span><br><span class="line">          properties:</span><br><span class="line">            num_cpus: 1</span><br><span class="line">            mem_size: 512 MB</span><br><span class="line">            disk_size: 1 GB</span><br><span class="line">      # Define image</span><br><span class="line">      properties:</span><br><span class="line">        image: cirros-0.3.5-x86_64-disk</span><br><span class="line">        availability_zone: nova</span><br><span class="line">        # Tacker has two integrated mgmt_driver to configure metadata - noop and openwrt</span><br><span class="line">        mgmt_driver: noop</span><br><span class="line">        config: |</span><br><span class="line">          param0: key1</span><br><span class="line">          param1: key2</span><br><span class="line">    # CP (Connection Point) represents a neutron port, CP1 is the name of this port</span><br><span class="line">    CP1:</span><br><span class="line">      type: tosca.nodes.nfv.CP.Tacker</span><br><span class="line">      properties:</span><br><span class="line">        management: true</span><br><span class="line">        order: 0</span><br><span class="line">        anti_spoofing_protection: false</span><br><span class="line">      # One side of this CP is connecting to VL1, another side is connection to VDU1 </span><br><span class="line">      requirements:</span><br><span class="line">        - virtualLink:</span><br><span class="line">            node: VL1</span><br><span class="line">        - virtualBinding:</span><br><span class="line">            node: VDU1</span><br><span class="line">    # VL (Virtual Link) represents a neutron network</span><br><span class="line">    VL1:</span><br><span class="line">      type: tosca.nodes.nfv.VL</span><br><span class="line">      properties:</span><br><span class="line">        network_name: net_mgmt</span><br><span class="line">        vendor: Tacker</span><br></pre></td></tr></table></figure></p>
+<p>VNFD的语法结构图如下：<br><img src="http://img.blog.csdn.net/20171107215225409?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="Tacker如何实现水平伸缩"><a href="#Tacker如何实现水平伸缩" class="headerlink" title="Tacker如何实现水平伸缩"></a>Tacker如何实现水平伸缩</h2><p>需有水平伸缩相关的配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 定义策略，此节点与node_templates同级</span><br><span class="line">policies:</span><br><span class="line">  # 此处定义了一个scale策略；SP1为自定义的名字</span><br><span class="line">  - SP1:</span><br><span class="line">      # scale策略的type</span><br><span class="line">      type: tosca.policy.tacker.Scaling</span><br><span class="line">      # 定义了策略的详细内容</span><br><span class="line">      properties:</span><br><span class="line">        # 每次伸缩的数量</span><br><span class="line">        increment: 1</span><br><span class="line">        # 下一次操作的冷却时间</span><br><span class="line">        cooldown: 0</span><br><span class="line">        # 总量的下限</span><br><span class="line">        min_instances: 1</span><br><span class="line">        # 总量的上限</span><br><span class="line">        max_instances: 3</span><br><span class="line">        # 初始的数量</span><br><span class="line">        default_instances: 2</span><br><span class="line">        # 要伸缩的目标，vdu、cp均可伸缩</span><br><span class="line">        targets: [VDU1]</span><br></pre></td></tr></table></figure></p>
+<p>然后运行下列命令进行伸缩：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tacker vnf-scale --vnf-name test_vnf --scaling-policy-name SP1 --scaling-type out</span><br></pre></td></tr></table></figure></p>
+<p>上面伸缩配置和创建vim的配置一样会由Tacker最终转换为Heat模板，Heat模板最终再调用Neutron LBaaS v2来实现HA。点击这见我的<a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">另一博客</a>。<br>而Juju的水平扩展则更为简单，直接运行如“juju add-unit nova-compute”之类的命令为自动增加节点，并且在这些节点之间添加haproxy+corosync的HA服务，点击这见我的<a href="http://blog.csdn.net/quqi99/article/details/51981262" target="_blank" rel="external">另一博客</a>。<br>如此说来，还是juju好用。</p>
+<h2 id="mgmt-driver"><a href="#mgmt-driver" class="headerlink" title="mgmt_driver"></a>mgmt_driver</h2><p>可以将一段脚本通过config参给VIM，然后tacker再ssh进这个VIM来执行这段配置。<br>这块juju则是直接ssh进VIM后自己该干嘛干嘛，灵活性更高。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://docs.openstack.org/tacker/latest/" target="_blank" rel="external">https://docs.openstack.org/tacker/latest/</a><br>[2] <a href="http://blog.csdn.net/tpiperatgod/article/details/56282617" target="_blank" rel="external">http://blog.csdn.net/tpiperatgod/article/details/56282617</a><br>[3] <a href="https://www.ibm.com/developerworks/cn/cloud/library/1511_zoupx_openstackheat/index.html" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/cloud/library/1511_zoupx_openstackheat/index.html</a><br>[4] <a href="https://www.ibm.com/developerworks/cn/cloud/library/cl-cloud-orchestration-technologies-trs/index.html" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/cloud/library/cl-cloud-orchestration-technologies-trs/index.html</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/08/hello-world/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -396,7 +542,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">61</span>
+                  <span class="site-state-item-count">62</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
