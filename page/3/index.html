@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-06T17:49:49+08:00">
                 2019-11-06
@@ -404,7 +404,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-05T12:02:18+08:00">
                 2019-11-05
@@ -554,7 +554,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
                 2019-10-14
@@ -748,7 +748,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
                 2019-08-22
@@ -902,7 +902,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-24T20:24:20+08:00">
                 2019-04-24
@@ -1047,7 +1047,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-15T08:56:05+08:00">
                 2019-04-15
@@ -1093,10 +1093,12 @@ Fixed bug #161317
 <p>买了一款Intel compute stick core m3, 具有HDMI接口输出音频, 但如何使用手机临时地作为显示器及键盘鼠标控制它呢?</p>
 <h2 id="屏幕共享-vnc-amp-teamviewer-amp-anydesk"><a href="#屏幕共享-vnc-amp-teamviewer-amp-anydesk" class="headerlink" title="屏幕共享 - vnc &amp; teamviewer &amp; anydesk"></a>屏幕共享 - vnc &amp; teamviewer &amp; anydesk</h2><p>windows上有一款叫spacedesk的软件, 电脑和手机上都安装它之后, 在同一个局域网可以很方便地从手机控制电脑棒.<br>Ubuntu上可以使用vnc, teamviewer, anydesk.</p>
 <ul>
-<li>ubuntu上安装VNC<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># https://medium.com/@aldo_mx/simplest-way-to-configure-vnc-server-in-xubuntu-16-04-lts-and-newer-6c0b3ae21fe5</span><br><span class="line">sudo apt-get install vino</span><br><span class="line">gsettings list-recursively org.gnome.Vino</span><br><span class="line"># some clients like TightVNC for Windows do not work with encryption anymore</span><br><span class="line"># because older protocols like SSLv3 and TLSv1 have been deprecated.</span><br><span class="line"># dconf-editor - ORG &gt; GNOME &gt; DESKTOP &gt; REMOTE ACCESS</span><br><span class="line">gsettings set org.gnome.Vino require-encryption false</span><br><span class="line"># activate at startup, or set &quot;Settings -&gt; Sharing -&gt; screen Sharing&quot; in ubuntu</span><br><span class="line">sudo cp /usr/share/applications/vino-server.desktop /etc/xdg/autostart/vino-server.desktop</span><br><span class="line"># #enable &quot;Application Autostart -&gt; Desktop Sharing(Gnome Desktop Sharing Server)&quot;</span><br><span class="line">xfce4-session-settings</span><br><span class="line">/usr/lib/vino/vino-server --sm-disable</span><br></pre></td></tr></table></figure>
+<li>ubuntu上安装VNC<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># https://medium.com/@aldo_mx/simplest-way-to-configure-vnc-server-in-xubuntu-16-04-lts-and-newer-6c0b3ae21fe5</span><br><span class="line">sudo apt-get install vino</span><br><span class="line">gsettings list-recursively org.gnome.Vino</span><br><span class="line"># some clients like TightVNC for Windows do not work with encryption anymore</span><br><span class="line"># because older protocols like SSLv3 and TLSv1 have been deprecated.</span><br><span class="line"># dconf-editor - ORG &gt; GNOME &gt; DESKTOP &gt; REMOTE ACCESS</span><br><span class="line">gsettings set org.gnome.Vino require-encryption false</span><br><span class="line"># activate at startup, or set &quot;Settings -&gt; Sharing -&gt; screen Sharing&quot; in ubuntu</span><br><span class="line">sudo cp /usr/share/applications/vino-server.desktop /etc/xdg/autostart/vino-server.desktop</span><br><span class="line"># #enable &quot;Application Autostart -&gt; Desktop Sharing(Gnome Desktop Sharing Server)&quot;</span><br><span class="line">xfce4-session-settings</span><br><span class="line">/usr/lib/vino/vino-server --sm-disable</span><br><span class="line">vncviewer 192.168.99.124:5900 #but too slow</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
-<p>需注意两点：一是要<strong>设置require-encryption=false</strong>, 二是手机上使用realvnc client时不应该登陆，因为没用realvnc server，而是用的vino server</p>
+<p>需注意两点：一是要<strong>设置require-encryption=false</strong>, 二是手机上使用realvnc client时不应该登陆，因为没用realvnc server，而是用的vino server<br>但是vino太慢了，改成vnc4server又是花屏的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install vnc4server</span><br><span class="line">vncpasswd #not use sudo</span><br><span class="line">#vncserver -kill :0</span><br><span class="line">#taken because of /tmp/.X11-unix/X0</span><br><span class="line">sudo rm /tmp/.X11-unix/X0 &amp;&amp; sudo rm /tmp/.X0-lock</span><br><span class="line">vncserver -geometry 1280x800 -alwaysshared :0</span><br></pre></td></tr></table></figure></p>
+<p>所以最后使用xrdp</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install xrdp</span><br><span class="line">cat /etc/xrdp/xrdp.ini</span><br><span class="line">sudo systemctl status xrdp</span><br><span class="line">sudo adduser xrdp ssl-cert</span><br><span class="line">#sudo ufw allow from 192.168.99.0/24 to any port 3389</span><br><span class="line">#sudo ufw allow 3389</span><br><span class="line">use Remmina as rdp client</span><br></pre></td></tr></table></figure>
 <ul>
 <li>安装使用anydesk使用屏幕, 鼠标, 键盘.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.anydesk.com/linux/anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo dpkg -i anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo apt --fix-broken install</span><br><span class="line">sudo dpkg -i anydesk_4.0.1-1_amd64.deb</span><br><span class="line">sudo systemctl enable anydesk.service</span><br></pre></td></tr></table></figure>
 </li>
@@ -1121,6 +1123,10 @@ Fixed bug #161317
 <li>还可以支持电脑上Nautilus来mount手机上的文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python-nautilus gir1.2-nautilus-3.0 sshfs</span><br><span class="line"># then send file to Android by first open the nautilus then right click one file &quot;Send to Mobile Device -&gt; Nokia&quot;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
+<h2 id="附录-让vnc开机自动运行"><a href="#附录-让vnc开机自动运行" class="headerlink" title="附录 - 让vnc开机自动运行"></a>附录 - 让vnc开机自动运行</h2><p>刚开始打算把开vnc的脚本放到rc.local里,但不work, 因为运行vnc是需要home目录的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/vncserver -kill :4</span><br><span class="line">/usr/bin/vncserver :4 -localhost no -geometry 1024x768</span><br><span class="line">/usr/bin/ssh -o ConnectTimeout=5 -o ServerAliveInterval=50 -fNR 43301:localhost:5904 xxx-jump</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt;/etc/systemd/system/rc-local.service&apos; &lt;&lt;EOF</span><br><span class="line">[Unit]</span><br><span class="line"> Description=/etc/rc.local Compatibility</span><br><span class="line"> ConditionPathExists=/etc/rc.local</span><br><span class="line">[Service]</span><br><span class="line"> Type=forking</span><br><span class="line"> ExecStart=/etc/rc.local start</span><br><span class="line"> TimeoutSec=0</span><br><span class="line"> StandardOutput=tty</span><br><span class="line"> RemainAfterExit=yes</span><br><span class="line"> SysVStartPriority=99</span><br><span class="line">[Install]</span><br><span class="line"> WantedBy=multi-user.target</span><br><span class="line">EOF</span><br><span class="line">printf &apos;%s\n&apos; &apos;#!/bin/bash&apos; &apos;exit 0&apos; | sudo tee -a /etc/rc.local</span><br><span class="line">sudo chmod +x /etc/rc.local</span><br><span class="line">sudo systemctl enable rc-local</span><br><span class="line">sudo systemctl restart rc-local.service</span><br><span class="line">sudo systemctl status rc-local.service</span><br></pre></td></tr></table></figure>
+<p>所以最后搞成下面的:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">sudo bash -c &apos;cat &gt;/etc/init.d/vncserver&apos; &lt;&lt;EOF</span><br><span class="line">#!/bin/sh -e</span><br><span class="line"></span><br><span class="line">PATH=&quot;$PATH:/usr/X11R6/bin/&quot;</span><br><span class="line"></span><br><span class="line"># The Username:Group that will run VNC</span><br><span class="line">export USER=&quot;zhhuabj&quot;</span><br><span class="line">#$&#123;RUNAS&#125;</span><br><span class="line"></span><br><span class="line"># The display that VNC will use</span><br><span class="line">DISPLAY=&quot;4&quot;</span><br><span class="line"></span><br><span class="line"># Color depth (between 8 and 32)</span><br><span class="line">DEPTH=&quot;16&quot;</span><br><span class="line"></span><br><span class="line"># The Desktop geometry to use.</span><br><span class="line">#GEOMETRY=&quot;&lt;WIDTH&gt;x&lt;HEIGHT&gt;&quot;</span><br><span class="line">GEOMETRY=&quot;1024x768&quot;</span><br><span class="line"></span><br><span class="line"># The name that the VNC Desktop will have.</span><br><span class="line">NAME=&quot;zhhuabj-vnc&quot;</span><br><span class="line"></span><br><span class="line">OPTIONS=&quot;-name $&#123;NAME&#125; -depth $&#123;DEPTH&#125; -geometry $&#123;GEOMETRY&#125; :$&#123;DISPLAY&#125;&quot;</span><br><span class="line"></span><br><span class="line">. /lib/lsb/init-functions</span><br><span class="line"></span><br><span class="line">case &quot;$1&quot; in</span><br><span class="line">start)</span><br><span class="line">log_action_begin_msg &quot;Starting vncserver for user &apos;$&#123;USER&#125;&apos; on localhost:$&#123;DISPLAY&#125;&quot;</span><br><span class="line">su $&#123;USER&#125; -c &quot;/usr/bin/vncserver $&#123;OPTIONS&#125;&quot;</span><br><span class="line">;;</span><br><span class="line"></span><br><span class="line">stop)</span><br><span class="line">log_action_begin_msg &quot;Stoping vncserver for user &apos;$&#123;USER&#125;&apos; on localhost:$&#123;DISPLAY&#125;&quot;</span><br><span class="line">su $&#123;USER&#125; -c &quot;/usr/bin/vncserver -kill :$&#123;DISPLAY&#125;&quot;</span><br><span class="line">;;</span><br><span class="line"></span><br><span class="line">restart)</span><br><span class="line">$0 stop</span><br><span class="line">$0 start</span><br><span class="line">;;</span><br><span class="line">esac</span><br><span class="line"></span><br><span class="line">exit 0</span><br><span class="line">EOF</span><br><span class="line">sudo chmod +x /etc/init.d/vncserver</span><br><span class="line">sudo update-rc.d vncserver defaults</span><br><span class="line">sudo /etc/init.d/vncserver start</span><br></pre></td></tr></table></figure></p>
+<h2 id="vncserver"><a href="#vncserver" class="headerlink" title="vncserver"></a>vncserver</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install vnc4server xfce4 xfce4-goodies -y</span><br><span class="line">vncpasswd</span><br><span class="line">sudo bash -c &apos;cat &gt; ~/.vnc/xstartup&apos; &lt;&lt; EOF</span><br><span class="line">#!/bin/bash</span><br><span class="line">startxfce4 &amp;</span><br><span class="line">EOF</span><br><span class="line">sudo chmod +x ~/.vnc/xstartup</span><br><span class="line">/usr/bin/vncserver -kill :1</span><br><span class="line">/usr/bin/vncserver :1 -geometry 1024x768</span><br><span class="line">sudo ufw allow from any to any port 5901 proto tcp</span><br></pre></td></tr></table></figure>
 
           
         
@@ -1198,7 +1204,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-18T13:44:20+08:00">
                 2019-01-18
@@ -1365,7 +1371,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-02T11:08:22+08:00">
                 2019-01-02
@@ -1493,7 +1499,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-31T16:29:50+08:00">
                 2018-12-31
@@ -1685,7 +1691,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-29T17:37:02+08:00">
                 2018-10-29
@@ -1870,7 +1876,7 @@ Fixed bug #161317
                 <a href="/archives/">
               
                   <span class="site-state-item-count">62</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1920,7 +1926,7 @@ Fixed bug #161317
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
