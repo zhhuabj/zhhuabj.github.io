@@ -231,6 +231,144 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/19/软路由/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/08/19/软路由/" itemprop="url">软路由</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-19T23:24:29+08:00">
+                2020-08-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-08-19<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>升级了500M宽带，但电脑用网线直线WDNR4300路由器用perf3 -s与perf -c 192.168.99.1 -t 3测试时只不到200M．所以在一台式机上安装了软路由，测试结果立马上到接近1000M了．<br>但用了1000M的电力猫之后，速度又下降到120左右，改成有线连接之后，又马又上到1000M．<br>看来瓶颈在于WDNR4300与电力猫．</p>
+<h2 id="安装软路由"><a href="#安装软路由" class="headerlink" title="安装软路由"></a>安装软路由</h2><p>台式机上有两个之前做SR-IOV实验用的千兆网卡 (Winyao WY576T PCI-E X4 双口服务器千兆网卡 82576 1000M), 及一个Intel集成网卡．</p>
+<ul>
+<li>enp6s0f0与enp6s0f1通过passthough映射到KVM虚机. 注意不要使用macvtap+bridge模式，因为这样会造成无法从局域网ping macvtap设备上的IP，当在插一根网线到Intel集成网卡上后，默认路由总是在enp6s0f0上，从而导致无法访问台式机．enp6s0f0映射到openwrt虚机里是eth1用于生成br-lan, enp6s0f1映射到openwrt虚机里是eth0.</li>
+<li>直接KVM安装导入OpenWRT x86镜像即可 (github直接下载)</li>
+</ul>
+<h2 id="网络拓扑"><a href="#网络拓扑" class="headerlink" title="网络拓扑"></a>网络拓扑</h2><p>目前家中的网络拓扑是：</p>
+<ul>
+<li>光猫，打电话改了桥接</li>
+<li>tplink千兆路由器(192.168.2.0/24)拨号, 下接一千兆交换机接NAS, TV, Camera等．</li>
+<li>台式机的enp6s0f0接tplink，从软路由(192.168.98.0/24)出来后，enp6s0f1再接一千兆交换机．</li>
+<li>WNDR4300仍然从tplink出(192.168.99.0/24)</li>
+<li>千兆电力猫连接软路由至卧室（电力猫速度太差，需要改成有线）<h2 id="目前问题"><a href="#目前问题" class="headerlink" title="目前问题"></a>目前问题</h2></li>
+<li>台式机停电再来电自动启动的问题，改了BIOS但还未测试</li>
+<li>tplink上IPv6也要拨号但复用IPv4的拨号连接后是有IPv6地址的（光猫桥接并未挡住什么），客户端直接连接tplink也能拿到IPv6, 但tplink下挂的OpenWRT路由器却拿不到IPv6, 可能是OpenWrt镜像缺包吧，因为在WAN6那里找不到dhcpv6 client，只有dhcp client)</li>
+<li>ubuntu在/etc/network/interfaces不定义时可以拿到IPv6，但要使用桥接如何定义也能拿到IPv6呢？</li>
+<li>如何将无线网卡给KVM用，同时在openwrt虚机中用它做AP?</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/09/Play-with-MAAS/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1533,148 +1671,6 @@ serviceAccountName: &quot;&quot;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/14/猫盘安装群晖synology/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/04/14/猫盘安装群晖synology/" itemprop="url">猫盘安装群晖synology</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
-                2020-04-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-04-14<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里有两个nas, 一个威联通的，一个猫盘，猫盘长期没怎么用，今天一看开机后找不着IP，后来多重启几次后，发现偶尔路由器上能看到IP, 它每次IP都变，并且也容易掉IP．而且还无法打开ssh，所以这个猫盘不是我心目中理想的样子，它很烂．但想着里面还有一块硬盘也不能就这么丢了啊．于是想着把它刷成群晖synology.<br>网上一堆通过什么ttl刷机的方法，那个太麻烦了，还得买线，还得拆机，还得搭线，我们还是寻找软个的方法．其实问题的关键是猫盘打开ssh太麻烦了，如果有了ssh直接刷synology很简单．x3p默认支持ssh，所以我们先通过网络的方式刷x3p，然后再刷synology.</p>
-<h2 id="通过猫盘一键刷机v2-0刷x3p"><a href="#通过猫盘一键刷机v2-0刷x3p" class="headerlink" title="通过猫盘一键刷机v2.0刷x3p"></a>通过猫盘一键刷机v2.0刷x3p</h2><p>我也忘了哪里下载的猫盘一键刷机v2.0工具，大家自行在网上搜索，有名字应该很容易找到该工具的下载地址，或者去百度网盘搜搜．下载安装好后，通过网络刷x3p要知道几个信息：</p>
-<ul>
-<li>猫盘的IP，从路由器里找</li>
-<li>猫盘的mac，从猫盘背后找．但注意一点是，要想每次启动IP不变的话，mac地址前面几位应该固定成78C2C0，后面六位从猫盘背后找．</li>
-<li><p>猫盘的SN, 从猫盘背后找．<br>有了这些信息后，按下列步骤刷x3p</p>
-</li>
-<li><p>打开猫盘一键刷机工具，把上面的信息粘贴进去，点击开始刷机 (注意注意：刷机前一定要关闭win10上的防火墙）</p>
-</li>
-<li>刷好后有提示，这时候需要拔下电源，按住reset！等待10秒以上，按着他不要停！同时连上电源，等网线的灯亮起在松手。</li>
-<li>这时候猫盘应该顶灯不停闪烁，等待15分钟左右，路由器能够看到你的猫盘就算刷好了</li>
-<li>打开网页，地址栏输入猫盘的新ip，进入X3P登录页面. 它有两个帐号，一个admin，密码：123456, 一个root, 密码为Etech12 (呆会ssh时需要使用root用户）</li>
-<li>做到这一步如果想使用x3p就继续升级，如果想使用synology的话做到这一步就算完了．<h2 id="ssh一键刷synology"><a href="#ssh一键刷synology" class="headerlink" title="ssh一键刷synology"></a>ssh一键刷synology</h2>使用root (Etech12)用户ssh登录到系统，一键运行下列命令即可：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -N --no-check-certificate https://raw.githubusercontent.com/Squaregentleman/catdrive-syno/master/install.sh</span><br><span class="line">chmod +x install.sh</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>但是由于你知道的糟糕的网络环境，可能install.sh里面要下载的<a href="https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．" target="_blank" rel="external">https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．</a></p>
-<h2 id="配置synology"><a href="#配置synology" class="headerlink" title="配置synology"></a>配置synology</h2><p>上步安装好synology之后，接着就要配置synology, 本来也没什么好说的，看着文字说明一步一步做就行了．也是因为你知道的糟糕的网络环境，需要先手工下载下列文件，然后做到这一步时看文字选手工安装安装它：<br><a href="https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922" target="_blank" rel="external">https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922</a>　</p>
-<h2 id="配置nfs"><a href="#配置nfs" class="headerlink" title="配置nfs"></a>配置nfs</h2><p>控制面板定义一个共享文件夹如bak, 关联用户admin, 然后要定义NFS权限，如下图，在squash处选择＂映射所有用户为admin. 不然的话，你若通过（sudo mount -t nfs 192.168.99.169:/volume1/bak /cat）mount了的话，然后使用添加sudo如＂sudo ls /cat”才能访问．<br><img src="https://img-blog.csdnimg.cn/20200414113138418.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
-<h2 id="autofs配置"><a href="#autofs配置" class="headerlink" title="autofs配置"></a>autofs配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/auto.direct |tail -n 1</span><br><span class="line">/cat    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=admin,password=nanting413     192.168.99.169:/volume1/bak</span><br><span class="line">$ cat /etc/auto.master |tail -n 1</span><br><span class="line">/-	auto.direct</span><br><span class="line"></span><br><span class="line">sudo systemctl restart autofs</span><br></pre></td></tr></table></figure>
-<h2 id="一个大坑"><a href="#一个大坑" class="headerlink" title="一个大坑"></a>一个大坑</h2><p>通过IP访问控制台时，在套件中心要安装软件时，总是会报连接网络失败，问题是我们的网络肯定是好的．找了好久，终于发现仍然是我们特殊的网络环境造成的．<br>需要打开ntp，如下图，但默认使用的ntp服务器是time.google.com，所以被那个了，ntp也就不好使了从而造成无法访问应用软件库．<br><img src="https://img-blog.csdnimg.cn/20200414113835409.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>注：还可以添加这个软件仓库　－　<a href="https://synocommunity.com/#easy-install" target="_blank" rel="external">https://synocommunity.com/#easy-install</a></p>
-<h2 id="rsync同步"><a href="#rsync同步" class="headerlink" title="rsync同步"></a>rsync同步</h2><p> 可通过rsync命令同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avztur --progress --delete --exclude &apos;me/xx&apos; /nas/  /cat</span><br></pre></td></tr></table></figure></p>
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://post.smzdm.com/p/a4wm2rll/" target="_blank" rel="external">https://post.smzdm.com/p/a4wm2rll/</a><br>[2] <a href="https://post.smzdm.com/p/a6l8zglg/" target="_blank" rel="external">https://post.smzdm.com/p/a6l8zglg/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1725,7 +1721,7 @@ serviceAccountName: &quot;&quot;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-count">63</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
