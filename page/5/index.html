@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:42:14+08:00">
                 2018-03-09
@@ -400,7 +400,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-07T13:25:04+08:00">
                 2018-02-07
@@ -553,7 +553,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-06T11:22:39+08:00">
                 2018-02-06
@@ -596,12 +596,13 @@
         
           
             <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="Install-GO"><a href="#Install-GO" class="headerlink" title="Install GO"></a>Install GO</h2><p>It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go &gt; 1.8.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#sudo apt upgrade golang</span><br><span class="line">wget https://dl.google.com/go/go1.10.3.linux-amd64.tar.gz</span><br><span class="line">sudo rm -rf /usr/lib/go &amp;&amp; sudo tar -C /usr/lib -xzf go1.10.3.linux-amd64.tar.gz</span><br><span class="line">#注意：系统包更新后，如更新为go-1.10，那么GOROOT也要相应更新，否则报很多错</span><br><span class="line">export GOROOT=/usr/lib/go</span><br><span class="line">export GOPATH=/bak/golang</span><br><span class="line">export PATH=$GOROOT/bin:$GOPATH/bin:$PATH</span><br></pre></td></tr></table></figure></p>
+<h2 id="Install-GO"><a href="#Install-GO" class="headerlink" title="Install GO"></a>Install GO</h2><p>It can’t find context package when using go-1.6 (usr/lib/go-1.6/src/context (from $GOROOT)), so switch to go &gt; 1.8.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#sudo apt upgrade golang</span><br><span class="line">GO_VERSION=1.15.1</span><br><span class="line">GO_ARCH=linux-amd64</span><br><span class="line">curl -o go.tgz https://dl.google.com/go/go$&#123;GO_VERSION&#125;.$&#123;GO_ARCH&#125;.tar.gz</span><br><span class="line">sudo rm -rf /usr/lib/go &amp;&amp; sudo tar -C /usr/lib -xzf go.tgz</span><br><span class="line">go version</span><br><span class="line">#注意：系统包更新后，如更新为go-1.10，那么GOROOT也要相应更新，否则报很多错</span><br><span class="line">export GOROOT=/usr/lib/go</span><br><span class="line">export GOPATH=/bak/golang</span><br><span class="line">export PATH=$GOROOT/bin:$GOPATH/bin:$PATH</span><br></pre></td></tr></table></figure></p>
 <h2 id="Install-juju-from-source-code"><a href="#Install-juju-from-source-code" class="headerlink" title="Install juju from source code"></a>Install juju from source code</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">go get -d -v github.com/juju/juju/...</span><br><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">make install-dependencies</span><br><span class="line"># may fail because of the lack of some packages caused by gfw, you can fix it by &apos;go get ...&apos; one by one</span><br><span class="line">go install -v github.com/juju/juju/...</span><br><span class="line"></span><br><span class="line">go get github.com/rogpeppe/godeps</span><br><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">godeps -u dependencies.tsv</span><br></pre></td></tr></table></figure>
+<p>another example<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#using &apos;go get&apos; instead of &apos;git clone&apos; can download dependency packages as well</span><br><span class="line">#git clone https://github.com/kubernetes/cloud-provider-openstack.git</span><br><span class="line">go get -d -v github.com/kubernetes/cloud-provider-openstack/...</span><br></pre></td></tr></table></figure></p>
 <h2 id="Prepare-LXD"><a href="#Prepare-LXD" class="headerlink" title="Prepare LXD"></a>Prepare LXD</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -rf /var/lib/lxd</span><br><span class="line">sudo rm -rf /home/hua/.config/lxc/</span><br><span class="line">sudo apt install lxd zfsutils-linux bridge-utils squid-deb-proxy</span><br><span class="line">sudo mkdir -p /images/lxd &amp;&amp; sudo ln -s /images/lxd /var/lib/lxd/containers</span><br><span class="line">sudo systemctl enable lxd</span><br><span class="line">sudo systemctl start lxd</span><br><span class="line">newgrp lxd</span><br><span class="line">sudo usermod -a -G lxd hua</span><br><span class="line">sudo lxd init</span><br><span class="line">sudo chown -R root:lxd /var/lib/lxd</span><br></pre></td></tr></table></figure>
 <h2 id="Create-juju-controller"><a href="#Create-juju-controller" class="headerlink" title="Create juju controller"></a>Create juju controller</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">#https://jujucharms.com/docs/2.0/controllers-creating</span><br><span class="line">#https://api.jujucharms.com/charmstore/v5/~james-page/openstack-on-lxd/archive</span><br><span class="line">sudo lxc profile create juju-controller</span><br><span class="line">cat /bak/golang/jujudata/lxd-profile.yaml |sudo lxc profile edit juju-controller</span><br><span class="line">$ cat /bak/golang/jujudata/lxd-profile.yaml</span><br><span class="line">name: juju-controller</span><br><span class="line">config:</span><br><span class="line">  boot.autostart: &quot;true&quot;</span><br><span class="line">  security.nesting: &quot;true&quot;</span><br><span class="line">  security.privileged: &quot;true&quot;</span><br><span class="line">  linux.kernel_modules: openvswitch,nbd,ip_tables,ip6_tables</span><br><span class="line">devices:</span><br><span class="line">  eth0:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth0</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr0</span><br><span class="line">    type: nic</span><br><span class="line">  eth1:</span><br><span class="line">    mtu: &quot;9000&quot;</span><br><span class="line">    name: eth1</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr0</span><br><span class="line">    type: nic</span><br><span class="line">  kvm:</span><br><span class="line">    path: /dev/kvm</span><br><span class="line">    type: unix-char</span><br><span class="line">  mem:</span><br><span class="line">    path: /dev/mem</span><br><span class="line">    type: unix-char</span><br><span class="line">  root:</span><br><span class="line">    path: /</span><br><span class="line">    type: disk</span><br><span class="line">  tun:</span><br><span class="line">    path: /dev/net/tun</span><br><span class="line">    type: unix-char</span><br><span class="line">juju bootstrap --debug --config bootstrap-series=xenial --config agent-stream=devel localhost juju-controller</span><br><span class="line">sudo lxc exec juju-bf76c2-0 bash</span><br></pre></td></tr></table></figure>
 <h2 id="Set-up-development-env"><a href="#Set-up-development-env" class="headerlink" title="Set up development env"></a>Set up development env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">cd $GOPATH/src/github.com/juju/juju</span><br><span class="line">git config --global user.name &quot;xxx&quot;</span><br><span class="line">git config --global user.email &quot;xxx&quot;</span><br><span class="line">ln -s ../../scripts/pre-push.bash .git/hooks/pre-push</span><br><span class="line">#https://segmentfault.com/a/1190000002783245</span><br><span class="line">git remote -v</span><br><span class="line">git pull upstream master</span><br><span class="line">git checkout -b new_feature</span><br><span class="line">go test github.com/juju/juju/...</span><br><span class="line">go fmt</span><br><span class="line">#JUJU_NOTEST_MONGOJS=1 go test github.com/juju/juju/...</span><br><span class="line">git config --global push.default &apos;nothing&apos;</span><br><span class="line">git rebase master</span><br><span class="line">#git push origin new_feature</span><br><span class="line">$ cat .git/config</span><br><span class="line">[core]</span><br><span class="line">        repositoryformatversion = 0</span><br><span class="line">        filemode = true</span><br><span class="line">        bare = false</span><br><span class="line">        logallrefupdates = true</span><br><span class="line">[remote &quot;origin&quot;]</span><br><span class="line">        url = git@github.com:&lt;launchpad-id&gt;/juju.git</span><br><span class="line">        fetch = +refs/heads/*:refs/remotes/origin/*</span><br><span class="line">[branch &quot;master&quot;]</span><br><span class="line">        remote = upstream</span><br><span class="line">        merge = refs/heads/master</span><br><span class="line">[remote &quot;upstream&quot;]</span><br><span class="line">        url = https://github.com/juju/juju.git</span><br><span class="line">        fetch = +refs/heads/*:refs/remotes/upstream/*</span><br></pre></td></tr></table></figure>
-<p>这是一个典型的使用github pull request模式开发的例子，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># First click &apos;Fork&apos; button to fork - https://github.com/zhhuabj/openstack_understand_Neutron</span><br><span class="line">git clone git@github.com:zhhuabj/openstack_understand_Neutron.git</span><br><span class="line">cd openstack_understand_Neutron</span><br><span class="line">git config user.name &quot;zhhuabj&quot;</span><br><span class="line">git config user.email veryhua2006@gmail.com</span><br><span class="line"></span><br><span class="line">#do some change on the content</span><br><span class="line">git commit -am &quot;Fix issue #1: change helo to hello&quot;</span><br><span class="line">git push</span><br><span class="line"></span><br><span class="line">#pull request</span><br><span class="line"></span><br><span class="line">#Update own fork</span><br><span class="line">git remote add upstream https://github.com/yeasy/openstack_understand_Neutron</span><br><span class="line">git fetch upstream</span><br><span class="line">git checkout master</span><br><span class="line">git rebase upstream/master</span><br><span class="line">git push -f origin master</span><br></pre></td></tr></table></figure></p>
+<p>这是一个典型的使用github pull request模式开发的例子，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"># First click &apos;Fork&apos; button to fork - https://github.com/zhhuabj/openstack_understand_Neutron</span><br><span class="line">git clone git@github.com:zhhuabj/openstack_understand_Neutron.git</span><br><span class="line">cd openstack_understand_Neutron</span><br><span class="line">git config user.name &quot;zhhuabj&quot;</span><br><span class="line">git config user.email veryhua2006@gmail.com</span><br><span class="line"></span><br><span class="line">#do some change on the content</span><br><span class="line">git commit -am &quot;Fix issue #1: change helo to hello&quot;</span><br><span class="line">git push</span><br><span class="line"></span><br><span class="line">#pull request</span><br><span class="line"></span><br><span class="line">#Update own fork</span><br><span class="line">git remote add upstream https://github.com/yeasy/openstack_understand_Neutron</span><br><span class="line">git remote set-url --push upstream no_push</span><br><span class="line">git fetch upstream                 #git fetch upstream master</span><br><span class="line">git checkout master              #switch to local master</span><br><span class="line">git rebase upstream/master #update master</span><br><span class="line">git push -f origin master       #push to orign&apos;s master</span><br><span class="line"></span><br><span class="line"># develop code</span><br><span class="line">git checkout -b myfeature</span><br><span class="line">git add -a</span><br><span class="line">git commit</span><br><span class="line">git push origin myfeature  #git push origin myfeature:myfeature, this will by default create a myfeature on the orign repo</span><br><span class="line"></span><br><span class="line"># PR</span><br><span class="line">Can directly visit the this page to create PR - https://github.com/zhhuabj/openstack_understand_Neutron/pull/new/test</span><br><span class="line">or you should now be able to see your branch in https://github.com/zhhuabj/openstack_understand_Neutron/branches. Click on your branch name. Then, click the &quot;New pull request&quot; button, either on the top right of the screen, or in the center of the page under the label &quot;Your recently pushed branches:&quot;. Click the Send Pull request button. Await someone&apos;s code review.</span><br><span class="line"></span><br><span class="line"># Review other&apos;s code</span><br><span class="line">Visit https://github.com/yeasy/openstack_understand_Neutron/pulls, or URL in the email you received and go to the person&apos;s pull request. If you like-stamp the code, and have judged it suitable, press the big green Merge button</span><br><span class="line"></span><br><span class="line">Help! There is no big green button, only a gray bar saying &quot;This pull request cannot be automatically merged.&quot;, need to update the code</span><br><span class="line">git fetch origin</span><br><span class="line">git checkout myfeature</span><br><span class="line">git merge origin/master</span><br><span class="line">git commit -a</span><br><span class="line">git push origin myfeature</span><br></pre></td></tr></table></figure></p>
 <p>也可使用Shared Repository Model提交PR，见：<a href="https://gist.github.com/seshness/3943237" target="_blank" rel="external">https://gist.github.com/seshness/3943237</a></p>
 <h2 id="附录-如何创建Go开发环境"><a href="#附录-如何创建Go开发环境" class="headerlink" title="附录 - 如何创建Go开发环境"></a>附录 - 如何创建Go开发环境</h2><p>1, GOPATH不需要配置多个(它可以配置多个，但不需要)，只配置一个即可。如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">export GOROOT=/usr/lib/go-1.8</span><br><span class="line">export GOPATH=/bak/golang</span><br></pre></td></tr></table></figure></p>
 <p>2, 下面开始配置我的第一个Go工程ss，<strong>将它放在$GOPATH/src/github.com/zhhuabj目录下</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /bak/golang/src/github.com/zhhuabj/ &amp;&amp; mkdir ss</span><br></pre></td></tr></table></figure></p>
@@ -701,7 +702,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-01T16:46:53+08:00">
                 2018-02-01
@@ -826,7 +827,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-30T12:10:21+08:00">
                 2018-01-30
@@ -959,7 +960,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-25T20:12:26+08:00">
                 2018-01-25
@@ -1103,7 +1104,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-09T16:00:31+08:00">
                 2018-01-09
@@ -1244,7 +1245,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-22T13:31:50+08:00">
                 2017-12-22
@@ -1389,7 +1390,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-06T12:07:47+08:00">
                 2017-12-06
@@ -1521,7 +1522,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-06T11:47:59+08:00">
                 2017-12-06
@@ -1680,7 +1681,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">63</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1730,7 +1731,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
