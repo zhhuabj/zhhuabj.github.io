@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-10T15:04:57+08:00">
                 2020-09-10
@@ -316,7 +316,8 @@
 <p>错误是找不着libssl_conf.so，作下列更改后，问题依旧．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libssl1.0.0 libssl-dev</span><br><span class="line">cd /lib/x86_64-linux-gnu/</span><br><span class="line">sudo ln -s libssl.so.1.0.0 libssl.so.10</span><br><span class="line">sudo ln -s libcrypto.so.1.0.0 libcrypto.so.10</span><br></pre></td></tr></table></figure></p>
 <p>将xenial上的openssl 1.1.0g升级到1.1.1a后问题依旧:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#upgrade openssl from 1.1.0g to 1.1.1a in ubuntu 18.04</span><br><span class="line">sudo apt install build-essential checkinstall zlib1g-dev gcc make -y</span><br><span class="line">wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz</span><br><span class="line">tar zxvf openssl-1.1.1a.tar.gz &amp;&amp; cd openssl-1.1.1a/</span><br><span class="line">./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/ld.so.conf.d/openss1-1.1.1b.conf&apos; &lt;&lt; EOF</span><br><span class="line">/usr/local/ssl/lib</span><br><span class="line">EOF</span><br><span class="line">sudo ldconfig -v</span><br><span class="line">sudo mv /usr/bin/c_rehash /usr/bin/c_rehash.BAK</span><br><span class="line">sudo mv /usr/bin/openssl /usr/bin/openssl.BAK</span><br><span class="line">sudo cp /etc/environment /etc/environment.BAK</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/environment&apos; &lt;&lt; EOF</span><br><span class="line">PATH=&quot;/usr/local/ssl/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games&quot;</span><br><span class="line">EOF</span><br><span class="line">echo $PATH</span><br><span class="line">openssl version -a</span><br><span class="line">sudo apt-get install libssl-dev -y</span><br></pre></td></tr></table></figure></p>
 <p>然后修改/usr/lib/python2.7/dist-packages/websockify/websocket.py（注意，不是/usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py）里的ssl.wrap_socket添加’ssl_version=ssl.PROTOCOL_TLSv1_2’就可以了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># nmap --script ssl-enum-ciphers -p 6080 10.5.100.4 |grep TLSv</span><br><span class="line">|   TLSv1.2:</span><br><span class="line">root@juju-055b8b-ssl-7:~/openssl-1.1.1a# openssl s_client -connect 10.5.100.4:6080 -tls1_2 |grep &apos;CN&apos;</span><br><span class="line">depth=0 C = GB, ST = England, L = London, O = Ubuntu Cloud, OU = Cloud, CN = 10.5.100.0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>此时，去掉/usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py里之前做的tls1.2修改也是可以的．<br>结论，似乎修改底层openssl的默认版本到tls1.2不好使，同时websockify 0.8.0默认的只是tls1.0, 此时只是修改nova端是不work的，直接修改websockify 0.8.0改到tls1.2是可以的．在websockify 0.9.0之后支持配置tls1.2，所以此时nova端修改tls的patch也就能派上用场了．</p>
+<p>此时，去掉/usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py里之前做的tls1.2修改也是可以的．<br>结论，似乎修改底层openssl的默认版本到tls1.2不好使，同时websockify 0.8.0默认的只是tls1.0, 此时只是修改nova端是不work的，直接修改websockify 0.8.0改到tls1.2是可以的．在websockify 0.9.0之后支持配置tls1.2，所以此时nova端修改tls的patch也就能派上用场了．<br>结论，似乎修改底层openssl的默认版本到tls1.2不好使，同时websockify 0.8.0默认的只是tls1.0, 此时只是修改nova端是不work的，直接修改websockify 0.8.0改到tls1.2是可以的．在websockify 0.9.0之后支持配置tls1.2，所以此时nova端修改tls的patch也就能派上用场了．<br>相关代码分析：<br>python ssl模块在wrap_socket中是将参数硬编码成ssl_version=PROTOCOL_SSLv23，所以在websockify 0.8.0不传ssl_version参数的话是即使改底层openssl的默认编码也是无济于事的．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def wrap_socket(sock, keyfile=None, certfile=None,</span><br><span class="line">                server_side=False, cert_reqs=CERT_NONE,</span><br><span class="line">                ssl_version=PROTOCOL_SSLv23, ca_certs=None,</span><br><span class="line">                do_handshake_on_connect=True,</span><br><span class="line">                suppress_ragged_eofs=True, ciphers=None):</span><br></pre></td></tr></table></figure></p>
+<p>看来唯一的办法是修改python-websockify 0.8.0包，加上那一行，做个临时hotfix了．</p>
 <p>[1] <a href="https://blog.surgut.co.uk/2019/08/how-to-disable-tls-10-and-tls-11-on.html" target="_blank" rel="external">https://blog.surgut.co.uk/2019/08/how-to-disable-tls-10-and-tls-11-on.html</a><br>[2] <a href="https://discourse.ubuntu.com/t/default-to-tls-v1-2-in-all-tls-libraries-in-20-04-lts/12464" target="_blank" rel="external">https://discourse.ubuntu.com/t/default-to-tls-v1-2-in-all-tls-libraries-in-20-04-lts/12464</a><br>[3] <a href="https://notes.bitfunnel.net/?q=node/54" target="_blank" rel="external">https://notes.bitfunnel.net/?q=node/54</a></p>
 
           
@@ -395,7 +396,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-19T23:24:29+08:00">
                 2020-08-19
@@ -552,7 +553,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-09T10:25:42+08:00">
                 2020-07-09
@@ -698,7 +699,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-07T15:54:08+08:00">
                 2020-07-07
@@ -840,7 +841,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-05T19:13:10+08:00">
                 2020-07-05
@@ -980,7 +981,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-04T15:22:49+08:00">
                 2020-07-04
@@ -1109,7 +1110,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-06-30T15:34:10+08:00">
                 2020-06-30
@@ -1234,7 +1235,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-21T18:50:34+08:00">
                 2020-05-21
@@ -1456,7 +1457,7 @@ serviceAccountName: &quot;&quot;
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-19T15:48:08+08:00">
                 2020-05-19
@@ -1582,7 +1583,7 @@ serviceAccountName: &quot;&quot;
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-15T18:04:41+08:00">
                 2020-05-15
@@ -1730,7 +1731,7 @@ serviceAccountName: &quot;&quot;
                 <a href="/archives/">
               
                   <span class="site-state-item-count">64</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1780,7 +1781,7 @@ serviceAccountName: &quot;&quot;
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
