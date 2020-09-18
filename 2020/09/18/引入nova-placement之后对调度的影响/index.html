@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2020-09-17版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 nova cell v2nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="引入nova placement之后对调度的影响">
+<meta property="og:url" content="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2020-09-17版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 nova cell v2nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappin">
+<meta property="og:updated_time" content="2020-09-18T07:33:33.354Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="引入nova placement之后对调度的影响">
+<meta name="twitter:description" content="作者：张华 发表于：2020-09-17版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 nova cell v2nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappin">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/"/>
+
+
+
+
+
+  <title>引入nova placement之后对调度的影响 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">引入nova placement之后对调度的影响</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-18T15:33:22+08:00">
+                2020-09-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2020-09-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="nova-cell-v2"><a href="#nova-cell-v2" class="headerlink" title="nova cell v2"></a>nova cell v2</h2><p>nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappings, nova_api.instance_mappings, nova_api.cell_mappings可以直接从instance找到cell_id进而找到DB与MQ的信息，这样nova-api直接就可以操作该cell之类的DB与MQ从而可以让nova-compute可以水平扩展到更多的物理节点，另一方面，nova-api节点也不再需要nova-cell服务，要有nova-api与nova-scheduler两个服务即可．</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; pager less -S</span><br><span class="line">PAGER set to &apos;less -S&apos;</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">mysql&gt; select instance_uuid,cell_id from instance_mappings;</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| instance_uuid                        | cell_id |</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| 4039ed4e-d0a1-46ba-99a5-68bc84421b42 |       2 |</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from host_mappings;</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| created_at          | updated_at | id | cell_id | host                                |</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| 2020-09-16 06:18:26 | NULL       |  1 |       2 | juju-3ba760-ceilometer-15.cloud.sts |</span><br><span class="line"></span><br><span class="line">mysql&gt; select transport_url,name,database_connection from cell_mappings;</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| transport_url                                                                                            | name  | database_connection                                                         |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| none:///                                                                                                 | cell0 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova_cell0 |</span><br><span class="line">| rabbit://nova:wSz5LjscfBqKnhVWKBZnrXdwS5Kz6TByz9jKfm2xKHbCRYPPSbcnqFwPTnCp8VpP@10.5.0.199:5672/openstack | cell1 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova       |</span><br></pre></td></tr></table></figure>
+<p>所以当遇到这种错误时:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br><span class="line">No server with a name or ID of 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo nova-manage cell_v2 list_cells</span><br><span class="line">sudo nova-manage cell_v2 map_instances --cell_uuid &lt;cell-id-from-above&gt;</span><br><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure>
+<h2 id="nova-placement-API"><a href="#nova-placement-API" class="headerlink" title="nova placement API"></a>nova placement API</h2><p>nova placement API在Newton被引入, nova-scheduler调用placement-api用于调度. 主要用于跟踪记录Resource Provider(compute-node, external storage-pool, external ip-allocation-pool etc)的Inventory和Usage.自Pike版本, 必须启用Placement API来辅助nova-scheduler service进行compute node调度，并以此替代之前的RAMFilter、CoreFilter和DiskFilter。概念对象如下:</p>
+<ul>
+<li>Resource Class, 资源种类, placement api默认实现了DISK_GB, MEMORY_MB,VCPU三种标准resource classes, 也提供了custom resource classes的接口.</li>
+<li>Resource Providers：资源提供者，实际提供资源的对象，例如：compute node、storage pool</li>
+<li>Inventory：资源清单，资源提供者所拥有的资源清单，例如：compute node 拥有的vCPU、Disk、RAM 等 inventories</li>
+<li>Resource Allocations：资源分配状况，包含了Resource Class、Resource Provider以及Consumer 的映射关系。记录消费者使用了多少该类型的资源数量</li>
+<li>Provider Aggregate：资源聚合，类似 HostAggregate 的概念</li>
+<li>Traits：资源特征，不同资源提供者可能会具有不同的资源特征。Traits 作为资源提供者特征的描述，它不能够被消费，但在某些Workflow 或者会需要这些信息。例如：标识可用的Disk是一个SSD，可以帮助Scheduler更好的匹配 instance boot请求。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from resource_providers;</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| created_at          | updated_at          | id | uuid                                 | name                                | generation | can_host | root_provider_id | parent_provider_id |</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | 2020-09-16 10:19:33 |  1 | a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |     NULL |                1 |               NULL |</span><br><span class="line"></span><br><span class="line"># for the field resource_class_id, 0 means VCPU, 1 means MEMORY_MB, 2 means DISK_GB</span><br><span class="line">mysql&gt; select * from inventories;</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | resource_class_id | total | reserved | min_unit | max_unit | step_size | allocation_ratio |</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  1 |                    1 |                 0 |     2 |        0 |        1 |        2 |         1 |               16 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  2 |                    1 |                 1 |  3944 |      512 |        1 |     3944 |         1 |              1.5 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  3 |                    1 |                 2 |    38 |        0 |        1 |       38 |         1 |                1 |</span><br><span class="line">mysql&gt; select * from allocations;</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | consumer_id                          | resource_class_id | used |</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 16 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 2 |    1 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 17 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 1 |   64 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 18 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 0 |    1 |</span><br></pre></td></tr></table></figure>
+<h2 id="Placement-CLI"><a href="#Placement-CLI" class="headerlink" title="Placement CLI"></a>Placement CLI</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python3-osc-placement -y</span><br><span class="line"></span><br><span class="line">$ openstack resource provider list</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| uuid                                 | name                                | generation |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line"></span><br><span class="line">$  openstack resource provider inventory list a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| resource_class | allocation_ratio | min_unit | max_unit | reserved | step_size | total |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| VCPU           |             16.0 |        1 |        2 |        0 |         1 |     2 |</span><br><span class="line">| MEMORY_MB      |              1.5 |        1 |     3944 |      512 |         1 |  3944 |</span><br><span class="line">| DISK_GB        |              1.0 |        1 |       38 |        0 |         1 |    38 |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line"></span><br><span class="line">$ openstack resource provider usage show a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+-------+</span><br><span class="line">| resource_class | usage |</span><br><span class="line">+----------------+-------+</span><br><span class="line">| VCPU           |     3 |</span><br><span class="line">| MEMORY_MB      |   192 |</span><br><span class="line">| DISK_GB        |     3 |</span><br><span class="line">+----------------+-------+</span><br></pre></td></tr></table></figure>
+<h2 id="one-bug"><a href="#one-bug" class="headerlink" title="one bug"></a>one bug</h2><p>例如, 如<a href="https://bugs.launchpad.net/nova/+bug/1679750描述的场景" target="_blank" rel="external">https://bugs.launchpad.net/nova/+bug/1679750描述的场景</a>, 在hostA上创建一虚机,hostA死掉了, 这时删除虚机时无法删除实例(因为nova-compute这时死掉了啊), 这样会导致allocations表中的记录没有被删除. 如果hostA又起来了, nova-compute的init_host-&gt;_complete_partial_deletion<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; nova/compute/manager.py#update_available_resource_for_node -&gt; update_available_resource -&gt; _update_available_resource -&gt; _remove_deleted_instances_allocations</span><br></pre></td></tr></table></figure></p>
+<p>当把一个nova-compute删除时，删了service和compute_node表记录后,却没有删除placement resource provider和host mapping records.<br>nova-compute自己都死了它是没法自己删自己的,所以改由nova-api在启动时在删除instances时也删除allocations表中的记录 -<br><a href="https://review.opendev.org/#/c/580498/" target="_blank" rel="external">https://review.opendev.org/#/c/580498/</a></p>
+<h2 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">select * nova_api.from host_mappings;</span><br><span class="line">select * from nova_api.cell_mappings;</span><br><span class="line">select * from nova_api.resource_providers where name like &apos;%xxx%&apos;;   xx.bos01.xxx (9)</span><br><span class="line">select * from nova.compute_nodes where host like &apos;%bagon%&apos; or hypervisor_hostname like &apos;%xxx%&apos;;</span><br><span class="line">select * from nova_api.inventories where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;);</span><br><span class="line">select * from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;) order by consumer_id,resource_provider_id,resource_class_id;</span><br><span class="line">select uuid, host, node, vcpus, memory_mb, vm_state, power_state, task_state, root_gb, ephemeral_gb, cell_name,deleted from nova.instances where uuid in (select consumer_id from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;)) order by uuid;</span><br></pre></td></tr></table></figure>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://blog.csdn.net/jmilk/article/details/81264240" target="_blank" rel="external">https://blog.csdn.net/jmilk/article/details/81264240</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/10/如何让novnc-websockify支持tls1-2/" rel="next" title="如何让novnc/websockify支持tls1.2">
+                <i class="fa fa-chevron-left"></i> 如何让novnc/websockify支持tls1.2
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">65</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#nova-cell-v2"><span class="nav-number">1.</span> <span class="nav-text">nova cell v2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nova-placement-API"><span class="nav-number">2.</span> <span class="nav-text">nova placement API</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Placement-CLI"><span class="nav-number">3.</span> <span class="nav-text">Placement CLI</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#one-bug"><span class="nav-number">4.</span> <span class="nav-text">one bug</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#debug"><span class="nav-number">5.</span> <span class="nav-text">debug</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">6.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
