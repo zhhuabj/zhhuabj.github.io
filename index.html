@@ -231,6 +231,165 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/09/29/UEFI-Secure-Boot学习草稿/" itemprop="url">UEFI Secure Boot学习草稿</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-29T19:17:27+08:00">
+                2020-09-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-09-29<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="什么是secure-boot"><a href="#什么是secure-boot" class="headerlink" title="什么是secure boot"></a>什么是secure boot</h2><p>secureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware), you can still boot Grub2 with secureboot using shim and MOK manager. And from grub2, you can boot into other operating systems.也就是说:<br>secureboot将根证书放在固件firmware中, 然后可以验证signed bootloader, signed bootloader然后再验证signed kernel和signed 2nd stage boot loader.这样系统允许你修改secureboot keys.</p>
+<ul>
+<li>db, 允许bootloaders的公钥集合</li>
+<li>dbx, 不允许bootloaders的公钥集合</li>
+<li>KEK, 允许操作db的公钥集合</li>
+<li>PK, 允许操作KEK的私钥.</li>
+</ul>
+<p>默认地, 系统有硬件制造商的PK, microsoft和硬件制造商的公钥在db与KEK里. 这样就可以使用microsoft-certified bootloaders, 再通过它签名的shim来使用其他linuxers. 有的UEFI BIOS setup允许adding and delteing所有的secureboot keys, 而有些却允许你要么删除所有要么用默认(删除之前记得备份哦). 如果PK被删除的话, secure boot这时叫so-called setup mode. 你可能想有这个密钥:<br>the db set should contain:</p>
+<ul>
+<li>your own public key certificate, for booting things you’ve explicitly signed</li>
+<li>maybe your favorite Linux distribution’s kernel signing certificate, if you want to use pre-packaged kernels without manually re-signing them</li>
+<li>maybe hardware vendor’s certificate, to allow installing firmware updates if necessary maybe Microsoft’s third-party UEFI certificate, to allow the use of pre-packaged Linux bootloaders and live Linux boot media without explicitly re-signing them or disabling Secure Boot</li>
+<li>maybe Microsoft’s OS signing certificate, if you dual-boot with Windows</li>
+</ul>
+<p>the KEK set should contain:</p>
+<ul>
+<li>your own certificate, for updating db and dbx</li>
+<li>if your system includes UEFI-aware Microsoft OSs, you may want to include Microsoft’s KEK certificate, as Microsoft’s updates sometimes include updates to db and/or dbx and those updates won’t install successfully if access to Secure Boot is denied</li>
+<li>and finally, once all the rest is set up as you want, you should place your own certificate into PK to make Secure Boot effective again.</li>
+</ul>
+<h2 id="有无shim"><a href="#有无shim" class="headerlink" title="有无shim"></a>有无shim</h2><p>bootloader有两种, shim与grub2都叫bootloader, 所以理论上是可以不需要shim的, 但为什么需要shim呢? 这个网页(<a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub</a> uses firmware API to validate binary signatures; you might prefer shim instead of signing the binaries with the “precious” key each time.</p>
+<p>非secureboot模式下, 没有shim组件, efi直接启动grub2.<br>在secureboot模式下, 有shim组件, 且shim需要使用efi中的证书签名(grub2和kernel的签名不一定非要用efi中的证书, 可以自己随意定制后再使用shim相关工具导入nvram中). 即使在secureboot模式下也可以有shim和无shim:</p>
+<ul>
+<li>无shim, 在centos中可以跳过shim, 直接让efi启动grub2也是没问题的, 但grub2与kernel都需要使用efi中的证书签名, 由efi进行grub2与kernel的校验.</li>
+<li>有shim, grub2中用户选择kernel后, grub2回调shim组件校验kernel(grub2, kernel使用相同的私钥签名)</li>
+</ul>
+<h2 id="可信问题"><a href="#可信问题" class="headerlink" title="可信问题"></a>可信问题</h2><ul>
+<li>initrd和intrd加载的模式都是不可信的, 这部分都没有经过签名;</li>
+<li>systemtap, kexec, kdump也都是没有签名的;</li>
+<li>第三方KO模式没有签名(正常情况下, 模块需要使用mok签名, shim来验证)</li>
+</ul>
+<h2 id="secureboot启动流程"><a href="#secureboot启动流程" class="headerlink" title="secureboot启动流程"></a>secureboot启动流程</h2><p>1, 打开电源, 先运行Secure Boot-capable UEFI firmware (对于qemu虚机, 这个secureboot capable UEFI OVMF firmware叫UEFI x86_64 : usr/share/OVMF/OVMF_CODE.fd,  (sudo apt install ovmf &amp;&amp; sudo systemctl restart libvirtd)</p>
+<p>2, firware验证bootloader的签名. UEFI firmware中预先在NVRAM系统中(或者compiled-in defaults)集成了一些公钥集合(secure boot key sets) , 它可以给bootloader验证签名(shim or grub2), 不使用shim的话, grub2得每次调用firware api去验证签名.</p>
+<p>UEFI firmware uses /boot/efi/EFI/BOOT/BOOTX64.EFI (从md5sum看它和/boot/efi/EFI/centos/shimx64.efi是同一个文件,  对于shim就是将shimx64.efi拷贝到BOOTX64.EFI, 对于grub2可能就是将grubx64.efi拷贝到BOOTX64.EFI了) to boot at the first stage.</p>
+<p>[root@test2 ~]# md5sum /boot/efi/EFI/BOOT/BOOTX64.EFI<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/BOOT/BOOTX64.EFI<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64.efi<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/centos/shimx64.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64-centos.efi<br>d435494a957479acac3aca09915c21d1  /boot/efi/EFI/centos/shimx64-centos.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/grubx64.efi<br>031b972f3ab267f37e01ada73f4b480d  /boot/efi/EFI/centos/grubx64.efi</p>
+<p>3, bootloader再去验证kernel的签名.</p>
+<p>then shim will load grub2 (/boot/efi/EFI/centos/grubx64.efi) in the second stage</p>
+<p>4, kernel再去验证module的签名.</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot" target="_blank" rel="external">https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot</a><br>[2] <a href="https://www.aioboot.com/en/secure-boot/" target="_blank" rel="external">https://www.aioboot.com/en/secure-boot/</a><br>[3] <a href="https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html</a><br>[4] Grub 2：拯救你的 bootloader, <a href="https://linux.cn/article-6892-1.html?pr" target="_blank" rel="external">https://linux.cn/article-6892-1.html?pr</a><br>[5] <a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1577,132 +1736,6 @@ serviceAccountName: &quot;&quot;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/19/为什么dnsmasq服务总是重启/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/05/19/为什么dnsmasq服务总是重启/" itemprop="url">为什么dnsmasq服务总是重启</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-19T15:48:08+08:00">
-                2020-05-19
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-05-19<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>最近, 是有点感觉到家里的网络有时有点慢, 特别有时候看网页时显示dns找不到,但马上在半秒之内又自动找着了成功显示页面. 能用也不算特别慢所以一直就没太注意这个事.<br>依平时的经验, 这种慢一般和dns有关, 所以今早就特地登录到路由器查看dnsmasq的状态. 检查了一遍配置啥的也没见异常, 但无意间发现dnsmasq的进程ID有时在变(不是很经常, 不容易观察出来).</p>
-<h2 id="dnsmasq-exiting-on-receipt-of-SIGTERM"><a href="#dnsmasq-exiting-on-receipt-of-SIGTERM" class="headerlink" title="dnsmasq: exiting on receipt of SIGTERM"></a>dnsmasq: exiting on receipt of SIGTERM</h2><p>然后就想着将 dnmasq进程停掉, 然后以debug模式(-d)启动看看日志, 但是当运行了/etc/init.d/dnsma stop之后怎么也停不掉啊, 一会儿进程又自动启动了. 读代码发现openwrt的init脚本使用了procd, 但将所有procd相关的行全注释掉之后, 停掉了但还是马上就自动启动了.<br>然后发现是/etc/rc.common在自动启动, 接着就在反复测试过程中形成了下列的代码.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /etc/init.d/dnsmasq</span><br><span class="line">#!/bin/sh /etc/rc.common</span><br><span class="line">START=80</span><br><span class="line">start() &#123;</span><br><span class="line">      #/usr/sbin/dnsmasq --conf-dir=/tmp/dnsmasq.d --conf-file=/etc/dnsmasq.conf --user=dnsmasq --group=dnsmasq --server=114.114.114.114 -k &amp;</span><br><span class="line">   fi</span><br><span class="line">&#125;</span><br><span class="line">stop() &#123;</span><br><span class="line">   killall dnsmasq</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这时在前台以’/usr/sbin/dnsmasq –conf-dir=/tmp/dnsmasq.d –conf-file=/etc/dnsmasq.conf –user=dnsmasq –group=dnsmasq –server=114.114.114.114 -d’调试时发现dnsmasq进程自已会退出, 报这个错”dnsmasq: exiting on receipt of SIGTERM”<br>这时以为是dnsmasq程序有问题, 正在绝望之刻, 注意到了原因dnsmasq是被上面的stop杀死的. 通过/etc/init.d/dnsmasq stop根本停不住dnsmasq, 所以上面的stop函数中的killall dnsmasq在后台被定期运行, 这样就杀死了前台的debug dnsmasq进程.</p>
-<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>搞清楚’dnsmasq: exiting on receipt of SIGTERM’发生的原因之后, 将脚本暂时改成下列丑陋的代码:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">COLUMNS=999 ps -ef |grep dns</span><br><span class="line">oot@OpenWrt:~# cat /etc/init.d/dnsmasq</span><br><span class="line">#!/bin/sh /etc/rc.common</span><br><span class="line">START=80</span><br><span class="line">SERVICE_USE_PID=1</span><br><span class="line">SERVICE_WRITE_PID=1</span><br><span class="line">SERVICE_DAEMONIZE=1</span><br><span class="line"></span><br><span class="line">start() &#123;</span><br><span class="line"># Only use &apos;if pidof dnsmasq &gt;/dev/null&apos; will see more and more processes when upstream network is down so change to use awk&apos; NF</span><br><span class="line"># and in some system it gives me 0 when binary not running and in some systems it gives me NULL(nothing)</span><br><span class="line">if [ -z `pidof dnsmasq` ];then</span><br><span class="line">    ulimit -c unlimited</span><br><span class="line">    echo &quot;dnsmasq stopped, start it now ...&quot;</span><br><span class="line">    mkdir -p /var/lib/misc</span><br><span class="line">    service_start /usr/sbin/dnsmasq --conf-dir=/tmp/dnsmasq.ssr --conf-file=/etc/dnsmasq.conf --user=dnsmasq --group=dnsmasq \</span><br><span class="line">      --server=221.130.33.60 --listen-address=192.168.99.1,127.0.0.1 --dhcp-range=192.168.99.100,192.168.99.199,3650d \</span><br><span class="line">      --dhcp-option=3,192.168.99.1 --dhcp-option=option:dns-server,192.168.99.1 --cache-size=0</span><br><span class="line">elif [ $(pidof dnsmasq |awk &apos;&#123;print NF&#125;&apos;) -eq 1 ];then</span><br><span class="line">    echo &quot;dnsmasq is running&quot;</span><br><span class="line">else</span><br><span class="line">    echo &apos;upstream network is down&apos;</span><br><span class="line">fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">stop() &#123;</span><br><span class="line">   #echo &apos;NOTE: we must not use &apos;killall dnsmasq&apos; to stop dnsmasq here because stop function always be called by rc.common periodically&apos;</span><br><span class="line">   #killall dnsmasq &gt;/dev/null</span><br><span class="line">   #service_stop /usr/sbin/dnsmasq</span><br><span class="line">   return</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#don&apos;t custom restart so that it can be always invoked automatically to run start()</span><br><span class="line">#restart() &#123;</span><br><span class="line">   #workaround to avoid killall dnamasq in stop() because do not know why restart is always invoked automatically</span><br><span class="line">   #echo &apos;hint: both stop and restart not work for dnsmasq service&apos;</span><br><span class="line">   #exit 0</span><br><span class="line">   #start</span><br><span class="line">   #sleep 1</span><br><span class="line">   #return</span><br><span class="line">#&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="server-can’t-find-xxx-my-salesforce-com-REFUSED"><a href="#server-can’t-find-xxx-my-salesforce-com-REFUSED" class="headerlink" title="server can’t find xxx.my.salesforce.com: REFUSED"></a>server can’t find xxx.my.salesforce.com: REFUSED</h2><p>另外, 解释白名单的dns没问题, 解析黑名单的dns也没问题, 但解析不在名单之内的dns时报’server can’t find xxx.my.salesforce.com: REFUSED’之类的错误时, 那是因为dnsmasq命令中没有添加–server=114.114.114.114</p>
-<h2 id="cache-size-0"><a href="#cache-size-0" class="headerlink" title="cache-size=0"></a>cache-size=0</h2><p>–cache-size=0避免使用使用dnsmasq的缓存</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1753,7 +1786,7 @@ serviceAccountName: &quot;&quot;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">65</span>
+                  <span class="site-state-item-count">66</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

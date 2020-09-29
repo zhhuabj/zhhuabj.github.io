@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2020-09-29版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 什么是secure bootsecureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware),">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UEFI Secure Boot学习草稿">
+<meta property="og:url" content="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2020-09-29版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 什么是secure bootsecureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware),">
+<meta property="og:updated_time" content="2020-09-29T11:17:42.144Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="UEFI Secure Boot学习草稿">
+<meta name="twitter:description" content="作者：张华 发表于：2020-09-29版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 什么是secure bootsecureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware),">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/"/>
+
+
+
+
+
+  <title>UEFI Secure Boot学习草稿 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">UEFI Secure Boot学习草稿</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-29T19:17:27+08:00">
+                2020-09-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2020-09-29<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="什么是secure-boot"><a href="#什么是secure-boot" class="headerlink" title="什么是secure boot"></a>什么是secure boot</h2><p>secureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware), you can still boot Grub2 with secureboot using shim and MOK manager. And from grub2, you can boot into other operating systems.也就是说:<br>secureboot将根证书放在固件firmware中, 然后可以验证signed bootloader, signed bootloader然后再验证signed kernel和signed 2nd stage boot loader.这样系统允许你修改secureboot keys.</p>
+<ul>
+<li>db, 允许bootloaders的公钥集合</li>
+<li>dbx, 不允许bootloaders的公钥集合</li>
+<li>KEK, 允许操作db的公钥集合</li>
+<li>PK, 允许操作KEK的私钥.</li>
+</ul>
+<p>默认地, 系统有硬件制造商的PK, microsoft和硬件制造商的公钥在db与KEK里. 这样就可以使用microsoft-certified bootloaders, 再通过它签名的shim来使用其他linuxers. 有的UEFI BIOS setup允许adding and delteing所有的secureboot keys, 而有些却允许你要么删除所有要么用默认(删除之前记得备份哦). 如果PK被删除的话, secure boot这时叫so-called setup mode. 你可能想有这个密钥:<br>the db set should contain:</p>
+<ul>
+<li>your own public key certificate, for booting things you’ve explicitly signed</li>
+<li>maybe your favorite Linux distribution’s kernel signing certificate, if you want to use pre-packaged kernels without manually re-signing them</li>
+<li>maybe hardware vendor’s certificate, to allow installing firmware updates if necessary maybe Microsoft’s third-party UEFI certificate, to allow the use of pre-packaged Linux bootloaders and live Linux boot media without explicitly re-signing them or disabling Secure Boot</li>
+<li>maybe Microsoft’s OS signing certificate, if you dual-boot with Windows</li>
+</ul>
+<p>the KEK set should contain:</p>
+<ul>
+<li>your own certificate, for updating db and dbx</li>
+<li>if your system includes UEFI-aware Microsoft OSs, you may want to include Microsoft’s KEK certificate, as Microsoft’s updates sometimes include updates to db and/or dbx and those updates won’t install successfully if access to Secure Boot is denied</li>
+<li>and finally, once all the rest is set up as you want, you should place your own certificate into PK to make Secure Boot effective again.</li>
+</ul>
+<h2 id="有无shim"><a href="#有无shim" class="headerlink" title="有无shim"></a>有无shim</h2><p>bootloader有两种, shim与grub2都叫bootloader, 所以理论上是可以不需要shim的, 但为什么需要shim呢? 这个网页(<a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub</a> uses firmware API to validate binary signatures; you might prefer shim instead of signing the binaries with the “precious” key each time.</p>
+<p>非secureboot模式下, 没有shim组件, efi直接启动grub2.<br>在secureboot模式下, 有shim组件, 且shim需要使用efi中的证书签名(grub2和kernel的签名不一定非要用efi中的证书, 可以自己随意定制后再使用shim相关工具导入nvram中). 即使在secureboot模式下也可以有shim和无shim:</p>
+<ul>
+<li>无shim, 在centos中可以跳过shim, 直接让efi启动grub2也是没问题的, 但grub2与kernel都需要使用efi中的证书签名, 由efi进行grub2与kernel的校验.</li>
+<li>有shim, grub2中用户选择kernel后, grub2回调shim组件校验kernel(grub2, kernel使用相同的私钥签名)</li>
+</ul>
+<h2 id="可信问题"><a href="#可信问题" class="headerlink" title="可信问题"></a>可信问题</h2><ul>
+<li>initrd和intrd加载的模式都是不可信的, 这部分都没有经过签名;</li>
+<li>systemtap, kexec, kdump也都是没有签名的;</li>
+<li>第三方KO模式没有签名(正常情况下, 模块需要使用mok签名, shim来验证)</li>
+</ul>
+<h2 id="secureboot启动流程"><a href="#secureboot启动流程" class="headerlink" title="secureboot启动流程"></a>secureboot启动流程</h2><p>1, 打开电源, 先运行Secure Boot-capable UEFI firmware (对于qemu虚机, 这个secureboot capable UEFI OVMF firmware叫UEFI x86_64 : usr/share/OVMF/OVMF_CODE.fd,  (sudo apt install ovmf &amp;&amp; sudo systemctl restart libvirtd)</p>
+<p>2, firware验证bootloader的签名. UEFI firmware中预先在NVRAM系统中(或者compiled-in defaults)集成了一些公钥集合(secure boot key sets) , 它可以给bootloader验证签名(shim or grub2), 不使用shim的话, grub2得每次调用firware api去验证签名.</p>
+<p>UEFI firmware uses /boot/efi/EFI/BOOT/BOOTX64.EFI (从md5sum看它和/boot/efi/EFI/centos/shimx64.efi是同一个文件,  对于shim就是将shimx64.efi拷贝到BOOTX64.EFI, 对于grub2可能就是将grubx64.efi拷贝到BOOTX64.EFI了) to boot at the first stage.</p>
+<p>[root@test2 ~]# md5sum /boot/efi/EFI/BOOT/BOOTX64.EFI<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/BOOT/BOOTX64.EFI<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64.efi<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/centos/shimx64.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64-centos.efi<br>d435494a957479acac3aca09915c21d1  /boot/efi/EFI/centos/shimx64-centos.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/grubx64.efi<br>031b972f3ab267f37e01ada73f4b480d  /boot/efi/EFI/centos/grubx64.efi</p>
+<p>3, bootloader再去验证kernel的签名.</p>
+<p>then shim will load grub2 (/boot/efi/EFI/centos/grubx64.efi) in the second stage</p>
+<p>4, kernel再去验证module的签名.</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot" target="_blank" rel="external">https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot</a><br>[2] <a href="https://www.aioboot.com/en/secure-boot/" target="_blank" rel="external">https://www.aioboot.com/en/secure-boot/</a><br>[3] <a href="https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html</a><br>[4] Grub 2：拯救你的 bootloader, <a href="https://linux.cn/article-6892-1.html?pr" target="_blank" rel="external">https://linux.cn/article-6892-1.html?pr</a><br>[5] <a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/09/18/引入nova-placement之后对调度的影响/" rel="next" title="引入nova placement之后对调度的影响">
+                <i class="fa fa-chevron-left"></i> 引入nova placement之后对调度的影响
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">66</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是secure-boot"><span class="nav-number">1.</span> <span class="nav-text">什么是secure boot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#有无shim"><span class="nav-number">2.</span> <span class="nav-text">有无shim</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可信问题"><span class="nav-number">3.</span> <span class="nav-text">可信问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#secureboot启动流程"><span class="nav-number">4.</span> <span class="nav-text">secureboot启动流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">5.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
