@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="我的CSDN博客地址是：http://blog.csdn.net/quqi99">
+<meta name="description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CSDN博客地址">
-<meta property="og:url" content="http://yoursite.com/2017/11/08/CSDN博客地址/index.html">
+<meta property="og:title" content="如何将国外的ftp气象大数据下载回来">
+<meta property="og:url" content="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="我的CSDN博客地址是：http://blog.csdn.net/quqi99">
-<meta property="og:updated_time" content="2017-11-08T02:56:34.369Z">
+<meta property="og:description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
+<meta property="og:updated_time" content="2020-10-22T12:49:32.429Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CSDN博客地址">
-<meta name="twitter:description" content="我的CSDN博客地址是：http://blog.csdn.net/quqi99">
+<meta name="twitter:title" content="如何将国外的ftp气象大数据下载回来">
+<meta name="twitter:description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
 
 
 
@@ -118,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/11/08/CSDN博客地址/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/"/>
 
 
 
 
 
-  <title>CSDN博客地址 | 技术并艺术着</title>
+  <title>如何将国外的ftp气象大数据下载回来 | 技术并艺术着</title>
   
 
 
@@ -231,7 +231,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/08/CSDN博客地址/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="张华">
@@ -248,7 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">CSDN博客地址</h1>
+          <h1 class="post-title" itemprop="name headline">如何将国外的ftp气象大数据下载回来</h1>
         
 
         <div class="post-meta">
@@ -260,8 +260,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-08T10:36:56+08:00">
-                2017-11-08
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
+                2020-10-22
               </time>
             
 
@@ -298,7 +298,11 @@
       
 
       
-        <p>我的CSDN博客地址是：<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a></p>
+        <p><strong>作者：张华 发表于：2020-10-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下：</p>
+<p>1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install curlftpfs -y</span><br><span class="line">#sudo fusermount -zu /mnt/ftp</span><br><span class="line">sudo mkdir -p /mnt/ftp &amp;&amp; sudo chown -R $USER /mnt/ftp</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt;/etc/fstab&apos; &lt;&lt;EOF</span><br><span class="line">curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data /mnt/ftp fuse defaults,rw,allow_other,uid=1000,gid=1000,_netdev 0 0</span><br><span class="line">EOF</span><br><span class="line">sudo mount -a</span><br></pre></td></tr></table></figure></p>
+<p>2, 安装nginx指向/mnt/ftp将ftp变http<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install nginx -y</span><br><span class="line">sudo vim /etc/nginx/sites-available/default</span><br><span class="line">        #root /var/www/html;</span><br><span class="line">        root /mnt/ftp;</span><br><span class="line">        location / &#123;</span><br><span class="line">                try_files $uri $uri/ =404;</span><br><span class="line">                autoindex on;</span><br><span class="line">                autoindex_exact_size off;</span><br><span class="line">                autoindex_localtime on;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
+<p>3, 国内采用下列命令下载．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -c -m http://3.18.xx.xx</span><br><span class="line">#rsync -avztur -e &quot;ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/xxx.pem&quot; --progress ubuntu@3.18.xx.xx:/mnt/ftp .</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -323,8 +327,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/11/08/基于hexo搭建github博客-by-quqi99/" rel="next" title="基于hexo搭建github博客(by quqi99)">
-                <i class="fa fa-chevron-left"></i> 基于hexo搭建github博客(by quqi99)
+              <a href="/2020/10/14/Lost-connection-to-MySQL-server-during-query/" rel="next" title="Lost connection to MySQL server during query">
+                <i class="fa fa-chevron-left"></i> Lost connection to MySQL server during query
               </a>
             
           </div>
@@ -332,10 +336,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/11/10/调研NFV编排工具/" rel="prev" title="调研NFV编排工具">
-                调研NFV编排工具 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
