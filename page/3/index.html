@@ -231,6 +231,139 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" itemprop="url">How to set up systemd-resolved + dnssec</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
+                2020-02-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="Set-up-test-env"><a href="#Set-up-test-env" class="headerlink" title="Set up test env"></a>Set up test env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#first let us know 8.8.8.8 supports dnssec, while 114.114.114.114 doesn&apos;t support</span><br><span class="line">dig paypal.com +dnssec @8.8.8.8 |grep RRSIG</span><br><span class="line">dig paypal.com +dnssec @114.114.114.114 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#set up dnsmasq as upstream dns server</span><br><span class="line">IFACE=dummy0</span><br><span class="line">SUBNET=10.0.0</span><br><span class="line">sudo ip link add $IFACE type dummy</span><br><span class="line">sudo ifconfig $IFACE $&#123;SUBNET&#125;.1/24</span><br><span class="line">#https://www.cnblogs.com/taoyuxuan/p/11205491.html</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo -S /test/ --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line"></span><br><span class="line">#sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/ --host-record=test.test,$&#123;SUBNET&#125;.1 --conf-file=/dev/null --log-queries &amp;</span><br><span class="line">sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/10.0.0.1 --host-record=test.test,$&#123;SUBNET&#125;.1 --log-queries \</span><br><span class="line">    --dnssec --conf-file=/usr/share/dnsmasq-base/trust-anchors.conf --dnssec-check-unsigned --dnssec-debug --server=8.8.8.8 &amp;</span><br><span class="line">dig paypal.com +dnssec @10.0.0.1 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#test dns server with dig</span><br><span class="line">ubuntu@bastion:~$ dig -t a test.test @10.0.0.1 | grep EDNS</span><br><span class="line">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="line">ubuntu@bastion:~$ dig -t aaaa test.test @10.0.0.1 | grep EDNS</span><br><span class="line"># again, should return &quot;; EDNS ...&quot; but doesn&apos;t</span><br><span class="line"></span><br><span class="line">#configure systemd-resolved to look at only 10.0.0.1</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos; /etc/systemd/resolved.conf</span><br><span class="line">[Resolve]</span><br><span class="line">DNS=10.0.0.1</span><br><span class="line">DNSSEC=yes</span><br><span class="line">Cache=no</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos;  /etc/resolv.conf</span><br><span class="line">nameserver 127.0.0.53</span><br><span class="line">options edns0</span><br><span class="line"></span><br><span class="line">#debug with systemd-resolved</span><br><span class="line">sudo systemctl disable systemd-resolved   #seems systemd-resolved always restart if not disable it as well</span><br><span class="line">sudo systemctl stop systemd-resolved</span><br><span class="line">sudo SYSTEMD_LOG_LEVEL=debug script -c /lib/systemd/systemd-resolved /tmp/debug.txt</span><br><span class="line">systemd-resolve --status --no-pager |egrep &apos;DNSSEC|DNS Servers&apos;</span><br><span class="line">#repeat the following 3 lines to test every time - ./src/resolve/resolved-dns-server.c</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve test.test -t A</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve test.test -t A   #don&apos;t reset, try directly</span><br><span class="line">systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve example.com ubuntu.com us.archive.ubuntu.com packages.icinga.com mirror.steadfast.net archive.ubuntu.com ppa.launchpad.net private-ppa.launchpad.net sigok.verteiltesysteme.net sigfail.verteiltesysteme.net verisign.com www.verisign.com</span><br></pre></td></tr></table></figure>
+<h2 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h2><ul>
+<li>LLMNR: 当dns服务不可用时, 支持使用组播dns协议(mDNS)继续在子网内局部查询dns直至网络连接还原为止.</li>
+<li>Knot-DNS: 类似于dnsmasq, bind9的dns server</li>
+<li>EDNS:允许将DNS消息大小从标准的512字节扩展（当UDP用作传输协议时），而无需切换到TCP. 它能提升访问CDN的性能，因为：标准DNS协议只能传递域名参数查IP,　而不能传递域名+用户参数来源查IP．查询下游的CDN, DNS服务器应该是根据用户的来源查询,而不是将上游DNS服务做为来源查询.由于国内的运营商之间互联的带宽是很低的,　所以造成访问速度超慢.</li>
+<li>EDNS0:可以将UDP包从512字节扩展到4096字节从而可以容纳DNSEC包, systemd-resolved通过/etc/resovled.conf里的’options edns0’通知dns server可以edns0, server再回的时候会将其+1, 所以: 雖然是EDNS0 封包，可是不代表這是 DNSSEC 封包，在EDNS0 中有一個 bit: DO 被設定為 1 的時候，才代表這是 DNSSEC 封包 (通过: dig +dnssec example.com ns |grep EDNS  命令可以查看)</li>
+</ul>
+<h2 id="Some-bugs"><a href="#Some-bugs" class="headerlink" title="Some bugs"></a>Some bugs</h2><p>1, <a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639</a><br>upstream dns能力被检测正确让dnssec工作(现在一旦突然检查错了, resovle就停止work了), 或者允许disable能力检查<br><a href="https://github.com/systemd/systemd/issues/6490" target="_blank" rel="external">https://github.com/systemd/systemd/issues/6490</a><br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br><a href="https://github.com/systemd/systemd/pull/8849" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8849</a><br>a, 第一种解决方案<br> resolve不能看到timeout or error了就降级(tcp-&gt;dns over tls -&gt; edns0)声称不支持某个特性, 它的特性应该独立于实际查询<br><a href="https://github.com/systemd/systemd/issues/9384" target="_blank" rel="external">https://github.com/systemd/systemd/issues/9384</a><br>b, 允许disable dnsec能力检查<br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br>c, 从resolved中移除dnssec</p>
+<p>如有些咖啡厅等公共网络不支持ends0查询，会响应domain not found, 即收到＇NXDOMAIN when queried with EDNS0＇消息时(the query is with EDNS0 enabled and D0 bit set to zero)需要继续只根据EDNS0继续重试<br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br><a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a>  - 代码<br>journalctl -b -u systemd-resolve | grep DVE-2018  - 确诊<br>Workaround:<br>sudo systemctl disable systemd-resolved.service<br>sudo service systemd-resolved stop<br>sudo rm /etc/resolv.conf<br>sudo nano /etc/NetworkManager/NetworkManager.conf<br> then add “dns=default” under [main]<br>sudo service network-manager restart</p>
+<p>上面的降级（resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch）应该只在DNSSEC=allow-downgrade or DNSSEC=no时运行．在真实世界中，NetworkManager’s在无法降级时会告诉用户关掉dnssec<br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501</a></p>
+<p>2, <a href="https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3" target="_blank" rel="external">https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3</a><br>systemd-resolved只是一个stub resovler, 它只是转发dns请求到upstream dns server并等待请求(等待时间为RTT)，它没有考虑到上游递归dns服务器(interative resolver, eg: dnsmasq)的query timeout(authoritative server是用内存来存储dns记录所以它快，但也不是所有的都快），这样systemd-resolved会经常错误的降级（Therefore it often mistakenly degrades the feature set of its　upstream resolvers if it takes them longer than usual to answer a query），特别当DNSSEC=yes不充许降级时就更严重，所以systemd-resolved应该使用RTT+上游的查询时间，而不是只用RTT (DNS_TIMEOUT_MAX_USEC=DNS_SERVER_FEATURE_RETRY_ATTEMPTS * DNS_TIMEOUT_MAX_USEC = 15s），当然，这也不是解决根本问题，但可以缓解．</p>
+<p>3, <a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a><br> <a href="https://github.com/systemd/systemd/issues/11171" target="_blank" rel="external">https://github.com/systemd/systemd/issues/11171</a><br><a href="https://github.com/systemd/systemd/issues/4315" target="_blank" rel="external">https://github.com/systemd/systemd/issues/4315</a> - <a href="https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb" target="_blank" rel="external">https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb</a><br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br>这个commit (7abcaa93ab - debian/patches/resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch)可以解决上面关于降级的问题，但是它又引入了回归bug, 没DNSSEC=yes时没有做安全检查 (为DNSSEC=yes时不从UDP+ends0(DNS_SERVER_FEATURE_LEVEL_EDNS0)降级互UDP(DNS_SERVER_FEATURE_LEVEL_UDP)但upstream还未接受patch，故先在debian/patches/resolved_disable-connection-downgrade-when-DNSSEC-yes.patch</p>
+<p>4, <a href="https://github.com/dns-violations/dns-violations/issues/62" target="_blank" rel="external">https://github.com/dns-violations/dns-violations/issues/62</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383</a><br>dnsmasq 2.79当返回空时省略了EDNS0 OPT记录 (例如访问无AAAA记录时 - patch - 1682d15a744880b0398af75eadf68fe66128af78)) , systemd-resolved能hang (但只是使用了dnsmasq的router会如此)</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1723,160 +1856,6 @@ Fixed bug #161317
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" itemprop="url">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
-                2019-08-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="作者：张华-发表于：2017-06-23"><a href="#作者：张华-发表于：2017-06-23" class="headerlink" title="作者：张华 发表于：2017-06-23"></a>作者：张华 发表于：2017-06-23</h2><p>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> ) ##</p>
-<p>I have two Meizu MX4 ubuntu cellphones, now I will re-install Flyme or native google android on them. All softwares can be downloaded from the link: <a href="https://pan.baidu.com/s/1bpo0xbx" target="_blank" rel="external">https://pan.baidu.com/s/1bpo0xbx</a></p>
-<p>1, Start MX4 Ubuntu, and enable ‘Developer Mode’ from ‘System Setting -&gt; About Cellphone’ menu.</p>
-<p>2, Install the tools adb and fastboot from the link <a href="http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz" target="_blank" rel="external">http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/bak/java/platform-tools:$PATH</span><br></pre></td></tr></table></figure>
-<p>3, Make sure your cellphone can connect to compute (Ubuntu) via USB and adb</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lsusb |grep Meizu</span><br><span class="line">  Bus 003 Device 010: ID 2a45:0c02 Meizu Corp. MX Phone (MTP &amp; ADB)</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">  SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2a45&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">$ cat ~/.android/adb_usb.ini</span><br><span class="line">  2a45</span><br><span class="line">$ sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">$ adb kill-server &amp;&amp; adb start-server</span><br><span class="line">$ adb devices</span><br><span class="line">  List of devices attached</span><br><span class="line">  75HABLMCYUR3	device</span><br><span class="line">$ sudo apt-get install go-mtpfs mtp-tools gmtp</span><br><span class="line">$ sudo mtp-detect</span><br><span class="line">  libmtp version: 1.1.10</span><br><span class="line">  Listing raw device(s)</span><br><span class="line">  Device 0 (VID=2a45 and PID=0c02) is a Meizu MX Phone (MTP+ADB).</span><br><span class="line">  Found 1 device(s):</span><br><span class="line">  Meizu: MX Phone (MTP+ADB) (2a45:0c02) @ bus 3, dev 10</span><br></pre></td></tr></table></figure>
-<p>4, Brush the thirty party recovery. Shutdown your cellphone, and press POWER + VOL-DOWN to enter fastboot mode. Use usb to connect cellphone and compute, than run:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/tools/mx4 $ fastboot flash recovery recovery.img</span><br><span class="line">sending &apos;recovery&apos; (10000 KB)...</span><br><span class="line">OKAY [  0.506s]</span><br><span class="line">writing &apos;recovery&apos;...</span><br><span class="line">OKAY [  0.410s]</span><br><span class="line">finished. total time: 0.916s</span><br></pre></td></tr></table></figure></p>
-<p>5, Press POWER + VOL-UP to enter above recoerty, and Click ‘Install Zip -&gt; Install zip from sideload’, then run:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/java/platform-tools$ adb sideload update.zip</span><br><span class="line">sending: &apos;sideload&apos;  100%</span><br></pre></td></tr></table></figure>
-<p>NOTE: if you want to install raw google android, just run ‘adb sideload cm-13.0-20160820-UNOFFICIAL-mx4.zip’ instead.</p>
-<p>6, Reboot the cellphone. OK.</p>
-<h2 id="附录-小米手机线刷开发版-国际版"><a href="#附录-小米手机线刷开发版-国际版" class="headerlink" title="附录 - 小米手机线刷开发版/国际版"></a>附录 - 小米手机线刷开发版/国际版</h2><p>现在, 小米不再允许行货和国际版互刷ROM, 它加入了防回滚保护（Anti-Rollback Protection）机制. 这意味着，如果手机当前处于较高的MIUI版本，降级刷机大概率会变砖。实测发现，行货机刷国际版ROM将卡死在Recovery界面，显示“this MIUI version can’t be installed on this device”。当然，想要绕过官方的限制也有办法，前提是解锁bootloader，然后用TWRP、fastboot或者MiFlash刷机。使用MiFlash时切记勾选“Clean All”，不要选“clean all and lock”。如果你不幸刷在国际版和国行版ROM之间刷机成砖，只有进入EDL（紧急下载）模式自救。然而，EDL模式仅对极为有限的小米账号开放权限。本文测试的手机是mi note lte不再之列.</p>
-<p>1, 下载dev rom是virgo_images_5.12.4_20151126.0000.5_4.4_cn_eb14b0eb8d.tgz (<a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a>). rom里的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">NOTE: 这步应该在解锁, 以及在开发模式打开充许OEM之后运行</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn</span><br><span class="line">flash_all.bat  flash_all_except_data_storage.bat  flash_all_except_data_storage.sh  flash_all_except_storage.bat  flash_all_except_storage.sh  flash_all.sh  images  misc.txt</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn/images/</span><br><span class="line">8974_msimage.mbn  cache.img  emmc_appsboot.mbn  gpt_backup0.bin  gpt_main0.bin  MPRG8974.mbn  patch0.xml   rawprogram0.xml  rpm.mbn   sdi.mbn     tz.mbn</span><br><span class="line">boot.img          dummy.img  flash.xml          gpt_both0.bin    misc.img       NON-HLOS.bin  persist.img  recovery.img     sbl1.mbn  system.img  userdata.img</span><br><span class="line"></span><br><span class="line">$ cat flash_all.sh</span><br><span class="line">fastboot $* getvar product 2&gt;&amp;1 | grep &quot;^product: *MSM8974$&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching image and device&quot;; exit 1; fi</span><br><span class="line">fastboot $* getvar board_version 2&gt;&amp;1 | grep &quot;^board_version: *5.[^5]&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching board version&quot;; exit 1; fi</span><br><span class="line"></span><br><span class="line">fastboot $* flash tz `dirname $0`/images/tz.mbn</span><br><span class="line">fastboot $* flash dbi `dirname $0`/images/sdi.mbn</span><br><span class="line">fastboot $* flash sbl1 `dirname $0`/images/sbl1.mbn</span><br><span class="line">fastboot $* flash rpm `dirname $0`/images/rpm.mbn</span><br><span class="line">fastboot $* flash aboot `dirname $0`/images/emmc_appsboot.mbn</span><br><span class="line">fastboot $* erase boot</span><br><span class="line">fastboot $* erase DDR</span><br><span class="line">fastboot $* flash misc `dirname $0`/images/misc.img</span><br><span class="line">fastboot $* flash modem+modem1 `dirname $0`/images/NON-HLOS.bin</span><br><span class="line">fastboot $* flash system+system1 `dirname $0`/images/system.img</span><br><span class="line">fastboot $* flash cache `dirname $0`/images/cache.img</span><br><span class="line">fastboot $* flash userdata `dirname $0`/images/userdata.img</span><br><span class="line">fastboot $* flash recovery `dirname $0`/images/recovery.img</span><br><span class="line">fastboot $* flash boot+boot1 `dirname $0`/images/boot.img</span><br><span class="line">fastboot $* reboot</span><br></pre></td></tr></table></figure></p>
-<p>2, 手机通过MTP模式连接电脑, 通过lsusb找到设备号为: Bus 003 Device 029: ID 2717:0360<br>3, adb连接手机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2717&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">$ adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">d6b38a3a	device</span><br></pre></td></tr></table></figure></p>
-<p>如果不出来, 是需要 狂按”设置我的设备 -&gt; 全部参数 -&gt; MINU版本”进入开发者模式, 然后”设置 -&gt; 更多设置 -&gt; 开发者选项”打开USB调试”和”FASTBOOT刷机模式”<br>4, 和Meizu是一样的, 也是音量下+电源键进入fastboot模式, 不连电脑，音量下+电源键长按进入fastboot,USB线连接电脑. 注: 同样, 也是音量上+电源键可安装第三方recovery, 见 [5].<br>5, 刷机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">#./flash_all_except_storage.sh  #clean cache, but not clean data</span><br></pre></td></tr></table></figure></p>
-<p>6, 继续root, 刷机成功之后, 已经是开发版, 进入手机，安全中心 -&gt; 授权管理 -&gt; ROOT,反复确认后，手机会下载对应的ROOT包安装后重启。机后，安全中心 -&gt; 授权管理已经可以进入. 这时候就可以使用’adb root’了.</p>
-<p>注: 遗憾地是, 机子刚好音量下键损坏, 这样借助如刷机精灵里的实用工具进入fastboot或recovery模式. 好吧, 又得整到windows上了. 照着文档[4]. (注: 其实不用转到windows, 直接在linux下使用”adb reboot bootloader”也可以重启至fastboot模式”<br>1, 安装小米助手, 当手机连上win7电脑时会自动安装驱动 - <a href="http://zhushou.xiaomi.com/" target="_blank" rel="external">http://zhushou.xiaomi.com/</a><br>2, 安装线刷工具 - <a href="http://bigota.d.miui.com/tools/MiPhone20141107.exe" target="_blank" rel="external">http://bigota.d.miui.com/tools/MiPhone20141107.exe</a><br>3, 线刷包解压 - <a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a><br>4, 安装刷机精灵, 使用里面的fastboot实用工具根本无法进入fastboot, 所以直接采用刷机精灵的一键刷机功能上传线刷包线刷. 但出错了, 说是刷入的版本比机子已有的版本低会线刷失败.<br>5, 但上一步一键刷机功能代替音量减键成功让手机进入了fastboot模式, 所以此时切换成小米的刷机工具再试, 结果小米的刷机工具也有bug, 报找不到远程分区.<br>6, 试图找到小米原生的线刷包恢复, 但官网上找不着.<br>7, 还好, 手机进入fastboot模式之后, 没有刷机成功, 只要手机还有电, 再重启还是进入的是flashboot模式, 这样避免了坏的音量键及进不了系统. 继续找啊找试啊试, 终于发现这个包是好的(Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, <a href="https://firmwarefile.com/xiaomi-mi-note-lte" target="_blank" rel="external">https://firmwarefile.com/xiaomi-mi-note-lte</a> )<br>8, 这个网站(<a href="https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备" target="_blank" rel="external">https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备</a>. 注: 这个tool也可在driver菜单自动安装驱动.<br>9, 这样成功换上了Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, 这似乎是国际稳定版哦.</p>
-<p>如何将国际稳定版转成国际开发版呢? 再线刷一遍. 这次都在linux下进行.<br>1,Install Global Developer ROM for Redmi Note 4G<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># search in google by &apos;eveloper bigota.d.miui.com redmi note 4g -stable&apos;, and download fastboot rom - https://c.mi.com/thread-510369-1-0.html</span><br><span class="line">#NOTE: this recovery - http://bigota.d.miui.com/7.11.6/miui_MINoteGlobal_7.11.6_ce58816710_6.0.zip</span><br><span class="line">wget http://bigota.d.miui.com/7.11.6/virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">tar -xf virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">cd virgo_global_images_7.11.6_20171106.0000.00_6.0_global</span><br><span class="line">adb reboot bootloader</span><br><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">运行./flash_all.sh相当于:</span><br><span class="line">#https://blog.csdn.net/quqi99/article/details/51636869</span><br><span class="line">fastboot flash boot boot.img</span><br><span class="line">fastboot flash recovery recovery.img</span><br><span class="line">fastboot erase system</span><br><span class="line">fastboot flash system system.img</span><br><span class="line">#fastboot flash userdata userdata.img</span><br><span class="line">#fastboot flash cache cache.img</span><br></pre></td></tr></table></figure></p>
-<p>2, Custom TWRP for Xiaomi Redmi Note 4G (twrp-3.3.1-0-dior.img - <a href="https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html" target="_blank" rel="external">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</a>),<br>注: 目前小米也关闭了解锁功能(<a href="https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM" target="_blank" rel="external">https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM</a>, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机.<br>但mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ adb reboot bootloader</span><br><span class="line">$ fastboot oem device-info</span><br><span class="line">...</span><br><span class="line">(bootloader) 	Device tampered: true</span><br><span class="line">(bootloader) 	Device unlocked: true</span><br><span class="line">(bootloader) 	Charger screen enabled: false</span><br><span class="line">(bootloader) 	Display panel:</span><br><span class="line">OKAY [  0.006s]</span><br><span class="line">finished. total time: 0.006s</span><br></pre></td></tr></table></figure></p>
-<p>继续刷TWRP:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.twrp.me/dior/twrp-3.3.1-0-dior.img</span><br><span class="line">adb reboot bootloader              #enter fastboot mode</span><br><span class="line">#fastboot devices                     #just for case when locking BL lock</span><br><span class="line"># fastboot flash unlock unlock.key  #if need to unlock, eg https://www.techmesto.com/guide-unlock-bootloader-nokia-android-phones/</span><br><span class="line">#fastboot oem unlock</span><br><span class="line">fastboot flash recovery twrp-3.3.1-0-dior.img</span><br><span class="line">fastboot reboot</span><br></pre></td></tr></table></figure></p>
-<p>但是上面刷了之后不work,, 刷了TWRP之后’adb reboot recovery’进入的还是Mi-Recovery 2.0.1模式, 官网说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</span><br><span class="line">Note many devices will replace your custom recovery automatically during first boot. To prevent this, use Google to find the proper key combo to enter recovery. After typing fastboot reboot, hold the key combo and boot to TWRP. Once TWRP is booted, TWRP will patch the stock ROM to prevent the stock ROM from replacing TWRP. If you don&apos;t follow this step, you will have to repeat the install.</span><br></pre></td></tr></table></figure></p>
-<p>但运行完’fastboot reboot’再按音量上键+电源键根本就进不了recovery模式, 可能是我的音量键有问题的原因吧. 此路不通.这个网页说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://www.reddit.com/r/Xiaomi/comments/bdurg8/replace_mi_recovery_with_twrp/</span><br><span class="line">With the new protection you need to boot from adb to twrp, by fastboot boot twrp.img. When boot in twrp transfer the image and flash inside from twrp. Now, it will reboot on TWRP recovery.</span><br></pre></td></tr></table></figure></p>
-<p>所以我们可以先’fastboot boot’来启动TWRP, 再将TWRP持久化. 但是试了很多多twrp版本都报下列错”dtb not found”.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ fastboot boot twrp-3.3.1-0-dior.img</span><br><span class="line">downloading &apos;boot.img&apos;...</span><br><span class="line">OKAY [  0.433s]</span><br><span class="line">booting...</span><br><span class="line">FAILED (remote: dtb not found)</span><br><span class="line">finished. total time: 0.449s</span><br></pre></td></tr></table></figure></p>
-<p>无奈下载网页(<a href="http://en.miui.com/thread-213264-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-213264-1-1.html</a>) 或这个网页(<a href="http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功" target="_blank" rel="external">http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot boot twrp.img</span><br></pre></td></tr></table></figure></p>
-<p>但语言却不是英语看不懂啊, 没办法, 只好在网上找一个有图的, 照着大致的位置点了.<br><img src="https://img-blog.csdnimg.cn/20190822112723313.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190822112742744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>上面需要事先将supersu下载放到手机上, 注意: 只有/sdcard/Download是可写的. (其他目录需要root权限运行”adb remount  #mount -o remount,rw /system”才行”.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push SR5-SuperSU-v2.82-SR5-20171001224502.zip /sdcard/Download/</span><br></pre></td></tr></table></figure>
-<p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
-<p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
-<p>4, 安装必要的软件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># use adb via wifi</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb install Complete\ Linux\ Installer_v3.0\ BETA_apkpure.com.apk</span><br><span class="line"></span><br><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"></span><br><span class="line"># grep &apos;system&apos; /proc/mounts</span><br><span class="line">mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system</span><br><span class="line"></span><br><span class="line"># ssh server -  by install SSHDroid and use supersu to give it root</span><br><span class="line"></span><br><span class="line"># ssh client</span><br><span class="line">ln -s /data/data/berserker.android.apps.sshdroid/dropbear/ssh /system/bin/ssh</span><br><span class="line">chmod o+rx /system/bin/ssh</span><br><span class="line"></span><br><span class="line"># key</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/dropbear/</span><br><span class="line">./dropbearkey -t rsa -f ../home/.ssh/id_rsa &gt; ../home/.ssh/id_rsa.pub</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/home</span><br><span class="line">echo &apos;ssh hua@t440p -i ~/.ssh/id_rsa&apos; &gt; ./ssht440p.sh</span><br><span class="line">sh ssht440p.sh</span><br><span class="line"></span><br><span class="line"># use vi in adb shell, we don&apos;t need to add busybox prefix in ssh</span><br><span class="line">busybox vi /etc/hosts</span><br></pre></td></tr></table></figure></p>
-<p>5, run ubuntu 18.04 on android by using linuxdeploy<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#run ubuntu 18.04 on android by using linuxdeploy</span><br><span class="line">#https://www.maketecheasier.com/install-ubuntu-on-android-linux-deploy/</span><br><span class="line">wget https://github.com/meefik/busybox/releases/download/1.30.1/busybox-1.30.1-41.apk</span><br><span class="line">adb install busybox-1.30.1-41.apk  #install into /system/xbin</span><br><span class="line">wget https://github.com/meefik/linuxdeploy/releases/download/2.4.0/linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install vnc_viewer_remote_desktop.apk</span><br><span class="line"></span><br><span class="line">#enter linuxdeploy</span><br><span class="line">telnet 192.168.99.249 5023</span><br><span class="line"></span><br><span class="line">#but hit the error: chroot: can&apos;t execute &apos;/bin/su&apos;: No such file or directory</span><br><span class="line">/su/bin/su root</span><br><span class="line">/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell</span><br><span class="line">mkdir /data/local/mnt/&#123;dev,sys,proc&#125;</span><br><span class="line">#for d in dev sys proc; do mount -o bind /$d /data/local/mnt/$d; done</span><br><span class="line">#umount /data/local/mnt/&#123;dev,proc,sys&#125;</span><br><span class="line">chroot /data/local/mnt/ /bin/pwd</span><br><span class="line">ls /data/local/mnt/bin/su</span><br><span class="line"></span><br><span class="line">上面的chroot错误实际上是image文件没有创建的原因</span><br><span class="line">ls /data/data/ru.meefik.linuxdeploy/files/config/linux.conf</span><br><span class="line">rm -rf /sdcard/linux.img</span><br><span class="line">vi /data/user/0/ru.meefik.linuxdeploy/files/include/bootstrap/rootfs/deploy.sh</span><br><span class="line"></span><br><span class="line">20191012更新</span><br><span class="line">架构使用armhf，源使用http://mirrors.ustc.edu.cn/ubuntu-ports/时可以进入debootstrap了， 但是在lsb_base这步总是出错， 怀疑是科大的源有问题， 所以换成腾讯的源https://mirrors.cloud.tencent.com/ubuntu-ports/后可以debootstrap成功， 但是在chroot /data/local/mnt bin/su - root -c &apos;DEBIAN_FRONTEND=nointeractive apt-get install -yfq --no-install-recommends dbus&apos;这步也是相当地慢(才0.10k/s)，不得已， 又退回使用http://ports.ubuntu.com/ubuntu-ports/， 然后就成功了， 在手机上通过‘ssh ubuntu@localhost’登录bionic。</span><br><span class="line">1, 但ubuntu里的chrome仍然无法在外面使用，而使用android版本的chrome又无法打开SF(需要设置浏览器中的查看桌面版网页，但仍然无法选择sf owner), 试试microsoft edge</span><br><span class="line">2, 下面adb或者ssh两种方式连接手机</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br><span class="line">3, 手机外接大屏幕的话，采用android中的”无线投屏&quot;或者在连接好adb之后运行“sudo snap install --channel=edge scrcpy &amp;&amp; scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800&quot; (注：若电脑的scrcpy容器是黑屏的话是因为手机是黑屏的）</span><br><span class="line"></span><br><span class="line">若手机未root的话, 可以这个投屏:</span><br><span class="line">将手机与电脑连接至相同wifi 记录WLAN设置中手机的IP地址</span><br><span class="line">连接数据线并允许调试</span><br><span class="line">终端执行 adb tcpip 5555 并在手机上点击“ 确定 ” ( 即在手机上开启5555端口 )</span><br><span class="line">终端执行 adb connect [手机IP]:5555 并在手机上点击“ 确定 ”( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">拔掉数据线</span><br><span class="line">终端执行 adb reconnect offline 强制未授权设备重新连接</span><br><span class="line">终端执行 adb connect [手机IP]:5555 重新进行连接 ( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800</span><br><span class="line">想用声音的话, 可结合usbaudio - https://github.com/rom1v/usbaudio , 但是似乎usbaudio不支持android 8.1以上版本了</span><br></pre></td></tr></table></figure></p>
-<h2 id="root-redmi4x-20200618更新"><a href="#root-redmi4x-20200618更新" class="headerlink" title="root redmi4x - 20200618更新"></a>root redmi4x - 20200618更新</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">安装要用到的软件</span><br><span class="line">1, xiaomi redmi 4x usb driver (Universal ADB Driver V6.0.zip - https://www.skyneel.com/xiaomi-usb-driver)</span><br><span class="line">2, xiaomi redmi 4x unlock bootloader (miflash_unlock-en-4.5.514.47.zip - https://en.miui.com/unlock/）</span><br><span class="line">3, xiaomi redmi 4x TWRP recovery (twrp-3.3.1-0-santoni.img - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">4, xiaomi redmi 4x supersu (UPDATE-SuperSU-v2.82-20170528234214.zip - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">5, xiaomi redmi 4x adb/fast-boot tool (platform-tools_r30.0.2-windows.zip - https://developer.android.com/studio/releases/platform-tools)</span><br><span class="line">6, [option] mi flash (https://www.skyneel.com/xiaomi-mi-flash-tool)</span><br><span class="line"></span><br><span class="line">unlock bootloader</span><br><span class="line">#https://www.skyneel.com/unlock-bootloader-xiaomi-devices</span><br><span class="line">1, 打开开发者模式， 并在开发者模式中打开USB调试， 并同时打开充许OEM解锁</span><br><span class="line">2, 先关机，USB线连上， 然后长按音量下+电源键进入fastboot模式, ( 注: 音量上+电源键是安装第三方recovery)</span><br><span class="line">3 , 并用这个手机的小米帐号登录后解锁手机。</span><br><span class="line">注: 目前小米也关闭了解锁功能(https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机. 见我之前的一篇博客.</span><br><span class="line">mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true&quot;</span><br><span class="line">redmi 4x采用此段方法解锁</span><br><span class="line"></span><br><span class="line">flash TWRP</span><br><span class="line">1, usb连接手机，并在手机上点击信任后， 就可以使用adb命令了</span><br><span class="line">D:\&gt;adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">aa89d2927d93    device</span><br><span class="line">2, 进入bootloader模式： adb reboot bootloader</span><br><span class="line">3, 因为上面我们已经unlock bootloader了， 所以&apos;fastboot devices&apos;能看到东西</span><br><span class="line">E:\tools\redmi4x&gt;fastboot devices</span><br><span class="line">aa89d2927d93    fastboot</span><br><span class="line">4， fastboot.exe flash recovery twrp-3.3.1-0-santoni.img - fastboot.exe flash recovery twrp-3.3.1-0-santoni.img</span><br><span class="line">5, fastboot reboot</span><br><span class="line">6, 刷TWRP成功后， 再使用&apos;adb reboot recovery&apos;命令(相当于音量上+电源键的recovery模式)就能看到TWRP界面了， 而不是mi-recovery 3.0了</span><br><span class="line">但上面recovery twrp-3.3.1-0-santoni.img刷了之后不work, 进入的还是mi-recovery, 这时就又相当于我之前的一篇博客遇到的问题了（https://blog.csdn.net/quqi99/article/details/73613138), 所以得在不替换现有的mi-recovery的情况下同时又使用TWRP（fastboot boot twrp-3.3.1-0-santoni.img）安装supersu（可参考 - https://in.c.mi.com/thread-79402-1-1.html）</span><br></pre></td></tr></table></figure>
-<p>完整步骤:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">1, set up adb</span><br><span class="line"></span><br><span class="line">sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/udev/rules.d/51-android.rules&apos; &lt;&lt; EOF</span><br><span class="line">EOF</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">adb devices</span><br><span class="line"></span><br><span class="line">2, enable developer mode, and enable usb debugging and OEM unlock in developer mode</span><br><span class="line"></span><br><span class="line">3, unlock bootloader in the page https://www.miui.com/unlock/index.html</span><br><span class="line"></span><br><span class="line">4, install global developer firmware because supersu can only be used in developer version</span><br><span class="line"></span><br><span class="line">#click &apos;Global -&gt; Fast boot Developer&apos; in https://mifirm.net/model/santoni.ttt to find download link</span><br><span class="line">axel http://bigota.d.miui.com/9.6.27/santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">tar -xf santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">adb reboot bootloader</span><br><span class="line">cd santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2 &amp;&amp; ./flash_all.sh</span><br><span class="line"></span><br><span class="line">5, then repeat the step 2 in new global deveoper version</span><br><span class="line"></span><br><span class="line">6, copy supersu into your cellphone</span><br><span class="line"></span><br><span class="line">adb push UPDATE-SuperSU-v2.82-20170528234214.zip /sdcard/Download/</span><br><span class="line">adb shell -- ls /sdcard/Download/</span><br><span class="line"></span><br><span class="line">7, boot from twrp instead of mi-recovery temporaily one time to install supersu</span><br><span class="line"></span><br><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem device-info   #double confim uncloked=true</span><br><span class="line">fastboot boot twrp-3.2.3-0-santoni.img</span><br><span class="line">#then install supersu from the GUI</span><br><span class="line"></span><br><span class="line">8, use supersu</span><br><span class="line"></span><br><span class="line">adb root</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br></pre></td></tr></table></figure>
-<p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1927,7 +1906,7 @@ Fixed bug #161317
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">68</span>
+                  <span class="site-state-item-count">69</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

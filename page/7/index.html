@@ -231,6 +231,139 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/13/Use-hexo-to-create-blog/" itemprop="url">Use hexo to create blog</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-13T17:02:52+08:00">
+                2017-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>独立博客可以采用wordpress搭建动态博客，也可以采用Markdown语法编写静态博客(no db, no cms, simple, minimal)发布到有git版本控制的github上, jekyll与hexo是一个将markdown文件产生目录生成静态网站的程序。</p>
+<p>1, 登陆GitHub，新建一个repository, 命名为你的用户名 + github.io。如我的用户名为zhhuabj，所以repository命名为zhhuabj.github.io</p>
+<p>2, 创建第一个网页index.html</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">echo “my blog” &gt;&gt; index.html</span><br><span class="line">git add .</span><br><span class="line">git commit -m “first commit”</span><br><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
+<p>3, 访问<a href="https://zhhuabj.github.io/" target="_blank" rel="external">https://zhhuabj.github.io/</a></p>
+<p>4, [使用jekyll可省略]打开<a href="https://github.com/zhhuabj/zhhuabj.github.io/settings，" target="_blank" rel="external">https://github.com/zhhuabj/zhhuabj.github.io/settings，</a> 点击Launch automatic page generator按钮开始设置样式。</p>
+<p>5, CSDN博客迁移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install beautifulsoup</span><br><span class="line">git clone https://github.com/gaocegege/csdn-blog-export.git</span><br><span class="line">cd csdn-blog-export</span><br><span class="line">./main.py -u quqi99 -f html</span><br><span class="line">./main.py -u quqi99 -f markdown</span><br></pre></td></tr></table></figure>
+<p>6, 使用jekyll本地写博客</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ruby ruby-dev</span><br><span class="line">gem sources --remove https://rubygems.org/</span><br><span class="line">gem sources -a https://ruby.taobao.org/</span><br><span class="line">gem sources -l</span><br><span class="line">sudo gem install jekyll</span><br><span class="line">cd zhhuabj.github.io/jekyll</span><br><span class="line">jekyll new .</span><br><span class="line">cp -r ../csdn-blog-export/*.md _posts/</span><br><span class="line">jekyll serve  #http://localhost:4000/</span><br><span class="line">vi _config.yml</span><br></pre></td></tr></table></figure>
+<p>7, 改用jekyll-bootstrap, 先扫描 _post，layout, 然后是目录和 page，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">装入一个 site 对象后，用什么 Liquide render出来</span><br><span class="line">git clone https://github.com/plusjade/jekyll-bootstrap.git</span><br><span class="line">cp -r jekyll-bootstrap/* zhhuabj.github.io/*</span><br><span class="line">vi _config.yml</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">sudo gem install jekyll-sitemap</span><br><span class="line">jekyll serve #http://127.0.0.1:4000/</span><br></pre></td></tr></table></figure>
+<p>8, 改用hexo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">   sudo apt install npm node.js nodejs-legacy </span><br><span class="line">   sudo npm install hexo hexo-generator-feed -g</span><br><span class="line">   sudo npm install hexo-deployer-git --save</span><br><span class="line">   sudo npm install git --save</span><br><span class="line">   cd zhhuabj.github.io</span><br><span class="line">   hexo init .</span><br><span class="line">   hexo server    #http://localhost:4000/</span><br><span class="line">   hexo new &quot;my test post&quot;</span><br><span class="line">   </span><br><span class="line">   $ vim _config.yml</span><br><span class="line">deploy:</span><br><span class="line">  type: git  #注意前面有两个空格，冒号后有一个空格</span><br><span class="line">  #repository: https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  # 如果使用ssh免密码方式除了github上提交公钥，同时改成下面一句</span><br><span class="line">  repository: git@github.com:zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line">  #user: zhhuabj</span><br><span class="line">  #pass: password</span><br><span class="line">  </span><br><span class="line">   cp -r ../csdn-blog-export/*.md source/_posts/</span><br><span class="line">   hexo generate</span><br><span class="line">   hexo deploy  #cp -r public/* .</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/13/使用Juju将OpenStack部署在单机的LXD容器上/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1435,7 +1568,7 @@ lxc profile device set default eth0 nictype macvlan
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">68</span>
+                  <span class="site-state-item-count">69</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
