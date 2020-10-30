@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2019-11-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 OVN is the replacement of Neutron, so we need to have a look at OVN. Refer - https://zhhuabj.blog.csdn.net/article/details/42773417 Bas">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Play with OVN">
+<meta property="og:url" content="http://yoursite.com/2020/10/30/Play-with-OVN/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2019-11-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 OVN is the replacement of Neutron, so we need to have a look at OVN. Refer - https://zhhuabj.blog.csdn.net/article/details/42773417 Bas">
+<meta property="og:updated_time" content="2020-10-30T08:07:09.728Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Play with OVN">
+<meta name="twitter:description" content="作者：张华  发表于：2019-11-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 OVN is the replacement of Neutron, so we need to have a look at OVN. Refer - https://zhhuabj.blog.csdn.net/article/details/42773417 Bas">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/10/30/Play-with-OVN/"/>
+
+
+
+
+
+  <title>Play with OVN | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/30/Play-with-OVN/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Play with OVN</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-30T16:06:55+08:00">
+                2020-10-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华  发表于：2019-11-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>OVN is the replacement of Neutron, so we need to have a look at OVN.</p>
+<p>Refer - <a href="https://zhhuabj.blog.csdn.net/article/details/42773417" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/42773417</a></p>
+<h2 id="Basic-ovn-L2-test"><a href="#Basic-ovn-L2-test" class="headerlink" title="Basic ovn L2 test"></a>Basic ovn L2 test</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line">#controller node has ovn-central(northbound and southbound db), but compute node (local ovn-controller) doesn&apos;t have it</span><br><span class="line">sudo apt install -y openvswitch-switch ovn-common ovn-controller-vtep ovn-docker ovn-host ovn-central</span><br><span class="line"></span><br><span class="line">#In controller, enable remote access, tell OVN southbound db to accept TCP connections from ovn-controllers</span><br><span class="line">sudo ovn-sbctl set-connection ptcp:6642</span><br><span class="line">#In controller, for the time being don&apos;t need to tell OVN northbound db to accept TCP connections from ovn-controllers</span><br><span class="line">sudo ovn-nbctl set-connection ptcp:6641</span><br><span class="line">$ netstat -lntp | grep  664</span><br><span class="line">(Not all processes could be identified, non-owned process info</span><br><span class="line"> will not be shown, you would have to be root to see it all.)</span><br><span class="line">tcp        0      0 0.0.0.0:6642            0.0.0.0:*               LISTEN      -</span><br><span class="line">tcp        0      0 127.0.0.1:6640          0.0.0.0:*               LISTEN      -</span><br><span class="line">tcp        0      0 0.0.0.0:6641            0.0.0.0:*               LISTEN      -</span><br><span class="line"></span><br><span class="line">#In controller, create logical switch and ports:</span><br><span class="line">sudo ovn-nbctl ls-add sw</span><br><span class="line">sudo ovn-nbctl lsp-add sw sp1</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses sp1 &quot;00:00:00:00:00:01 10.0.0.1&quot;</span><br><span class="line">sudo ovn-nbctl lsp-add sw sp2</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses sp2 &quot;00:00:00:00:00:02 10.0.0.2&quot;</span><br><span class="line">sudo ovn-nbctl show</span><br><span class="line"></span><br><span class="line">#In compute node, make ovn-controller connect to southbound db, and create test</span><br><span class="line">#external_ids:ovn-remote=&quot;tcp:&lt;remote-controller-ip&gt;:6642&quot; external_ids:ovn-encap-ip=&lt;my-ip-used-for-endpoint&gt;</span><br><span class="line">sudo ovs-vsctl set open_vswitch . external_ids:ovn-remote=&quot;tcp:localhost:6642&quot; external_ids:ovn-encap-ip=localhost \</span><br><span class="line">external_ids:ovn-encap-type=&quot;geneve&quot; external_ids:system-id=&quot;vm1&quot;</span><br><span class="line">sudo ip link add sp1_l type veth peer name sp1_r</span><br><span class="line">sudo ovs-vsctl add-port br-int sp1_l  #sudo ovs-vsctl add-br br-int -- set Bridge br-int fail-mode=secure</span><br><span class="line">sudo ovs-vsctl set interface sp1_l external_ids:iface-id=sp1</span><br><span class="line">sudo ip link set sp1_l up</span><br><span class="line">sudo ip netns add sp1</span><br><span class="line">sudo ip link set sp1_r netns sp1</span><br><span class="line">sudo ip netns exec sp1 ip link set sp1_r up</span><br><span class="line">sudo ip netns exec sp1 ip addr add 10.0.0.1/24 dev sp1_r</span><br><span class="line">sudo ip netns exec sp1 ip link set dev sp1_r address 00:00:00:00:00:01</span><br><span class="line"></span><br><span class="line">#or run the following command on another machine instead</span><br><span class="line">sudo ovs-vsctl set open_vswitch . external_ids:ovn-remote=&quot;tcp:localhost:6642&quot; external_ids:ovn-encap-ip=localhost \</span><br><span class="line">external_ids:ovn-encap-type=&quot;geneve&quot; external_ids:system-id=&quot;vm2&quot;</span><br><span class="line">sudo ip link add sp2_l type veth peer name sp2_r</span><br><span class="line">sudo ovs-vsctl add-port br-int sp2_l</span><br><span class="line">sudo ovs-vsctl set interface sp2_l external_ids:iface-id=sp2</span><br><span class="line">sudo ip link set sp2_l up</span><br><span class="line">sudo ip netns add sp2</span><br><span class="line">sudo ip link set sp2_r netns sp2</span><br><span class="line">sudo ip netns exec sp2 ip link set sp2_r up</span><br><span class="line">sudo ip netns exec sp2 ip addr add 10.0.0.2/24 dev sp2_r</span><br><span class="line">sudo ip netns exec sp2 ip link set dev sp2_r address 00:00:00:00:00:02</span><br><span class="line"></span><br><span class="line">#test</span><br><span class="line">$ sudo ip netns exec sp1 ping 10.0.0.2 -c 1</span><br><span class="line">PING 10.0.0.2 (10.0.0.2) 56(84) bytes of data.</span><br><span class="line">64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=0.318 ms</span><br><span class="line"></span><br><span class="line">hua@node1:~$ sudo ovn-nbctl show</span><br><span class="line">switch a28291a4-bea9-445f-af0f-cae65c04e9f7 (sw)</span><br><span class="line">    port sp2</span><br><span class="line">        addresses: [&quot;00:00:00:00:00:02 10.0.0.2&quot;]</span><br><span class="line">    port sp1</span><br><span class="line">        addresses: [&quot;00:00:00:00:00:01 10.0.0.1&quot;]</span><br><span class="line">hua@node1:~$ sudo ovn-sbctl show</span><br><span class="line">Chassis vm2</span><br><span class="line">    hostname: node1</span><br><span class="line">    Encap geneve</span><br><span class="line">        ip: localhost</span><br><span class="line">        options: &#123;csum=&quot;true&quot;&#125;</span><br><span class="line">    Port_Binding sp2</span><br><span class="line">    Port_Binding sp1</span><br><span class="line"></span><br><span class="line"># reset</span><br><span class="line">sudo ovn-nbctl lsp-del sp1</span><br><span class="line">sudo ovn-nbctl lsp-del sp2</span><br><span class="line">sudo ovn-nbctl ls-del sw</span><br><span class="line">sudo ip netns del sp1</span><br><span class="line">sudo ip netns del sp2</span><br><span class="line">sudo ovs-vsctl del-port br-int sp1_l</span><br><span class="line">sudo ovs-vsctl del-port br-int sp2_l</span><br></pre></td></tr></table></figure>
+<h2 id="Basic-ovs-flow-test"><a href="#Basic-ovs-flow-test" class="headerlink" title="Basic ovs flow test"></a>Basic ovs flow test</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run -itd --name i1 --net=none ubuntu:20.04 /bin/bash</span><br><span class="line">sudo docker run -itd --name i2 --net=none ubuntu:20.04 /bin/bash</span><br><span class="line">sudo ovs-vsctl add-br br-int</span><br><span class="line">sudo ovs-docker add-port br-int eth0 i1 --ipaddress=192.168.1.2/24</span><br><span class="line">sudo ovs-docker add-port br-int eth0 i2 --ipaddress=192.168.1.3/24</span><br><span class="line">sudo docker exec -it i1 bash</span><br><span class="line">sudo docker exec -it i1 ping 192.168.1.3</span><br><span class="line">sudo ovs-vsctl list interface d15c80f8359d4_l</span><br><span class="line">#when doing test in the two machines</span><br><span class="line">#sudo ovs-vsctl add-port br-int vxlan1 -- set interface vxlan1 type=vxlan options:remote_ip=192.168.99.122 options:key=flow</span><br><span class="line">#sudo ovs-vsctl add-port br-int vxlan1 -- set interface vxlan1 type=vxlan options:remote_ip=192.168.99.123 options:key=flow</span><br><span class="line"></span><br><span class="line">#test 1 - delete flow</span><br><span class="line">$ sudo ovs-ofctl dump-flows br-int</span><br><span class="line"> cookie=0x0, duration=563.338s, table=0, n_packets=6, n_bytes=364, priority=0 actions=NORMAL</span><br><span class="line">sudo ovs-ofctl del-flows br-int</span><br><span class="line">sudo docker exec -it i1 ping 192.168.1.3</span><br><span class="line"></span><br><span class="line">#test 2 - add flow</span><br><span class="line">$ sudo ovs-vsctl list interface d15c80f8359d4_l |grep ofport</span><br><span class="line">ofport              : 3</span><br><span class="line">$ sudo ovs-vsctl list interface 85023af15d0c4_l |grep ofport</span><br><span class="line">ofport              : 4</span><br><span class="line">sudo ovs-ofctl add-flow br-int &quot;priority=1,in_port=3,actions=output:4&quot;</span><br><span class="line">sudo ovs-ofctl add-flow br-int &quot;priority=2,in_port=4,actions=output:3&quot;</span><br><span class="line">sudo ovs-ofctl dump-flows br-int</span><br><span class="line">sudo docker exec -it i1 ping 192.168.1.3</span><br></pre></td></tr></table></figure>
+<h2 id="ovn-L3-test"><a href="#ovn-L3-test" class="headerlink" title="ovn L3 test"></a>ovn L3 test</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">#create two vSwitches</span><br><span class="line">sudo ovn-nbctl ls-add sw0</span><br><span class="line">sudo ovn-nbctl lsp-add sw0 sw0-port1</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses sw0-port1 &quot;50:54:00:00:00:01 192.168.0.2&quot;</span><br><span class="line"></span><br><span class="line">sudo ovn-nbctl ls-add sw1</span><br><span class="line">sudo ovn-nbctl lsp-add sw1 sw1-port1</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses sw1-port1 &quot;50:54:00:00:00:03 11.0.0.2&quot;</span><br><span class="line"></span><br><span class="line">#create a vRouter, and connect two vSwitches to it</span><br><span class="line">sudo ovn-nbctl lr-add lr0</span><br><span class="line"></span><br><span class="line">sudo ovn-nbctl lrp-add lr0 lrp0 00:00:00:00:ff:01 192.168.0.1/24</span><br><span class="line">sudo ovn-nbctl lsp-add sw0 lrp0-attachment</span><br><span class="line">sudo ovn-nbctl lsp-set-type lrp0-attachment router</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses lrp0-attachment 00:00:00:00:ff:01</span><br><span class="line">sudo ovn-nbctl lsp-set-options lrp0-attachment router-port=lrp0</span><br><span class="line"></span><br><span class="line">sudo ovn-nbctl lrp-add lr0 lrp1 00:00:00:00:ff:02 11.0.0.1/24</span><br><span class="line">sudo ovn-nbctl lsp-add sw1 lrp1-attachment</span><br><span class="line">sudo ovn-nbctl lsp-set-type lrp1-attachment router</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses lrp1-attachment 00:00:00:00:ff:02</span><br><span class="line">sudo ovn-nbctl lsp-set-options lrp1-attachment router-port=lrp1</span><br><span class="line"></span><br><span class="line">hua@node1:~$ sudo ovn-nbctl show</span><br><span class="line">switch 25c77c44-9be4-434b-8b38-e325d4c2b044 (sw0)</span><br><span class="line">    port lrp0-attachment</span><br><span class="line">        type: router</span><br><span class="line">        addresses: [&quot;00:00:00:00:ff:01&quot;]</span><br><span class="line">        router-port: lrp0</span><br><span class="line">    port sw0-port1</span><br><span class="line">        addresses: [&quot;50:54:00:00:00:01 192.168.0.2&quot;]</span><br><span class="line">switch 0b33e823-577b-4c76-a661-c3bd358624cc (sw1)</span><br><span class="line">    port lrp1-attachment</span><br><span class="line">        type: router</span><br><span class="line">        addresses: [&quot;00:00:00:00:ff:02&quot;]</span><br><span class="line">        router-port: lrp1</span><br><span class="line">    port sw1-port1</span><br><span class="line">        addresses: [&quot;50:54:00:00:00:03 11.0.0.2&quot;]</span><br><span class="line">router cd8095b3-287f-4e0c-af3d-a10a089f977c (lr0)</span><br><span class="line">    port lrp1</span><br><span class="line">        mac: &quot;00:00:00:00:ff:02&quot;</span><br><span class="line">        networks: [&quot;11.0.0.1/24&quot;]</span><br><span class="line">    port lrp0</span><br><span class="line">        mac: &quot;00:00:00:00:ff:01&quot;</span><br><span class="line">        networks: [&quot;192.168.0.1/24&quot;]</span><br><span class="line">hua@node1:~$ sudo ovn-trace --minimal sw0 &apos;inport == &quot;sw0-port1&quot; &amp;&amp; eth.src == 50:54:00:00:00:01 &amp;&amp; ip4.src == 192.168.0.2 &amp;&amp; eth.dst == 00:00:00:00:ff:01 &amp;&amp; ip4.dst == 11.0.0.2 &amp;&amp; ip.ttl == 64&apos;</span><br><span class="line"># ip,reg14=0x1,vlan_tci=0x0000,dl_src=50:54:00:00:00:01,dl_dst=00:00:00:00:ff:01,nw_src=192.168.0.2,nw_dst=11.0.0.2,nw_proto=0,nw_tos=0,nw_ecn=0,nw_ttl=64</span><br><span class="line">ip.ttl--;</span><br><span class="line">eth.src = 00:00:00:00:ff:02;</span><br><span class="line">eth.dst = 50:54:00:00:00:03;</span><br><span class="line">output(&quot;sw1-port1&quot;);</span><br><span class="line"></span><br><span class="line"># reset</span><br><span class="line">sudo ovn-nbctl ls-del sw0</span><br><span class="line">sudo ovn-nbctl ls-del sw1</span><br><span class="line">sudo ovn-nbctl lr-del lr0</span><br></pre></td></tr></table></figure>
+<p>其他见文档　OVN Routing and ovn-trace　－　<a href="http://dani.foroselectronica.es/ovn-routing-and-ovn-trace-550/" target="_blank" rel="external">http://dani.foroselectronica.es/ovn-routing-and-ovn-trace-550/</a></p>
+<h2 id="ovn-dhcp"><a href="#ovn-dhcp" class="headerlink" title="ovn dhcp"></a>ovn dhcp</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">#create dhcp port</span><br><span class="line">sudo ovn-nbctl lsp-add sw0 sw0-dhcpport</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses sw0-dhcpport &quot;02:ac:10:ff:01:30 192.168.0.3&quot;</span><br><span class="line">#sudo ovn-nbctl lsp-set-port-security sw0-dhcpport &quot;02:ac:10:ff:01:30 192.168.0.3&quot;</span><br><span class="line">options=&quot;$(sudo ovn-nbctl create DHCP_Options cidr=192.168.0.0/24 \</span><br><span class="line">options=&quot;\&quot;server_id\&quot;=\&quot;192.168.0.10\&quot; \&quot;server_mac\&quot;=\&quot;02:ac:10:ff:01:29\&quot; \</span><br><span class="line">\&quot;lease_time\&quot;=\&quot;3600\&quot; \&quot;router\&quot;=\&quot;192.168.0.10\&quot;&quot;)&quot;</span><br><span class="line">echo &quot;DHCP options is: &quot; $options</span><br><span class="line">sudo ovn-nbctl lsp-set-dhcpv4-options sw0-dhcpport $options</span><br><span class="line">sudo ovn-nbctl dhcp-options-list</span><br><span class="line">sudo ovn-nbctl lsp-get-dhcpv4-options sw0-dhcpport</span><br><span class="line"></span><br><span class="line">#create test vm</span><br><span class="line">sudo ip netns add nsi3</span><br><span class="line">sudo ovs-vsctl add-port br-int i3 -- set interface i3 type=internal</span><br><span class="line">sudo ip link set i3 address 02:ac:10:ff:01:30</span><br><span class="line">sudo ip link set i3 netns nsi3</span><br><span class="line">sudo ovs-vsctl set Interface i3 external_ids:iface-id=sw0-i3</span><br><span class="line"></span><br><span class="line">#get ip address via dhcp</span><br><span class="line">sudo ip netns exec nsi3 dhclient i3</span><br><span class="line">sudo ip netns exec nsi3 ip addr show i3</span><br><span class="line">sudo ip netns exec nsi3 ip route show</span><br></pre></td></tr></table></figure>
+<h2 id="OVN-vRouter"><a href="#OVN-vRouter" class="headerlink" title="OVN vRouter"></a>OVN vRouter</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo ovn-nbctl ls-add sw0</span><br><span class="line">sudo ovn-nbctl lsp-add sw0 outs-wan</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses outs-wan unknown</span><br><span class="line">sudo ovn-nbctl lsp-set-type outs-wan localnet</span><br><span class="line">sudo ovn-nbctl lsp-set-options outs-wan network_name=wanNet</span><br><span class="line"></span><br><span class="line">sudo ovs-vsctl add-br br-eth</span><br><span class="line">sudo ovs-vsctl set Open_vSwitch . external-ids:ovn-bridge-mappings=wanNet:br-eth</span><br><span class="line">sudo ovs-vsctl add-port br-eth eth0</span><br><span class="line">sudo ip link set br-eth up</span><br><span class="line">sudo ip addr add 192.168.66.111/23 dev br-eth</span><br><span class="line"></span><br><span class="line">#associated VM&apos;s port to bridge</span><br><span class="line">sudo ovs-vsctl set Interface i3 external_ids:iface-id=i3</span><br></pre></td></tr></table></figure>
+<h2 id="OVN-SNAT-DNAT"><a href="#OVN-SNAT-DNAT" class="headerlink" title="OVN SNAT/DNAT"></a>OVN SNAT/DNAT</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#fixed-ip: 10.0.1.103  FIP: 192.168.99.122</span><br><span class="line">ovn-nbctl -- --id=@nat create nat type=&quot;snat&quot; logical_ip=10.0.1.0/24 external_ip=192.168.99.122 -- add logical_router gateway_route nat @nat</span><br><span class="line">ovn-nbctl -- --id=@nat create nat type=&quot;dnat_and_snat&quot; logical_ip=10.0.1.103 external_ip=192.168.99.122 -- add logical_router gateway_route nat @nat</span><br></pre></td></tr></table></figure>
+<h2 id="一个问题，如何从ovn网关ping其他机器"><a href="#一个问题，如何从ovn网关ping其他机器" class="headerlink" title="一个问题，如何从ovn网关ping其他机器"></a>一个问题，如何从ovn网关ping其他机器</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">如下，以前non-ovn环境下，可以从l3-agent上的qrouter-xxx上通过GW(192.168.21.1)来ping servic vm IP (192.168.21.39), 但现在ovn情况下无namespace了，该如何来做这件事呢？</span><br><span class="line">router ca47f4c3-3379-475a-ab80-fac4062e0a3e (neutron-ab4310a3-09b9-4638-8f7c-3873bc9b4c47) (aka provider-router)</span><br><span class="line">    port lrp-c6ffc24d-9213-4e31-80e2-f68107f9aad1</span><br><span class="line">        mac: &quot;fa:16:3e:0e:f8:f5&quot;</span><br><span class="line">        networks: [&quot;192.168.21.1/24&quot;]</span><br><span class="line">    ...</span><br><span class="line">switch a14b3c9a-b5f8-43f2-9ac8-18e58d9f1887 (neutron-0f409568-561e-4e33-89ea-2814faa44add) (aka private)</span><br><span class="line">    port 3f382ff5-7601-4bec-a687-e964adadefc2</span><br><span class="line">        addresses: [&quot;fa:16:3e:f1:fa:a5 192.168.21.237&quot;]</span><br><span class="line">    port 38d6c6f7-8a64-406d-94bb-c550eb50427d</span><br><span class="line">        type: localport</span><br><span class="line">        addresses: [&quot;fa:16:3e:8d:0b:5b 192.168.21.2&quot;]</span><br><span class="line">    port c6ffc24d-9213-4e31-80e2-f68107f9aad1</span><br><span class="line">        type: router</span><br><span class="line">        router-port: lrp-c6ffc24d-9213-4e31-80e2-f68107f9aad1</span><br><span class="line">    port 18ce4590-453a-4152-97b9-eafb3523047d (aka octavia-lb-6058a336-3922-468f-9f70-8e34bd14e195)</span><br><span class="line">        type: virtual</span><br><span class="line">        addresses: [&quot;fa:16:3e:ce:84:fd 192.168.21.39&quot;]</span><br><span class="line"></span><br><span class="line">这样，来做一个pingvm</span><br><span class="line">sudo ovn-nbctl lsp-add a14b3c9a-b5f8-43f2-9ac8-18e58d9f1887 pingvm</span><br><span class="line">sudo ovn-nbctl lsp-set-addresses pingvm &quot;40:44:00:00:00:01 192.168.21.122&quot;</span><br><span class="line"></span><br><span class="line">在计算节点中继续：</span><br><span class="line">sudo ovs-vsctl add-port br-int pingvm -- set Interface pingvm type=internal -- set Interface pingvm external_ids:iface-id=pingvm</span><br><span class="line">sudo ip netns add pingvm</span><br><span class="line">sudo ip link set pingvm netns pingvm</span><br><span class="line">sudo ip netns exec pingvm ip link set pingvm address 40:44:00:00:00:01</span><br><span class="line">sudo ip netns exec pingvm ip addr add 192.168.21.122/24 dev pingvm</span><br><span class="line">sudo ip netns exec pingvm ip link set pingvm up</span><br><span class="line">sudo ip netns exec pingvm ip route add default via 192.168.21.1</span><br><span class="line"></span><br><span class="line">测试, 上面实验可能ping不了，因为应该用octavia的管理IP，但这不妨碍，思路如此．</span><br><span class="line">sudo ip netns exec pingvm ping 192.168.21.39</span><br><span class="line">sudo ip netns exec pingvm ssh 192.168.21.39</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/10/28/ssh总断/" rel="next" title="ssh总断">
+                <i class="fa fa-chevron-left"></i> ssh总断
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-ovn-L2-test"><span class="nav-number">1.</span> <span class="nav-text">Basic ovn L2 test</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Basic-ovs-flow-test"><span class="nav-number">2.</span> <span class="nav-text">Basic ovs flow test</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ovn-L3-test"><span class="nav-number">3.</span> <span class="nav-text">ovn L3 test</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ovn-dhcp"><span class="nav-number">4.</span> <span class="nav-text">ovn dhcp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-vRouter"><span class="nav-number">5.</span> <span class="nav-text">OVN vRouter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-SNAT-DNAT"><span class="nav-number">6.</span> <span class="nav-text">OVN SNAT/DNAT</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个问题，如何从ovn网关ping其他机器"><span class="nav-number">7.</span> <span class="nav-text">一个问题，如何从ovn网关ping其他机器</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
