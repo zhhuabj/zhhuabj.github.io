@@ -231,6 +231,144 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/29/Test-multipath-feature-by-openstack-lioadm/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/11/29/Test-multipath-feature-by-openstack-lioadm/" itemprop="url">Test multipath feature by openstack lioadm</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-29T16:08:13+08:00">
+                2017-11-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>之前写过一篇关于使用tgtadm测试OpenStack Multipath特性的<a href="http://blog.csdn.net/quqi99/article/details/54973369" target="_blank" rel="external">文章</a>。tgt是一个用户态的iscsi target，lio是内核核的iscsi target并且它已经被集成到了Linux内核。<br>在OpenStack Icehouse版本，由于仅支持单target (即cinder还不支持iscsi_secondary_ip_addresses选项用于配置第二个target)，所以基于Icehouse的tgtadm将无法支持multipath。但使用lioadm改点配置可以支持。</p>
+<h2 id="基于OpenStack环境"><a href="#基于OpenStack环境" class="headerlink" title="基于OpenStack环境"></a>基于OpenStack环境</h2><p>搭建一个简单带cinder的openstack环境即可，不需要ceph支持。可参考<a href="http://blog.csdn.net/quqi99/article/details/54973369" target="_blank" rel="external">这篇文章</a>的一小部分安装。</p>
+<h2 id="cinder节点安装LIO-target与加载target-core-mod模块"><a href="#cinder节点安装LIO-target与加载target-core-mod模块" class="headerlink" title="cinder节点安装LIO-target与加载target_core_mod模块"></a>cinder节点安装LIO-target与加载target_core_mod模块</h2><p>先加载target_core_mod模块<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">juju ssh cinder/0</span><br><span class="line">sudo apt install linux-image-extra-$(uname -r)  #Avoid the error &apos;Module target_core_mod not found&apos;</span><br><span class="line">sudo apt build-dep linux-image-$(uname -r)</span><br><span class="line">sudo modprobe target_core_mod</span><br></pre></td></tr></table></figure></p>
+<p>cinder节点上需要安装LIO-target<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#Install LIO-target - https://www.thomas-krenn.com/de/wiki/Linux-IO_Target_(LIO)_unter_Ubuntu_14.04</span><br><span class="line">sudo apt install open-iscsi targetcli python-urwid lio-utils python-pyparsing python-prettytable python-rtslib python-configshell</span><br><span class="line">sudo pip install &apos;rtslib-fb&gt;=2.1.39&apos;</span><br></pre></td></tr></table></figure></p>
+<p>需要说明的是，这里面有一个bug，因为Icehouse版本 /usr/bin/cinder-rtstool文件中使用了rtslib-fb&gt;=2.1.39，所以我们必须使用“sudo pip install ‘rtslib-fb&gt;=2.1.39’”命令安装它。但是rtslib-fb这个模块比较老又被废弃了，targetcli工具又使用了比较新的rtslib模块。<br>如果我们删除rtslib-fb模块(sudo pip uninstall y rtslib-fb)而使用rtslib模块targetcli工具将会恢复正常，但是/usr/bin/cinder-rtstool工具在运行下列命令时会报错：’ImportError: No module named rtslib_fb’<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cinder-rootwrap /etc/cinder/rootwrap.conf cinder-rtstool create /dev/cinder-volumes/volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea zAXMzsNKJ4kBvDYCZBec VyhWebHq3GBKE22zYjpX</span><br></pre></td></tr></table></figure></p>
+<p>幸好，/usr/bin/cinder-rtstool里没有使用targetcli，所以我们必须使用‘rtslib-fb&gt;=2.1.39’模块。<br>下面是正常使用targetcli工具的例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c0c753-trusty-icehouse-0:~# targetcli</span><br><span class="line">targetcli GIT_VERSION (rtslib GIT_VERSION)</span><br><span class="line">Copyright (c) 2011-2013 by Datera, Inc.</span><br><span class="line">All rights reserved.</span><br><span class="line">/&gt; ls</span><br><span class="line">o- / ............................................................................................................... [...]</span><br><span class="line">  o- backstores .................................................................................................... [...]</span><br><span class="line">  | o- fileio ......................................................................................... [0 Storage Object]</span><br><span class="line">  | o- iblock ......................................................................................... [0 Storage Object]</span><br><span class="line">  | o- pscsi .......................................................................................... [0 Storage Object]</span><br><span class="line">  | o- rd_dr .......................................................................................... [0 Storage Object]</span><br><span class="line">  | o- rd_mcp ......................................................................................... [0 Storage Object]</span><br><span class="line">  o- ib_srpt ................................................................................................. [0 Targets]</span><br><span class="line">  o- iscsi ................................................................................................... [0 Targets]</span><br><span class="line">  o- loopback ................................................................................................ [0 Targets]</span><br><span class="line">  o- qla2xxx ................................................................................................. [0 Targets]</span><br><span class="line">  o- tcm_fc .................................................................................................. [0 Targets]</span><br><span class="line">/&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Cinder节点继续修改"><a href="#Cinder节点继续修改" class="headerlink" title="Cinder节点继续修改"></a>Cinder节点继续修改</h2><p>Icehouse的lioadm默认也是只支持一个iscsi target的，要想支持多个，需要做如下的修改，<strong>让一个cinder节点(10.5.0.22)的两个端口(3260, 3261)去做multipath</strong>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo sed -i &apos;s/import rtslib/import rtslib_fb as rtslib/g&apos; /usr/bin/cinder-rtstool</span><br><span class="line">sudo sed -i &apos;s/if target == None:/if not target:/g&apos; /usr/bin/cinder-rtstool</span><br><span class="line"># For this step, you must replace IPADDRESS with the actual IP of the cinder/0 node.</span><br><span class="line">sudo sed -i &quot;s/rtslib.NetworkPortal(tpg_new, &apos;0.0.0.0&apos;, 3260, mode=&apos;any&apos;)/rtslib.NetworkPortal(tpg_new, &apos;10.5.0.22&apos;, 3260, mode=&apos;any&apos;)\n\t rtslib.NetworkPortal(tpg_new, &apos;10.5.0.22&apos;, 3261, mode=&apos;any&apos;)/g&quot; /usr/bin/cinder-rtstool</span><br></pre></td></tr></table></figure></p>
+<p>通过charm变更使用lioadm，当然也可以手工修改<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http_proxy=http://squid.internal:3128 git clone https://github.com/openstack/charm-cinder.git</span><br><span class="line">cd charm-cinder</span><br><span class="line">sed -i &apos;s/tgtadm/lioadm/g&apos; templates/icehouse/cinder.conf</span><br><span class="line">juju upgrade-charm cinder --path $PWD</span><br></pre></td></tr></table></figure></p>
+<p>停止tgt服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju ssh cinder/0 sudo service tgt stop</span><br></pre></td></tr></table></figure></p>
+<p>使用lioadm时，<strong>不需要</strong>像tgtadm那样在计算节点的nova.conf中配置下列参考支持multipath:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[libvirt]</span><br><span class="line">iscsi_use_multipath = True</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用windows镜像"><a href="#使用windows镜像" class="headerlink" title="使用windows镜像"></a>使用windows镜像</h2><p>我们使用windows镜像测试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">source ~/novarc &amp;&amp; glance image-download --file windows2012R2_virtio.raw --progress 31dd4e9f-ccd3-4c57-b10e-6b5e99366240</span><br><span class="line">source novarc &amp;&amp; glance image-create --name windows2012R2 --file /bak/windows2012R2_virtio.raw --visibility public --progress --container-format bare --disk-format raw</span><br><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">nova flavor-create myflavor auto 3200 45 1 </span><br><span class="line">openstack server create --wait --image windows2012R2 --flavor myflavor --key-name mykey --nic net-id=dd269a94-5b76-4e24-8046-4d377fa3be5f --min 1 --max 1 i1</span><br><span class="line">nova floating-ip-create</span><br><span class="line">nova floating-ip-associate i1 10.5.150.2</span><br><span class="line">./tools/sec_groups.sh</span><br></pre></td></tr></table></figure></p>
+<p>Windows镜像比较大，有31G，所以默认创建的glance硬盘不够会失败，删除glance节点再通过‘root-disk=90G’参数重新安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">juju remove-unit glance/0</span><br><span class="line">juju remove-application glance</span><br><span class="line">juju deploy cs:~openstack-charmers-next/glance --constraints &quot;mem=1G root-disk=90G&quot; --series trusty</span><br><span class="line">juju add-relation nova-cloud-controller glance</span><br><span class="line">juju add-relation nova-compute glance</span><br><span class="line">juju add-relation glance mysql</span><br><span class="line">juju add-relation glance keystone</span><br><span class="line">juju add-relation glance &quot;cinder:image-service&quot;</span><br><span class="line">juju add-relation glance rabbitmq-server</span><br></pre></td></tr></table></figure></p>
+<p>至于如何在多层内网情况下仍然能够通过图形化RDP界面而不是命令行来访问windows虚机，可<a href="http://blog.csdn.net/quqi99/article/details/78662647" target="_blank" rel="external">参考文章</a>。</p>
+<h2 id="为虚机创建磁盘"><a href="#为虚机创建磁盘" class="headerlink" title="为虚机创建磁盘"></a>为虚机创建磁盘</h2><p>为虚机创建磁盘：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cinder create --display_name test_volume 1</span><br><span class="line">nova volume-attach i1 1a3e3146-5df7-49ed-8041-de1de257a300</span><br><span class="line"></span><br><span class="line">root@juju-c0c753-trusty-icehouse-7:~# sudo iscsiadm -m session</span><br><span class="line">tcp: [1] 10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-8237a312-7512-41f5-a02a-34856fa3896e</span><br><span class="line">tcp: [2] 10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1a3e3146-5df7-49ed-8041-de1de257a300</span><br><span class="line">root@juju-c0c753-trusty-icehouse-7:~# sudo iscsiadm -m node</span><br><span class="line">10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1a3e3146-5df7-49ed-8041-de1de257a300</span><br><span class="line">10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-8237a312-7512-41f5-a02a-34856fa3896e</span><br></pre></td></tr></table></figure></p>
+<p>登录windows虚机后在Powershell中使用”Get-Disk”命令可以看到一个新磁盘。<br>同时登录计算节点看到libvirt已经为windows虚机生成了配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;disk type=&apos;block&apos; device=&apos;disk&apos;&gt;</span><br><span class="line">     &lt;driver name=&apos;qemu&apos; type=&apos;raw&apos; cache=&apos;none&apos;/&gt;</span><br><span class="line">     &lt;source dev=&apos;/dev/mapper/360014050fd353e4dd274f20b1abd70e4&apos;/&gt;</span><br><span class="line">     &lt;target dev=&apos;vdb&apos; bus=&apos;virtio&apos;/&gt;</span><br><span class="line">     &lt;serial&gt;1035ee80-339e-4e4e-b4c9-6c925cb259ea&lt;/serial&gt;</span><br><span class="line">     &lt;alias name=&apos;virtio-disk1&apos;/&gt;</span><br><span class="line">     &lt;address type=&apos;pci&apos; domain=&apos;0x0000&apos; bus=&apos;0x00&apos; slot=&apos;0x05&apos; function=&apos;0x0&apos;/&gt;</span><br><span class="line">   &lt;/disk&gt;</span><br></pre></td></tr></table></figure></p>
+<p>mutlipath信息如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install multipath-tools</span><br><span class="line"># multipath -ll</span><br><span class="line">360014050fd353e4dd274f20b1abd70e4 dm-0 LIO-ORG ,IBLOCK          </span><br><span class="line">size=1.0G features=&apos;0&apos; hwhandler=&apos;0&apos; wp=rw</span><br><span class="line">|-+- policy=&apos;round-robin 0&apos; prio=1 status=active</span><br><span class="line">| `- 4:0:0:0 sdc   8:32   active ready  running</span><br><span class="line">`-+- policy=&apos;round-robin 0&apos; prio=1 status=enabled</span><br><span class="line">  `- 5:0:0:0 sdd   8:48   active ready  running</span><br><span class="line"></span><br><span class="line">root@juju-c0c753-trusty-icehouse-7:~# sudo iscsiadm -m session</span><br><span class="line">tcp: [1] 10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-8237a312-7512-41f5-a02a-34856fa3896e</span><br><span class="line">tcp: [2] 10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1a3e3146-5df7-49ed-8041-de1de257a300</span><br><span class="line">tcp: [3] 10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br><span class="line">tcp: [4] 10.5.0.22:3261,1 iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br><span class="line">root@juju-c0c753-trusty-icehouse-7:~# sudo iscsiadm -m node</span><br><span class="line">10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1a3e3146-5df7-49ed-8041-de1de257a300</span><br><span class="line">10.5.0.22:3261,1 iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br><span class="line">10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br><span class="line">10.5.0.22:3260,1 iqn.2010-10.org.openstack:volume-8237a312-7512-41f5-a02a-34856fa3896e</span><br><span class="line"></span><br><span class="line">root@juju-c0c753-trusty-icehouse-7:~# ls /dev/mapper/360014050fd353e4dd274f20b1abd70e4</span><br><span class="line">/dev/mapper/360014050fd353e4dd274f20b1abd70e4</span><br></pre></td></tr></table></figure></p>
+<h2 id="detach磁盘"><a href="#detach磁盘" class="headerlink" title="detach磁盘"></a>detach磁盘</h2><p>detach磁盘，在syslog中看到了一系列的错误日志，但是功能正常，能够正常detach<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nova volume-dettach i1  1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">2017-11-29 07:30:13.641 25277 WARNING cinder.context [-] Arguments dropped when creating context: &#123;&apos;user&apos;: u&apos;186c37006bd94287ae768e1f80676584&apos;, &apos;tenant&apos;: u&apos;becbf8797c954e2492d62a42a43a4324&apos;, &apos;user_identity&apos;: u&apos;186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -&apos;&#125;</span><br><span class="line">2017-11-29 07:30:13.867 25277 WARNING cinder.context [-] Arguments dropped when creating context: &#123;&apos;user&apos;: u&apos;186c37006bd94287ae768e1f80676584&apos;, &apos;tenant&apos;: u&apos;becbf8797c954e2492d62a42a43a4324&apos;, &apos;user_identity&apos;: u&apos;186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -&apos;&#125;</span><br><span class="line">2017-11-29 07:30:13.876 25277 DEBUG cinder.openstack.common.lockutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Got semaphore &quot;1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume&quot; for method &quot;lvo_inner2&quot;... inner /usr/lib/python2.7/dist-packages/cinder/openstack/common/lockutils.py:191</span><br><span class="line">2017-11-29 07:30:13.877 25277 DEBUG cinder.openstack.common.lockutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Attempting to grab file lock &quot;1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume&quot; for method &quot;lvo_inner2&quot;... inner /usr/lib/python2.7/dist-packages/cinder/openstack/common/lockutils.py:202</span><br><span class="line">2017-11-29 07:30:13.878 25277 DEBUG cinder.openstack.common.lockutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Got file lock &quot;1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume&quot; at /var/lock/cinder/cinder-1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume for method &quot;lvo_inner2&quot;... inner /usr/lib/python2.7/dist-packages/cinder/openstack/common/lockutils.py:232</span><br><span class="line">2017-11-29 07:30:14.245 25277 DEBUG cinder.volume.manager [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] volume 1035ee80-339e-4e4e-b4c9-6c925cb259ea: removing export detach_volume /usr/lib/python2.7/dist-packages/cinder/volume/manager.py:687</span><br><span class="line">2017-11-29 07:30:14.263 25277 INFO cinder.brick.iscsi.iscsi [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Removing iscsi_target: 1035ee80-339e-4e4e-b4c9-6c925cb259ea</span><br><span class="line">2017-11-29 07:30:14.264 25277 DEBUG cinder.openstack.common.processutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Running cmd (subprocess): sudo cinder-rootwrap /etc/cinder/rootwrap.conf cinder-rtstool delete iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea execute /usr/lib/python2.7/dist-packages/cinder/openstack/common/processutils.py:147</span><br><span class="line">2017-11-29 07:30:14.738 25277 DEBUG cinder.openstack.common.processutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Result was 0 execute /usr/lib/python2.7/dist-packages/cinder/openstack/common/processutils.py:171</span><br><span class="line">2017-11-29 07:30:14.754 25277 DEBUG cinder.openstack.common.lockutils [req-e5121fa9-5b8d-48ac-a378-21c5c049fda8 186c37006bd94287ae768e1f80676584 becbf8797c954e2492d62a42a43a4324 - - -] Released file lock &quot;1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume&quot; at /var/lock/cinder/cinder-1035ee80-339e-4e4e-b4c9-6c925cb259ea-detach_volume for method &quot;lvo_inner2&quot;... inner /usr/lib/python2.7/dist-packages/cinder/openstack/common/lockutils.py:239</span><br><span class="line">2017-11-29 07:31:02.297 25277 DEBUG cinder.openstack.common.periodic_task [-] Running periodic task VolumeManager._publish_service_capabilities run_periodic_tasks /usr/lib/python2.7/dist-packages/cinder/openstack/common/periodic_task.py:178</span><br><span class="line">2017-11-29 07:31:02.300 25277 DEBUG cinder.manager [-] Notifying Schedulers of capabilities ... _publish_service_capabilities /usr/lib/python2.7/dist-packages/cinder/manager.py:128</span><br><span class="line">2017-11-29 07:31:02.321 25277 DEBUG cinder.openstack.common.periodic_task [-] Running periodic task VolumeManager._report_driver_status run_periodic_tasks /usr/lib/python2.7/dist-packages/cinder/openstack/common/periodic_task.py:178</span><br><span class="line">2017-11-29 07:31:02.323 25277 INFO cinder.volume.manager [-] Updating volume status</span><br><span class="line">2017-11-29 07:31:02.323 25277 DEBUG cinder.volume.drivers.lvm [-] Updating volume stats _update_volume_stats /usr/lib/python2.7/dist-packages/cinder/volume/drivers/lvm.py:346</span><br><span class="line">2017-11-29 07:31:02.325 25277 DEBUG cinder.openstack.common.processutils [-] Running cmd (subprocess): sudo cinder-rootwrap /etc/cinder/rootwrap.conf env LC_ALL=C vgs --noheadings --unit=g -o name,size,free,lv_count,uuid --separator : --nosuffix cinder-volumes execute /usr/lib/python2.7/dist-packages/cinder/openstack/common/processutils.py:147</span><br><span class="line">2017-11-29 07:31:02.469 25277 DEBUG cinder.openstack.common.processutils [-] Result was 0 execute /usr/lib/python2.7/dist-packages/cinder/openstack/common/processutils.py:171</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Nov 29 07:29:57 juju-c0c753-trusty-icehouse-7 kernel: [86241.589558]  connection1:0: detected conn error (1020)</span><br><span class="line"></span><br><span class="line">Nov 29 07:29:57 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:29:57 juju-c0c753-trusty-icehouse-7 kernel: [86242.360928]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:29:58 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:00 juju-c0c753-trusty-icehouse-7 kernel: [86244.630641]  connection1:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:00 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:00 juju-c0c753-trusty-icehouse-7 kernel: [86245.399222]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:01 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:03 juju-c0c753-trusty-icehouse-7 kernel: [86247.672850]  connection1:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:03 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:03 juju-c0c753-trusty-icehouse-7 kernel: [86248.442433]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:04 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:06 juju-c0c753-trusty-icehouse-7 kernel: [86250.702435]  connection1:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:06 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:06 juju-c0c753-trusty-icehouse-7 kernel: [86251.461198]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:07 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:09 juju-c0c753-trusty-icehouse-7 kernel: [86253.725045]  connection1:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:09 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 kernel: [86254.494474]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 kernel: [86254.659090] type=1400 audit(1511940610.186:17): apparmor=&quot;STATUS&quot; operation=&quot;profile_replace&quot; profile=&quot;unconfined&quot; name=&quot;libvirt-6e468b3b-6cb4-4d5d-a9d6-6ba32b4bd8cb&quot; pid=16120 comm=&quot;apparmor_parser&quot;</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: dm-0: add map (uevent)</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: dm-0: devmap already registered</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:10 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: dm-0: remove map (uevent)</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: 360014050fd353e4dd274f20b1abd70e4: devmap removed</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: 360014050fd353e4dd274f20b1abd70e4: stop event checker thread (140170797860608)</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: dm-0: remove map (uevent)</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: uevent trigger error</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: sdc: remove path (uevent)</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 kernel: [86255.657776] sd 4:0:0:0: [sdc] Synchronizing SCSI cache</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 multipathd: sdd: remove path (uevent)</span><br><span class="line">Nov 29 07:30:11 juju-c0c753-trusty-icehouse-7 kernel: [86256.365042] sd 5:0:0:0: [sdd] Synchronizing SCSI cache</span><br><span class="line">Nov 29 07:30:12 juju-c0c753-trusty-icehouse-7 iscsid: Connection3:0 to [target: iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea, portal: 10.5.0.22,3260] through [iface: default] is shutdown.</span><br><span class="line">Nov 29 07:30:12 juju-c0c753-trusty-icehouse-7 iscsid: Connection4:0 to [target: iqn.2010-10.org.openstack:volume-1035ee80-339e-4e4e-b4c9-6c925cb259ea, portal: 10.5.0.22,3261] through [iface: default] is shutdown.</span><br><span class="line">Nov 29 07:30:12 juju-c0c753-trusty-icehouse-7 kernel: [86257.129920]  connection1:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:13 juju-c0c753-trusty-icehouse-7 kernel: [86257.893417]  connection2:0: detected conn error (1020)</span><br><span class="line">Nov 29 07:30:13 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:14 juju-c0c753-trusty-icehouse-7 iscsid: conn 0 login rejected: target error (03/01)</span><br><span class="line">Nov 29 07:30:16 juju-c0c753-trusty-icehouse-7 iscsid: connect to 10.5.0.22:3260 failed (Connection refused)</span><br><span class="line">Nov 29 07:30:16 juju-c0c753-trusty-icehouse-7 iscsid: connect to 10.5.0.22:3260 failed (Connection refused)</span><br><span class="line">Nov 29 07:30:19 juju-c0c753-trusty-icehouse-7 iscsid: connect to 10.5.0.22:3260 failed (Connection refused)</span><br><span class="line">Nov 29 07:30:20 juju-c0c753-trusty-icehouse-7 iscsid: connect to 10.5.0.22:3260 failed (Connection refused)</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/29/远程访问双层嵌套Openstack云下的Windows虚机/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1525,152 +1663,6 @@ lxc profile device set default eth0 nictype macvlan
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/08/Play-with-Tacker-by-quqi99/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/08/Play-with-Tacker-by-quqi99/" itemprop="url">Play with Tacker(by quqi99)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-08T10:11:21+08:00">
-                2017-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="Install-via-devstack"><a href="#Install-via-devstack" class="headerlink" title="Install via devstack"></a>Install via devstack</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#Enable tacker</span><br><span class="line">BRANCH=master</span><br><span class="line">enable_plugin heat https://git.openstack.org/openstack/heat $BRANCH</span><br><span class="line">enable_plugin networking-sfc https://git.openstack.org/openstack/networking-sfc $BRANCH</span><br><span class="line">enable_plugin barbican https://git.openstack.org/openstack/barbican $BRANCH</span><br><span class="line">enable_plugin mistral https://git.openstack.org/openstack/mistral $BRANCH</span><br><span class="line">enable_plugin tacker https://git.openstack.org/openstack/tacker $BRANCH</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">source openrc</span><br><span class="line">export OS_USERNAME=admin</span><br><span class="line">$ env |grep OS_</span><br><span class="line">OS_PROJECT_DOMAIN_ID=default</span><br><span class="line">OS_REGION_NAME=RegionOne</span><br><span class="line">OS_USER_DOMAIN_ID=default</span><br><span class="line">OS_PROJECT_NAME=demo</span><br><span class="line">OS_IDENTITY_API_VERSION=3</span><br><span class="line">OS_PASSWORD=password</span><br><span class="line">OS_AUTH_TYPE=password</span><br><span class="line">OS_AUTH_URL=http://172.16.1.1/identity</span><br><span class="line">OS_USERNAME=admin</span><br><span class="line">OS_TENANT_NAME=demo</span><br><span class="line">OS_VOLUME_API_VERSION=2</span><br></pre></td></tr></table></figure>
-<p>Devstack会自动配置下列镜像与网络：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">wget http://download.cirros-cloud.net/0.3.5/cirros-0.3.5-x86_64-disk.img</span><br><span class="line">openstack image create &quot;cirros&quot; --file cirros-0.3.5-x86_64-disk.img --disk-format qcow2 --container-format bare --public</span><br><span class="line">$ glance image-list</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line">| ID                                   | Name                     |</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line">| 55444fe2-4b26-4908-ba1b-4c5e95bd0b83 | cirros-0.3.5-x86_64-disk |</span><br><span class="line">| 26e711a9-d5c8-4991-a81d-5ebf5d2724d1 | OpenWRT                  |</span><br><span class="line">+--------------------------------------+--------------------------+</span><br><span class="line"></span><br><span class="line">$ neutron net-list</span><br><span class="line">neutron CLI is deprecated and will be removed in the future. Use openstack CLI instead.</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br><span class="line">| id                                   | name     | tenant_id                        | subnets                                               |</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br><span class="line">| 43f2cbec-367c-45e8-bf37-26e66366b9eb | private  | 1e99096c578a4b2786c6a44ffd6bed44 | ab7d15c8-03d5-429a-926f-2ba07d0fb77f 10.0.0.0/26      |</span><br><span class="line">| 57c739b9-6e61-4795-a72f-29d9f3ee5ab2 | net0     | b9c12c1af30349b987fe9ab638659e48 | ab177e6d-94ea-4d93-bbc6-d9e4c2bba90e 10.10.0.0/24     |</span><br><span class="line">| 5c6dc85e-9fd0-49f6-8fc2-3386709b4a09 | net_mgmt | b9c12c1af30349b987fe9ab638659e48 | 7525b4e6-1bff-4b68-a2c6-d5633a155a7f 192.168.120.0/24 |</span><br><span class="line">| 63d88cd7-d540-446d-9538-4676b30cb494 | public   | b9c12c1af30349b987fe9ab638659e48 | 7a2873fc-607b-4f9e-bd94-7ed91a746553 192.168.101.0/24 |</span><br><span class="line">| 95717e35-d3bc-4c6a-937c-b47c566a3666 | net1     | b9c12c1af30349b987fe9ab638659e48 | 0ecbc79b-c103-464f-ad59-2c7733c43e39 10.10.1.0/24     |</span><br><span class="line">+--------------------------------------+----------+----------------------------------+-------------------------------------------------------+</span><br></pre></td></tr></table></figure>
-<h2 id="概念与步骤"><a href="#概念与步骤" class="headerlink" title="概念与步骤"></a>概念与步骤</h2><p>Tacker中有这些概念： </p>
-<ul>
-<li>VIM： 相当于OpenStack </li>
-<li>VNFD: VNF Descriptor</li>
-<li>VNF:  Virtual Network Function<br>所以依次需要：</li>
-<li><p>创建VIM</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; vim_config.yaml &lt;&lt; EOF</span><br><span class="line">auth_url: &apos;http://172.16.1.1/identity&apos;</span><br><span class="line">username: &apos;nfv_user&apos;</span><br><span class="line">password: &apos;devstack&apos;</span><br><span class="line">project_name: &apos;nfv&apos;</span><br><span class="line">project_domain_name: &apos;Default&apos;</span><br><span class="line">user_domain_name: &apos;Default&apos;</span><br><span class="line">EOF</span><br><span class="line">tacker vim-register --is-default --config-file vim_config.yaml test-vim</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>创建vnfd</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tacker vnfd-create --vnfd-file ./sample-vnfd.yaml sample-vnfd</span><br><span class="line">tacker vnfd-list</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>创建vnf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tacker vnf-create --vnfd-name sample-vnfd sample-vnf</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="TOSCA-VNFD语法"><a href="#TOSCA-VNFD语法" class="headerlink" title="TOSCA VNFD语法"></a>TOSCA VNFD语法</h2><p>VNFD和juju的yaml类似, 语法见下面sample-vnfd.yaml中的注释：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">$ cat sample-vnfd.yaml </span><br><span class="line">tosca_definitions_version: tosca_simple_profile_for_nfv_1_0_0</span><br><span class="line">description: Demo example</span><br><span class="line">metadata:</span><br><span class="line">  template_name: sample-tosca-vnfd</span><br><span class="line">topology_template:</span><br><span class="line">  # VDU1 represents a node provided by underlying VIM</span><br><span class="line">  node_templates:</span><br><span class="line">    VDU1:</span><br><span class="line">      type: tosca.nodes.nfv.VDU.Tacker</span><br><span class="line">      # Define flavor</span><br><span class="line">      capabilities:</span><br><span class="line">        nfv_compute:</span><br><span class="line">          properties:</span><br><span class="line">            num_cpus: 1</span><br><span class="line">            mem_size: 512 MB</span><br><span class="line">            disk_size: 1 GB</span><br><span class="line">      # Define image</span><br><span class="line">      properties:</span><br><span class="line">        image: cirros-0.3.5-x86_64-disk</span><br><span class="line">        availability_zone: nova</span><br><span class="line">        # Tacker has two integrated mgmt_driver to configure metadata - noop and openwrt</span><br><span class="line">        mgmt_driver: noop</span><br><span class="line">        config: |</span><br><span class="line">          param0: key1</span><br><span class="line">          param1: key2</span><br><span class="line">    # CP (Connection Point) represents a neutron port, CP1 is the name of this port</span><br><span class="line">    CP1:</span><br><span class="line">      type: tosca.nodes.nfv.CP.Tacker</span><br><span class="line">      properties:</span><br><span class="line">        management: true</span><br><span class="line">        order: 0</span><br><span class="line">        anti_spoofing_protection: false</span><br><span class="line">      # One side of this CP is connecting to VL1, another side is connection to VDU1 </span><br><span class="line">      requirements:</span><br><span class="line">        - virtualLink:</span><br><span class="line">            node: VL1</span><br><span class="line">        - virtualBinding:</span><br><span class="line">            node: VDU1</span><br><span class="line">    # VL (Virtual Link) represents a neutron network</span><br><span class="line">    VL1:</span><br><span class="line">      type: tosca.nodes.nfv.VL</span><br><span class="line">      properties:</span><br><span class="line">        network_name: net_mgmt</span><br><span class="line">        vendor: Tacker</span><br></pre></td></tr></table></figure></p>
-<p>VNFD的语法结构图如下：<br><img src="http://img.blog.csdn.net/20171107215225409?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<h2 id="Tacker如何实现水平伸缩"><a href="#Tacker如何实现水平伸缩" class="headerlink" title="Tacker如何实现水平伸缩"></a>Tacker如何实现水平伸缩</h2><p>需有水平伸缩相关的配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 定义策略，此节点与node_templates同级</span><br><span class="line">policies:</span><br><span class="line">  # 此处定义了一个scale策略；SP1为自定义的名字</span><br><span class="line">  - SP1:</span><br><span class="line">      # scale策略的type</span><br><span class="line">      type: tosca.policy.tacker.Scaling</span><br><span class="line">      # 定义了策略的详细内容</span><br><span class="line">      properties:</span><br><span class="line">        # 每次伸缩的数量</span><br><span class="line">        increment: 1</span><br><span class="line">        # 下一次操作的冷却时间</span><br><span class="line">        cooldown: 0</span><br><span class="line">        # 总量的下限</span><br><span class="line">        min_instances: 1</span><br><span class="line">        # 总量的上限</span><br><span class="line">        max_instances: 3</span><br><span class="line">        # 初始的数量</span><br><span class="line">        default_instances: 2</span><br><span class="line">        # 要伸缩的目标，vdu、cp均可伸缩</span><br><span class="line">        targets: [VDU1]</span><br></pre></td></tr></table></figure></p>
-<p>然后运行下列命令进行伸缩：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tacker vnf-scale --vnf-name test_vnf --scaling-policy-name SP1 --scaling-type out</span><br></pre></td></tr></table></figure></p>
-<p>上面伸缩配置和创建vim的配置一样会由Tacker最终转换为Heat模板，Heat模板最终再调用Neutron LBaaS v2来实现HA。点击这见我的<a href="http://blog.csdn.net/quqi99/article/details/50359289" target="_blank" rel="external">另一博客</a>。<br>而Juju的水平扩展则更为简单，直接运行如“juju add-unit nova-compute”之类的命令为自动增加节点，并且在这些节点之间添加haproxy+corosync的HA服务，点击这见我的<a href="http://blog.csdn.net/quqi99/article/details/51981262" target="_blank" rel="external">另一博客</a>。<br>如此说来，还是juju好用。</p>
-<h2 id="mgmt-driver"><a href="#mgmt-driver" class="headerlink" title="mgmt_driver"></a>mgmt_driver</h2><p>可以将一段脚本通过config参给VIM，然后tacker再ssh进这个VIM来执行这段配置。<br>这块juju则是直接ssh进VIM后自己该干嘛干嘛，灵活性更高。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://docs.openstack.org/tacker/latest/" target="_blank" rel="external">https://docs.openstack.org/tacker/latest/</a><br>[2] <a href="http://blog.csdn.net/tpiperatgod/article/details/56282617" target="_blank" rel="external">http://blog.csdn.net/tpiperatgod/article/details/56282617</a><br>[3] <a href="https://www.ibm.com/developerworks/cn/cloud/library/1511_zoupx_openstackheat/index.html" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/cloud/library/1511_zoupx_openstackheat/index.html</a><br>[4] <a href="https://www.ibm.com/developerworks/cn/cloud/library/cl-cloud-orchestration-technologies-trs/index.html" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/cloud/library/cl-cloud-orchestration-technologies-trs/index.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1721,7 +1713,7 @@ lxc profile device set default eth0 nictype macvlan
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-count">72</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
