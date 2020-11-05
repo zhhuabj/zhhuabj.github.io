@@ -305,8 +305,7 @@
             <p>作者：张华  发表于：2015-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>急需使用rsync在家里的多台机器上同步相片。</p>
 <p>sudo apt-get  install  rsync<br>sudo update-rc.d -f rsync remove<br>sudo update-rc.d rsync start 20 2 3 4 5 . stop 20 0 1 6 .<br>sudo update-rc.d rsync enable<br>hua@node1:~$ sudo sysv-rc-conf –list rsync<br>rsync        0:off    1:off    2:on    3:on    4:on    5:on    6:off</p>
 <p>这时候就可以在一台机器上同步目录了(rsync server运行在qnap上，统一在qnap上修改，rsync client定时运行下列命令即可让客户端的文件夹与服务端同步，以服务端为准）:</p>
-<p>rsync -avzur –progress –delete /bak/tmp/qnap/ /qnap/</p>
-<p>rsync -avzur –progress –delete –password-file=/etc/rsync.secret  /bak/tmp/qnap/ /qnap/</p>
+<p>rsync -avzur –progress –delete /bak/tmp/qnap/ /qnap/<br>rsync -avzur –progress –delete –password-file=/etc/rsync.secret  /bak/tmp/qnap/ /qnap/</p>
 <p>在多台机器上同步目录：</p>
 <p>rsync -rave “ssh -p 22 -l hua” -avzur –progress –delete 192.168.99.124:/qnap/ /qnap/<br>等价于：rsync -avzur –progress –delete hua@192.168.99.124:/qnap/ /qnap/</p>
 <p>也可以配置使用::qnap使用下列配置文件/etc/rsyncd.conf中的[qnap]模块：</p>
@@ -334,7 +333,23 @@
 <p>20201104更新 - nas往openwrt同步数据</p>
 <p>rsync can work in two different mode, rsync over rsync (873, rsyncd) and rsync over ssh, see <a href="https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas" target="_blank" rel="external">https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas</a><br>we use rsync over ssh mode here.</p>
 <h1 id="openwrt-192-168-2-47-192-168-99-1"><a href="#openwrt-192-168-2-47-192-168-99-1" class="headerlink" title="openwrt (192.168.2.47, 192.168.99.1)"></a>openwrt (192.168.2.47, 192.168.99.1)</h1><p>opkg install rsync</p>
-<h1 id="nas-192-168-2-103-push-data-into-openwrt-192-168-2-47"><a href="#nas-192-168-2-103-push-data-into-openwrt-192-168-2-47" class="headerlink" title="nas (192.168.2.103) push data into openwrt(192.168.2.47)"></a>nas (192.168.2.103) push data into openwrt(192.168.2.47)</h1><h1 id="don’t-use-rsync"><a href="#don’t-use-rsync" class="headerlink" title="don’t use rsync"></a>don’t use rsync</h1><p>cd /share/HDA_DATA/Public/test &amp;&amp; touch test1 &amp;&amp; touch test2 &amp;&amp; touch test3<br>ssh root@192.168.2.47 “tee -a /etc/dropbear/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>rsync -avztur –progress –delete –exclude ‘test/test1’ –exclude ‘test/test2’ /share/HDA_DATA/Public/test root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘test1’ –exclude ‘test2’ /share/HDA_DATA/Public/test/ root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/<br>contab -e<br>0 1 <em> </em> * /usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/ /dev/null 2&gt;&amp;1</p>
+<h1 id="nas-192-168-2-103-push-data-into-openwrt-192-168-2-47"><a href="#nas-192-168-2-103-push-data-into-openwrt-192-168-2-47" class="headerlink" title="nas (192.168.2.103) push data into openwrt(192.168.2.47)"></a>nas (192.168.2.103) push data into openwrt(192.168.2.47)</h1><h1 id="don’t-use-rsync"><a href="#don’t-use-rsync" class="headerlink" title="don’t use rsync"></a>don’t use rsync</h1><p>cd /share/HDA_DATA/Public/test &amp;&amp; touch test1 &amp;&amp; touch test2 &amp;&amp; touch test3<br>ssh root@192.168.2.47 “tee -a /etc/dropbear/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>rsync -avztur –progress –delete –exclude ‘test/test1’ –exclude ‘test/test2’ /share/HDA_DATA/Public/test root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘test1’ –exclude ‘test2’ /share/HDA_DATA/Public/test/ root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/<br>contab -e<br>0 1 <em> </em> * /usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/</p>
+<p>或者在openwrt端做:</p>
+<p>mkdir ~/.ssh<br>dropbearkey -t rsa -f ~/.ssh/id_rsa<br>dropbearkey -y -f ~/.ssh/id_rsa |sed -n 2p &gt; ~/.ssh/id_rsa.pub</p>
+<h1 id="https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9"><a href="#https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9" class="headerlink" title="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9"></a><a href="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9" target="_blank" rel="external">https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9</a></h1><p>ln -s ~/.ssh/id_rsa ~/.ssh/id_dropbear<br>chmod 700 ~/.ssh<br>touch ~/.ssh/authorized_keys &amp;&amp; chmod 644 ~/.ssh/authorized_keys<br>ssh admin@192.168.2.103 “tee -a /root/.ssh/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ admin@192.168.2.103:/share/HDA_DATA/Public/ /mnt/sdb1/</p>
+<p>但这无论从nas还是从openwrt运行rsync都由于nas太慢大概只有4M左右，可能提升速度最好的办法是先将nas通过nfs映射到openwrt然后再拷．这样速度能达到30M</p>
+<p>opkg install nfs-utils<br>showmount -e 192.168.2.103<br>/usr/bin/mount -t nfs 192.168.2.103:Public /mnt/nas -o proto=tcp -o nolock -o vers=4<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /mnt/nas/ /mnt/sdc1/<br>但是我担心将mount放到fstab时当nas有问题时也影响openwrt的启动，所以我将上面命令放在rc.local中.<br>root@OpenWrt:~# cat /etc/init.d/done</p>
+<p>#!/bin/sh /etc/rc.common</p>
+<h1 id="Copyright-C-2006-OpenWrt-org"><a href="#Copyright-C-2006-OpenWrt-org" class="headerlink" title="Copyright (C) 2006 OpenWrt.org"></a>Copyright (C) 2006 OpenWrt.org</h1><p>START=95<br>boot() {<br>    mount_root done<br>    rm -f /sysupgrade.tgz &amp;&amp; sync</p>
+<pre><code># process user commands
+[ -f /etc/rc.local ] &amp;&amp; {
+    sh /etc/rc.local
+}
+
+# set leds to normal state
+. /etc/diag.sh
+set_state done
+</code></pre><p>}<br>并且crontab也在openwrt这边做．这样速度达到了30M</p>
 
           
         
