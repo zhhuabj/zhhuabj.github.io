@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-09T10:25:42+08:00">
                 2020-07-09
@@ -429,7 +429,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-07T15:54:08+08:00">
                 2020-07-07
@@ -502,6 +502,8 @@
 <p>但实际是不行的，因为证书./openstack/ssl/openstack-ssl/results/cacert.pem已经通过下列命令加入了系统中.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo cp ./openstack/ssl/openstack-ssl/results/cacert.pem /usr/local/share/ca-certificates/cacert.crt</span><br><span class="line">sudo chmod 644 /usr/local/share/ca-certificates/cacert.crt</span><br><span class="line">sudo update-ca-certificates --fresh</span><br></pre></td></tr></table></figure></p>
 <p>这也是一个bug, 改成下列居然就好了(<a href="https://medium.com/@george.shuklin/ssl-certificate-abyss-in-openstack-5c3c4a92eb5a" target="_blank" rel="external">https://medium.com/@george.shuklin/ssl-certificate-abyss-in-openstack-5c3c4a92eb5a</a>):</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export OS_CACERT=/etc/ssl/certs/</span><br></pre></td></tr></table></figure>
+<h2 id="重要更新"><a href="#重要更新" class="headerlink" title="重要更新"></a>重要更新</h2><p>之所以要’export OS_CACERT=/etc/ssl/certs/‘的原因最后查出来是因为习惯不好，在机器上运行过devstack导致安装了python3-pip且通过pip3安装了certifi这个包，所以在删除它之后再运行“python3 -c “import certifi; print(certifi.where());””就正常了。<br>所以养成好习惯，非devstack开发环境机器上不要安装pip<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip3 freeze | xargs -i sudo pip3 uninstall &#123;&#125; -y</span><br><span class="line">sudo apt remove --purge python3-pip</span><br><span class="line">ls /usr/local/lib/python3.8/dist-packages/</span><br></pre></td></tr></table></figure></p>
+<p>另外，由于bastion安装过devstack来导致在并行上传镜像时导致ssh中断。<br>世界由此清净了！</p>
 
           
         
@@ -579,7 +581,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-05T19:13:10+08:00">
                 2020-07-05
@@ -719,7 +721,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-04T15:22:49+08:00">
                 2020-07-04
@@ -848,7 +850,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-06-30T15:34:10+08:00">
                 2020-06-30
@@ -976,7 +978,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-21T18:50:34+08:00">
                 2020-05-21
@@ -1099,7 +1101,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-19T15:48:08+08:00">
                 2020-05-19
@@ -1225,7 +1227,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-15T18:04:41+08:00">
                 2020-05-15
@@ -1364,7 +1366,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-18T16:25:23+08:00">
                 2020-04-18
@@ -1511,7 +1513,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
                 2020-04-14
@@ -1662,7 +1664,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">72</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1712,7 +1714,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
