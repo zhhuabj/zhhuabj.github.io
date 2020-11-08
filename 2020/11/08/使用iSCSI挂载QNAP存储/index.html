@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2020/11/08/使用iSCSI挂载QNAP存储/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华  发表于：2015-12-28版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) QNAP服务端系统设置 -&amp;gt; 存储空间总管 -&amp;gt; iSCSI选项卡入口管理: 启动iSCSI目标服务iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN  iqn.2004-04">
-<meta property="og:updated_time" content="2020-11-08T07:16:54.182Z">
+<meta property="og:updated_time" content="2020-11-08T07:52:48.763Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用iSCSI挂载QNAP存储">
 <meta name="twitter:description" content="作者：张华  发表于：2015-12-28版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) QNAP服务端系统设置 -&amp;gt; 存储空间总管 -&amp;gt; iSCSI选项卡入口管理: 启动iSCSI目标服务iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN  iqn.2004-04">
@@ -352,6 +352,7 @@
 <p>#/nas    -fstype=nfs4,rsize=32768,wsize=32768     192.168.2.103:/Publicj</p>
 <h1 id="DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename"><a href="#DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename" class="headerlink" title="DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)"></a>DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)</h1><p>/mnt/share    -fstype=ext4,rw,nosuid,nodev    :/dev/sdc1<br>EOF</p>
 <h1 id="or-use-fstab"><a href="#or-use-fstab" class="headerlink" title="or use fstab"></a>or use fstab</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>/dev/sdc1     /mnt/share   ext4  defaults,auto,_netdev  0  0<br>EOF<br>sudo mount -a</p>
+<p>sudo iscsiadm -m node -T iqn.2020-11.com.quqi:catdisk.share -p 192.168.2.108 –op update -n node.startup -v automatic<br>sudo systemctl enable open-iscsi</p>
 
       
     </div>
