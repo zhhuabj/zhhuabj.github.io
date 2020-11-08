@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2015-12-28版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) QNAP服务端系统设置 -&amp;gt; 存储空间总管 -&amp;gt; iSCSI选项卡入口管理: 启动iSCSI目标服务iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN  iqn.2004-04">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用iSCSI挂载QNAP存储">
+<meta property="og:url" content="http://yoursite.com/2020/11/08/使用iSCSI挂载QNAP存储/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2015-12-28版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) QNAP服务端系统设置 -&amp;gt; 存储空间总管 -&amp;gt; iSCSI选项卡入口管理: 启动iSCSI目标服务iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN  iqn.2004-04">
+<meta property="og:updated_time" content="2020-11-08T07:16:54.182Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用iSCSI挂载QNAP存储">
+<meta name="twitter:description" content="作者：张华  发表于：2015-12-28版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) QNAP服务端系统设置 -&amp;gt; 存储空间总管 -&amp;gt; iSCSI选项卡入口管理: 启动iSCSI目标服务iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN  iqn.2004-04">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/11/08/使用iSCSI挂载QNAP存储/"/>
+
+
+
+
+
+  <title>使用iSCSI挂载QNAP存储 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/08/使用iSCSI挂载QNAP存储/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用iSCSI挂载QNAP存储</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
+                2020-11-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2015-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>QNAP服务端<br>系统设置 -&gt; 存储空间总管 -&gt; iSCSI选项卡<br>入口管理: 启动iSCSI目标服务<br>iSCSI目标管理：创建一个iSCSI目标并挂载一个iSCSI LUN<br>  iqn.2004-04.com.qnap:ts-212p:iscsi.quqiSCSI.d5ad13<br>  目标名称：quqiSCSI<br>  目标别名：quqiSCSI<br>  启用CHAP认证：username/password<br>  动态配置：quqiSCSI, 800G</p>
+<p>在qnap中文件将存储于：/share/HDA_DATA/.@iscsi.img/iSCSI-quqiSCSI-56809a35.000</p>
+<p>OpenWRT服务端<br>opkg install tgt<br>dd if=/dev/zero of=/mnt/sda1/images/sdb_for_t440p.raw bs=1M count=80000</p>
+<p>vi /etc/config/tgt<br>config target 1<br>       option name ‘iqn.2018-05.com.quqi99:sdb_for_t440p’<br>       option allow 192.168.99.0/24<br>config lun 1_1</p>
+<h1 id="option-readonly-0"><a href="#option-readonly-0" class="headerlink" title="option readonly 0"></a>option readonly 0</h1><pre><code>option device /mnt/sda1/images/sdb_for_t440p.raw
+</code></pre><p>/etc/init.d/tgt enable<br>/etc/init.d/tgt restart<br>20201105更新 - 但现在报这个错误：　tgt: Failed to create target，　运行’tgtd  -f -d -D’显示Segmentation fault</p>
+<p>iSCSI Initiator客户端<br>hua@node1:~$ sudo /etc/init.d/open-iscsi start</p>
+<p>hua@node1:~$ sudo update-rc.d -f open-iscsi remove<br> Removing any system startup links for /etc/init.d/open-iscsi …<br>   /etc/rc0.d/K81open-iscsi<br>   /etc/rc0.d/S45open-iscsi<br>   /etc/rc1.d/K81open-iscsi<br>   /etc/rc6.d/K81open-iscsi<br>hua@node1:~$ sudo update-rc.d open-iscsi start 20 2 3 4 5 . stop 20 0 1 6 .<br>update-rc.d: warning:  start runlevel arguments (2 3 4 5) do not match open-iscsi Default-Start values (S)<br> Adding system startup for /etc/init.d/open-iscsi …<br>   /etc/rc0.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc1.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc6.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc2.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc3.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc4.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc5.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>hua@node1:~$ sudo update-rc.d open-iscsi enable<br>update-rc.d: warning:  start runlevel arguments (none) do not match open-iscsi Default-Start values (S)<br>update-rc.d: warning:  stop runlevel arguments (none) do not match open-iscsi Default-Stop values (0 1 6)<br> Enabling system startup links for /etc/init.d/open-iscsi …<br> Removing any system startup links for /etc/init.d/open-iscsi …<br>   /etc/rc0.d/K20open-iscsi<br>   /etc/rc1.d/K20open-iscsi<br>   /etc/rc2.d/S20open-iscsi<br>   /etc/rc3.d/S20open-iscsi<br>   /etc/rc4.d/S20open-iscsi<br>   /etc/rc5.d/S20open-iscsi<br>   /etc/rc6.d/K20open-iscsi<br> Adding system startup for /etc/init.d/open-iscsi …<br>   /etc/rc0.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc1.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc6.d/K20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc2.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc3.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc4.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>   /etc/rc5.d/S20open-iscsi -&gt; ../init.d/open-iscsi<br>hua@node1:~$ sudo sysv-rc-conf –list open-iscsi<br>open-iscsi   0:off    1:off    2:on    3:on    4:on    5:on    6:off</p>
+<p>vi /etc/iscsi/iscsid.conf<br>node.startup = automatic<br>node.session.auth.authmethod = CHAP<br>node.session.auth.username = username<br>node.session.auth.password = password</p>
+<p>hua@node1:~$ sudo iscsiadm -m discovery -t st -p 192.168.99.122<br>192.168.99.122:3260,1 iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13<br>10.8.0.1:3260,1 iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13</p>
+<p>hua@node1:~$ sudo cat /etc/iscsi/initiatorname.iscsi<br>InitiatorName=iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13</p>
+<p>hua@node1:~$ sudo iscsiadm -m node -T iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13 -p 192.168.99.122 –op new<br>New iSCSI node [tcp:[hw=,ip=,net_if=,iscsi_if=default] 192.168.99.122,3260,-1 iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13] added</p>
+<p>hua@node1:~$ sudo iscsiadm -m node -T iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13 -p 192.168.99.122 –login<br>Logging in to [iface: default, target: iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13, portal: 192.168.99.122,3260] (multiple)<br>Login to [iface: default, target: iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13, portal: 192.168.99.122,3260] successful.<br>hua@node1:~$ sudo iscsiadm -m node -T iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13 -p 192.168.99.122 –op update -n node.startup -v automatic</p>
+<p>hua@node1:~$ ls -l /dev/disk/by-path/ip-192.168.99.122\:3260-iscsi-iqn.2004-04.com.qnap\:ts-212p\:iscsi.quqiscsi.d5ad13-lun-0<br>lrwxrwxrwx 1 root root 9 Dec 28 10:22 /dev/disk/by-path/ip-192.168.99.122:3260-iscsi-iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13-lun-0 -&gt; ../../sdb</p>
+<p>hua@node1:~$ cat /sys/class/iscsi_host/host16/device/session11/iscsi_session/session11/targetname<br>iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13</p>
+<p>hua@node1:~$ sudo cat /etc/udev/rules.d/55-openiscsi.rules<br>KERNEL==”sd*”, BUS==”scsi”, PROGRAM=”/etc/udev/scripts/iscsidev.sh %b”,SYMLINK+=”iscsi/%c”</p>
+<p>hua@node1:~$ sudo cat /etc/udev/scripts/iscsidev.sh</p>
+<p>#!/bin/sh</p>
+<h1 id="FILE-etc-udev-scripts-iscsidev-sh"><a href="#FILE-etc-udev-scripts-iscsidev-sh" class="headerlink" title="FILE: /etc/udev/scripts/iscsidev.sh"></a>FILE: /etc/udev/scripts/iscsidev.sh</h1><p>BUS=${1}<br>HOST=${BUS%%:<em>}<br>[ -e /sys/class/iscsi_host ] || exit 1<br>file=”/sys/class/iscsi_host/host${HOST}/device/session</em>/iscsi_session*/targetname”<br>target_name=$(cat ${file})</p>
+<h1 id="This-is-not-an-open-scsi-drive"><a href="#This-is-not-an-open-scsi-drive" class="headerlink" title="This is not an open-scsi drive"></a>This is not an open-scsi drive</h1><p>if [ -z “${target_name}” ]; then<br>  exit 1<br>fi<br>echo “${target_name##*.}”</p>
+<p>hua@node1:~$ sudo fdisk -l<br>…<br>Disk /dev/sdb: 859.0 GB, 858993459200 bytes<br>255 heads, 63 sectors/track, 104433 cylinders, total 1677721600 sectors<br>Units = sectors of 1 * 512 = 512 bytes<br>Sector size (logical/physical): 512 bytes / 512 bytes<br>I/O size (minimum/optimal): 1048576 bytes / 1048576 bytes<br>Disk identifier: 0x00000000</p>
+<p>Disk /dev/sdb doesn’t contain a valid partition table</p>
+<p>hua@node1:~$ sudo mkfs.ext4 /dev/sdb<br>mke2fs 1.42.9 (4-Feb-2014)<br>/dev/sdb is entire device, not just one partition!<br>Proceed anyway? (y,n) y<br>Discarding device blocks: done<br>Filesystem label=<br>OS type: Linux<br>Block size=4096 (log=2)<br>Fragment size=4096 (log=2)<br>Stride=256 blocks, Stripe width=256 blocks<br>52428800 inodes, 209715200 blocks<br>10485760 blocks (5.00%) reserved for the super user<br>First data block=0<br>Maximum filesystem blocks=4294967296<br>6400 block groups<br>32768 blocks per group, 32768 fragments per group<br>8192 inodes per group<br>Superblock backups stored on blocks:<br>    32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208,<br>    4096000, 7962624, 11239424, 20480000, 23887872, 71663616, 78675968,<br>    102400000</p>
+<p>Allocating group tables: done<br>Writing inode tables: done<br>Creating journal (32768 blocks): done<br>Writing superblocks and filesystem accounting information: done</p>
+<p>hua@node1:~$ sudo mkdir /qnap<br>hua@node1:~$ sudo mount -t ext4 /dev/sdb /qnap<br>hua@node1:~$ df -h |grep sdb<br>/dev/sdb        788G   69M  748G   1% /qnap</p>
+<p>hua@node1:~$ sudo tune2fs -l /dev/sdb |grep UUID<br>Filesystem UUID:          30aa3ef9-698b-41c2-9637-dc79be91eb79</p>
+<p>hua@node1:~$ sudo cat /etc/fstab |grep sdb<br>/dev/sdb    /qnap    ext4    defaults,auto,_netdev    0    0</p>
+<p>hua@hua-ThinkPad-T440p:/bak$ sudo mount -t ext4 /dev/sdb /qnap<br>mount: /dev/sdb is already mounted or /qnap busy<br>hua@hua-ThinkPad-T440p:/bak$ sudo multipath -ll<br>36001405abdafa5bd00cbd4d1ad9498d1 dm-0 QNAP,iSCSI Storage<br>size=800G features=’0’ hwhandler=’0’ wp=rw<br><code>-+- policy=&#39;round-robin 0&#39; prio=1 status=active</code>- 6:0:0:0 sdb 8:16 active ready running<br>hua@hua-ThinkPad-T440p:/bak$ sudo multipath -F<br>hua@hua-ThinkPad-T440p:/bak$ sudo multipath -ll<br>hua@hua-ThinkPad-T440p:/bak$ sudo mount -t ext4 /dev/sdb /qnap<br>自动挂载<br>可参考： <a href="https://blog.csdn.net/bing_g/article/details/51279427" target="_blank" rel="external">https://blog.csdn.net/bing_g/article/details/51279427</a></p>
+<p>写了个脚本如下：</p>
+<p>cat /etc/auto.iscsi</p>
+<p>#!/bin/bash</p>
+<p>IQN=”iqn.2018-05.com.quqi99:sdb_for_t440p”<br>IP=”192.168.99.1”<br>PORT=”3260”<br>LUN=”1”<br>OPTS=”-nocheck,ro,fstype=ext4”</p>
+<p>if iscsiadm -m session | grep “$IQN”; then<br>  echo node exists<br>else<br>  iscsiadm -m node -T “$IQN” -p “$IP” –login 1&gt;&amp;2<br>fi</p>
+<h1 id="Let-udev-settle-before-we-try-to-look-up-the-block-device"><a href="#Let-udev-settle-before-we-try-to-look-up-the-block-device" class="headerlink" title="Let udev settle before we try to look up the block device."></a>Let udev settle before we try to look up the block device.</h1><p>sleep 1</p>
+<h1 id="Figure-out-the-block-device-using-the-udev-symlink"><a href="#Figure-out-the-block-device-using-the-udev-symlink" class="headerlink" title="Figure out the block device using the udev symlink."></a>Figure out the block device using the udev symlink.</h1><p>DEV_LINK=<code>readlink /dev/disk/by-path/ip-${IP}:${PORT}-iscsi-${IQN}-lun-${LUN}</code><br>DEV_NODE=<code>basename $DEV_LINK</code><br>DEV_FULL=”/dev/$DEV_NODE”</p>
+<h1 id="Return-the-magic-to-automount"><a href="#Return-the-magic-to-automount" class="headerlink" title="Return the magic to automount"></a>Return the magic to automount</h1><p>echo “${OPTS} :${DEV_FULL}${LUN}”<br>sudo mount -t ext4 ${DEV_FULL} /bak_openwrt/</p>
+<p>遇到的问题<br>1, 多出来的10.8.0.1:3260这个Portal连不上会导致开机时超时非常慢，得删除它。</p>
+<p>hua@node2:~$ sudo iscsiadm -m discoverydb -P1<br>SENDTARGETS:<br>DiscoveryAddress: 192.168.99.122,3260<br>Target: iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13<br>Portal: 192.168.99.122:3260,1<br>Iface Name: default<br>Portal: 10.8.0.1:3260,1<br>Iface Name: default<br>DiscoveryAddress: aa.quqi.com,3260<br>iSNS:<br>No targets found.<br>STATIC:<br>Target: iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13<br>Portal: aa.quqi.com:3260,-1<br>Iface Name: default<br>FIRMWARE:<br>No targets found.</p>
+<p>hua@node2:~$ sudo iscsiadm -m discoverydb -t st -p 10.8.0.1,3260 -o delete<br>iscsiadm: Discovery record [10.8.0.1,3260] not found.<br>hua@node2:~$ sudo iscsiadm -m discoverydb -t st -p 10.8.0.1:3260 -o delete<br>iscsiadm: Discovery record [10.8.0.1,3260] not found</p>
+<p>hua@node2:~$ sudo iscsiadm -m discoverydb -P1<br>SENDTARGETS:<br>DiscoveryAddress: 192.168.99.122,3260<br>Target: iqn.2004-04.com.qnap:ts-212p:iscsi.quqiscsi.d5ad13<br>Portal: 192.168.99.122:3260,1<br>Iface Name: default<br>DiscoveryAddress: veryhua2006.myqnapcloud.com,3260<br>iSNS:<br>No targets found.<br>STATIC:<br>No targets found.<br>FIRMWARE:<br>No targets found.</p>
+<p>2, 遇到这个类似的问题（<a href="http://forum.open-e.com/showthread.php?1262-Problem-synchronize-data-using-2-initiator-1-target），即多个iscsi" target="_blank" rel="external">http://forum.open-e.com/showthread.php?1262-Problem-synchronize-data-using-2-initiator-1-target），即多个iscsi</a> client连向同一个iscsi server时，在共享存储上写入新内容了，iscsi client需要先umount再mount才能更新。似乎没有自动地sync</p>
+<p>20200413更新<br>遇到一个问题，ssh与nfs都可以用，但是访问portal登录时输入用户名和密码后无反应无跳转也不报错。下载固件( <a href="https://www.qnap.com.cn/zh-cn/download?model=ts-212p&amp;category=firmware" target="_blank" rel="external">https://www.qnap.com.cn/zh-cn/download?model=ts-212p&amp;category=firmware</a> ) 使用qfinder pro重刷即可。多等一会，不会损坏nfs数据。</p>
+<p>20201108更新 - 群晖上使用iscsi<br>sudo apt install open-iscsi -y<br>sudo iscsiadm -m discoverydb -P1</p>
+<h1 id="etc-iscsi-iscsid-conf-for-CHAP-username-password"><a href="#etc-iscsi-iscsid-conf-for-CHAP-username-password" class="headerlink" title="/etc/iscsi/iscsid.conf for CHAP username/password"></a>/etc/iscsi/iscsid.conf for CHAP username/password</h1><p>#sudo bash -c ‘cat &gt; /etc/iscsi/initiatorname.iscsi’ &lt;&lt; EOF<br>cat &lt;&lt; EOF | sudo tee /etc/iscsi/initiatorname.iscsi<br>InitiatorName=iqn.2020-11.com.quqi:catdisk.share<br>EOF</p>
+<h1 id="discover-target"><a href="#discover-target" class="headerlink" title="discover target"></a>discover target</h1><p>sudo iscsiadm -m discovery -t sendtargets -p 192.168.2.108</p>
+<h1 id="confirm-status-after-discovery"><a href="#confirm-status-after-discovery" class="headerlink" title="confirm status after discovery"></a>confirm status after discovery</h1><p>sudo iscsiadm -m node -o show</p>
+<h1 id="login-to-the-target"><a href="#login-to-the-target" class="headerlink" title="login to the target"></a>login to the target</h1><h1 id="sudo-iscsiadm-m-node-–login"><a href="#sudo-iscsiadm-m-node-–login" class="headerlink" title="sudo iscsiadm -m node –login"></a>sudo iscsiadm -m node –login</h1><p>sudo iscsiadm -m node -T iqn.2020-11.com.quqi:catdisk.share -p 192.168.2.108 –login</p>
+<h1 id="confirm-the-established-session"><a href="#confirm-the-established-session" class="headerlink" title="confirm the established session"></a>confirm the established session</h1><p>sudo iscsiadm -m session -o show<br>cat /proc/partitions  #or fdisk -l<br>sudo gdisk /dev/sdc  #n,[enter],[enter],[enter],[enter],t,8300,p,w,Y<br>sudo parted /dev/sdc print<br>sudo mkfs.ext4 /dev/sdc1<br>sudo mount /dev/sdc1 /mnt/share/<br>sudo lsblk<br>sudo blkid</p>
+<h1 id="use-autofs"><a href="#use-autofs" class="headerlink" title="use autofs"></a>use autofs</h1><p>cat &lt;&lt; EOF | sudo tee -a /etc/auto.master<br>/-      auto.direct<br>EOF<br>cat &lt;&lt; EOF | sudo tee -a /etc/auto.direct</p>
+<p>#/cat    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=admin,password=xxx     192.168.2.108:/volume1/bak</p>
+<p>#/nas    -fstype=nfs4,rsize=32768,wsize=32768     192.168.2.103:/Publicj</p>
+<h1 id="DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename"><a href="#DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename" class="headerlink" title="DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)"></a>DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)</h1><p>/mnt/share    -fstype=ext4,rw,nosuid,nodev    :/dev/sdc1<br>EOF</p>
+<h1 id="or-use-fstab"><a href="#or-use-fstab" class="headerlink" title="or use fstab"></a>or use fstab</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>/dev/sdc1     /mnt/share   ext4  defaults,auto,_netdev  0  0<br>EOF<br>sudo mount -a</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/04/使用rsync同步数据/" rel="next" title="使用rsync同步数据">
+                <i class="fa fa-chevron-left"></i> 使用rsync同步数据
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">73</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#option-readonly-0"><span class="nav-number">1.</span> <span class="nav-text">option readonly 0</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#FILE-etc-udev-scripts-iscsidev-sh"><span class="nav-number">2.</span> <span class="nav-text">FILE: /etc/udev/scripts/iscsidev.sh</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#This-is-not-an-open-scsi-drive"><span class="nav-number">3.</span> <span class="nav-text">This is not an open-scsi drive</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Let-udev-settle-before-we-try-to-look-up-the-block-device"><span class="nav-number">4.</span> <span class="nav-text">Let udev settle before we try to look up the block device.</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Figure-out-the-block-device-using-the-udev-symlink"><span class="nav-number">5.</span> <span class="nav-text">Figure out the block device using the udev symlink.</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Return-the-magic-to-automount"><span class="nav-number">6.</span> <span class="nav-text">Return the magic to automount</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#etc-iscsi-iscsid-conf-for-CHAP-username-password"><span class="nav-number">7.</span> <span class="nav-text">/etc/iscsi/iscsid.conf for CHAP username/password</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#discover-target"><span class="nav-number">8.</span> <span class="nav-text">discover target</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#confirm-status-after-discovery"><span class="nav-number">9.</span> <span class="nav-text">confirm status after discovery</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#login-to-the-target"><span class="nav-number">10.</span> <span class="nav-text">login to the target</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sudo-iscsiadm-m-node-–login"><span class="nav-number">11.</span> <span class="nav-text">sudo iscsiadm -m node –login</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#confirm-the-established-session"><span class="nav-number">12.</span> <span class="nav-text">confirm the established session</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#use-autofs"><span class="nav-number">13.</span> <span class="nav-text">use autofs</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename"><span class="nav-number">14.</span> <span class="nav-text">DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#or-use-fstab"><span class="nav-number">15.</span> <span class="nav-text">or use fstab</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
