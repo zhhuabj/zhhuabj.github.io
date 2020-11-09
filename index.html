@@ -502,6 +502,31 @@
 <h1 id="DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename"><a href="#DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename" class="headerlink" title="DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)"></a>DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)</h1><p>/mnt/share    -fstype=ext4,rw,nosuid,nodev    :/dev/sdc1<br>EOF</p>
 <h1 id="or-use-fstab"><a href="#or-use-fstab" class="headerlink" title="or use fstab"></a>or use fstab</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>/dev/sdc1     /mnt/share   ext4  defaults,auto,_netdev  0  0<br>EOF<br>sudo mount -a</p>
 <p>sudo iscsiadm -m node -T iqn.2020-11.com.quqi:catdisk.share -p 192.168.2.108 –op update -n node.startup -v automatic<br>sudo systemctl enable open-iscsi</p>
+<p>20201109更新　- 使用samba<br>openwrt上的samba server<br>1, set samba share - <a href="http://192.168.99.1/cgi-bin/luci/admin/nas/samba" target="_blank" rel="external">http://192.168.99.1/cgi-bin/luci/admin/nas/samba</a><br>2, smbpasswd -a root  #root/password<br>3, cat /etc/samba/smb.conf  &amp;&amp; cat /etc/samba/smbpasswd &amp;&amp; ps |grep -E ‘smbd|nmbd’<br>4, root@OpenWrt:~# cat /etc/samba/smb.conf<br>[global]<br>    netbios name = OpenWrt<br>    display charset = UTF-8</p>
+<pre><code>#interfaces = lo br-lan
+server string = OpenWrt
+unix charset = UTF-8
+workgroup = WORKGROUP
+bind interfaces only = yes
+deadtime = 30
+enable core files = no
+local master = yes
+map to guest = Bad User
+max protocol = SMB2
+min receivefile size = 16384
+null passwords = yes
+passdb backend = smbpasswd
+    # run &apos;smbpasswd root&apos; to set pass for &apos;root&apos;, we also need to comment &apos;invalid users=root&apos;
+    #invalid users = root
+security = user
+    smb passwd file = /etc/samba/smbpasswd
+socket options = TCP_NODELAY IPTOS_LOWDELAY
+use sendfile = yes
+</code></pre><p>[share]<br>    path = /mnt/sdc2<br>    read only = no<br>    guest ok = yes<br>    create mask = 0666<br>    directory mask = 0777<br>    browseable = yes</p>
+<p>5, windows client: \192.168.2.47\share, 开机自动挂载可: 计算机-&gt;映射网络驱动器<br>6, Linux client<br>smbclient -L //192.168.2.47 -U root%password<br>smbclient //192.168.2.47/share -U root%password -c “ls”<br>sudo apt install cifs-utils -y<br>dmesg  #To use the less secure SMB1 dialect to access old servers which do not support SMB3 (or SMB2.1) specify vers=1.0 on mount<br>sudo mount -t cifs -o username=root,password=password,vers=1.0 //192.168.2.47/share /mnt/smb<br>autofs: /mnt/smb    -fstype=cifs,rw,username=root,password=password,vers=1.0,file_mode=0777,dir_mode=0777 ://192.168.2.47/share</p>
+<p>目前规划<br>QNAP NAS(2T)的nfs仍通过autofs作工作之用，且做为照片主备分入口<br>OpenWrt上的4T硬盘，划分出/dev/sdc1(2T)定期通过crontab用rsync从QNAP同步备份数据.<br>OpenWrt上的/dev/sdc2(1T)做SMB在win与android电视之间共享孩子要看的视频<br>OpenWRT上的tgt iscsi server不work, 其余sdc3(500G)与sdc4(226G)备用<br>CATDISK(1T)上刷了群晖，做了两块iSCSI, iqn.2020-11.com.quqi:catdisk.share(500G)给Linux用，iqn.2020-10.com.quqi:catdisk.win(200G)给win10用<br>CATDIST(100G)上还有一个windisk nfs (\192.168.2.108\volume1\windisk)<br>CATDIST也通过ssh备份一些极其重要的小数据如毕业证</p>
+<p>/nas    -fstype=nfs4,rsize=32768,wsize=32768     192.168.2.103:/Public</p>
+<h1 id="DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename-1"><a href="#DEV-NAME-readlink-dev-disk-by-path-ip-192-168-2-108-3260-iscsi-iqn-2020-11-com-quqi-catdisk-share-lun-1-xargs-basename-1" class="headerlink" title="DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)"></a>DEV_NAME=$(readlink /dev/disk/by-path/ip-192.168.2.108\:3260-iscsi-iqn.2020-11.com.quqi\:catdisk.share-lun-1 |xargs basename)</h1><p>/mnt/nasbak    -fstype=ext4,rw,nosuid,nodev    :/dev/sdc1<br>/mnt/smbwin    -fstype=cifs,rw,username=root,password=password,vers=1.0,file_mode=0777,dir_mode=0777 ://192.168.2.47/share<br>/nfswin    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=quqi99,password=xxx     192.168.2.108:/volume1/windisk</p>
 
           
         
