@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
+<meta name="description" content="作者：张华  发表于：2015-12-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )KVM默认不支持windows 10，需要做一些设置：1, sudo usermod -a -G vboxusers hua2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。P">
 <meta property="og:type" content="article">
-<meta property="og:title" content="如何将国外的ftp气象大数据下载回来">
-<meta property="og:url" content="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/index.html">
+<meta property="og:title" content="在KVM中运行win10虚机">
+<meta property="og:url" content="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
-<meta property="og:updated_time" content="2020-10-22T12:49:32.429Z">
+<meta property="og:description" content="作者：张华  发表于：2015-12-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )KVM默认不支持windows 10，需要做一些设置：1, sudo usermod -a -G vboxusers hua2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。P">
+<meta property="og:updated_time" content="2020-11-09T01:55:49.893Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="如何将国外的ftp气象大数据下载回来">
-<meta name="twitter:description" content="作者：张华 发表于：2020-10-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下： 1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp1234567sudo apt install curlftpfs -y#sudo fusermoun">
+<meta name="twitter:title" content="在KVM中运行win10虚机">
+<meta name="twitter:description" content="作者：张华  发表于：2015-12-22版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )KVM默认不支持windows 10，需要做一些设置：1, sudo usermod -a -G vboxusers hua2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。P">
 
 
 
@@ -118,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/"/>
 
 
 
 
 
-  <title>如何将国外的ftp气象大数据下载回来 | 技术并艺术着</title>
+  <title>在KVM中运行win10虚机 | 技术并艺术着</title>
   
 
 
@@ -231,7 +231,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="张华">
@@ -248,7 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">如何将国外的ftp气象大数据下载回来</h1>
+          <h1 class="post-title" itemprop="name headline">在KVM中运行win10虚机</h1>
         
 
         <div class="post-meta">
@@ -260,8 +260,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
-                2020-10-22
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
+                2020-11-09
               </time>
             
 
@@ -298,11 +298,32 @@
       
 
       
-        <p><strong>作者：张华 发表于：2020-10-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下：</p>
-<p>1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install curlftpfs -y</span><br><span class="line">#sudo fusermount -zu /mnt/ftp</span><br><span class="line">sudo mkdir -p /mnt/ftp &amp;&amp; sudo chown -R $USER /mnt/ftp</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt;/etc/fstab&apos; &lt;&lt;EOF</span><br><span class="line">curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data /mnt/ftp fuse defaults,rw,allow_other,uid=1000,gid=1000,_netdev 0 0</span><br><span class="line">EOF</span><br><span class="line">sudo mount -a</span><br></pre></td></tr></table></figure></p>
-<p>2, 安装nginx指向/mnt/ftp将ftp变http<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install nginx -y</span><br><span class="line">sudo vim /etc/nginx/sites-available/default</span><br><span class="line">        #root /var/www/html;</span><br><span class="line">        root /mnt/ftp;</span><br><span class="line">        location / &#123;</span><br><span class="line">                try_files $uri $uri/ =404;</span><br><span class="line">                autoindex on;</span><br><span class="line">                autoindex_exact_size off;</span><br><span class="line">                autoindex_localtime on;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
-<p>3, 国内采用下列命令下载．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -c -m http://3.18.xx.xx</span><br><span class="line">#rsync -avztur -e &quot;ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/xxx.pem&quot; --progress ubuntu@3.18.xx.xx:/mnt/ftp .</span><br></pre></td></tr></table></figure></p>
+        <p>作者：张华  发表于：2015-12-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>KVM默认不支持windows 10，需要做一些设置：<br>1, sudo usermod -a -G vboxusers hua<br>2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。PAE支持32位处理器可以访问4GB以上物理内存功能版本的Windows，并且它是NX的先决条件。NX可让处理器帮助保护电脑免受恶意软件的攻击。SSE2（一项使用已久的关于处理器的标准）是一套由越来越多的第三方应用和驱动程序使用的指令集。<br>   cpu model: core2duo<br>   cpu features: nx=require<br>   nic: rtl8139 to e1000</p>
+<p>在ubuntu上制作win 10 usb启动盘的工具：</p>
+<p>sudo add-apt-repository ppa:gezakovacs/ppa<br>sudo apt-get update<br>sudo apt-get install unetbootin</p>
+<p>后续的工作是采用SR-IOV与USB直通，待续。</p>
+<p>20200603更新　－　virtualbox中安装win10</p>
+<p>立刻仅支持windows所以需要一个windows虚机，ubuntu 20.04上的kvm安装win10报错一时半会解不了，换成virtualbox</p>
+<p>安装　－　<a href="https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack" target="_blank" rel="external">https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack</a></p>
+<p>在虚机中若想使用host上的摄像头，还得安装上面链接中的ExtPack, 这样在启动虚机之后在devices -&gt; webcams菜单就能使用host的摄像头了．</p>
+<p>在虚机中若想使用host上的麦克风和音箱怎么办？　在’devices -&gt; audio”菜单中将’audio output’与’audio input’都选上即可．</p>
+<p>鼠标在虚机与host机上无缝切换，　在’devices -&gt; insert guest cd’然后在虚机里打开cd安装驱动即可．</p>
+<p>全屏切换　host + F,  host是指right ctrl键，进入全屏退出全屏都是它．</p>
+<p>20201109更新 - kvm安装win10<br>之前virtualbox安装的win10在开关多次之后，会造成这样一个问题，在chrome上使用fast.com测速时会降到几十K到12M之间，</p>
+<p>而同时在firefox上测速能达到69M左右，在重启机器之后chrome上的测速又能恢复到92M。</p>
+<p>所以不敢再继续使用virtualbox了，改用KVM吧。</p>
+<p>1, 直接将之前的virtualbox镜像转成kvm的 -　qemu-img convert -p -f vdi -O raw win10.vdi win10.img</p>
+<p>2, 导入镜像创建虚机时注意一点，在”Choose the operating system you are installing”处输入win搜索windows时没有win10的版本，需勾选”Include end of life operating systems“才出来。</p>
+<p>3, 第一次默认安装对硬盘和网卡均使用默认驱动。</p>
+<ol>
+<li>安装完启动win10后在里面下载安装virtualbox驱动 - <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso" target="_blank" rel="external">https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso</a></li>
+</ol>
+<p>5, 此时只能将网卡驱动改为virtio(也可以改成mapvtap + virtio)重启机器可以进win10</p>
+<p>6, 但此时若将硬盘也改为virtio驱动会报错的。因为硬盘里还根本没有iscsi-virtio驱动啊。解决办法是在硬盘默认驱动进入win10后，</p>
+<p>   再添加第二块virtio驱动这样iscsi-virtio就装在硬盘了。这时再重启就可以了。见：　<a href="https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio" target="_blank" rel="external">https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio</a></p>
+<p>7, 使用spice这样声音和麦克就都用了。注：如果不将网络与硬盘改为virtio驱动，在likeshuo使用音频会有延时听不清楚。</p>
+<p>8, 可使用spice redirect usb特性将集成视频卡加到虚机，注意：选错usb可能造成蓝牙键盘失去连接。</p>
+<p>９，”rsync -avztur –progress /bak/* /mnt/share/“, /mnt/share是一块iscis盘，bak缺空间，第１步转换后的win10硬盘在iscsi盘上，但之前加了–delete参数导制被删除转了两遍。</p>
 
       
     </div>
@@ -327,8 +348,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/10/14/Lost-connection-to-MySQL-server-during-query/" rel="next" title="Lost connection to MySQL server during query">
-                <i class="fa fa-chevron-left"></i> Lost connection to MySQL server during query
+              <a href="/2020/11/08/使用iSCSI挂载QNAP存储/" rel="next" title="使用iSCSI挂载QNAP存储">
+                <i class="fa fa-chevron-left"></i> 使用iSCSI挂载QNAP存储
               </a>
             
           </div>
@@ -336,10 +357,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/10/28/ssh总断/" rel="prev" title="ssh总断">
-                ssh总断 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>

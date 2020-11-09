@@ -231,6 +231,156 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/06/三种方式使用vlan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/12/06/三种方式使用vlan/" itemprop="url">三种方式使用vlan</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-06T11:47:59+08:00">
+                2017-12-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-04-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
+<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>Use OVS port in QEMU</p>
+<p>sudo apt-get install qemu-system qemu-kvm virtinst libvirt-bin openvswitch-datapath-source openvswitch-controller openvswitch-switch virt-top virt-manager Python-libvirt</p>
+<p>sudo ovs-vsctl add-br br-mano<br>sudo ovs-vsctl add-port br-mano eth2</p>
+<p>sudo virsh net-destroy default<br>sudo virsh net-define /tmp/br-mano.xml</p>
+<p><network><br>  <name>br-mano</name><br>  <forward mode="bridge"><br>  <bridge name="br-mano"><br>  <virtualport type="openvswitch"><br></virtualport></bridge></forward></network></p>
+<p>#sudo virsh net-undefine default<br>sudo virsh net-start br-mano<br>sudo virsh net-autostart br-mano</p>
+<p>Linux Bridge VLAN</p>
+<p>sudo modprobe 8021q<br>sudo ip link add link eth1 name eth1.2 type vlan id 2</p>
+<p>#sudo vconfig add eth1 2</p>
+<p>#sudo ifconfig eth1.2 down</p>
+<p>#sudo vconfig rem eth1.2<br>sudo ip link set eth1.2 up<br>sudo brctl addbr br2<br>sudo brctl setfd br2 0<br>sudo brctl stp br2 on<br>sudo ip link set br2 up<br>sudo brctl addif br2 eth1.2<br>sudo ifconfig br2 192.168.9.122/24<br>sudo ip tuntap add gw2 mode tap<br>sudo ip link set gw2 up<br>sudo brctl addif br2 gw2<br>hua@node1:~$ ip -d link show eth1.2<br>22: eth1.2@eth1: <broadcast,multicast,up,lower_up> mtu 1500 qdisc noqueue master br2 state UP mode DEFAULT group default qlen 1000<br>    link/ether 2c:53:4a:02:20:3c brd ff:ff:ff:ff:ff:ff promiscuity 1<br>    vlan protocol 802.1Q id 2 <reorder_hdr></reorder_hdr></broadcast,multicast,up,lower_up></p>
+<p>可用如下方法定义VLAN</p>
+<p>auto eth0.2<br>iface eth0.2 inet static<br>    address 10.12.2.2/24<br>    netmask 255.255.255.0<br>    network 10.12.2.0/24<br>    broadcast 10.12.2.255</p>
+<p>如果失败，先确保安装了vlan包 （sudo apt install -y vlan），并且启用了vlan模块（sudo modprobe 8021q）， 如果还报下列错的话是因为需要将网卡名改成规范的eth0之类的。</p>
+<p>Dec  6 08:54:50 localhost ifup[29785]: Cannot find device “enp0s25.2”<br>Dec  6 08:54:50 localhost ifup[29785]: Failed to bring up enp0s25.2.<br>OVS Bridge VLAN</p>
+<p>sudo ovs-vsctl add-br br-veth0<br>sudo ovs-vsctl add-port br-veth0 eth1<br>sudo ip link add veth0 type veth peer name veth1<br>sudo ovs-vsctl add-port br-veth0 veth0<br>sudo ovs-vsctl add-port br-mano veth1<br>sudo ip link set veth0 up<br>sudo ip link set veth1 up</p>
+<p>#sudo ovs-vsctl add-port br-veth0 veth0 – set Interface veth0 type=patch options:peer=veth1</p>
+<p>#sudo ovs-vsctl add-port br-mano veth1 – set Interface veth1 type=patch options:peer=veth0</p>
+<p>#sudo ovs-vsctl del-port br-mano veth1</p>
+<p>#sudo ovs-vsctl del-port br-veth0 veth0</p>
+<p>#Create ACCESS VLAN:<br>sudo ovs-vsctl set port vnet0 tag=2</p>
+<p>#sudo ovs-vsctl remove port vnet0 tag 2</p>
+<p>#Enable both ACCESS VLAN as well as TRUNK VLAN:<br>sudo ovs-vsctl set port vnet0 vlan_mode=trunk trunks=2 #access, native-tagged, native-untagged, trunk</p>
+<p>#sudo ovs-vsctl set port eth2 vlan_mode=access trunks=[]</p>
+<p>Verify VLAN</p>
+<p>Inside VM: ping 10.0.3.1 -I eth0</p>
+<p>sudo  tcpdump -i eth1  -e -n ‘arp or icmp’ and src host 10.0.3.1</p>
+<p>listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes<br>11:38:20.754894 52:54:00:f2:17:37 &gt; ff:ff:ff:ff:ff:ff, ethertype 802.1Q (0x8100), length 46: vlan 2, p 0, ethertype ARP, Request who-has 10.0.3.1 tell 10.0.3.2, length 28<br>Conclusion</p>
+<p>OVS Bridge br-mano上的VM无论是采用在VM里打Tag还是在br-mano vnet0处打Tag后的vlan流量能到达eth1(vlan数据只在物理网卡上能使用tcpdump看到），但无法到达同一机器上linux bridge br2上的eth1.2，反之亦然</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1539,126 +1689,6 @@ lxc profile device set default eth0 nictype macvlan
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/08/CSDN博客地址/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/08/CSDN博客地址/" itemprop="url">CSDN博客地址</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-08T10:36:56+08:00">
-                2017-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>我的CSDN博客地址是：<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1709,7 +1739,7 @@ lxc profile device set default eth0 nictype macvlan
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">73</span>
+                  <span class="site-state-item-count">74</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
