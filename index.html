@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,289 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/" itemprop="url">解决ssh server偶尔连不上或者发现网络连接初始很慢的状况</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<p>今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（<a href="http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。</a></p>
+<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>家里的tplink摄像头指定了固定IP 192.168.99.123，不知道为什么openwrt路由器将这个已占用的IP分配给了台式机。因为摄像头长期没用了，这个IP也ping不通，并且dnsmasq的/tmp/dhcp.leases配置文件中显示的这个IP都是和台式机的hostname在一起的，所以刚开始就没有想到这个重要的问题。</p>
+<p>1, 当在台式机上ping网关时，居然第一次要停顿11秒，但第二次之后就正常了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:~$ time ping -c 1 192.168.99.1</span><br><span class="line">PING 192.168.99.1 (192.168.99.1): 56 data bytes</span><br><span class="line">--- 192.168.99.1 ping statistics ---</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line">real	0m11.012s</span><br><span class="line">user	0m0.000s</span><br><span class="line">sys	0m0.000s</span><br></pre></td></tr></table></figure></p>
+<p>2, 台式机给网关发消息，台式机通过arp广播要网关的mac地址，网关向台式机返回arp响应，但这个响应被错误的发到摄像头的mac f0:7d:68:0c:90:40之上，所以当问题发生时，路由器抓包到了大量的下列消息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# tcpdump -i br-lan  -e -n &apos;icmp&apos; and src host 192.168.99.123</span><br><span class="line">14:10:30.449983 f8:32:e4:be:87:cd &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 98: 192.168.99.123 &gt; 192.168.99.1: ICMP echo request, id 9604, seq 0, length 64</span><br><span class="line">14:10:33.403550 f0:7d:68:0c:90:40 &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 118: 192.168.99.123 &gt; 85.199.214.101: ICMP 192.168.99.123 udp port 123 unreachable, length 84</span><br></pre></td></tr></table></figure></p>
+<p>3, 台式机因为等不到arp请求，从而停顿。</p>
+<p>使用“ip -s -s neigh flush all”命令清台式机与路由器arp cache均无效，在台式机上运行arp请求会很慢。</p>
+<p>后来给台式机更换其他IP就好了.</p>
+<p>我看到的这个问题的影响如下：<br>1, 当笔记本采用ssh连接到台式机上，也就会时不时发生停顿现象<br>2, 使用apt update时会第一次连接时像断了一样，但后面又好了</p>
+<h2 id="附录：Ubuntu下的远程桌面与X转发"><a href="#附录：Ubuntu下的远程桌面与X转发" class="headerlink" title="附录：Ubuntu下的远程桌面与X转发"></a>附录：Ubuntu下的远程桌面与X转发</h2><p>上面解决了ssh连接办公的问题，下面将远程桌面一并解决。</p>
+<p>Ubuntu下有一个默认的vino-server, 可在”Desktop Sharing”中开启，另外，需要运行dconf-editor将org-&gt;gnome-&gt;desktop-&gt;remote-access中的requre-encryption去掉，最后使用Remmina Remote Desktop Client选择vnc协议输入“IP :0”登录。不过，这种自带的Vino-Server方式有一个最显著的缺点：那就是当你重启机器之后，必须首先到远程服务器那边登录机器，进入系统（相当于创建了一个Session）之后，才能在本地使用远程桌面连接这个远程服务器。所以我们改使用vnc4server。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install vnc4server xvnc4viewer</span><br><span class="line">vncpasswd</span><br><span class="line"># First time to run it to generate ~/.vnc</span><br><span class="line">vncserver :2</span><br><span class="line">ll ~/.vnc/</span><br><span class="line">vncserver -kill :2</span><br><span class="line"># Second time to run it after modifying ~/.vnc</span><br><span class="line">sudo apt install mate-session-manager</span><br><span class="line">echo &apos;exec /usr/bin/mate-session &amp;&apos; &gt;&gt; ~/.vnc/xstartup</span><br><span class="line">vncserver :2 -geometry 1280x680 -alwaysshared</span><br><span class="line">Client Side: vncviewer node1:2</span><br></pre></td></tr></table></figure>
+<p>运行”ssh -vvv -X -o ForwardX11=yes node1“时报错”X11 forwarding request failed on channel 0“， 这是因为出于安全原因，OpenSSH默认将X11转发请求绑定到本地回环地址上，并且在DISPLAY环境变量中将主机名设置为“localhost”。在这样的设定下，一些 X11客户端不能正确处理X11转发，这会导致报告中的错误。要解决这个问题，在/etc/ssh/sshd配置文件中加入下面这几行，它可以将X11转发请求绑定到外网卡地址上。<br>X11Forwarding yes<br>X11UseLocalhost no<br>如果远程主机的SSH服务禁止了IPv6，那么X11转发失败的错误也有可能发生。故还需要添加： AddressFamily inet</p>
+<h2 id="20191220更新-另一个例子"><a href="#20191220更新-另一个例子" class="headerlink" title="20191220更新 - 另一个例子"></a>20191220更新 - 另一个例子</h2><p><img src="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">客户有两个external的dmz网络172.21.8.0/24与193.169.205.0/24</span><br><span class="line">两个neutron vrouter, dmzrouterinternal接172.21.8.0/24(qg-xxx=172.21.8.87), dmzroutereexternal接193.169.205.0/24</span><br><span class="line">dmzrouterinternal接一个subnet(192.168.4.1), 这样创建一个测试VM=192.168.4.199 FIP=172.21.8.85</span><br><span class="line">一个外部物理路由器有172.21.8.1与193.169.205.1, 外部路由器上接一个外部dns服务器(193.169.205.141)</span><br><span class="line">问题是VM无法ping 193.169.205.141, 抓包看到ARP reply到达了dmzrouterinternal却被drop掉了</span><br><span class="line">15:26:20.634541 ARP, Request who-has 193.169.205.141 tell 172.21.8.87, length 28</span><br><span class="line">15:26:20.634810 ARP, Reply 193.169.205.141 is-at 00:15:5d:2d:d9:2c (oui Unknown), length 46</span><br><span class="line"></span><br><span class="line">发现它有这些路由:</span><br><span class="line"># ip netns exec qrouter-ffd74122-45b4-4155-b585-fe62b2d3edd4 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-d84aed2a-34</span><br><span class="line">172.21.8.0/24 dev qg-d84aed2a-34 proto kernel scope link src 172.21.8.87</span><br><span class="line">192.168.4.0/24 dev qr-3c248a21-06 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-d84aed2a-34 scope link</span><br><span class="line"></span><br><span class="line">显然问题是这条路由&apos;193.169.205.0/24 dev qg-d84aed2a-34 scope link&apos;造成dmzrouterinternal与externaldns直连:</span><br><span class="line">ping之前, 看到193.169.205.141 at 00:00:0c:9f:f0:2c, 00:00:0c:9f:f0:2c是172.21.8.1的mac</span><br><span class="line"># arp -a</span><br><span class="line">? (192.168.4.42) at fa:16:3e:79:07:f0 [ether] on qr-3c248a21-06</span><br><span class="line">? (193.169.205.141) at 00:00:0c:9f:f0:2c [ether] on qg-d84aed2a-34</span><br><span class="line">当ping时, tcpdump收到ARP reply里的mac是00:15:5d:2d:d9:2c, 而不是00:00:0c:9f:f0:2c, 所以drop掉.</span><br><span class="line"></span><br><span class="line">如果临时运行下列命令, 也能ping通, 但一会儿这个arp就会过期, 问题就会再次重现, 所以解决的办法是删除这条路由(193.169.205.0/24 dev qg-d84aed2a-34 scope link)</span><br><span class="line">arp -d 193.169.205.141</span><br><span class="line">arp -i qg-d84aed2a-34 -s 193.169.205.141 02:00:5e:10:de:14</span><br><span class="line"></span><br><span class="line">下面做一个实验, 用一个neutron vrouter externalrouter来模拟外部物理路由器.</span><br><span class="line">./generate-bundle.sh -s bionic -r stein --num-compute 2</span><br><span class="line"></span><br><span class="line">openstack router create externalrouter</span><br><span class="line">openstack network create dmzexternalnet --external</span><br><span class="line">openstack network create dmzinternalnet --external</span><br><span class="line">openstack subnet create --subnet-range 172.21.8.0/24 --network dmzinternalnet --allocation-pool start=172.21.8.86,end=172.21.8.100 --gateway 172.21.8.1 dmzsubnetinternal</span><br><span class="line">openstack subnet create --subnet-range 193.169.205.0/24 --network dmzexternalnet --allocation-pool start=193.169.205.87,end=193.169.205.100 --gateway 193.169.205.1 dmzsubnetexternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetinternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetexternal</span><br><span class="line"></span><br><span class="line">#注:也可以不创建两个network, 只创建一个network, 然后将两个subnet都加到这个network, 在和router关联时特殊处理, 如:</span><br><span class="line">openstack router create --disable --centralized --ha dmzrouterinternal</span><br><span class="line">openstack router add subnet dmzrouterinternal dmztenantinternalsubnet</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetinternal,ip-address=172.21.8.87 dmzrouterinternal</span><br><span class="line">openstack router set --enable dmzrouterinternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterinternal</span><br><span class="line">openstack router set --external-gateway dmzinternalnet dmzrouterinternal</span><br><span class="line">openstack network create tenantnet</span><br><span class="line">openstack subnet create --subnet-range 192.168.4.0/24 --network tenantnet --allocation-pool start=192.168.4.87,end=192.168.4.100 --gateway 192.168.4.1 tenantsubnet</span><br><span class="line">openstack router add subnet dmzrouterinternal tenantsubnet</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterexternal</span><br><span class="line">openstack router set --external-gateway dmzexternalnet dmzrouterexternal</span><br><span class="line"></span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show dmzexternalnet -c id -f value) externaldns</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show tenantnet -c id -f value) i1</span><br><span class="line">dmzinternalnet=$(openstack network show dmzinternalnet -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $dmzinternalnet -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.4.100 --port $(openstack port list --fixed-ip ip-address=192.168.4.100 -c id -f value)</span><br><span class="line"></span><br><span class="line">$ openstack server list</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| ID                                   | Name        | Status | Networks                             | Image   | Flavor   |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| 3a1d1c70-6165-4060-ad78-9c67717e61e8 | externaldns | ACTIVE | dmzexternalnet=193.169.205.99        | cirros2 | m1.small |</span><br><span class="line">| 89b497c0-f236-4df4-8293-18f44547e239 | i1          | ACTIVE | tenantnet=192.168.4.100, 172.21.8.95 | cirros2 | m1.small |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~/stsstack-bundles/openstack$ openstack router list</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| ID                                   | Name              | Status | State | Project                          | Distributed | HA    |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| 09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 | dmzrouterinternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| 8320db06-5a9d-46fb-8af6-5c7b974ff7a9 | externalrouter    | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| ef19ea38-13e0-416a-9ce1-ac25c8aba9c0 | dmzrouterexternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route add 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -d 193.169.205.99</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -i qg-e6cd9397-b8 -s 193.169.205.99 fa:16:3e:7b:af:d6</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] PERM on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route del 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">PING 193.169.205.99 (193.169.205.99): 56 data bytes</span><br><span class="line">64 bytes from 193.169.205.99: seq=0 ttl=62 time=11.998 ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 arp -a</span><br><span class="line">? (172.21.8.92) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.87) at fa:16:3e:09:83:10 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.86) at fa:16:3e:89:ce:85 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.95) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qr-0912ab72-90</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 ip route</span><br><span class="line">172.21.8.0/24 dev qr-0912ab72-90 proto kernel scope link src 172.21.8.1</span><br><span class="line">193.169.205.0/24 dev qr-6fa183e9-a6 proto kernel scope link src 193.169.205.1</span><br></pre></td></tr></table></figure></p>
+<h2 id="20201112更新"><a href="#20201112更新" class="headerlink" title="20201112更新"></a>20201112更新</h2><p>现在改成通过路由器的DHCP静态分配IP，但台式机上的网卡在networkmanager里居然设置的是手动分配，这样导致机器启动一段时间后失去连接。改成DHCP方式即可。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/SSH连接总是定期断掉的解决办法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/12/SSH连接总是定期断掉的解决办法/" itemprop="url">SSH连接总是定期断掉的解决办法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-05-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
+<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>SSH连接总是隔一段时间没有输入时就断开，解决办法如下：</p>
+<p>服务端配置<br>sudo vi /etc/ssh/sshd_config<br>ClientAliveInterval 60     #服务端主动向客户端请求响应的间隔<br>ClientAliveCountMax 10    #服务器发出请求后客户端没有响应的次数达到一定值就自动断开<br>sudo restart ssh</p>
+<p>客户端配置<br>sudo vi /etc/ssh/ssh_config  #或~/.ssh/config</p>
+<pre><code>TCPKeepAlive yes
+ServerAliveInterval 15
+ServerAliveCountMax 6
+StrictHostKeyChecking no
+ForwardAgent yes
+Compression yes
+
+ IPQoS throughput
+</code></pre><p>或</p>
+<p>ssh -i <key-file> IPQoS=throughput -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=30 ubuntu@<ip></ip></key-file></p>
+<p>上面方式任选一种，我选客户端配置方式。</p>
+<p>20200316更新, 如果ssh总是断时也得考虑使用白名单模式时是否将某些IP排除了.</p>
+<p>20200902更新, 如果使用Compression yes会被墙看上, 会时不时ssh断掉, 去掉Compression即可.</p>
+<p>20201016更新, 到国外的ssh连接总断, 除了ISP QoS外, 还试试在sshd.conf中添加:</p>
+<p>UseDNS no</p>
+<p>GSSAPIAuthentication no</p>
+<p>20201028更新，</p>
+<p>这次应该是找到了ssh总断的根源，因为bastion上安装了devstack所以在并行运行’opestack image set”时ssh会中断．所以习惯很重要，不能乱安装东西．</p>
+<p>#openstack image set –property $p=${props[$p]} $img_name</p>
+<p>openstack image set –property $p=${props[$p]} $img_name &amp;</p>
+<p>另外，使用压缩传输数据：</p>
+<p>#strings /usr/sbin/sshd |egrep “chacha|aes”<br>scp -p -C -o ‘IPQoS throughput’  -c chacha20-poly1305@openssh.com win10.img hua@node1:/images/</p>
+<p>20201112更新</p>
+<p>ssh总断的原因是因为机器上为反复重启virtualbox导致chrome会通过fast.com测速变得只有十几K, virutalbox改成了kvm现在观察了几天似乎这个问题消失了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +543,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
                 2020-11-09
@@ -405,7 +688,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
                 2020-11-08
@@ -604,7 +887,7 @@ use sendfile = yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
                 2020-11-04
@@ -771,7 +1054,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T16:23:01+08:00">
                 2020-11-04
@@ -898,7 +1181,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-30T16:06:55+08:00">
                 2020-10-30
@@ -1028,7 +1311,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-28T19:43:30+08:00">
                 2020-10-28
@@ -1153,7 +1436,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
                 2020-10-22
@@ -1277,7 +1560,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-14T13:37:44+08:00">
                 2020-10-14
@@ -1379,304 +1662,6 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/29/UEFI-Secure-Boot学习草稿/" itemprop="url">UEFI Secure Boot学习草稿</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-29T19:17:27+08:00">
-                2020-09-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-29<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="什么是secure-boot"><a href="#什么是secure-boot" class="headerlink" title="什么是secure boot"></a>什么是secure boot</h2><p>secureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware), you can still boot Grub2 with secureboot using shim and MOK manager. And from grub2, you can boot into other operating systems.也就是说:<br>secureboot将根证书放在固件firmware中, 然后可以验证signed bootloader, signed bootloader然后再验证signed kernel和signed 2nd stage boot loader.这样系统允许你修改secureboot keys.</p>
-<ul>
-<li>db, 允许bootloaders的公钥集合</li>
-<li>dbx, 不允许bootloaders的公钥集合</li>
-<li>KEK, 允许操作db的公钥集合</li>
-<li>PK, 允许操作KEK的私钥.</li>
-</ul>
-<p>默认地, 系统有硬件制造商的PK, microsoft和硬件制造商的公钥在db与KEK里. 这样就可以使用microsoft-certified bootloaders, 再通过它签名的shim来使用其他linuxers. 有的UEFI BIOS setup允许adding and delteing所有的secureboot keys, 而有些却允许你要么删除所有要么用默认(删除之前记得备份哦). 如果PK被删除的话, secure boot这时叫so-called setup mode. 你可能想有这个密钥:<br>the db set should contain:</p>
-<ul>
-<li>your own public key certificate, for booting things you’ve explicitly signed</li>
-<li>maybe your favorite Linux distribution’s kernel signing certificate, if you want to use pre-packaged kernels without manually re-signing them</li>
-<li>maybe hardware vendor’s certificate, to allow installing firmware updates if necessary maybe Microsoft’s third-party UEFI certificate, to allow the use of pre-packaged Linux bootloaders and live Linux boot media without explicitly re-signing them or disabling Secure Boot</li>
-<li>maybe Microsoft’s OS signing certificate, if you dual-boot with Windows</li>
-</ul>
-<p>the KEK set should contain:</p>
-<ul>
-<li>your own certificate, for updating db and dbx</li>
-<li>if your system includes UEFI-aware Microsoft OSs, you may want to include Microsoft’s KEK certificate, as Microsoft’s updates sometimes include updates to db and/or dbx and those updates won’t install successfully if access to Secure Boot is denied</li>
-<li>and finally, once all the rest is set up as you want, you should place your own certificate into PK to make Secure Boot effective again.</li>
-</ul>
-<h2 id="有无shim"><a href="#有无shim" class="headerlink" title="有无shim"></a>有无shim</h2><p>bootloader有两种, shim与grub2都叫bootloader, 所以理论上是可以不需要shim的, 但为什么需要shim呢? 这个网页(<a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub</a> uses firmware API to validate binary signatures; you might prefer shim instead of signing the binaries with the “precious” key each time.</p>
-<p>非secureboot模式下, 没有shim组件, efi直接启动grub2.<br>在secureboot模式下, 有shim组件, 且shim需要使用efi中的证书签名(grub2和kernel的签名不一定非要用efi中的证书, 可以自己随意定制后再使用shim相关工具导入nvram中). 即使在secureboot模式下也可以有shim和无shim:</p>
-<ul>
-<li>无shim, 在centos中可以跳过shim, 直接让efi启动grub2也是没问题的, 但grub2与kernel都需要使用efi中的证书签名, 由efi进行grub2与kernel的校验.</li>
-<li>有shim, grub2中用户选择kernel后, grub2回调shim组件校验kernel(grub2, kernel使用相同的私钥签名)</li>
-</ul>
-<h2 id="可信问题"><a href="#可信问题" class="headerlink" title="可信问题"></a>可信问题</h2><ul>
-<li>initrd和intrd加载的模式都是不可信的, 这部分都没有经过签名;</li>
-<li>systemtap, kexec, kdump也都是没有签名的;</li>
-<li>第三方KO模式没有签名(正常情况下, 模块需要使用mok签名, shim来验证)</li>
-</ul>
-<h2 id="secureboot启动流程"><a href="#secureboot启动流程" class="headerlink" title="secureboot启动流程"></a>secureboot启动流程</h2><p>1, 打开电源, 先运行Secure Boot-capable UEFI firmware (对于qemu虚机, 这个secureboot capable UEFI OVMF firmware叫UEFI x86_64 : usr/share/OVMF/OVMF_CODE.fd,  (sudo apt install ovmf &amp;&amp; sudo systemctl restart libvirtd)</p>
-<p>2, firware验证bootloader的签名. UEFI firmware中预先在NVRAM系统中(或者compiled-in defaults)集成了一些公钥集合(secure boot key sets) , 它可以给bootloader验证签名(shim or grub2), 不使用shim的话, grub2得每次调用firware api去验证签名.</p>
-<p>UEFI firmware uses /boot/efi/EFI/BOOT/BOOTX64.EFI (从md5sum看它和/boot/efi/EFI/centos/shimx64.efi是同一个文件,  对于shim就是将shimx64.efi拷贝到BOOTX64.EFI, 对于grub2可能就是将grubx64.efi拷贝到BOOTX64.EFI了) to boot at the first stage.</p>
-<p>[root@test2 ~]# md5sum /boot/efi/EFI/BOOT/BOOTX64.EFI<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/BOOT/BOOTX64.EFI<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64.efi<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/centos/shimx64.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64-centos.efi<br>d435494a957479acac3aca09915c21d1  /boot/efi/EFI/centos/shimx64-centos.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/grubx64.efi<br>031b972f3ab267f37e01ada73f4b480d  /boot/efi/EFI/centos/grubx64.efi</p>
-<p>3, bootloader再去验证kernel的签名.</p>
-<p>then shim will load grub2 (/boot/efi/EFI/centos/grubx64.efi) in the second stage</p>
-<p>4, kernel再去验证module的签名.</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot" target="_blank" rel="external">https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot</a><br>[2] <a href="https://www.aioboot.com/en/secure-boot/" target="_blank" rel="external">https://www.aioboot.com/en/secure-boot/</a><br>[3] <a href="https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html</a><br>[4] Grub 2：拯救你的 bootloader, <a href="https://linux.cn/article-6892-1.html?pr" target="_blank" rel="external">https://linux.cn/article-6892-1.html?pr</a><br>[5] <a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/18/引入nova-placement之后对调度的影响/" itemprop="url">引入nova placement之后对调度的影响</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-18T15:33:22+08:00">
-                2020-09-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="nova-cell-v2"><a href="#nova-cell-v2" class="headerlink" title="nova cell v2"></a>nova cell v2</h2><p>nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappings, nova_api.instance_mappings, nova_api.cell_mappings可以直接从instance找到cell_id进而找到DB与MQ的信息，这样nova-api直接就可以操作该cell之类的DB与MQ从而可以让nova-compute可以水平扩展到更多的物理节点，另一方面，nova-api节点也不再需要nova-cell服务，要有nova-api与nova-scheduler两个服务即可．</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; pager less -S</span><br><span class="line">PAGER set to &apos;less -S&apos;</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">mysql&gt; select instance_uuid,cell_id from instance_mappings;</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| instance_uuid                        | cell_id |</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| 4039ed4e-d0a1-46ba-99a5-68bc84421b42 |       2 |</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from host_mappings;</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| created_at          | updated_at | id | cell_id | host                                |</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| 2020-09-16 06:18:26 | NULL       |  1 |       2 | juju-3ba760-ceilometer-15.cloud.sts |</span><br><span class="line"></span><br><span class="line">mysql&gt; select transport_url,name,database_connection from cell_mappings;</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| transport_url                                                                                            | name  | database_connection                                                         |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| none:///                                                                                                 | cell0 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova_cell0 |</span><br><span class="line">| rabbit://nova:wSz5LjscfBqKnhVWKBZnrXdwS5Kz6TByz9jKfm2xKHbCRYPPSbcnqFwPTnCp8VpP@10.5.0.199:5672/openstack | cell1 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova       |</span><br></pre></td></tr></table></figure>
-<p>所以当遇到这种错误时:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br><span class="line">No server with a name or ID of 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo nova-manage cell_v2 list_cells</span><br><span class="line">sudo nova-manage cell_v2 map_instances --cell_uuid &lt;cell-id-from-above&gt;</span><br><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure>
-<h2 id="nova-placement-API"><a href="#nova-placement-API" class="headerlink" title="nova placement API"></a>nova placement API</h2><p>nova placement API在Newton被引入, nova-scheduler调用placement-api用于调度. 主要用于跟踪记录Resource Provider(compute-node, external storage-pool, external ip-allocation-pool etc)的Inventory和Usage.自Pike版本, 必须启用Placement API来辅助nova-scheduler service进行compute node调度，并以此替代之前的RAMFilter、CoreFilter和DiskFilter。概念对象如下:</p>
-<ul>
-<li>Resource Class, 资源种类, placement api默认实现了DISK_GB, MEMORY_MB,VCPU三种标准resource classes, 也提供了custom resource classes的接口.</li>
-<li>Resource Providers：资源提供者，实际提供资源的对象，例如：compute node、storage pool</li>
-<li>Inventory：资源清单，资源提供者所拥有的资源清单，例如：compute node 拥有的vCPU、Disk、RAM 等 inventories</li>
-<li>Resource Allocations：资源分配状况，包含了Resource Class、Resource Provider以及Consumer 的映射关系。记录消费者使用了多少该类型的资源数量</li>
-<li>Provider Aggregate：资源聚合，类似 HostAggregate 的概念</li>
-<li>Traits：资源特征，不同资源提供者可能会具有不同的资源特征。Traits 作为资源提供者特征的描述，它不能够被消费，但在某些Workflow 或者会需要这些信息。例如：标识可用的Disk是一个SSD，可以帮助Scheduler更好的匹配 instance boot请求。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from resource_providers;</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| created_at          | updated_at          | id | uuid                                 | name                                | generation | can_host | root_provider_id | parent_provider_id |</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | 2020-09-16 10:19:33 |  1 | a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |     NULL |                1 |               NULL |</span><br><span class="line"></span><br><span class="line"># for the field resource_class_id, 0 means VCPU, 1 means MEMORY_MB, 2 means DISK_GB</span><br><span class="line">mysql&gt; select * from inventories;</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | resource_class_id | total | reserved | min_unit | max_unit | step_size | allocation_ratio |</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  1 |                    1 |                 0 |     2 |        0 |        1 |        2 |         1 |               16 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  2 |                    1 |                 1 |  3944 |      512 |        1 |     3944 |         1 |              1.5 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  3 |                    1 |                 2 |    38 |        0 |        1 |       38 |         1 |                1 |</span><br><span class="line">mysql&gt; select * from allocations;</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | consumer_id                          | resource_class_id | used |</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 16 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 2 |    1 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 17 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 1 |   64 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 18 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 0 |    1 |</span><br></pre></td></tr></table></figure>
-<h2 id="Placement-CLI"><a href="#Placement-CLI" class="headerlink" title="Placement CLI"></a>Placement CLI</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python3-osc-placement -y</span><br><span class="line"></span><br><span class="line">$ openstack resource provider list</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| uuid                                 | name                                | generation |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line"></span><br><span class="line">$  openstack resource provider inventory list a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| resource_class | allocation_ratio | min_unit | max_unit | reserved | step_size | total |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| VCPU           |             16.0 |        1 |        2 |        0 |         1 |     2 |</span><br><span class="line">| MEMORY_MB      |              1.5 |        1 |     3944 |      512 |         1 |  3944 |</span><br><span class="line">| DISK_GB        |              1.0 |        1 |       38 |        0 |         1 |    38 |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line"></span><br><span class="line">$ openstack resource provider usage show a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+-------+</span><br><span class="line">| resource_class | usage |</span><br><span class="line">+----------------+-------+</span><br><span class="line">| VCPU           |     3 |</span><br><span class="line">| MEMORY_MB      |   192 |</span><br><span class="line">| DISK_GB        |     3 |</span><br><span class="line">+----------------+-------+</span><br></pre></td></tr></table></figure>
-<h2 id="one-bug"><a href="#one-bug" class="headerlink" title="one bug"></a>one bug</h2><p>例如, 如<a href="https://bugs.launchpad.net/nova/+bug/1679750描述的场景" target="_blank" rel="external">https://bugs.launchpad.net/nova/+bug/1679750描述的场景</a>, 在hostA上创建一虚机,hostA死掉了, 这时删除虚机时无法删除实例(因为nova-compute这时死掉了啊), 这样会导致allocations表中的记录没有被删除. 如果hostA又起来了, nova-compute的init_host-&gt;_complete_partial_deletion<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; nova/compute/manager.py#update_available_resource_for_node -&gt; update_available_resource -&gt; _update_available_resource -&gt; _remove_deleted_instances_allocations</span><br></pre></td></tr></table></figure></p>
-<p>当把一个nova-compute删除时，删了service和compute_node表记录后,却没有删除placement resource provider和host mapping records.<br>nova-compute自己都死了它是没法自己删自己的,所以改由nova-api在启动时在删除instances时也删除allocations表中的记录 -<br><a href="https://review.opendev.org/#/c/580498/" target="_blank" rel="external">https://review.opendev.org/#/c/580498/</a></p>
-<h2 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">select * nova_api.from host_mappings;</span><br><span class="line">select * from nova_api.cell_mappings;</span><br><span class="line">select * from nova_api.resource_providers where name like &apos;%xxx%&apos;;   xx.bos01.xxx (9)</span><br><span class="line">select * from nova.compute_nodes where host like &apos;%bagon%&apos; or hypervisor_hostname like &apos;%xxx%&apos;;</span><br><span class="line">select * from nova_api.inventories where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;);</span><br><span class="line">select * from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;) order by consumer_id,resource_provider_id,resource_class_id;</span><br><span class="line">select uuid, host, node, vcpus, memory_mb, vm_state, power_state, task_state, root_gb, ephemeral_gb, cell_name,deleted from nova.instances where uuid in (select consumer_id from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;)) order by uuid;</span><br></pre></td></tr></table></figure>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://blog.csdn.net/jmilk/article/details/81264240" target="_blank" rel="external">https://blog.csdn.net/jmilk/article/details/81264240</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1727,8 +1712,8 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">74</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">76</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1778,7 +1763,7 @@ set_state done
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

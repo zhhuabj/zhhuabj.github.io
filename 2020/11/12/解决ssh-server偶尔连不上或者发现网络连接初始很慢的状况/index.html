@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。 问题我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（ht">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解决ssh server偶尔连不上或者发现网络连接初始很慢的状况">
+<meta property="og:url" content="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。 问题我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（ht">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70">
+<meta property="og:updated_time" content="2020-11-12T03:35:22.763Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="解决ssh server偶尔连不上或者发现网络连接初始很慢的状况">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) 今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。 问题我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（ht">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/"/>
+
+
+
+
+
+  <title>解决ssh server偶尔连不上或者发现网络连接初始很慢的状况 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">解决ssh server偶尔连不上或者发现网络连接初始很慢的状况</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<p>今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（<a href="http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。</a></p>
+<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>家里的tplink摄像头指定了固定IP 192.168.99.123，不知道为什么openwrt路由器将这个已占用的IP分配给了台式机。因为摄像头长期没用了，这个IP也ping不通，并且dnsmasq的/tmp/dhcp.leases配置文件中显示的这个IP都是和台式机的hostname在一起的，所以刚开始就没有想到这个重要的问题。</p>
+<p>1, 当在台式机上ping网关时，居然第一次要停顿11秒，但第二次之后就正常了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:~$ time ping -c 1 192.168.99.1</span><br><span class="line">PING 192.168.99.1 (192.168.99.1): 56 data bytes</span><br><span class="line">--- 192.168.99.1 ping statistics ---</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line">real	0m11.012s</span><br><span class="line">user	0m0.000s</span><br><span class="line">sys	0m0.000s</span><br></pre></td></tr></table></figure></p>
+<p>2, 台式机给网关发消息，台式机通过arp广播要网关的mac地址，网关向台式机返回arp响应，但这个响应被错误的发到摄像头的mac f0:7d:68:0c:90:40之上，所以当问题发生时，路由器抓包到了大量的下列消息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# tcpdump -i br-lan  -e -n &apos;icmp&apos; and src host 192.168.99.123</span><br><span class="line">14:10:30.449983 f8:32:e4:be:87:cd &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 98: 192.168.99.123 &gt; 192.168.99.1: ICMP echo request, id 9604, seq 0, length 64</span><br><span class="line">14:10:33.403550 f0:7d:68:0c:90:40 &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 118: 192.168.99.123 &gt; 85.199.214.101: ICMP 192.168.99.123 udp port 123 unreachable, length 84</span><br></pre></td></tr></table></figure></p>
+<p>3, 台式机因为等不到arp请求，从而停顿。</p>
+<p>使用“ip -s -s neigh flush all”命令清台式机与路由器arp cache均无效，在台式机上运行arp请求会很慢。</p>
+<p>后来给台式机更换其他IP就好了.</p>
+<p>我看到的这个问题的影响如下：<br>1, 当笔记本采用ssh连接到台式机上，也就会时不时发生停顿现象<br>2, 使用apt update时会第一次连接时像断了一样，但后面又好了</p>
+<h2 id="附录：Ubuntu下的远程桌面与X转发"><a href="#附录：Ubuntu下的远程桌面与X转发" class="headerlink" title="附录：Ubuntu下的远程桌面与X转发"></a>附录：Ubuntu下的远程桌面与X转发</h2><p>上面解决了ssh连接办公的问题，下面将远程桌面一并解决。</p>
+<p>Ubuntu下有一个默认的vino-server, 可在”Desktop Sharing”中开启，另外，需要运行dconf-editor将org-&gt;gnome-&gt;desktop-&gt;remote-access中的requre-encryption去掉，最后使用Remmina Remote Desktop Client选择vnc协议输入“IP :0”登录。不过，这种自带的Vino-Server方式有一个最显著的缺点：那就是当你重启机器之后，必须首先到远程服务器那边登录机器，进入系统（相当于创建了一个Session）之后，才能在本地使用远程桌面连接这个远程服务器。所以我们改使用vnc4server。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install vnc4server xvnc4viewer</span><br><span class="line">vncpasswd</span><br><span class="line"># First time to run it to generate ~/.vnc</span><br><span class="line">vncserver :2</span><br><span class="line">ll ~/.vnc/</span><br><span class="line">vncserver -kill :2</span><br><span class="line"># Second time to run it after modifying ~/.vnc</span><br><span class="line">sudo apt install mate-session-manager</span><br><span class="line">echo &apos;exec /usr/bin/mate-session &amp;&apos; &gt;&gt; ~/.vnc/xstartup</span><br><span class="line">vncserver :2 -geometry 1280x680 -alwaysshared</span><br><span class="line">Client Side: vncviewer node1:2</span><br></pre></td></tr></table></figure>
+<p>运行”ssh -vvv -X -o ForwardX11=yes node1“时报错”X11 forwarding request failed on channel 0“， 这是因为出于安全原因，OpenSSH默认将X11转发请求绑定到本地回环地址上，并且在DISPLAY环境变量中将主机名设置为“localhost”。在这样的设定下，一些 X11客户端不能正确处理X11转发，这会导致报告中的错误。要解决这个问题，在/etc/ssh/sshd配置文件中加入下面这几行，它可以将X11转发请求绑定到外网卡地址上。<br>X11Forwarding yes<br>X11UseLocalhost no<br>如果远程主机的SSH服务禁止了IPv6，那么X11转发失败的错误也有可能发生。故还需要添加： AddressFamily inet</p>
+<h2 id="20191220更新-另一个例子"><a href="#20191220更新-另一个例子" class="headerlink" title="20191220更新 - 另一个例子"></a>20191220更新 - 另一个例子</h2><p><img src="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">客户有两个external的dmz网络172.21.8.0/24与193.169.205.0/24</span><br><span class="line">两个neutron vrouter, dmzrouterinternal接172.21.8.0/24(qg-xxx=172.21.8.87), dmzroutereexternal接193.169.205.0/24</span><br><span class="line">dmzrouterinternal接一个subnet(192.168.4.1), 这样创建一个测试VM=192.168.4.199 FIP=172.21.8.85</span><br><span class="line">一个外部物理路由器有172.21.8.1与193.169.205.1, 外部路由器上接一个外部dns服务器(193.169.205.141)</span><br><span class="line">问题是VM无法ping 193.169.205.141, 抓包看到ARP reply到达了dmzrouterinternal却被drop掉了</span><br><span class="line">15:26:20.634541 ARP, Request who-has 193.169.205.141 tell 172.21.8.87, length 28</span><br><span class="line">15:26:20.634810 ARP, Reply 193.169.205.141 is-at 00:15:5d:2d:d9:2c (oui Unknown), length 46</span><br><span class="line"></span><br><span class="line">发现它有这些路由:</span><br><span class="line"># ip netns exec qrouter-ffd74122-45b4-4155-b585-fe62b2d3edd4 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-d84aed2a-34</span><br><span class="line">172.21.8.0/24 dev qg-d84aed2a-34 proto kernel scope link src 172.21.8.87</span><br><span class="line">192.168.4.0/24 dev qr-3c248a21-06 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-d84aed2a-34 scope link</span><br><span class="line"></span><br><span class="line">显然问题是这条路由&apos;193.169.205.0/24 dev qg-d84aed2a-34 scope link&apos;造成dmzrouterinternal与externaldns直连:</span><br><span class="line">ping之前, 看到193.169.205.141 at 00:00:0c:9f:f0:2c, 00:00:0c:9f:f0:2c是172.21.8.1的mac</span><br><span class="line"># arp -a</span><br><span class="line">? (192.168.4.42) at fa:16:3e:79:07:f0 [ether] on qr-3c248a21-06</span><br><span class="line">? (193.169.205.141) at 00:00:0c:9f:f0:2c [ether] on qg-d84aed2a-34</span><br><span class="line">当ping时, tcpdump收到ARP reply里的mac是00:15:5d:2d:d9:2c, 而不是00:00:0c:9f:f0:2c, 所以drop掉.</span><br><span class="line"></span><br><span class="line">如果临时运行下列命令, 也能ping通, 但一会儿这个arp就会过期, 问题就会再次重现, 所以解决的办法是删除这条路由(193.169.205.0/24 dev qg-d84aed2a-34 scope link)</span><br><span class="line">arp -d 193.169.205.141</span><br><span class="line">arp -i qg-d84aed2a-34 -s 193.169.205.141 02:00:5e:10:de:14</span><br><span class="line"></span><br><span class="line">下面做一个实验, 用一个neutron vrouter externalrouter来模拟外部物理路由器.</span><br><span class="line">./generate-bundle.sh -s bionic -r stein --num-compute 2</span><br><span class="line"></span><br><span class="line">openstack router create externalrouter</span><br><span class="line">openstack network create dmzexternalnet --external</span><br><span class="line">openstack network create dmzinternalnet --external</span><br><span class="line">openstack subnet create --subnet-range 172.21.8.0/24 --network dmzinternalnet --allocation-pool start=172.21.8.86,end=172.21.8.100 --gateway 172.21.8.1 dmzsubnetinternal</span><br><span class="line">openstack subnet create --subnet-range 193.169.205.0/24 --network dmzexternalnet --allocation-pool start=193.169.205.87,end=193.169.205.100 --gateway 193.169.205.1 dmzsubnetexternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetinternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetexternal</span><br><span class="line"></span><br><span class="line">#注:也可以不创建两个network, 只创建一个network, 然后将两个subnet都加到这个network, 在和router关联时特殊处理, 如:</span><br><span class="line">openstack router create --disable --centralized --ha dmzrouterinternal</span><br><span class="line">openstack router add subnet dmzrouterinternal dmztenantinternalsubnet</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetinternal,ip-address=172.21.8.87 dmzrouterinternal</span><br><span class="line">openstack router set --enable dmzrouterinternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterinternal</span><br><span class="line">openstack router set --external-gateway dmzinternalnet dmzrouterinternal</span><br><span class="line">openstack network create tenantnet</span><br><span class="line">openstack subnet create --subnet-range 192.168.4.0/24 --network tenantnet --allocation-pool start=192.168.4.87,end=192.168.4.100 --gateway 192.168.4.1 tenantsubnet</span><br><span class="line">openstack router add subnet dmzrouterinternal tenantsubnet</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterexternal</span><br><span class="line">openstack router set --external-gateway dmzexternalnet dmzrouterexternal</span><br><span class="line"></span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show dmzexternalnet -c id -f value) externaldns</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show tenantnet -c id -f value) i1</span><br><span class="line">dmzinternalnet=$(openstack network show dmzinternalnet -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $dmzinternalnet -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.4.100 --port $(openstack port list --fixed-ip ip-address=192.168.4.100 -c id -f value)</span><br><span class="line"></span><br><span class="line">$ openstack server list</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| ID                                   | Name        | Status | Networks                             | Image   | Flavor   |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| 3a1d1c70-6165-4060-ad78-9c67717e61e8 | externaldns | ACTIVE | dmzexternalnet=193.169.205.99        | cirros2 | m1.small |</span><br><span class="line">| 89b497c0-f236-4df4-8293-18f44547e239 | i1          | ACTIVE | tenantnet=192.168.4.100, 172.21.8.95 | cirros2 | m1.small |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~/stsstack-bundles/openstack$ openstack router list</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| ID                                   | Name              | Status | State | Project                          | Distributed | HA    |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| 09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 | dmzrouterinternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| 8320db06-5a9d-46fb-8af6-5c7b974ff7a9 | externalrouter    | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| ef19ea38-13e0-416a-9ce1-ac25c8aba9c0 | dmzrouterexternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route add 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -d 193.169.205.99</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -i qg-e6cd9397-b8 -s 193.169.205.99 fa:16:3e:7b:af:d6</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] PERM on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route del 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">PING 193.169.205.99 (193.169.205.99): 56 data bytes</span><br><span class="line">64 bytes from 193.169.205.99: seq=0 ttl=62 time=11.998 ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 arp -a</span><br><span class="line">? (172.21.8.92) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.87) at fa:16:3e:09:83:10 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.86) at fa:16:3e:89:ce:85 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.95) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qr-0912ab72-90</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 ip route</span><br><span class="line">172.21.8.0/24 dev qr-0912ab72-90 proto kernel scope link src 172.21.8.1</span><br><span class="line">193.169.205.0/24 dev qr-6fa183e9-a6 proto kernel scope link src 193.169.205.1</span><br></pre></td></tr></table></figure></p>
+<h2 id="20201112更新"><a href="#20201112更新" class="headerlink" title="20201112更新"></a>20201112更新</h2><p>现在改成通过路由器的DHCP静态分配IP，但台式机上的网卡在networkmanager里居然设置的是手动分配，这样导致机器启动一段时间后失去连接。改成DHCP方式即可。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/12/SSH连接总是定期断掉的解决办法/" rel="next" title="SSH连接总是定期断掉的解决办法">
+                <i class="fa fa-chevron-left"></i> SSH连接总是定期断掉的解决办法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">76</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#原因"><span class="nav-number">2.</span> <span class="nav-text">原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录：Ubuntu下的远程桌面与X转发"><span class="nav-number">3.</span> <span class="nav-text">附录：Ubuntu下的远程桌面与X转发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20191220更新-另一个例子"><span class="nav-number">4.</span> <span class="nav-text">20191220更新 - 另一个例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20201112更新"><span class="nav-number">5.</span> <span class="nav-text">20201112更新</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
