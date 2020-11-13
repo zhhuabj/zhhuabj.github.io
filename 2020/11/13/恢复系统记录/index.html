@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2017-02-09版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 今天系统又无故crash并无法启动了，折腾了一下午，记录一下。 突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但">
+<meta property="og:type" content="article">
+<meta property="og:title" content="恢复系统记录">
+<meta property="og:url" content="http://yoursite.com/2020/11/13/恢复系统记录/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2017-02-09版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 今天系统又无故crash并无法启动了，折腾了一下午，记录一下。 突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但">
+<meta property="og:updated_time" content="2020-11-13T01:26:23.786Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="恢复系统记录">
+<meta name="twitter:description" content="作者：张华 发表于：2017-02-09版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 今天系统又无故crash并无法启动了，折腾了一下午，记录一下。 突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/11/13/恢复系统记录/"/>
+
+
+
+
+
+  <title>恢复系统记录 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/13/恢复系统记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">恢复系统记录</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
+                2020-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2017-02-09<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<p>今天系统又无故crash并无法启动了，折腾了一下午，记录一下。</p>
+<p>突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但是系统报”unknown filesystem”，接着就crash了。</p>
+<p>重启后出现了grub resue界面，试图通过下列命令恢复grub时仍然报”unknown filesystem”错误。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ls (hd1,msdos5)</span><br><span class="line">set root=(hd1,msdos5)</span><br><span class="line">set prefix=(hd1,5)/boot/grub</span><br><span class="line">lsmod normal</span><br><span class="line">normal</span><br><span class="line"></span><br><span class="line">sudo update-grub</span><br><span class="line">sudo grub-install /dev/sdb</span><br></pre></td></tr></table></figure></p>
+<p>通过usb启动盘启动后运行“sudo fsck.ext4 -y /dev/sda9”之后上面磁盘的问题是解决了，也出现了登录界面，但是却无法登录，原本想通过下列命令重置:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -fr ~/.cache/compizconfig-1</span><br><span class="line">sudo rm -fr ~/.Xauthority</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop unity compizconfig-settings-manager</span><br><span class="line">sudo dconf reset -f /org/compiz/</span><br><span class="line">setsid unity</span><br><span class="line">sudo rm -fr .cache/</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http://kuring.me/ref/x_window/X_client_server_example.svg.png</span><br><span class="line">linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)</span><br><span class="line">1, ctrl+alt+fn [n: 1-12]: used to switch virtual control console, 1-6 is used for linux (eg: echo $DISPLAY &amp;&amp; xclock -display :0 &amp;&amp; DISPLAY=:0 xclock)</span><br><span class="line">2, startx process (login -&gt; bash -&gt; startx -&gt; xinit -&gt; X -&gt; ck-xinit-session -&gt; gnome-session), xinit is used to start X Server software.</span><br><span class="line">3, &apos;init 5&apos; is used to restart X window</span><br></pre></td></tr></table></figure>
+<p>但是发现/var/lib/dpkg目录不存在了，另外也有其他很多程序出现少文件的问题，不是我删除的，应该是fsck命令没有全部正确恢复inode吧。这种情况只能重装操作系统了，将所有工作需要的应用都安装好后也做了一个备份（dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz）， 今后再出问题时希望通过命令（gunzip -c /images/working_os_bak.img.gz | dd of=/dev/sdb conv=sync,noerror bs=64K）能快速恢复操作系统和所需要的应用吧。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz</span><br><span class="line">1831575+1 records in</span><br><span class="line">1831576+0 records out</span><br><span class="line">120034164736 bytes (120 GB, 112 GiB) copied, 914.123 s, 131 MB/s</span><br><span class="line"></span><br><span class="line">$ ll /images/working_os_bak.img.gz -h</span><br><span class="line">-rw-r--r-- 1 root root 4.7G Feb  9 17:36 /images/working_os_bak.img.gz</span><br></pre></td></tr></table></figure>
+<p>硬盘损坏看起来像：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;- - -&quot; &gt; /sys/class/scsi_host/host0/scan</span><br><span class="line"></span><br><span class="line">#Unused HDD</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2697.930058] ata3: hard resetting link</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245478] ata3: SATA link down (SStatus 0 SControl 300)</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245490] ata3: EH complete</span><br><span class="line"></span><br><span class="line">#Good HDD</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2652.763243] ata1: hard resetting link</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.077298] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097249] ata1.00: configured for UDMA/133</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097251] ata1: EH complete</span><br><span class="line"></span><br><span class="line">#Bad HDD</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696088] ata2.00: exception Emask 0x0 SAct 0x80000 SErr 0x0 action 0x6 frozen</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696098] ata2.00: failed command: READ FPDMA QUEUED</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108] ata2.00: cmd 60/10:98:b0:bd:3c/00:00:a6:00:00/40 tag 19 ncq 8192 in</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696113] ata2.00: status: &#123; DRDY &#125;</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696119] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:36 node1 kernel: [  237.059963] ata2: link is slow to respond, please be patient (ready=0)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707975] ata2: COMRESET failed (errno=-16)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707980] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:46 node1 kernel: [  247.067970] ata2: link is slow to respond, please be patient (ready=0)</span><br></pre></td></tr></table></figure></p>
+<p>换硬盘不需要重装系统，将fstab文件修改一下即可:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LABEL=&quot;images&quot; /images         ext4    defaults        0       2</span><br><span class="line">LABEL=&quot;bak&quot; /bak         ext4    defaults        0       2</span><br><span class="line">192.168.99.122:/Public /nas nfs noauto,x-systemd.automount,x-systemd.device-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0</span><br></pre></td></tr></table></figure></p>
+<h2 id="201923更新-解决login-loop问题"><a href="#201923更新-解决login-loop问题" class="headerlink" title="201923更新 - 解决login loop问题"></a>201923更新 - 解决login loop问题</h2><p>反复出现登录界面, 根据下列流程, 似乎问题只可能出现在gnome这块出问题了才会回到lightdm的登录界面处.<br>linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)<br>搜索kern.log的Call strace确认问题与nvidia驱动相关:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"> 733 Nov 16 22:47:03 localhost kernel: [    1.896228] Could not determine valid watermarks for inherited state</span><br><span class="line"> 734 Nov 16 22:47:03 localhost kernel: [    1.896290] WARNING: CPU: 2 PID: 183 at /build/linux-O4X9pa/linux-4.15.0/drivers/gpu/d</span><br><span class="line"> 735 Nov 16 22:47:03 localhost kernel: [    1.896293] Modules linked in: nvidia_drm(POE) nvidia_modeset(POE) nvidia(POE) rtsx_pc</span><br><span class="line"> 736 Nov 16 22:47:03 localhost kernel: [    1.896309] CPU: 2 PID: 183 Comm: systemd-udevd Tainted: P           OE    4.15.0-68-g</span><br><span class="line"> 737 Nov 16 22:47:03 localhost kernel: [    1.896311] Hardware name: LENOVO 20AN002LCD/20AN002LCD, BIOS GLET64WW (2.18 ) 12/18/2</span><br><span class="line"> 738 Nov 16 22:47:03 localhost kernel: [    1.896342] RIP: 0010:intel_modeset_init+0xfcf/0x1010 [i915]</span><br><span class="line"></span><br><span class="line">748 Nov 16 22:47:03 localhost kernel: [    1.896362] Call Trace:</span><br><span class="line"> 749 Nov 16 22:47:03 localhost kernel: [    1.896389]  i915_driver_load+0xa73/0xe60 [i915]</span><br><span class="line"> 750 Nov 16 22:47:03 localhost kernel: [    1.896414]  i915_pci_probe+0x42/0x70 [i915]</span><br><span class="line"> 751 Nov 16 22:47:03 localhost kernel: [    1.896418]  local_pci_probe+0x47/0xa0</span><br><span class="line"> 752 Nov 16 22:47:03 localhost kernel: [    1.896421]  pci_device_probe+0x10e/0x1c0</span><br><span class="line"> 753 Nov 16 22:47:03 localhost kernel: [    1.896424]  driver_probe_device+0x30c/0x490</span><br><span class="line"> 754 Nov 16 22:47:03 localhost kernel: [    1.896426]  __driver_attach+0xcc/0xf0</span><br><span class="line"> 755 Nov 16 22:47:03 localhost kernel: [    1.896429]  ? driver_probe_device+0x490/0x490</span><br><span class="line"> 756 Nov 16 22:47:03 localhost kernel: [    1.896431]  bus_for_each_dev+0x70/0xc0</span><br><span class="line"> 757 Nov 16 22:47:03 localhost kernel: [    1.896433]  driver_attach+0x1e/0x20</span><br><span class="line"> 758 Nov 16 22:47:03 localhost kernel: [    1.896436]  bus_add_driver+0x1c7/0x270</span><br><span class="line"> 759 Nov 16 22:47:03 localhost kernel: [    1.896438]  ? 0xffffffffc041b000</span><br><span class="line"> 760 Nov 16 22:47:03 localhost kernel: [    1.896440]  driver_register+0x60/0xe0</span><br><span class="line"> 761 Nov 16 22:47:03 localhost kernel: [    1.896442]  ? 0xffffffffc041b000</span><br><span class="line"> 762 Nov 16 22:47:03 localhost kernel: [    1.896444]  __pci_register_driver+0x5a/0x60</span><br><span class="line"> 763 Nov 16 22:47:03 localhost kernel: [    1.896465]  i915_init+0x5c/0x5f [i915]</span><br></pre></td></tr></table></figure>
+<p>升级nvidia驱动从nvidia-driver-390到435看是否能解决问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">deb http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu bionic main</span><br><span class="line">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FCAE110B1118213C</span><br><span class="line">sudo apt purge nvidia-driver-390 &amp;&amp; sudo apt autoremove &amp;&amp; sudo apt install nvidia-driver-435</span><br></pre></td></tr></table></figure></p>
+<p>也可以试试:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa</span><br><span class="line">sudo apt upgrade-dist</span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">#can install the latest hwe kernel by using above ppa</span><br><span class="line">sudo apt install --install-recommends linux-generic-hwe-18.04 xserver-xorg-hwe-18.04</span><br></pre></td></tr></table></figure></p>
+<p>20200203更 , 还是不行, 用下列方法重装了desktop再观察:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /var/lib/apt/lists/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock-frontend</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt clean</span><br><span class="line">sudo apt update --fix-missing</span><br><span class="line">sudo apt install -f</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt upgrade</span><br><span class="line">sudo apt dist-upgrade</span><br><span class="line"></span><br><span class="line">sudo apt purge *unity*</span><br><span class="line">sudo apt purge *gnome*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop</span><br><span class="line">sudo update-grub</span><br><span class="line">sudo apt install gdm3</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line"></span><br><span class="line">#Install Gnome and set it as default</span><br><span class="line">sudo apt install gnome-session</span><br><span class="line">sudo update-alternatives --config gdm3.css</span><br><span class="line">sudo reboot</span><br><span class="line">#Switch to a Windows-like Taskbar - https://vitux.com/how-to-get-the-windows-look-feel-on-ubuntu/</span><br><span class="line">sudo apt install gnome-shell-extensions gnome-shell-extension-dash-to-panel gnome-tweaks adwaita-icon-theme-full</span><br><span class="line"></span><br><span class="line">#Install windows-style desktop Cinnamon, but it&apos;s bluetooth doesn&apos;t work</span><br><span class="line">sudo add-apt-repository ppa:embrosyn/cinnamon</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cinnamon</span><br><span class="line">#sudo apt remove --autoremove cinnamon cinnamon-desktop-data</span><br><span class="line">#sudo add-apt-repository --remove ppa:embrosyn/cinnamon</span><br></pre></td></tr></table></figure>
+<p>20201113更新，切换到使用wayland再试试:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ grep -r &apos;Wayland&apos; /etc/gdm3/custom.conf</span><br><span class="line">WaylandEnable=true</span><br><span class="line">sudo systemctl restart gdm3</span><br><span class="line">hua@t440p:~$ echo $XDG_SESSION_TYPE</span><br><span class="line">wayland</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/" rel="next" title="解决ssh server偶尔连不上或者发现网络连接初始很慢的状况">
+                <i class="fa fa-chevron-left"></i> 解决ssh server偶尔连不上或者发现网络连接初始很慢的状况
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">77</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#201923更新-解决login-loop问题"><span class="nav-number">1.</span> <span class="nav-text">201923更新 - 解决login loop问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

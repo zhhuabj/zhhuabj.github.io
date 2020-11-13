@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,129 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/21/Integrate-k8s-with-cert-maanger-and-vault/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/05/21/Integrate-k8s-with-cert-maanger-and-vault/" itemprop="url">Integrate k8s with cert-maanger and vault</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-21T18:50:34+08:00">
+                2020-05-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-05-21<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br></pre></td><td class="code"><pre><span class="line">#install vault</span><br><span class="line">#https://ubuntu.com/kubernetes/docs/using-vault</span><br><span class="line">#https://docs.openstack.org/project-deploy-guide/charm-deployment-guide/latest/app-certificate-management.html</span><br><span class="line">#https://docs.openstack.org/project-deploy-guide/charm-deployment-guide/latest/app-vault.html</span><br><span class="line">#./generate-bundle.sh -s bionic --create-model --name k8s --run</span><br><span class="line">wget https://raw.githubusercontent.com/charmed-kubernetes/bundle/master/overlays/vault-pki-overlay.yaml</span><br><span class="line">./generate-bundle.sh -s bionic --name k8s</span><br><span class="line">juju add-model k8s &amp;&amp; juju deploy ... --overlay ./vault-pki-overlay.yaml ...</span><br><span class="line">juju status vault-ca</span><br><span class="line">$ cat vault-pki-overlay.yaml</span><br><span class="line">applications:</span><br><span class="line">  easyrsa: null</span><br><span class="line">  vault:</span><br><span class="line">    charm: cs:~openstack-charmers-next/vault</span><br><span class="line">    num_units: 1</span><br><span class="line">    options:</span><br><span class="line">      auto-generate-root-ca-cert: true</span><br><span class="line">  percona-cluster:</span><br><span class="line">    charm: cs:percona-cluster</span><br><span class="line">    num_units: 1</span><br><span class="line">relations:</span><br><span class="line">- - kubernetes-master:certificates</span><br><span class="line">  - vault:certificates</span><br><span class="line">- - etcd:certificates</span><br><span class="line">  - vault:certificates</span><br><span class="line">- - kubernetes-worker:certificates</span><br><span class="line">  - vault:certificates</span><br><span class="line">- - vault:shared-db</span><br><span class="line">  - percona-cluster:shared-db</span><br><span class="line"></span><br><span class="line">#install vault client</span><br><span class="line">juju expose vault</span><br><span class="line">sudo snap install vault</span><br><span class="line">#./tools/vault-unseal-and-authorise.sh</span><br><span class="line">export VAULT_ADDR=http://10.0.0.22:8200  #vault_ip is 10.0.0.22</span><br><span class="line">vault operator init -key-shares=5 -key-threshold=3</span><br><span class="line">vault operator unseal &lt;run-5-times-against-5-keys-created-by-vault-init-command&gt;</span><br><span class="line">export VAULT_TOKEN=&lt;root-key-created-by-vault-init-command&gt;</span><br><span class="line">export VAULT_TOKEN=s.etL4szXrqoFiud8NnBOyU1rk</span><br><span class="line">VAULT_TOKEN=&lt;root-key-created-by-vault-init-command&gt; vault token create --ttl=100m #give you a token to auth the charm</span><br><span class="line">juju run-action --wait vault/0 authorize-charm token=&lt;charm-token-not-root-token&gt;</span><br><span class="line"></span><br><span class="line">#can run again to re-generate-root-ca if you want when auto-generate-root-ca-cert=true</span><br><span class="line">juju run-action vault/0 disable-pki</span><br><span class="line">juju run-action vault/0 generate-root-ca max-ttl=&apos;2800h&apos; ttl=&apos;87598h&apos; # 3 months; 10 years - https://review.opendev.org/#/c/678161</span><br><span class="line"></span><br><span class="line"># [option]Upload the new certificate from the signed CSR in vault</span><br><span class="line">#NOTE: We may not need this step when using auto-generate-root-ca-cert=true to generate cert, only need to do for company&apos;s CA cert</span><br><span class="line">#how to generate ca and intermediate cert, pls see the appendix or https://www.cnblogs.com/adhzl/p/11577384.html</span><br><span class="line">#To upload the new certificate from the signed CSR in Vault, we also need to provide the whole CA chain.</span><br><span class="line">#The “pem” bundle needs to be a concatenation of : signed csr + intermediate CA + root CA.</span><br><span class="line">#The root-ca bundle needs to include the intermediate CA + root CA. The order is important.</span><br><span class="line">#juju config vault ssl-ca=&quot;$(cat ./intermediate/certs/ca-chain.cert.pem | base64 )&quot; \</span><br><span class="line">#                  ssl-cert=&quot;$(cat ./intermediate/certs/client.quqi.com.cert.pem | base64 )&quot; \</span><br><span class="line">#                  ssl-key=&quot;$(cat ./intermediate/private/client.quqi.com.key.pem | base64 )&quot;</span><br><span class="line">juju run-action --wait vault/0 get-csr</span><br><span class="line">juju run-action vault-ca/leader upload-signed-csr pem=&quot;$(cat ./pem-bundle.pem | base64)&quot; root-ca=&quot;$(cat ./root-bundle.pem | base64 )&quot; allowed-domains=&apos;quqi.com&apos; allowed-subdomains=&apos;client.quqi.com&apos; allow-any-name=true --wait</span><br><span class="line"></span><br><span class="line">#Cert-Manager Role Creation</span><br><span class="line">bash -c &apos;cat &gt; ./policy-local.hcl&apos; &lt;&lt; EOF</span><br><span class="line">path &quot;charm-pki-local/issue/cert-manager&quot; &#123;</span><br><span class="line">  capabilities = [&quot;read&quot;, &quot;list&quot;, &quot;create&quot;, &quot;update&quot;]</span><br><span class="line">&#125;</span><br><span class="line">path &quot;charm-pki-local/sign/cert-manager&quot; &#123;</span><br><span class="line">  capabilities = [&quot;read&quot;, &quot;list&quot;, &quot;create&quot;, &quot;update&quot;]</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">$ vault policy write cert-manager ./policy-local.hcl</span><br><span class="line">Error opening policy file: open /tmp/policy-local.hcl: no such file or directory</span><br><span class="line">cat policy-local.hcl  |vault policy write cert-manager -</span><br><span class="line">vault policy read cert-manager</span><br><span class="line"></span><br><span class="line">#Create the cert-manager role for Vault and associate the newly created policy with that role</span><br><span class="line">vault write auth/approle/role/cert-manager-role policies=cert-manager</span><br><span class="line"></span><br><span class="line">#Generate a role-id and secret-id.</span><br><span class="line">$ vault read auth/approle/role/cert-manager-role/role-id</span><br><span class="line">Key        Value</span><br><span class="line">---        -----</span><br><span class="line">role_id    e1239e02-056b-f963-a285-baaa42ae8c40</span><br><span class="line">$ vault write -f auth/approle/role/cert-manager-role/secret-id</span><br><span class="line">Key                   Value</span><br><span class="line">---                   -----</span><br><span class="line">secret_id             693e7657-a994-8435-2a80-df83aba23132</span><br><span class="line">secret_id_accessor    820eff6e-e52b-45a8-db59-9d393d3920fe</span><br><span class="line"></span><br><span class="line">#PKI Initialization</span><br><span class="line">#The Vault PKI is initialized automatically by the charm. To give access to cert-manager,</span><br><span class="line">#we need to create a permission for the role created by the policy.</span><br><span class="line">vault write charm-pki-local/roles/cert-manager allowed_domains=quqi.com allow_subdomains=true max_ttl=8760h allow_bare_domains=true allow_any_name=true</span><br><span class="line"></span><br><span class="line">#Install Cert-Manager</span><br><span class="line">kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.14.3/cert-manager.yaml</span><br><span class="line">kubectl get all -n cert-manager</span><br><span class="line"></span><br><span class="line">#configure certmanager</span><br><span class="line">#For k8s to authenticate to the external Vault, the cert-manager secret_id must be created as a k8s secret.</span><br><span class="line">#NOTE: The bolded secretID is the secret_id captured above encoded in base64. To encode in base64</span><br><span class="line">$ echo 693e7657-a994-8435-2a80-df83aba23132 |base64</span><br><span class="line">NjkzZTc2NTctYTk5NC04NDM1LTJhODAtZGY4M2FiYTIzMTMyCg==</span><br><span class="line">bash -c &apos;cat &gt; cert-manager-vault-approle-ca.yaml&apos; &lt;&lt; EOF</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Secret</span><br><span class="line">type: Opaque</span><br><span class="line">metadata:</span><br><span class="line">  name: cert-manager-vault-approle-ca</span><br><span class="line">  namespace: cert-manager</span><br><span class="line">data:</span><br><span class="line">  secretId: NjkzZTc2NTctYTk5NC04NDM1LTJhODAtZGY4M2FiYTIzMTMyCg==</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f cert-manager-vault-approle-ca.yaml</span><br><span class="line">kubectl get secrets -n cert-manager cert-manager-vault-approle-ca</span><br><span class="line"></span><br><span class="line">#configure certmanager</span><br><span class="line">#a certificate Issuer must be created within k8s to direct it to the Vault and identify the cert-manager role to match secret.</span><br><span class="line">bash -c &apos;cat &gt; vault-ca-issuer.yaml&apos; &lt;&lt; EOF</span><br><span class="line">apiVersion: cert-manager.io/v1alpha2</span><br><span class="line">kind: ClusterIssuer</span><br><span class="line">metadata:</span><br><span class="line">  name: vault-issuer</span><br><span class="line">spec:</span><br><span class="line">  vault:</span><br><span class="line">    path: charm-pki-local/sign/cert-manager</span><br><span class="line">    server: http://10.0.0.22:8200</span><br><span class="line">    auth:</span><br><span class="line">      appRole:</span><br><span class="line">        path: approle</span><br><span class="line">        roleId: &quot;e1239e02-056b-f963-a285-baaa42ae8c40&quot;</span><br><span class="line">        secretRef:</span><br><span class="line">          name: cert-manager-vault-approle-ca</span><br><span class="line">          key: secretId</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f vault-ca-issuer.yaml</span><br><span class="line">kubectl get clusterissuer</span><br><span class="line"></span><br><span class="line">#Testing</span><br><span class="line">#NOTE: the ip must be one of the k8s workers ip in this model</span><br><span class="line">$ juju status kubernetes-worker/1 |grep started</span><br><span class="line">5        started  10.0.0.15  cf5a2466-f034-481d-9541-8f0c5770c30b  bionic  nova  ACTIVE</span><br><span class="line">bash -c &apos;cat &gt; microbot-cert.yaml&apos; &lt;&lt; EOF</span><br><span class="line">apiVersion: cert-manager.io/v1alpha2</span><br><span class="line">kind: Certificate</span><br><span class="line">metadata:</span><br><span class="line">  name: microbot</span><br><span class="line">  namespace: default</span><br><span class="line">spec:</span><br><span class="line">  secretName: microbot-cert-ca</span><br><span class="line">  issuerRef:</span><br><span class="line">    name: vault-ca-issuer</span><br><span class="line">    kind: ClusterIssuer</span><br><span class="line">  commonName: microbot.10.0.0.15.quqi.com</span><br><span class="line">  dnsNames:</span><br><span class="line">  -  microbot.10.0.0.15.quqi.com</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f microbot-cert.yaml</span><br><span class="line">kubectl get certs</span><br><span class="line"></span><br><span class="line">#Workload</span><br><span class="line">bash -c &apos;cat &gt; microbot-test.yaml&apos; &lt;&lt; EOF</span><br><span class="line">apiVersion: apps/v1</span><br><span class="line">kind: Deployment</span><br><span class="line">metadata:</span><br><span class="line">  creationTimestamp: null</span><br><span class="line">  labels:</span><br><span class="line">    app: microbot</span><br><span class="line">  name: microbot</span><br><span class="line">spec:</span><br><span class="line">  replicas: 3</span><br><span class="line">  selector:</span><br><span class="line">    matchLabels:</span><br><span class="line">      app: microbot</span><br><span class="line">  strategy: &#123;&#125;</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      creationTimestamp: null</span><br><span class="line">      labels:</span><br><span class="line">        app: microbot</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - image: dontrebootme/microbot:v1</span><br><span class="line">        imagePullPolicy: &quot;&quot;</span><br><span class="line">        name: microbot</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: 80</span><br><span class="line">        livenessProbe:</span><br><span class="line">          httpGet:</span><br><span class="line">            path: /</span><br><span class="line">            port: 80</span><br><span class="line">          initialDelaySeconds: 5</span><br><span class="line">          timeoutSeconds: 30</span><br><span class="line">        resources: &#123;&#125;</span><br><span class="line">      restartPolicy: Always</span><br><span class="line">      serviceAccountName: &quot;&quot;</span><br><span class="line">status: &#123;&#125;</span><br><span class="line">---</span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: microbot</span><br><span class="line">  labels:</span><br><span class="line">    app: microbot</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">    - port: 8080</span><br><span class="line">      protocol: TCP</span><br><span class="line">      targetPort: 80</span><br><span class="line">  selector:</span><br><span class="line">    app: microbot</span><br><span class="line">---</span><br><span class="line">apiVersion: networking.k8s.io/v1beta1</span><br><span class="line">kind: Ingress</span><br><span class="line">metadata:</span><br><span class="line"> name: microbot</span><br><span class="line"> labels:</span><br><span class="line">   app: microbot</span><br><span class="line">spec:</span><br><span class="line"> tls:</span><br><span class="line">   - hosts:</span><br><span class="line">     - microbot.10.0.0.15.quqi.com #the ip must be one of the k8s workers ip in this model</span><br><span class="line">     secretName: microbot-cert</span><br><span class="line"> rules:</span><br><span class="line">   - host: microbot.10.0.0.15.quqi.com #the ip must be one of the k8s workers ip in this model</span><br><span class="line">     http:</span><br><span class="line">       paths:</span><br><span class="line">         - path: /</span><br><span class="line">           backend:</span><br><span class="line">             serviceName: microbot</span><br><span class="line">             servicePort: 8080</span><br><span class="line">EOF</span><br><span class="line">kubectl apply -f microbot-test.yaml</span><br><span class="line">kubectl get all</span><br><span class="line"></span><br><span class="line">#Enable NodePort for svc microbot</span><br><span class="line">$ kubectl get svc |grep microbot</span><br><span class="line">microbot     ClusterIP   10.152.183.135   &lt;none&gt;        8080/TCP   22m</span><br><span class="line">$ kubectl edit svc microbot</span><br><span class="line">service/microbot edited</span><br><span class="line">$ kubectl get svc microbot</span><br><span class="line">NAME       TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE</span><br><span class="line">microbot   NodePort   10.152.183.135   &lt;none&gt;        8080:32765/TCP   28m</span><br><span class="line"></span><br><span class="line">#Enable security rule for icmp and the port 32765</span><br><span class="line">$ juju status kubernetes-worker/1 |grep started</span><br><span class="line">        started  10.0.0.15  cf5a2466-f034-481d-9541-8f0c5770c30b  bionic  nova  ACTIVE</span><br><span class="line">source ~/novarc</span><br><span class="line">openstack port list |grep 10.0.0.15</span><br><span class="line">openstack port show f3d147e1-2a00-496d-8184-302a825270fd |grep security_group_ids</span><br><span class="line">openstack security group rule create 415241ed-6b97-4543-8b62-e1b38610dc7b --protocol icmp --remote-ip 0.0.0.0/0</span><br><span class="line">openstack security group rule create 415241ed-6b97-4543-8b62-e1b38610dc7b --protocol tcp --remote-ip 0.0.0.0/0 --dst-port 32765</span><br><span class="line">ping 10.0.0.15</span><br><span class="line"></span><br><span class="line">curl --resolve microbot.10.0.0.15.quqi.com:32765:10.0.0.15 -k http://microbot.10.0.0.15.quqi.com:32765</span><br></pre></td></tr></table></figure>
+<h2 id="appendix-create-key"><a href="#appendix-create-key" class="headerlink" title="appendix - create key"></a>appendix - create key</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">#https://www.dazhuanlan.com/2019/12/15/5df63aed10999</span><br><span class="line">#generate ca key pairs</span><br><span class="line">mkdir -p ca/&#123;private,certs,newcerts&#125; &amp;&amp; cd ca</span><br><span class="line">openssl genrsa -aes256 -passout pass:password -out private/ca.key.pem 4096</span><br><span class="line">chmod 400 private/ca.key.pem</span><br><span class="line">wget https://jamielinux.com/docs/openssl-certificate-authority/_downloads/root-config.txt -O openssl.cnf</span><br><span class="line">sed -i &quot;s,/root/ca,.,g&quot; openssl.cnf</span><br><span class="line">openssl req -config ./openssl.cnf -key private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -passin pass:password \</span><br><span class="line">     -subj &quot;/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=quqi.com.rootca/emailAddress=quqi@mail.com&quot; -out certs/ca.cert.pem</span><br><span class="line">chmod 444 certs/ca.cert.pem</span><br><span class="line">openssl x509 -noout -text -in certs/ca.cert.pem #verify</span><br><span class="line"></span><br><span class="line">#generate intermediate key pairs</span><br><span class="line">mkdir -p intermediate/&#123;certs,crl,csr,newcerts,private&#125;</span><br><span class="line">chmod 744 intermediate/private</span><br><span class="line">touch index.txt &amp;&amp; echo 1000 &gt; serial &amp;&amp; echo 1000 &gt; crlnumber</span><br><span class="line">openssl genrsa -aes256 -passout pass:password -out intermediate/private/intermediate.key.pem 4096</span><br><span class="line">chmod 400 intermediate/private/intermediate.key.pem</span><br><span class="line">cp ./openssl.cnf ./openssl-im.cnf</span><br><span class="line">#modify the following section of openssl-im.cnf file</span><br><span class="line">[ CA_default ]</span><br><span class="line">dir             = .</span><br><span class="line">private_key     = $dir/private/intermediate.key.pem</span><br><span class="line">certificate     = $dir/certs/intermediate.cert.pem</span><br><span class="line">crl             = $dir/crl/intermediate.crl.pem</span><br><span class="line">policy          = policy_loose</span><br><span class="line">openssl req -config ./openssl-im.cnf -new -sha256 -passin pass:password \</span><br><span class="line">     -subj &quot;/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=quqi.com.imca/emailAddress=quqi@mail.com&quot; \</span><br><span class="line">     -key intermediate/private/intermediate.key.pem -out intermediate/csr/intermediate.csr.pem</span><br><span class="line">openssl ca -config ./openssl.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -passin pass:password \</span><br><span class="line">     -in intermediate/csr/intermediate.csr.pem -out intermediate/certs/intermediate.cert.pem</span><br><span class="line">chmod 444 intermediate/certs/intermediate.cert.pem</span><br><span class="line">openssl x509 -noout -text -in intermediate/certs/intermediate.cert.pem</span><br><span class="line">openssl verify -CAfile certs/ca.cert.pem intermediate/certs/intermediate.cert.pem</span><br><span class="line"></span><br><span class="line">#generate certificate chain</span><br><span class="line">cat intermediate/certs/intermediate.cert.pem certs/ca.cert.pem &gt; intermediate/certs/ca-chain.cert.pem</span><br><span class="line">chmod 444 intermediate/certs/ca-chain.cert.pem</span><br><span class="line"></span><br><span class="line">#generate clinet.quqi.com key pairs</span><br><span class="line">openssl genrsa -out intermediate/private/client.quqi.com.key.pem 2048</span><br><span class="line">chmod 444 intermediate/private/client.quqi.com.key.pem</span><br><span class="line">openssl req -config ./openssl-im.cnf -key intermediate/private/client.quqi.com.key.pem \</span><br><span class="line">     -subj &quot;/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=client.quqi.com/emailAddress=quqi@mail.com&quot; \</span><br><span class="line">     -new -sha256 -out intermediate/csr/client.quqi.com.csr.pem</span><br><span class="line">openssl ca -config ./openssl.cnf -extensions server_cert -days 3650 -notext -md sha256 -passin pass:password\</span><br><span class="line">     -in intermediate/csr/client.quqi.com.csr.pem -out intermediate/certs/client.quqi.com.cert.pem</span><br><span class="line">chmod 444 intermediate/certs/client.quqi.com.cert.pem</span><br><span class="line">openssl x509 -noout -text -in intermediate/certs/client.quqi.com.cert.pem</span><br><span class="line">openssl verify -CAfile intermediate/certs/ca-chain.cert.pem intermediate/certs/client.quqi.com.cert.pem</span><br></pre></td></tr></table></figure>
+<h2 id="20201023-another-vault-problem"><a href="#20201023-another-vault-problem" class="headerlink" title="20201023 - another vault problem"></a>20201023 - another vault problem</h2><p>vault只能为intermediate ca产生csr，然后这个csr需要用ca签名．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">https://bugs.launchpad.net/vault-charm/+bug/1885576</span><br><span class="line">https://review.opendev.org/#/c/755276/</span><br><span class="line">https://launchpadlibrarian.net/500735722/lp1885576_reproducer</span><br><span class="line">./generate-bundle.sh -s bionic -r stein -n vault --dvr-snat --vault --run</span><br><span class="line">juju config vault auto-generate-root-ca-cert=false</span><br><span class="line">#juju ssh nova-compute/0 -- sudo apt --fix-broken install &amp;&amp; juju resolved nova-compute/0</span><br><span class="line">./tools/vault-unseal-and-authorise.sh</span><br><span class="line"></span><br><span class="line"># Generate CA and intermediate CA</span><br><span class="line">#DOMAIN=$(juju ssh keystone/0 -- hostname -f |sed s/[[:space:]]//g) &amp;&amp; echo $DOMAIN</span><br><span class="line">#openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ca.crt -keyout ca.key -subj &quot;/C=US/ST=UK/L=London/O=Ubuntu/OU=IT/CN=CA&quot;</span><br><span class="line">#openssl genrsa -out $DOMAIN.key</span><br><span class="line">#openssl req -new -key $DOMAIN.key -out $DOMAIN.csr -subj &quot;/C=GB/ST=UK/L=London/O=Ubuntu/OU=Cloud/CN=$DOMAIN&quot;</span><br><span class="line">#openssl x509 -req -in $DOMAIN.csr -out $DOMAIN.crt -sha256 -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650</span><br><span class="line">#openssl x509 -noout -text -in $DOMAIN.crt |grep CN</span><br><span class="line">#cat $DOMAIN.crt $DOMAIN.key &gt; $DOMAIN.pem</span><br><span class="line"></span><br><span class="line">dout=`mktemp -d`</span><br><span class="line">(</span><br><span class="line">cd $dout &amp;&amp; echo $dout</span><br><span class="line">mkdir -p demoCA/newcerts &amp;&amp; touch demoCA/index.txt &amp;&amp; touch demoCA/index.txt.attr</span><br><span class="line">openssl genrsa -passout pass:password -des3 -out ca.key 2048</span><br><span class="line">openssl req -x509 -passin pass:password -new -nodes -key ca.key -days 365 -out ca.crt \</span><br><span class="line">    -subj &quot;/C=GB/ST=UK/L=London/O=Ubuntu/OU=Cloud/CN=quqi.com&quot;</span><br><span class="line">juju run-action --wait vault/leader get-csr \</span><br><span class="line">    country=GB \</span><br><span class="line">    province=UK \</span><br><span class="line">    organization=Ubuntu \</span><br><span class="line">    common-name=quqi.com \</span><br><span class="line">    --format json \</span><br><span class="line">  | jq -r &apos;.[] | .results | .output&apos; \</span><br><span class="line">  | tee csr.pem</span><br><span class="line">openssl ca -passin pass:password -cert $dout/ca.crt -keyfile $dout/ca.key \</span><br><span class="line">    -create_serial -batch -policy policy_anything -extensions v3_ca \</span><br><span class="line">    -in csr.pem -days 60 -out $dout/intermediate_ca.crt</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"># Upload the CSR and it fails since it is signed for 60 days where as</span><br><span class="line"># the default-ttl used to generate certs using this certificate is 1 year</span><br><span class="line">juju run-action --wait vault/leader upload-signed-csr \</span><br><span class="line">    pem=&quot;$(base64 $dout/intermediate_ca.crt)&quot; root-ca=&quot;$(base64 $dout/ca.crt)&quot; \</span><br><span class="line">    --format json \</span><br><span class="line">  | jq -r &apos;.[] | .status&apos;</span><br><span class="line"></span><br><span class="line"># Change the default-ttl for less than 60 days,</span><br><span class="line">juju config vault default-ttl=1100h</span><br><span class="line"></span><br><span class="line">#  but it has no effect on the unit since the unit is in failed state.</span><br><span class="line"># so it needs this patch - https://review.opendev.org/#/c/755276/</span><br><span class="line">git clone https://github.com/openstack/charm-vault.git</span><br><span class="line">cd charm-vault/</span><br><span class="line">git fetch https://review.opendev.org/openstack/charm-vault refs/changes/76/755276/1 &amp;&amp; git checkout FETCH_HEAD</span><br><span class="line">cd src &amp;&amp; charm build   #need this step for reactive charm</span><br><span class="line">juju upgrade-charm vault --path /tmp/charm-builds/vault --force-units #use --force-units even in an error state</span><br><span class="line">juju run --unit vault/0 -- &apos;charms.reactive -p get_flags&apos;</span><br><span class="line">juju resolved vault/0  #trigger the state to &apos;active&apos;</span><br><span class="line">juju config vault default-ttl=1109h  #run again</span><br><span class="line"></span><br><span class="line"># Upload the CSR and expects the action to be successful since the default-ttl</span><br><span class="line"># is less than 60 days and required certs will be generated with ttl default-ttl value</span><br><span class="line">juju run-action --wait vault/leader upload-signed-csr \</span><br><span class="line">    pem=&quot;$(base64 $dout/intermediate_ca.crt)&quot; root-ca=&quot;$(base64 $dout/ca.crt)&quot; \</span><br><span class="line">    --format json \</span><br><span class="line">  | jq -r &apos;.[] | .status&apos;</span><br><span class="line"></span><br><span class="line">#another workaround, run in vault/0</span><br><span class="line">export VAULT_TOKEN=&lt;root_token&gt;</span><br><span class="line">export VAULT_ADDR=http://10.224.211.37:8200</span><br><span class="line">vault secrets tune -default-lease-ttl=2871h charm-pki-local/</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +383,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-19T15:48:08+08:00">
                 2020-05-19
@@ -386,7 +509,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-15T18:04:41+08:00">
                 2020-05-15
@@ -525,7 +648,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-18T16:25:23+08:00">
                 2020-04-18
@@ -672,7 +795,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
                 2020-04-14
@@ -814,7 +937,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-17T10:01:59+08:00">
                 2020-03-17
@@ -942,7 +1065,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-03T21:27:16+08:00">
                 2020-03-03
@@ -1082,7 +1205,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-27T19:22:45+08:00">
                 2020-02-27
@@ -1206,7 +1329,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
                 2020-02-25
@@ -1339,7 +1462,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-16T23:23:50+08:00">
                 2020-02-16
@@ -1385,135 +1508,6 @@
 <p>有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器, 然后用到squid的tcp_outgoing_address特性, 但是tcp_outgoing_address这个特性做测试时可没那么容易成功的, 最终这个最小化的squid.conf如下, 底层原理可参照[2]:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install squid -y</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/squid/squid.conf</span><br><span class="line">http_port 192.168.99.135:3128</span><br><span class="line">dns_v4_first on</span><br><span class="line">#dns_nameservers 192.168.8.1</span><br><span class="line">acl gfw myip 192.168.8.101</span><br><span class="line">tcp_outgoing_address 192.168.8.101 gfw</span><br><span class="line">acl localip src 192.168.99.135</span><br><span class="line">http_access allow localip</span><br><span class="line">http_access deny all</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl reload squid</span><br><span class="line">sudo systemctl enable squid</span><br></pre></td></tr></table></figure>
 <p>如果是ssh呢，这样:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;9 ssh&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">sudo ip route add default via 192.168.8.1 dev wlp4s0 table ssh</span><br><span class="line">sudo ip rule add from 192.168.8.101/24 table ssh</span><br><span class="line">ssh ubuntu@xxx -b 192.168.8.101</span><br></pre></td></tr></table></figure></p>
-<p>[1] <a href="https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem" target="_blank" rel="external">https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem</a><br>[2] <a href="http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/" target="_blank" rel="external">http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/02/12/利用squid的tcp-outgoing-address特性选择第二块网卡出流量/" itemprop="url">利用squid的tcp_outgoing_address特性选择第二块网卡出流量</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-12T14:40:17+08:00">
-                2020-02-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-02-12<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>有两块网卡192.168.99.135与192.168.8.101, 对于chrome的某些tab想灵活地类似于ForceBindIp[1]某时走192.168.8.101, 不想使用修改路由的全局方式, 怎么办呢? 那需要在本机构建一个squid http代理服务器, 然后用到squid的tcp_outgoing_address特性, 但是tcp_outgoing_address这个特性做测试时可没那么容易成功的, 最终这个最小化的squid.conf如下, 底层原理可参照[2]:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install squid -y</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/squid/squid.conf</span><br><span class="line">#sudo rm -rf /dev/shm/squid*</span><br><span class="line">#sudo mkdir -p /var/log/squid &amp;&amp; sudo chown -R proxy:proxy /var/log/squid/</span><br><span class="line">http_port 192.168.99.135:3128</span><br><span class="line">dns_v4_first on</span><br><span class="line">dns_nameservers 192.168.8.1</span><br><span class="line">acl gfw myip 192.168.99.135</span><br><span class="line">tcp_outgoing_address 192.168.8.101 gfw</span><br><span class="line">#http_access allow all</span><br><span class="line">acl localip src 192.168.99.135</span><br><span class="line">http_access allow localip</span><br><span class="line">http_access deny all</span><br><span class="line">cache_access_log /var/log/squid/access.log</span><br><span class="line">cache_log /var/log/squid/cache.log</span><br><span class="line">cache_store_log none</span><br><span class="line">logfile_rotate 7</span><br><span class="line">coredump_dir /var/cache/squid</span><br><span class="line">#coredump_dir /var/log/squid/cache</span><br><span class="line">max_filedescriptors 3200</span><br><span class="line">#prevent squid from adding http headers to cause some websites to detect proxy and prohibit access</span><br><span class="line">via off</span><br><span class="line">forwarded_for delete</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl reload squid</span><br><span class="line">sudo systemctl enable squid</span><br><span class="line"></span><br><span class="line">#Ipc::Mem::Segment::create failed to shm_open(/squid-cf__metadata.shm): (17) File exists</span><br><span class="line">sudo rm -rf /dev/shm/squid-cf__*</span><br><span class="line">sudo mkdir -p /var/log/squid &amp;&amp; sudo chown -R proxy:proxy /var/log/squid/</span><br><span class="line">sudo mkdir -p /var/cache/squid &amp;&amp; sudo chown -R proxy:proxy /var/cache/squid/</span><br><span class="line"></span><br><span class="line">#add the following lines in systemd file</span><br><span class="line">ExecStartPre=mkdir -p /var/log/squid</span><br><span class="line">ExecStartPre=chown -R proxy:proxy /var/log/squid/</span><br><span class="line">ExecStartPre=mkdir -p /var/cache/squid</span><br><span class="line">ExecStartPre=chown -R proxy:proxy /var/cache/squid/</span><br><span class="line"></span><br><span class="line">NOTE: 20200626更新</span><br><span class="line">添加了policy router之后也可以使用ssh</span><br><span class="line">ssh ubuntu@xxx -b 192.168.8.101 -D192.168.99.135:3128 -fN -o ServerAliveInterval=30 -o ServerAliveCountMax=1</span><br></pre></td></tr></table></figure>
-<p>如果是ssh呢，这样:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;9 ssh&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">GW=$(nmcli d show wlp4s0 |grep -i &apos;ip4.gateway&apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">GW=$(ip route list table main |grep wlp4s0 |grep default |awk &apos;&#123;print $3&#125;&apos;)</span><br><span class="line">sudo ip route add default via $GW dev wlp4s0 table ssh</span><br><span class="line">sudo ip route add default via 172.20.10.1 dev wlp4s0 table ssh</span><br><span class="line">sudo ip rule add from 172.20.10.0/24 table ssh</span><br><span class="line">sudo ip rule add from 192.168.8.0/24 table ssh</span><br><span class="line">ip route list table ssh</span><br><span class="line">ip rule list</span><br><span class="line">ssh ubuntu@xxx -b 172.20.10.3 -v</span><br><span class="line">ssh ubuntu@xxx -b 192.168.8.101 -v</span><br><span class="line"></span><br><span class="line"># NOTE: the following doesn&apos;t work, need to fix</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/NetworkManager/dispatcher.d/008_policy_route_4g&apos; &lt;&lt; EOF</span><br><span class="line">#!/bin/bash</span><br><span class="line">set -e</span><br><span class="line">echo &quot;the interface $1 is $2&quot; 1&gt;&amp;2</span><br><span class="line"># Modify policy route after the connection is made</span><br><span class="line">if [ $1 == &quot;wlp4s0&quot; ] &amp;&amp; [ $2 == &quot;up&quot; ]; then</span><br><span class="line">    #GW=$(nmcli d show wlp4s0 |grep -i &apos;ip4.gateway&apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">    GW=$(ip route list table main |grep wlp4s0 |grep default |awk &apos;&#123;print $3&#125;&apos;)</span><br><span class="line">    ip route add default via $GW dev wlp4s0 table ssh</span><br><span class="line">fi</span><br><span class="line">EOF</span><br><span class="line">chmod root:root /etc/NetworkManager/dispatcher.d/008_policy_route_4g</span><br><span class="line">chmod 755 /etc/NetworkManager/dispatcher.d/008_policy_route_4g</span><br></pre></td></tr></table></figure></p>
-<p><strong>题外话</strong><br>关于如何持久化上面的policy route确是一个大课题，至今未解决：<br>１，　先是用这个不work<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ cat /etc/network/if-up.d/wlp4s0-routes</span><br><span class="line">#!/bin/sh</span><br><span class="line">set -e</span><br><span class="line">if [ &quot;$IFACE&quot; != &apos;wlp4s0&apos; ]; then</span><br><span class="line">    exit 0</span><br><span class="line">fi</span><br><span class="line">if [ &quot;$METHOD&quot; = loopback ]; then</span><br><span class="line">    exit 0</span><br><span class="line">elif [ &quot;$METHOD&quot; = dhcp ]; then</span><br><span class="line">    IF_ADDRESS=&quot;$(echo &quot;$IP4_ADDRESS_0&quot; | cut -d&apos;/&apos; -f1)&quot;</span><br><span class="line">    IF_GATEWAY=&quot;$(echo &quot;$IP4_ADDRESS_0&quot; | cut -d&apos; &apos; -f2)&quot;</span><br><span class="line">elif [ &quot;$METHOD&quot; = static]; then</span><br><span class="line">    if [ ! &quot;$GATEWAY&quot; ]; then</span><br><span class="line">        IF_GATEWAY=&quot;$(echo &quot;$IF_ADDRESS&quot; | cut -d. -f1-3).1&quot;</span><br><span class="line">    fi</span><br><span class="line">fi</span><br><span class="line">ip route flush table &quot;$IFACE&quot;</span><br><span class="line">ip route add default via &quot;$IF_GATEWAY&quot; table &quot;$IFACE&quot;</span><br><span class="line">ip rule del lookup &quot;$IFACE&quot; || true</span><br><span class="line">ip rule add from &quot;$IF_ADDRESS&quot; lookup &quot;$IFACE&quot;</span><br></pre></td></tr></table></figure></p>
-<p>2, 再用这个还不work<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ cat /etc/network/if-up.d/wlp4s0-routes</span><br><span class="line">if [ &quot;$IFACE&quot; == &quot;wlp4s0&quot; ]; then</span><br><span class="line">  ip rule add from 172.20.10.0/24 table ssh</span><br><span class="line">  ip rule add from 192.168.8.0/24 table ssh</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
-<p>3, 这个（/etc/NetworkManager/system-connections/huawei4G）里也不能持久化policy routing<br>4, 改用netplan理论上应该可以，但实际测试又报别的错</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">sudo cp /etc/netplan/01-network-manager-all.yaml /etc/netplan/01-network-manager-all.yaml_bak</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/netplan/01-network-manager-all.yaml</span><br><span class="line">network:</span><br><span class="line">  version: 2</span><br><span class="line">  renderer: networkd # change this from &apos;NetworkManager&apos; if it&apos;s set.</span><br><span class="line">  ethernets:</span><br><span class="line">    eth0:</span><br><span class="line">      #dhcp6: no</span><br><span class="line">      #accept-ra: no</span><br><span class="line">      #gateway6: 2a01:xxx:xxxx:xx::x</span><br><span class="line">      #addresses: [81.94.xx.xx/28, &quot;2a01:xxx:xxxx:xx::xx/64&quot;]</span><br><span class="line">      dhcp4: no</span><br><span class="line">      addresses: [192.168.99.135/24]</span><br><span class="line">      gateway4: 192.168.99.1</span><br><span class="line">      nameservers:</span><br><span class="line">        addresses: [192.168.99.1]</span><br><span class="line">    wlp4s0:</span><br><span class="line">      dhcp4: no</span><br><span class="line">      addresses: [192.168.8.101/24]</span><br><span class="line">      gateway4:    # unset, since we configure the route below</span><br><span class="line">      routes:</span><br><span class="line">        - to: 91.189.0.0/16</span><br><span class="line">          via: 192.168.8.1</span><br><span class="line">          metric: 600</span><br><span class="line">          #table: 9             #echo &quot;9 ssh&quot; &gt;&gt; /etc/iproute2/rt_tables</span><br><span class="line">      routing-policy:</span><br><span class="line">        - from: 172.20.10.0/24</span><br><span class="line">          table: 9</span><br><span class="line">        - from: 192.168.8.101</span><br><span class="line">          table: 9</span><br><span class="line">EOF</span><br><span class="line">sudo netplan try   # it will rolling back your last configurations in 120 seconds</span><br><span class="line">sudo systemctl stop netplan</span><br><span class="line">sudo netplan -d apply</span><br><span class="line">sudo systemctl restart network-manager</span><br><span class="line">#sudo systemctl restart systemd-networkd  #for ubuntu server version</span><br><span class="line"></span><br><span class="line">hua@t440p:~$ sudo netplan apply</span><br><span class="line">bind: Address already in use</span><br><span class="line">netplan: fatal error: cannot bind to port 2983, is another daemon running?, exiting</span><br><span class="line"></span><br><span class="line">netplan的方法不通，这个网页( https://blogs.gnome.org/thaller/category/networkmanager/ ) network-manager 1.18开始技术policy route (使用方法：http://devemmeff.blogspot.com/2016/02/howto-policy-based-routing-using.html）, 但是照下列方法从源码编译network-manager遇到太多太多包依赖问题了，至今未解决</span><br><span class="line">git clone https://gitlab.freedesktop.org/NetworkManager/NetworkManager.git &amp;&amp; cd NetworkManager</span><br><span class="line">git checkout -b 1.18.4 1.18.4</span><br><span class="line">sudo apt install gtk-doc-tools build-essential automake</span><br><span class="line">sudo apt install wireless-tools libiw-dev libdbus-glib-1-dev libgudev-1.0-dev uuid-dev uuid libnss-db libnss3-dev ppp-dev libjansson-dev libcurl4-openssl-dev libndp-dev</span><br><span class="line">sudo apt install gtk-doc-tools libglib2.0-dev libudev-dev uuid-dev libnss3-dev ppp-dev libjansson-dev libcurl4-nss-dev libndp-dev libreadline-dev intltool</span><br><span class="line">sudo apt install libnm-dev libnm-util-dev</span><br><span class="line">./autogen.sh --prefix=/usr --sysconfdir=/etc --localstatedir=/var --enable-introspection=no --disable-ppp --disable-json-validation --enable-gtk-doc=no</span><br><span class="line"></span><br><span class="line">最后通过rc.local解决：</span><br><span class="line">sudo bash -c &apos;cat &gt;/etc/rc.local&apos; &lt;&lt;EOF</span><br><span class="line">#!/bin/sh -e</span><br><span class="line">ip rule del from 172.20.10.0/24 table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">ip rule del from 192.168.8.0/24 table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">ip rule del to &lt;IP&gt; table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">sleep 1 #must have this line</span><br><span class="line">ip rule add from 172.20.10.0/24 table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">ip rule add from 192.168.8.0/24 table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">ip rule add to &lt;IP&gt; table ssh &gt;/dev/null 2&gt;&amp;1 &amp;</span><br><span class="line">sleep 1 #must have it</span><br><span class="line">ip route add default via 192.168.8.1 dev wlan0 table ssh &gt;/dev/null  2&gt;&amp;1 &amp;</span><br><span class="line">sleep 1 #must have it</span><br><span class="line">exit 0</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart rc.local</span><br><span class="line">sudo systemctl enable rc.local</span><br><span class="line">注意:上面del与add之间必须使用sleep 2,因为都是异步执行的.</span><br><span class="line">然后可以使用下列命令验证:</span><br><span class="line">sudo tcpdump -ni wlan0 host &lt;IP&gt;</span><br></pre></td></tr></table></figure>
-<p>5, 放弃先</p>
 <p>[1] <a href="https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem" target="_blank" rel="external">https://stackoverflow.com/questions/43140360/how-can-i-force-outgoing-ip-for-specific-applications-forcebindip-doesnt-seem</a><br>[2] <a href="http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/" target="_blank" rel="external">http://xiaorui.cc/2015/04/07/%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E4%B9%8Bpython%E5%8A%A8%E6%80%81%E8%8E%B7%E5%8F%96%E9%9A%8F%E6%9C%BA%E9%80%89%E6%8B%A9%E5%87%BA%E5%8F%A3ip/</a></p>
 
           
@@ -1600,8 +1594,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">76</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">77</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1651,7 +1645,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

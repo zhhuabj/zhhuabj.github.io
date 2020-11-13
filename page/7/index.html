@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,147 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/09/virtio-vhost中的限速机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/09/virtio-vhost中的限速机制/" itemprop="url">virtio/vhost中的限速机制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-09T16:00:31+08:00">
+                2018-01-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>日前遇到这么一个问题，客户反应虚机往外发包时丢包并看到”No buffer space available”相关的错误，虚机是windows虚机，宿主机是ubuntu并采用vhost-net机制。</p>
+<h2 id="systemtap"><a href="#systemtap" class="headerlink" title="systemtap"></a>systemtap</h2><p>刚开始我们怀疑是这两个patches导致的问题：<br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=8d65843c44269c21e95c98090d9bb4848d473853</a><br><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92" target="_blank" rel="external">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/drivers/vhost?id=809ecb9bca6a9424ccd392d67e368160f8b76c92</a></p>
+<p>所以写了个systemtap脚本在宿主机监控vhost模块中的vhost_signal函数将vring的相关信息打印如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30401 new=30402 last_used_event=0 vring_used=30402 vring_avail=30402</span><br><span class="line"></span><br><span class="line">RX 0 values: old=34264 new=34264 last_used_event=34263 vring_used=0 vring_avail=0</span><br><span class="line">TX 6297677760 values: old=30403 new=30404 last_used_event=0 vring_used=30404 vring_avail=30404</span><br></pre></td></tr></table></figure></p>
+<p>根据打印的值，我们算出下面两个公式的结果均为False (<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2189</a> )。<br>vring_need_event(vq-&gt;last_used_event, new + vq-&gt;num, new)<br>vring_need_event(vq-&gt;last_used_event, new, old)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">TX 34936796160 values: old=7077 new=7077 last_used_event=0 vring_used=7077 vring_avail=7077 </span><br><span class="line">1. False: (7077 + 256) - 0 - 1 &lt; (7077 + 256) - 7077 </span><br><span class="line">2. False: 7077 - 0 - 1 &lt; 7077 - 7077</span><br></pre></td></tr></table></figure>
+<p>上面为False的话，vhost_notify()就为False，那样vhost也不会调用eventfd_signal通过中断向guest发通知(<a href="https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211" target="_blank" rel="external">https://github.com/torvalds/linux/blob/v4.10/drivers/vhost/vhost.c#L2211</a>)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void vhost_signal(struct vhost_dev *dev, struct vhost_virtqueue *vq)</span><br><span class="line">&#123;</span><br><span class="line">	/* Signal the Guest tell them we used something up. */</span><br><span class="line">	if (vq-&gt;call_ctx &amp;&amp; vhost_notify(dev, vq))</span><br><span class="line">		eventfd_signal(vq-&gt;call_ctx, 1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="理论分析"><a href="#理论分析" class="headerlink" title="理论分析"></a>理论分析</h2><ul>
+<li>Guest发数据：guest将发送报文Buffer的head index加入avial_ring中， 在合适的时间点通过ioeventfds消息来通知backend。backend发完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
+<li>Guest收数据：两个queue都需要guest填充buffer, guest将空白Buffer的head index加入avail_ring中，在合适的时间点通过ioeventfds消息来通知backend。backend收完报文后再将其加入到used_ring中，并在一个合适的时间点来通过irqdfs中断来通知guest。</li>
+<li>Flags, avail_ring与used_ring中都有flags字段，例如avail_ring中的flags字段代表guest告诉host在host发完报文之后是否需要通知guest。<h2 id="代码分析"><a href="#代码分析" class="headerlink" title="代码分析"></a>代码分析</h2>在打开VIRTIO_RING_F_EVENT_IDX特性之后，virtio/vhost将不再依据flags来决定是否向对方发送消息(guest到host根据消息通知，host到guest通过中断)，而是guest/host在发送一批报文后(flags是每个包发送性能较差)自行决定是否向对方发消息。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">/* The standard layout for the ring is a continuous chunk of memory which looks</span><br><span class="line"> * like this.  We assume num is a power of 2.</span><br><span class="line"> *</span><br><span class="line"> * struct vring</span><br><span class="line"> * &#123;</span><br><span class="line"> *	// The actual descriptors (16 bytes each)</span><br><span class="line"> *	struct vring_desc desc[num];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of available descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 avail_flags;</span><br><span class="line"> *	__virtio16 avail_idx;</span><br><span class="line"> *	__virtio16 available[num];</span><br><span class="line"> *	__virtio16 used_event_idx;</span><br><span class="line"> *</span><br><span class="line"> *	// Padding to the next align boundary.</span><br><span class="line"> *	char pad[];</span><br><span class="line"> *</span><br><span class="line"> *	// A ring of used descriptor heads with free-running index.</span><br><span class="line"> *	__virtio16 used_flags;</span><br><span class="line"> *	__virtio16 used_idx;</span><br><span class="line"> *	struct vring_used_elem used[num];</span><br><span class="line"> *	__virtio16 avail_event_idx;</span><br><span class="line"> * &#125;;</span><br><span class="line"> */</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>此时，在数据结构方面，在used_ring中有avail_event_idx字段，在avail_ring中有used_event_idx字段，用下列方法相互填充。如：vring_avail_event(&amp;vq-&gt;vring)用于将avail_ring中的index填充到used_ring的最后一个字段used_event_idx中去，反之亦然。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* We publish the used event index at the end of the available ring, and vice</span><br><span class="line"> * versa. They are at the end for backwards compatibility. */</span><br><span class="line">#define vring_used_event(vr) ((vr)-&gt;avail-&gt;ring[(vr)-&gt;num])</span><br><span class="line">#define vring_avail_event(vr) (*(__virtio16 *)&amp;(vr)-&gt;used-&gt;ring[(vr)-&gt;num])</span><br></pre></td></tr></table></figure></p>
+<p>1, guest端virtio驱动, 根据vring_need_event()公式，guest在发送缓冲区满了之后才kick消息给host.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/torvalds/linux/blob/v4.10/drivers/virtio/virtio_ring.c#L547</span><br><span class="line"></span><br><span class="line">bool virtqueue_kick_prepare(struct virtqueue *_vq)&#123;</span><br><span class="line">	old = vq-&gt;avail_idx_shadow - vq-&gt;num_added;</span><br><span class="line">	new = vq-&gt;avail_idx_shadow;</span><br><span class="line">	vq-&gt;num_added = 0;</span><br><span class="line">        ...</span><br><span class="line">	if (vq-&gt;event) &#123;</span><br><span class="line">		needs_kick = vring_need_event(virtio16_to_cpu(_vq-&gt;vdev, vring_avail_event(&amp;vq-&gt;vring)),</span><br><span class="line">					      new, old);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		needs_kick = !(vq-&gt;vring.used-&gt;flags &amp; cpu_to_virtio16(_vq-&gt;vdev, VRING_USED_F_NO_NOTIFY));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">vq-&gt;event = virtio_has_feature(vdev, VIRTIO_RING_F_EVENT_IDX);</span><br><span class="line"></span><br><span class="line">static inline int vring_need_event(__u16 event_idx, __u16 new_idx, __u16 old)</span><br><span class="line">&#123;</span><br><span class="line">	return (__u16)(new_idx - event_idx - 1) &lt; (__u16)(new_idx - old);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">struct vring_virtqueue &#123;</span><br><span class="line">	/* Last written value to avail-&gt;idx in guest byte order */</span><br><span class="line">	u16 avail_idx_shadow;</span><br><span class="line">	/* Head of free buffer list. */</span><br><span class="line">	unsigned int free_head;</span><br></pre></td></tr></table></figure></p>
+<p>注： vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)实际是一种限速，new指针在前, old指标在后，如果：</p>
+<ul>
+<li>如果event_idx也就是avail.idx的位置超过了old， vring_need_event=True, 表示后端处理的快(<strong>event_idx是后端通知给前端处理的索引值</strong>)，此时guest将发通知给host请它继续处理。</li>
+<li>如果event_idx在old之前，vring_need_event=False, <strong>说明后端处理的慢</strong>，此时guest不会向host发通知。</li>
+</ul>
+<p>2, guest端virtio驱动是如何发包的呢？ xmit_skb会高用virtqueue_add_outbuf最终会调用virtqueue_add, 设置完ring的相关字段之后最后调virtqueue_kick<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">static int xmit_skb(struct send_queue *sq, struct sk_buff *skb)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">   return virtqueue_add_outbuf(sq-&gt;vq, sq-&gt;sg, num_sg, skb, GFP_ATOMIC);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static inline int virtqueue_add(struct virtqueue *_vq,</span><br><span class="line">				struct scatterlist *sgs[],</span><br><span class="line">				unsigned int total_sg,</span><br><span class="line">				unsigned int out_sgs,</span><br><span class="line">				unsigned int in_sgs,</span><br><span class="line">				void *data,</span><br><span class="line">				gfp_t gfp)</span><br><span class="line">&#123;</span><br><span class="line">...</span><br><span class="line">	head = vq-&gt;free_head;</span><br><span class="line">	/* Put entry in available array (but don&apos;t update avail-&gt;idx until they</span><br><span class="line">	 * do sync). */</span><br><span class="line">	avail = vq-&gt;avail_idx_shadow &amp; (vq-&gt;vring.num - 1);</span><br><span class="line">	vq-&gt;vring.avail-&gt;ring[avail] = cpu_to_virtio16(_vq-&gt;vdev, head);</span><br><span class="line"></span><br><span class="line">	/* Descriptors and available array need to be set before we expose the</span><br><span class="line">	 * new available array entries. */</span><br><span class="line">	virtio_wmb(vq-&gt;weak_barriers);</span><br><span class="line">	vq-&gt;avail_idx_shadow++;</span><br><span class="line">	vq-&gt;vring.avail-&gt;idx = cpu_to_virtio16(_vq-&gt;vdev, vq-&gt;avail_idx_shadow);</span><br><span class="line">	vq-&gt;num_added++;</span><br><span class="line"></span><br><span class="line">	pr_debug(&quot;Added buffer head %i to %p\n&quot;, head, vq);</span><br><span class="line">	END_USE(vq);</span><br><span class="line"></span><br><span class="line">	/* This is very unlikely, but theoretically possible.  Kick</span><br><span class="line">	 * just in case. */</span><br><span class="line">	if (unlikely(vq-&gt;num_added == (1 &lt;&lt; 16) - 1))</span><br><span class="line">		virtqueue_kick(_vq);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>从上面的代码分析中我们已经完成能够确定:<br>1, vhost后端没有给guest通过中断通知event_idx(avail_idx)值。<br>2，virtio前端也在根据vring_need_event的公式(return (<strong>u16)(new_idx - event_idx - 1) &lt; (</strong>u16)(new_idx - old);)决定是否向vhost后端kick消息时， 由于event_idx在old的前面，vring_need_event值为False，所以前端就不会给后端发消息。这样前端就会丢包，所以前端也会看到“No buffer space available”之类的错误。通过上面的代码分析，我们也知道了造成这个的原因是因为后端发送的比前端慢。在检查宿主机的syslog后，发现了大量的MTU相关的日志”br-int: dropped over-mtu packet: 1500 &gt; 1458”。OK，问题就在这里了，虚机里需要设置合适的MTU值，如sudo ip link set eth0 mtu 1400</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +401,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-22T13:31:50+08:00">
                 2017-12-22
@@ -405,7 +546,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-06T12:07:47+08:00">
                 2017-12-06
@@ -537,7 +678,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-06T11:47:59+08:00">
                 2017-12-06
@@ -687,7 +828,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-02T20:04:42+08:00">
                 2017-12-02
@@ -816,7 +957,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-29T16:08:13+08:00">
                 2017-11-29
@@ -954,7 +1095,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-29T10:42:21+08:00">
                 2017-11-29
@@ -1100,7 +1241,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-16T15:48:59+08:00">
                 2017-11-16
@@ -1235,7 +1376,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-13T17:02:52+08:00">
                 2017-11-13
@@ -1368,7 +1509,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-13T15:18:08+08:00">
                 2017-11-13
@@ -1498,161 +1639,6 @@ lxc profile device set default eth0 nictype macvlan
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/12/将kubernetes跑在本地LXD容器中/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/12/将kubernetes跑在本地LXD容器中/" itemprop="url">将kubernetes跑在本地LXD容器中</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-12T21:19:18+08:00">
-                2017-11-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本文将kubernetest跑在本地LXD容器中。</p>
-<h2 id="Kubernetes是什么"><a href="#Kubernetes是什么" class="headerlink" title="Kubernetes是什么"></a>Kubernetes是什么</h2><p>Kubernetes是什么，见<a href="http://blog.csdn.net/quqi99/article/details/42058833" target="_blank" rel="external">我的博客</a>。</p>
-<h2 id="安装LXD"><a href="#安装LXD" class="headerlink" title="安装LXD"></a>安装LXD</h2><p>如何安装LXD，见<a href="http://blog.csdn.net/quqi99/article/details/52131486" target="_blank" rel="external">我的博客</a>。<br>这篇文章和之前的在LXD上运行容器化的OpenStack类似，见<a href="http://blog.csdn.net/quqi99/article/details/52132140" target="_blank" rel="external">我的博客</a>。</p>
-<h2 id="LXD上安装Kubernetes"><a href="#LXD上安装Kubernetes" class="headerlink" title="LXD上安装Kubernetes"></a>LXD上安装Kubernetes</h2><p>1,  从<a href="https://jujucharms.com/canonical-kubernetes/" target="_blank" rel="external">这个链接</a>下载 ‘canonical-kubernetes.zip’ ，里面有下面要用到的bundle.yaml<br>2, 运行’juju bootstrap’，<strong>注意：运行这一步时先不要修改profile</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#sudo snap install lxd</span><br><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line">juju bootstrap --debug --config bootstrap-series=xenial --config agent-stream=devel localhost lxd-controller</span><br></pre></td></tr></table></figure></p>
-<p>3, 这步会产生 juju-kubernetes profile<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">juju add-model kubernetes</span><br><span class="line">juju models</span><br><span class="line">lxc profile show juju-kubernetes</span><br></pre></td></tr></table></figure></p>
-<p>4, 修改juju-kubernetes profile<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install --reinstall linux-image-extra-$(uname -r)</span><br><span class="line">sudo modprobe nbd</span><br><span class="line">sudo modprobe ebtables</span><br><span class="line">sudo modprobe ip_tables</span><br><span class="line">sudo modprobe ip6_tables</span><br><span class="line">sudo modprobe netlink_diag</span><br><span class="line">sudo modprobe openvswitch</span><br><span class="line">sudo modprobe nf_nat</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF &gt; juju-kubernetes.yaml</span><br><span class="line">name: juju-kubernetes</span><br><span class="line">config:</span><br><span class="line">  user.user-data: |</span><br><span class="line">    #cloud-config</span><br><span class="line">    ssh_authorized_keys:</span><br><span class="line">      - @@SSHPUB@@</span><br><span class="line">  boot.autostart: &quot;true&quot;</span><br><span class="line">  linux.kernel_modules: ip_tables,ip6_tables,netlink_diag,nf_nat,overlay</span><br><span class="line">  raw.lxc: |</span><br><span class="line">    lxc.aa_profile=unconfined</span><br><span class="line">    lxc.mount.auto=proc:rw sys:rw</span><br><span class="line">    lxc.cap.drop=</span><br><span class="line">  security.nesting: &quot;true&quot;</span><br><span class="line">  security.privileged: &quot;true&quot;</span><br><span class="line">description: &quot;&quot;</span><br><span class="line">devices:</span><br><span class="line">  aadisable:</span><br><span class="line">    path: /sys/module/nf_conntrack/parameters/hashsize</span><br><span class="line">    source: /dev/null</span><br><span class="line">    type: disk</span><br><span class="line">  aadisable1:</span><br><span class="line">    path: /sys/module/apparmor/parameters/enabled</span><br><span class="line">    source: /dev/null</span><br><span class="line">    type: disk</span><br><span class="line">EOF</span><br><span class="line">sed -ri &quot;s&apos;@@SSHPUB@@&apos;$(cat ~/.ssh/id_rsa.pub)&apos;&quot; juju-kubernetes.yaml</span><br><span class="line">lxc profile edit &quot;juju-kubernetes&quot; &lt; juju-kubernetes.yaml</span><br></pre></td></tr></table></figure></p>
-<p>5, 使用juju一键部署kubernetes</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://api.jujucharms.com/charmstore/v5/canonical-kubernetes/archive/bundle.yaml</span><br><span class="line">juju deploy bundle.yaml</span><br></pre></td></tr></table></figure>
-<h2 id="安装配置验证Kubernetes"><a href="#安装配置验证Kubernetes" class="headerlink" title="安装配置验证Kubernetes"></a>安装配置验证Kubernetes</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#Install the former as a snap and copy the k8s config using juju</span><br><span class="line">sudo snap install kubectl --classic</span><br><span class="line">mkdir -p ~/.kube</span><br><span class="line">juju scp kubernetes-master/0:config ~/.kube/config</span><br><span class="line">#For the k8s UI experience, get the URL and credentials using</span><br><span class="line">kubectl config view</span><br><span class="line">kubectl cluster-info</span><br><span class="line">kubectl -s https://10.241.244.49:443 get componentstatuses</span><br></pre></td></tr></table></figure>
-<p>验证数据如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">root@test1:~# cat ~/.kube/config</span><br><span class="line">apiVersion: v1</span><br><span class="line">clusters:</span><br><span class="line">- cluster:</span><br><span class="line">    certificate-authority-data: ...</span><br><span class="line">    server: https://10.241.244.49:443</span><br><span class="line">  name: juju-cluster</span><br><span class="line">contexts:</span><br><span class="line">- context:</span><br><span class="line">    cluster: juju-cluster</span><br><span class="line">    user: admin</span><br><span class="line">  name: juju-context</span><br><span class="line">current-context: juju-context</span><br><span class="line">kind: Config</span><br><span class="line">preferences: &#123;&#125;</span><br><span class="line">users:</span><br><span class="line">- name: admin</span><br><span class="line">  user:</span><br><span class="line">    as-user-extra: &#123;&#125;</span><br><span class="line">    password: 9nvGaeQYtu3PSCpMYk6tKFRExoq29pwT</span><br><span class="line">    username: admin</span><br><span class="line"></span><br><span class="line">root@test1:~# kubectl config view</span><br><span class="line">apiVersion: v1</span><br><span class="line">clusters:</span><br><span class="line">- cluster:</span><br><span class="line">    certificate-authority-data: REDACTED</span><br><span class="line">    server: https://10.241.244.49:443</span><br><span class="line">  name: juju-cluster</span><br><span class="line">contexts:</span><br><span class="line">- context:</span><br><span class="line">    cluster: juju-cluster</span><br><span class="line">    user: admin</span><br><span class="line">  name: juju-context</span><br><span class="line">current-context: juju-context</span><br><span class="line">kind: Config</span><br><span class="line">preferences: &#123;&#125;</span><br><span class="line">users:</span><br><span class="line">- name: admin</span><br><span class="line">  user:</span><br><span class="line">    password: 9nvGaeQYtu3PSCpMYk6tKFRExoq29pwT</span><br><span class="line">    username: admin</span><br><span class="line"></span><br><span class="line">root@test1:~# kubectl cluster-info</span><br><span class="line">Kubernetes master is running at https://10.241.244.49:443</span><br><span class="line">Heapster is running at https://10.241.244.49:443/api/v1/namespaces/kube-system/services/heapster/proxy</span><br><span class="line">KubeDNS is running at https://10.241.244.49:443/api/v1/namespaces/kube-system/services/kube-dns/proxy</span><br><span class="line">kubernetes-dashboard is running at https://10.241.244.49:443/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy</span><br><span class="line">Grafana is running at https://10.241.244.49:443/api/v1/namespaces/kube-system/services/monitoring-grafana/proxy</span><br><span class="line">InfluxDB is running at https://10.241.244.49:443/api/v1/namespaces/kube-system/services/monitoring-influxdb/proxy</span><br><span class="line"></span><br><span class="line">root@test1:~# kubectl -s https://10.241.244.49:443 get componentstatuses</span><br><span class="line">NAME                 STATUS    MESSAGE              ERROR</span><br><span class="line">scheduler            Healthy   ok                   </span><br><span class="line">controller-manager   Healthy   ok                   </span><br><span class="line">etcd-1               Healthy   &#123;&quot;health&quot;: &quot;true&quot;&#125;   </span><br><span class="line">etcd-2               Healthy   &#123;&quot;health&quot;: &quot;true&quot;&#125;   </span><br><span class="line">etcd-0               Healthy   &#123;&quot;health&quot;: &quot;true&quot;&#125;  </span><br><span class="line"></span><br><span class="line">root@test1:~# kubectl -s https://10.241.244.49:443 get nodes</span><br><span class="line">NAME            STATUS    ROLES     AGE       VERSION</span><br><span class="line">juju-893965-6   Ready     &lt;none&gt;    10h       v1.8.2</span><br><span class="line">juju-893965-7   Ready     &lt;none&gt;    10h       v1.8.2</span><br><span class="line">juju-893965-8   Ready     &lt;none&gt;    10h       v1.8.2</span><br></pre></td></tr></table></figure>
-<h2 id="使用Kubernetes编排应用到容器"><a href="#使用Kubernetes编排应用到容器" class="headerlink" title="使用Kubernetes编排应用到容器"></a>使用Kubernetes编排应用到容器</h2><p>以kubernetes官方包中的examples/guestbook作为例子，该例子是一个典型的WEB应用，分为Frontend, Redis Backend, Redis Backend分为Redis Master和Redis Slave。从中我们可以看到:<br>Kubernetest的数据模型很通用(Pod, Replication Controller, Service, Label, Node)，所以用Kubernetest编排容器化应用时只需要为应用分解的每一个微服务用yaml编写RC(Replication Controller)模板和Service模板即可。Kubernetes只编排容器，Juju不仅编排容器还可编排虚机数据模型更通用。如图, Juju的数据模型是一个树状的(Cloud, Bundle, Charm, Service, Application, Relation, Machine):</p>
-<ul>
-<li>Machine, 相当于Kubernetes中的Node</li>
-<li>Bundle, 分布式应用的抽象， 一个Bundle可包含多个Charm</li>
-<li>Charm, 相当于组成应用的模块(即微服务，如假设OpenStack是一个Bundle的话，那么neutron可以做为一个Charm), Kubernetes中使用Yaml来编写RC和Service，Juju则要写Charm。一个Charm可包含多个Service。</li>
-<li>Service, 相当于Kubernetes中的Service，一个Service下可以包含多个Application和Relation. 一个Service可以HA部署在多个Machine上，一个Machine可以承载多个Service; 相当于Kubernetes中的一个Service可以通过HA部署在多个Node上的Pod里, 一台Node上可以承载多个Pod</li>
-<li>Application, Juju相比Kubernetes不仅可以编排容器还可以编排虚机，所以它比Kubernetes多出一个Application的数据模型<br>Relation, 它包括Provide与Reqire两个类型。Kubernetes中是通过yaml中的selector元素来定义关系，Juju是通过yaml中的relations段集中定义关系，二者类似</li>
-<li>Unit,相当于Kubernetes中的Pod下的Container（Kubernetes以Pod为最小单位管理，Unit相当于容器，比Pod更小一级）。Kubernetes有Label用于Replication Controller来区别Pod做HA，Juju在这一块是通过’juju add-unit’的形式通过一个单独的haproxy charm来实现HA。</li>
-<li>Cloud, Juju也支持Cloud的概念，可以同时部署在裸机和虚拟化环境和公有云，kubernetes也有这些。</li>
-</ul>
-<p><img src="http://img.blog.csdn.net/20171113110016341?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/kubernetes/kubernetes/releases/download/v1.1.1/kubernetes.tar.gz</span><br><span class="line">tar -xf kubernetes.tar.gz &amp;&amp; cd kubernetes/examples/guestbook</span><br></pre></td></tr></table></figure></p>
-<p>1, 创建Redis Master Replication Controller模板，并且根据模板创建Pod</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl create -f redis-master-controller.yaml </span><br><span class="line">replicationcontroller &quot;redis-master&quot; created</span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get replicationcontroller redis-master</span><br><span class="line">NAME           DESIRED   CURRENT   READY     AGE</span><br><span class="line">redis-master   1         1         1         39s</span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get replicationcontroller</span><br><span class="line">NAME                       DESIRED   CURRENT   READY     AGE</span><br><span class="line">default-http-backend       1         1         1         10h</span><br><span class="line">nginx-ingress-controller   3         3         3         10h</span><br><span class="line">redis-master               1         1         1         56s</span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get pod --selector name=redis-master</span><br><span class="line">NAME                 READY     STATUS    RESTARTS   AGE</span><br><span class="line">redis-master-xbxwc   1/1       Running   0          1m</span><br><span class="line"></span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# cat redis-master-controller.yaml </span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: ReplicationController</span><br><span class="line">metadata:</span><br><span class="line">  name: redis-master</span><br><span class="line">  labels:</span><br><span class="line">    name: redis-master</span><br><span class="line">spec:</span><br><span class="line">  replicas: 1</span><br><span class="line">  selector:</span><br><span class="line">    name: redis-master</span><br><span class="line">  template:</span><br><span class="line">    metadata:</span><br><span class="line">      labels:</span><br><span class="line">        name: redis-master</span><br><span class="line">    spec:</span><br><span class="line">      containers:</span><br><span class="line">      - name: master</span><br><span class="line">        image: redis</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: 6379</span><br></pre></td></tr></table></figure>
-<p>2, 创建Redis Master Service模板，并根据模板创建Service</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">#redis-master-service.yaml模板中的selector属性指明了这个Service要关联名为redis-master的POD</span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# cat redis-master-service.yaml </span><br><span class="line">apiVersion: v1</span><br><span class="line">kind: Service</span><br><span class="line">metadata:</span><br><span class="line">  name: redis-master</span><br><span class="line">  labels:</span><br><span class="line">    name: redis-master</span><br><span class="line">spec:</span><br><span class="line">  ports:</span><br><span class="line">    # the port that this service should serve on</span><br><span class="line">  - port: 6379</span><br><span class="line">    targetPort: 6379</span><br><span class="line">  selector:</span><br><span class="line">    name: redis-master</span><br><span class="line"></span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl create -f redis-master-service.yaml</span><br><span class="line">service &quot;redis-master&quot; created</span><br><span class="line"></span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get service</span><br><span class="line">NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE</span><br><span class="line">default-http-backend   ClusterIP   10.152.183.64   &lt;none&gt;        80/TCP     10h</span><br><span class="line">kubernetes             ClusterIP   10.152.183.1    &lt;none&gt;        443/TCP    10h</span><br><span class="line">redis-master           ClusterIP   10.152.183.31   &lt;none&gt;        6379/TCP   24s</span><br><span class="line"></span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get service redis-master</span><br><span class="line">NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE</span><br><span class="line">redis-master   ClusterIP   10.152.183.31   &lt;none&gt;        6379/TCP   1m</span><br></pre></td></tr></table></figure>
-<p>3,  类似地，继续创建Redis Slave Pod与Service<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">kubectl create -f redis-slave-controller.yaml</span><br><span class="line">kubectl get pod --selector name=redis-slave</span><br><span class="line">kubectl create -f redis-slave-service.yaml</span><br></pre></td></tr></table></figure></p>
-<p>4， 类似地，继续创建Frontend Pod与Service<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">kubectl create -f frontend-controller.yaml</span><br><span class="line">kubectl get pod --selector name=frontend</span><br><span class="line">kubectl create -f frontend-service.yaml </span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get service frontend</span><br><span class="line">NAME       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE</span><br><span class="line">frontend   ClusterIP   10.152.183.99   &lt;none&gt;        80/TCP    19s</span><br></pre></td></tr></table></figure></p>
-<p>5， 设置Frontend Service的端口映射<br>上面的10.152.183.99是虚拟IP，要想从外网访问，需要使用NodePort特设置端口映射。即在原有frontend-service.yaml的ports元素上方添加一行‘type: NodePort’，如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">root@test1:~/kubernetes/examples/guestbook# grep -r &apos;NodePort&apos; frontend-service.yaml -A 3</span><br><span class="line">  type: NodePort</span><br><span class="line">  ports:</span><br><span class="line">    # the port that this service should serve on</span><br><span class="line">    - port: 80</span><br></pre></td></tr></table></figure></p>
-<p>然后重新部署Frontend Service后就可以通过任何一个计算Node的IP(如使用‘juju status kubernetes-worker/0’查看）和NodePort(tcp:31375)访问WEB界面了（wget <a href="http://10.241.244.222:31375）" target="_blank" rel="external">http://10.241.244.222:31375）</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">kubectl replace -f frontend-service.yaml --force</span><br><span class="line">root@test1:~/kubernetes/examples/guestbook# kubectl get service frontend</span><br><span class="line">NAME       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE</span><br><span class="line">frontend   NodePort   10.152.183.33   &lt;none&gt;        80:31375/TCP   35s</span><br></pre></td></tr></table></figure></p>
-<h2 id="附录-Juju环境相关输出"><a href="#附录-Juju环境相关输出" class="headerlink" title="附录 - Juju环境相关输出"></a>附录 - Juju环境相关输出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">root@test:~# juju status</span><br><span class="line">...</span><br><span class="line">Unit                      Workload  Agent  Machine  Public address  Ports           Message</span><br><span class="line">easyrsa/0*                active    idle   0        10.241.244.149                  Certificate Authority connected.</span><br><span class="line">etcd/0*                   active    idle   1        10.241.244.78   2379/tcp        Healthy with 3 known peers</span><br><span class="line">etcd/1                    active    idle   2        10.241.244.83   2379/tcp        Healthy with 3 known peers</span><br><span class="line">etcd/2                    active    idle   3        10.241.244.89   2379/tcp        Healthy with 3 known peers</span><br><span class="line">kubeapi-load-balancer/0*  active    idle   4        10.241.244.49   443/tcp         Loadbalancer ready.</span><br><span class="line">kubernetes-master/0*      active    idle   5        10.241.244.162  6443/tcp        Kubernetes master running.</span><br><span class="line">  flannel/0*              active    idle            10.241.244.162                  Flannel subnet 10.1.38.1/24</span><br><span class="line">kubernetes-worker/0       active    idle   6        10.241.244.222  80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  flannel/3               active    idle            10.241.244.222                  Flannel subnet 10.1.62.1/24</span><br><span class="line">kubernetes-worker/1*      active    idle   7        10.241.244.200  80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  flannel/1               active    idle            10.241.244.200                  Flannel subnet 10.1.93.1/24</span><br><span class="line">kubernetes-worker/2       active    idle   8        10.241.244.119  80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  flannel/2               active    idle            10.241.244.119                  Flannel subnet 10.1.67.1/24</span><br><span class="line"></span><br><span class="line">root@test1:~# juju ssh kubernetes-master/0 ps -ef|grep kube</span><br><span class="line">...</span><br><span class="line">root      3045     1  3 Nov12 ?        00:15:00 /snap/kube-scheduler/200/kube-scheduler --logtostderr --master http://127.0.0.1:8080 --v 2</span><br><span class="line">root      3096     1  9 Nov12 ?        00:45:47 /snap/kube-apiserver/200/kube-apiserver --admission-control Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,DefaultTolerationSeconds --allow-privileged=false --authorization-mode AlwaysAllow --basic-auth-file /root/cdk/basic_auth.csv --etcd-cafile /root/cdk/etcd/client-ca.pem --etcd-certfile /root/cdk/etcd/client-cert.pem --etcd-keyfile /root/cdk/etcd/client-key.pem --etcd-servers https://10.241.244.78:2379,https://10.241.244.83:2379,https://10.241.244.89:2379 --insecure-bind-address 127.0.0.1 --insecure-port 8080 --kubelet-certificate-authority /root/cdk/ca.crt --kubelet-client-certificate /root/cdk/client.crt --kubelet-client-key /root/cdk/client.key --logtostderr --min-request-timeout 300 --service-account-key-file /root/cdk/serviceaccount.key --service-cluster-ip-range 10.152.183.0/24 --storage-backend etcd2 --tls-cert-file /root/cdk/server.crt --tls-private-key-file /root/cdk/server.key --token-auth-file /root/cdk/known_tokens.csv --v 4</span><br><span class="line">root      3303     1  7 Nov12 ?        00:39:14 /snap/kube-controller-manager/191/kube-controller-manager --logtostderr --master http://127.0.0.1:8080 --min-resync-period 3m --root-ca-file /root/cdk/ca.crt --service-account-private-key-file /root/cdk/serviceaccount.key --v 2</span><br><span class="line"></span><br><span class="line">root@test1:~# juju ssh kubernetes-worker/0 ps -ef|grep kube</span><br><span class="line">...</span><br><span class="line">root     12872     1  0 Nov12 ?        00:04:20 /snap/kube-proxy/200/kube-proxy --cluster-cidr 10.1.0.0/16 --conntrack-max-per-core 0 --kubeconfig /root/cdk/kubeproxyconfig --logtostderr --master https://10.241.244.49:443 --v 0</span><br><span class="line">root     12881     1  6 Nov12 ?        00:32:10 /snap/kubelet/200/kubelet --address 0.0.0.0 --allow-privileged=false --anonymous-auth=false --client-ca-file /root/cdk/ca.crt --cluster-dns 10.152.183.10 --cluster-domain cluster.local --fail-swap-on=false --kubeconfig /root/cdk/kubeconfig --logtostderr --network-plugin cni --port 10250 --tls-cert-file /root/cdk/server.crt --tls-private-key-file /root/cdk/server.key --v 0</span><br></pre></td></tr></table></figure>
-<h2 id="使用conjure-up部署Kubernetes"><a href="#使用conjure-up部署Kubernetes" class="headerlink" title="使用conjure-up部署Kubernetes"></a>使用conjure-up部署Kubernetes</h2><p>也可以使用conjure-up更加友好的在LXD容器里部署Kubernetes，它实际上也是调用上面的bundle.yaml进行部署的。脚本如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-add-repository ppa:juju/stable</span><br><span class="line">sudo apt-add-repository ppa:conjure-up/next</span><br><span class="line">sudo apt update</span><br><span class="line">sudo snap install lxd</span><br><span class="line">sudo snap install conjure-up --classic</span><br><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line">/snap/bin/lxd init --auto</span><br><span class="line">#Use lxdbr1 since the name lxdbr0 has been used in test env, can use &apos;lxc network list&apos; to see &apos;MANAGED&apos; field</span><br><span class="line">/snap/bin/lxc network create lxdbr1 ipv4.address=auto ipv4.nat=true ipv6.address=none</span><br><span class="line">#Must use non-root user to avoid the error &apos;This should _not_ be run as root or with sudo&apos;</span><br><span class="line">#Step1, select to install &apos;Kubernetes Core&apos;, see the picture below</span><br><span class="line">#Step2, select &apos;localhost&apos;, see the picture below</span><br><span class="line">#Step3, select the network bridge &apos;lxdbr1&apos;, see the picture below</span><br><span class="line">#Step4, click &apos;Deploy all 5 Remaining Applicatons, see the picture below</span><br><span class="line">sudo -u ubuntu -i conjure-up kubernetes</span><br><span class="line">tailf ~/.cache/conjure-up/conjure-up.log</span><br></pre></td></tr></table></figure></p>
-<p>或者直接使用下列脚本安装：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/snap/bin:$PATH</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF &gt; default-profile.yaml</span><br><span class="line">config: &#123;&#125;</span><br><span class="line">description: Default LXD profile</span><br><span class="line">devices:</span><br><span class="line">  eth0:</span><br><span class="line">    nictype: bridged</span><br><span class="line">    parent: lxdbr1</span><br><span class="line">    type: nic</span><br><span class="line">  root:</span><br><span class="line">    path: /</span><br><span class="line">    pool: default</span><br><span class="line">    type: disk</span><br><span class="line">name: default</span><br><span class="line">used_by:</span><br><span class="line">- /1.0/containers/cache</span><br><span class="line">- /1.0/containers/kubernetes</span><br><span class="line">EOF</span><br><span class="line">lxc profile create default 2&gt;/dev/null || echo &quot;default profile already exists&quot;</span><br><span class="line">cat default-profile.yaml | lxc profile edit default</span><br><span class="line"></span><br><span class="line">#!/bin/bash</span><br><span class="line">lxc delete -f kubernetes</span><br><span class="line">#用default和juju-kubernetes两个profile创建一个容器</span><br><span class="line">lxc launch ubuntu:17.04 -p default -p juju-kubernetes kubernetes</span><br><span class="line">sleep 5s</span><br><span class="line">lxc exec kubernetes -- apt-get update</span><br><span class="line">lxc exec kubernetes -- snap install lxd</span><br><span class="line">lxc exec kubernetes -- apt-get install squashfuse</span><br><span class="line">lxc exec kubernetes -- snap install core --beta</span><br><span class="line">lxc exec kubernetes -- snap install conjure-up --classic --beta</span><br><span class="line"></span><br><span class="line">#注意，此命令一定要使用snap包里的/snap/bin/lxc来执行，而不是apt包里的/usr/bin/lxc</span><br><span class="line">/snap/bin/lxc exec kubernetes -- sudo -u ubuntu -i /snap/bin/conjure-up canonical-kubernetes localhost controller model</span><br></pre></td></tr></table></figure></p>
-<p>贴一些相关的图如下：<br><img src="http://img.blog.csdn.net/20171112211641461?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211653333?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211707374?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20171112211721152?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>[1] <a href="https://stgraber.org/2017/01/13/kubernetes-inside-lxd/" target="_blank" rel="external">https://stgraber.org/2017/01/13/kubernetes-inside-lxd/</a><br>[2] <a href="https://insights.ubuntu.com/2017/10/12/kubernetes-the-not-so-easy-way/" target="_blank" rel="external">https://insights.ubuntu.com/2017/10/12/kubernetes-the-not-so-easy-way/</a><br>[3] <a href="https://github.com/lenovo/workload-solution/wiki/juju-charm-layers" target="_blank" rel="external">https://github.com/lenovo/workload-solution/wiki/juju-charm-layers</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1703,8 +1689,8 @@ lxc profile device set default eth0 nictype macvlan
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">76</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">77</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1754,7 +1740,7 @@ lxc profile device set default eth0 nictype macvlan
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
