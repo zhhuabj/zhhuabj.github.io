@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2020/01/13/Debian-Customer-PPA-RFC/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华  发表于：2016-01-13版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) Preconditiona, sudo apt install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file debhelper dh-syste">
-<meta property="og:updated_time" content="2020-01-13T08:42:55.378Z">
+<meta property="og:updated_time" content="2020-11-20T07:23:02.497Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Debian Customer PPA RFC">
 <meta name="twitter:description" content="作者：张华  发表于：2016-01-13版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) Preconditiona, sudo apt install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file debhelper dh-syste">
@@ -393,6 +393,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
 <p>dpkg-source -x libvirt_1.2.14-3.dsc &amp;&amp; cd libvirt-1.2.14</p>
 <h1 id="sudo-pdebuild"><a href="#sudo-pdebuild" class="headerlink" title="sudo pdebuild"></a>sudo pdebuild</h1><p>sudo pdebuild –debbuildopts -sa  # sometimes need to include source code for uca</p>
 <h1 id="you’d-better-not-add-sudo"><a href="#you’d-better-not-add-sudo" class="headerlink" title="you’d better not add sudo"></a>you’d better not add sudo</h1><p>debsign /var/cache/pbuilder/result/<package><em><version>.changes -k$GPGKEY<br>dput ppa:techtonik/backports /var/cache/pbuilder/result/<package></package></version></em><version>.changes</version></package></p>
+<p>注意： 其他帐户的私有PPA要点击”Manage Access”按钮将自己LP ID加进去之后才能在<a href="https://launchpad.net/~zhhuabj/+archivesubscriptions" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archivesubscriptions</a> 键接看到ppa的用户名和密码</p>
 <p>sudo apt-get autoclean<br>sudo apt-get update<br>sudo apt-get -f install</p>
 <p>sudo apt update</p>
 <p>cat /etc/apt/source.list</p>
