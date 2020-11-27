@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,191 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/27/Shell编程注意点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/27/Shell编程注意点/" itemprop="url">Shell编程注意点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
+                2020-11-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华 写于：发表于：2011-04-06<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>1在shell脚本中调用另一个脚本的三种不同方式(fork,exec, source)<br>       我们先谈谈在shell脚本中调用另一个脚本的三种不同方式的区别（fork,exec, source )</p>
+<p>fork ( /directory/script.sh ), fork是最普通的,就是直接在脚本里面用/directory/script.sh来调用script.sh这个脚本.运行的时候开一个sub-shell执行调用的脚本，sub-shell执行的时候,parent-shell还在。sub-shell执行完毕后返回parent-shell.sub-shell从parent-shell继承环境变量.但是sub-shell中的环境变量不会带回parent-shell</p>
+<p>exec(exec /directory/script.sh) exec与fork不同，不需要新开一个sub-shell来执行被调用的脚本. 被调用的脚本与父脚本在同一个shell内执行。但是使用exec调用一个新脚本以后,父脚本中exec行之后的内容就不会再执行了。这是exec和source的区别</p>
+<p>source(source/directory/script.sh)与fork的区别是不新开一个sub-shell来执行被调用的脚本，而是在同一个shell中执行.所以被调用的脚本中声明的变量和环境变量,都可以在主脚本中得到和使用.</p>
+<p>可以通过下面这两个脚本来体会三种调用方式的不同:</p>
+<p>1.sh </p>
+<p>#!/bin/bash<br>A=B<br>echo “PID for 1.sh before exec/source/fork:$$”<br>exportA<br>echo “1.sh: /$A is $A”<br>case $1 in<br>       exec)<br>               echo “using exec…”<br>               exec ./2.sh ;;<br>       source)<br>               echo “using source…”<br>               ../2.sh ;;<br>        *)<br>               echo”using fork by default…”<br>               ./2.sh ;;<br>esac<br>echo”PID for 1.sh after exec/source/fork:$$”<br>echo “1.sh:/$A is $A”<br>2.sh </p>
+<p>#!/bin/bash<br>echo”PID for 2.sh: $$”<br>echo “2.sh get /$A=$A from1.sh”<br>A=C<br>export A<br>echo “2.sh: /$A is $A”</p>
+<p>执行情况：<br>$./1.sh<br>PID for 1.sh beforeexec/source/fork:5845364<br>1.sh: $A is B<br>using fork bydefault…<br>PID for 2.sh: 5242940<br>2.sh get $A=B from 1.sh<br>2.sh:$A is C<br>PID for 1.sh after exec/source/fork:5845364<br>1.sh: $A isB<br>$ ./1.sh exec<br>PID for 1.sh beforeexec/source/fork:5562668<br>1.sh: $A is B<br>using exec…<br>PID for2.sh: 5562668<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>$./1.sh source<br>PID for 1.sh beforeexec/source/fork:5156894<br>1.sh: $A is B<br>using source…<br>PIDfor 2.sh: 5156894<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>PIDfor 1.sh after exec/source/fork:5156894<br>1.sh: $A is C<br>$<br>2函数调用<br>先看一个例子，执行mysql的函数mysqlExec,如下：</p>
+<p>source“mysql.conf”</p>
+<p>mysqlExec(){<br>sql=$1<br>sqlOp=<code>echo${sql:0:6}| tr A-Z a-z</code><br>if[ “$sqlOp” != “select” ]; then<br>  sql=$sql”;select row_count();”<br>fi</p>
+<p>#use different mysql command depends on the password</p>
+<p>if[ -z $MYSQL_PASSWORD ]<br>then<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -se “${sql};”<br>else<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -p$MYSQL_PASSWORD-se “${sql};”<br>fi<br>status=$?<br>if[ $status -eq 0 ]; then<br>  if[ “$sqlOp” != “select” ]; then<br>    log “OK $sql”<br>  fi<br>else<br>  log “Occur DB Error, can retry in 3 seconds later -&gt; $sql”<br>  sleep3<br>  echo “DB_ERROR”<br>fi<br>return $status<br>exit<br>}</p>
+<p>函数调用要注意两点：<br>1）函数中可以用echo,如上面的echo “DB_ERROR”，在调用时要获取echo的值，应该这样:<br>campaign=<code>mysqlExec&quot;$sql&quot;</code><br>if[ “x$campaign” == “x” -o “$campaign” ==”DB_ERROR” ]; then<br>continue<br>fi<br>2)函数中也可以有返回值，如上面的return $status，在调用时应该通过$?获得，如：<br>if[ $? -eq 0 ]; then<br>echo“zhanghua”<br>fi</p>
+<p>3) 如果想从被调用的函数处返回一个值，可以这样</p>
+<p>   调用gen_conf函数，传一个引用（注意不是变量）config_file进去， gen_conf $host config_file</p>
+<p>   在gen_conf函数中通过__resultvar变量返回值:</p>
+<p>   gen_config{</p>
+<pre><code> local  __resultvar=$2
+eval $__resultvar=&quot;&apos;$config&apos;&quot;
+</code></pre><p>   }</p>
+<p>3shell中的要用局部变量很纠结<br>你会看到shell有一个非常大的缺点，就是它在函数调用时，没有局部变量与全局变量之分，如A脚本调用B脚本中的一个函数，在B脚本内部有一个变量vari（你可能受JAVA影响认为它是局部变量那就大错特错了），如果A脚本中也有这个名为vari的变量，那么在函数返回时，B脚本的那个vari变量会将A脚本的vari变量覆盖，举个例子：<br>updateWithOptimisticLock(){<br>rand=$1<br>campaignId=$2<br>seq=1<br>updateVal=-1<br>status=1<br>while[ true ]; do<br>if[ $seq -gt 3 ]; then<br>log”FATAL ERROR, Update num error, $updatesql”<br>break<br>fi<br>cur=<code>queryCur&quot;$campaignId&quot;</code><br>if[ “$cur” == “DB_ERROR” ]; then<br>continue<br>fi<br>updateVal=$(($cur+$rand))<br>if[ “$rand” == “0” ]; then<br>break<br>fi<br>updatesql=”updatet<em>campaign</em> set num=$updateVal where campaign<em>id=$campaignId andnum=$cur”<br>affectRows=<code>mysqlExec&quot;$updatesql&quot;</code><br>if[ “$affectRows” == “1” ]; then<br>status=0<br>break<br>fi<br>seq=$(($seq+1))<br>done<br>echo$updateVal<br>return$status<br>}<br>调用的伪码如下，这时里面的seq变量会被上述updateWithOptimisticLock函数中的变量seq给覆盖，所以在shell中没有局部变量一说<br>seq=1<br>while[ $seq -le $cycleNum ]; do<br>updateFakeNumWithOptimisticLock$rand $campaignId<br>done<br>4使用xargs来传参数<br>在shell中的管道符|很强大，可以将前一条命令的标准输出作为下一条命令的标准输入，但是如果下一条命令不是标准输入而是需要传参的话，那怎么办呢，用xargs即可，例如下列shell中xargs命令的-i选项告诉xargs用前一条命令的标准输出去替换{}。<br>find. | xargs zgrep “<url>/Search?” | sed’s/.*q=/([-</url></em><em>()~.%+0-9A-Za-z]</em>/).*//1/‘ | sort -nr | uniq -c | sort-nr | head -1000 | xargs -i php -r “echorawurldecode(‘{}’)./“/n/“;” &gt; result.out &amp;</p>
+<p>另， 修改/etc/hosts, 能处理127或localhost打头的多个hostname项如(ubuntu.me.com  ubuntu)， 用‘/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts’是为了避免IPv6 中的node如ff02::1 ip6-allnodes</p>
+<p>/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts |awk ‘$1 ~ /^127|localhost/ {print $0}’ | /bin/sed “s/\s<em>(${CURRENT_HOSTNAME})(\s</em>)/\t${NETCFG_HOSTNAME}/g”</p>
+<p>当然exec也可以实现上述功能，只是exec都是一次性读入内存容易内存溢出，如：<br>find. -name “<em>.m4” -exec grep –color -H “catalina”{} /;<br>5shell中的sed命令使用的正则是缩水版<br>shell中的sed命令使用的正则引擎和我们java中平常所用正则引擎并不一样，功能比较弱。<br>如上节中的|sed ‘s/.</em>q=/([-_<em>()~.%+0-9A-Za-z]</em>/)，就是因为shell的很多正则不支持，才在使用sed命令时用了那么多枚举。</p>
+<p>20191115更新</p>
+<p>上面说法不正确, sed可以加-r参数不用枚举, 例:</p>
+<p>grep -r ‘get_or_set_cached_cell_and_set_connections’ var/log/nova/ |sed -r ‘s/.+(waited|held) (.+) inner.+/\2/g;t;d’ |sort -nr |head -n 5</p>
+<p>nova service-list –bi nova-compute | grep nova-compute | cut -d ‘ ‘ -f 4 | xargs -n 1 -I {} ssh -o StrictHostKeyChecking=no  ubuntu@{} “date; hostname; zgrep MessagingTimeout /var/log/nova/nova-compute.log*; echo -e ‘—————————–\n’”</p>
+<p>数组</p>
+<p>readarray -t cookies&lt;&lt;&lt;”<code>ls -1 /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/cookies/| grep -v 6cc04af0837d3b42</code>“<br>for c in ${cookies[@]}; do grep -rl $c /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/tables; done| sort| uniq -c</p>
+<p>svcs=(<br>nova-compute-kvm<br>neutron-openvswitch<br>)<br>for svc in ${svcs[@]}; do<br>juju config $svc worker-multiplier<br>done</p>
+<p>排序相加</p>
+<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r<br>uid     tgid     total_vm  rss      pgtables_bytes  swapents  oom_score_adj  name<br>100112  832785   5760963   1650592  16789504        76362     0              beam.smp</p>
+<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r | awk ‘{sum+=$4;} END{print sum;}’</p>
+<p>rabbitmq相序相加举例</p>
+<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa |head -n1<br>Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer<br>tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      101        1671174047 178/systemd-resolve  off (0.00/0/0)</p>
+<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa| awk ‘/:5672/ { print $5 }’ | awk -F: ‘{ a[$1]++ }; END { for (i in a) print i, a[i] }’ |sort -n -k 2 -r |more |head -n 10<br>10.164.0.107 69</p>
+<p>实例 - 抓取</p>
+<p>#!/bin/bash</p>
+<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip lynx’ || lynx -dump ftp://ftp.hycom.org/datasets/force/ncep_cfsr/netcdf/ &gt;page.txt<br>grep -r “ftp://“ page.txt |awk ‘{print $2}’ &gt; urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>for url in $(cat urls.txt)<br>do<br>  skip=”0”<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>  for f in ${exist_files[@]}; do<br>    [[ “$name” == “$f” ]] &amp;&amp; skip=”1”; break;<br>  done<br>  if [ “$skip” == “1” ]; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${url}”;<br>    wget -c ${url}<br>  fi<br>done<br>改进版</p>
+<p>#!/bin/bash</p>
+<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip creating lynx’ || lynx -dump <a href="http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html" target="_blank" rel="external">http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html</a> &gt;page.txt<br>[[ -f urls.txt ]] &amp;&amp; echo ‘skip creating urls.txt’ || grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>sed -i ‘/dswsfc/d’ urls.txt<br>sed -i ‘/dlwsfc/d’ urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls . |grep -E &#39;\.nc$&#39;</code>“;  #can’t use multiple commands in [[ ]]<br>[[ -f skip.txt ]] &amp;&amp; echo ‘will use skip.txt’ || printf “%s\n” “${exist_files[@]}” &gt; skip.txt<br>readarray -t skip_files&lt;&lt;&lt;”<code>cat skip.txt</code>“<br>for url in $(cat urls.txt)<br>do<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  realurl=’<a href="http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name" target="_blank" rel="external">http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name</a><br>  if <code>echo ${skip_files[@]} |grep -q &quot;$name&quot;</code>; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${realurl}”;</p>
+<pre><code>#wget -c --limit-rate=3m ${realurl}
+wget -c ${realurl}
+#echo ${realurl} &gt;&gt; skip.txt
+</code></pre><p>  fi<br>done<br>获取绝对目录</p>
+<p>export OS_CACERT=$(dirname “$(realpath -s “${BASH_SOURCE[0]}”)”)/ssl/openstack-ssl/results/cacert.pem<br>从国外下载气象数据</p>
+<p>#gdisk /dev/sdd1   #t, 0700</p>
+<p>#sudo mkfs.ntfs -f -L win /dev/sdd1</p>
+<p>#sudo ntfsfix /dev/sdd1<br>sudo mkfs.ext4 /dev/xvdb<br>sudo parted /dev/xvdb  #print<br>sudo mount /dev/xvdb /mnt/<br>sudo mkdir -p /mnt/ftp<br>sudo chown -R $USER /mnt/<br>sudo apt install curlftpfs -y</p>
+<p>#sudo fusermount -zu /mnt/ftp<br>sudo curlftpfs ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>sudo curlftpfs -o rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>$ scp -i ~/.aws/zhhuabj.pem ubuntu@13.114.59.98:/mnt/ftp/uvel/rarchv.2012_205_00_3zu.nc4 /tmp/<br>rarchv.2012_205_00_3zu.nc4                                                                                                94%  236MB   7.6MB/s   00:01 ETA</p>
+<h1 id="using-direct-io-and-cache-no-to-avoid-using-disk"><a href="#using-direct-io-and-cache-no-to-avoid-using-disk" class="headerlink" title="using direct_io and cache=no to avoid using disk"></a>using direct_io and cache=no to avoid using disk</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp fuse defaults,direct_io,cache=no,rw,allow_other,uid=1000,gid=1000,_netdev 0 0<br>EOF<br>sudo mount -a</p>
+<p>rsync -avztur -e “ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/lxj.pem” –progress ubuntu@3.18.107.xxx:/mnt/ftp .</p>
+<p>注意：　上面加了direct_io,cache=no后总是hang，得去掉．</p>
+<p>#debug curlftpfs<br>sudo fusermount -zu /mnt/ftp/2d<br>sudo curlftpfs -f -v -o debug,ftpfs_debug=3,rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/2d /mnt/ftp/2d<br>1, use lftp to mirror</p>
+<h1 id="lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data"><a href="#lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data" class="headerlink" title="lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/"></a>lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/</h1><p>lftp -c “set ftp:list-options -a;<br>open ‘ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/‘;<br>lcd /home/ubuntu/test;<br>cd 2d<br>mirror -c –use-cache –verbose –allow-chown –allow-suid –no-umask –verbose –parallel=2”</p>
+<p>2, use wget to mirror</p>
+<p>wget -c -m ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/<br>lynx -dump <a href="http://13.59.199.151/new_01hr/" target="_blank" rel="external">http://13.59.199.151/new_01hr/</a> &gt; page.txt<br>grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>aria2c -x 10 -i urls.txt &gt;/dev/null 2&gt;/dev/null &amp;</p>
+<p>并行运行</p>
+<p>token=’111’<br>seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS echo “$token”</p>
+<p>#!/bin/bash -eux<br>PARALLEL_REQS=5<br>SLEEP_SECS=0.1<br>TEMPLOG=$(mktemp).log<br>K8S_ENDPOINT=’/api’<br>export CLUSTER_NAME=”juju-cluster”<br>APISERVER=$(kubectl config view -o jsonpath=”{.clusters[?(@.name==\”$CLUSTER_NAME\”)].cluster.server}”)<br>TOKEN=$(kubectl get secrets -o jsonpath=”{.items[?(@.metadata.annotations[‘kubernetes.io/service-account.name’]==’default’)].data.token}”|base64 –decode)</p>
+<h1 id="trap-ctrl-c-and-call-ctrl-c"><a href="#trap-ctrl-c-and-call-ctrl-c" class="headerlink" title="trap ctrl-c and call ctrl_c()"></a>trap ctrl-c and call ctrl_c()</h1><p>trap ctrl_c INT<br>function ctrl<em>c() {<br>  local DEST=query-kubeapiserver.$(date ‘+%Y%m%d</em>%H%M’).log<br>  mv $TEMPLOG $DEST<br>  echo “output at $DEST”<br>  exit 0<br>}</p>
+<p>set +x<br>while true; do<br>  echo “in while loop”<br>  seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS curl -s -X GET $APISERVER$K8S_ENDPOINT –header “Authorization: Bearer $TOKEN” –insecure 2&gt;&amp;1 &gt;&gt; $TEMPLOG</p>
+<h1 id="seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG"><a href="#seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG" class="headerlink" title="seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG"></a>seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG</h1><p>  echo “sleeping..”<br>  /bin/sleep $SLEEP_SECS<br>  echo “sleep done”<br>done</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +445,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
                 2020-11-13
@@ -397,7 +582,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
                 2020-11-12
@@ -532,7 +717,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
                 2020-11-12
@@ -680,7 +865,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
                 2020-11-09
@@ -825,7 +1010,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
                 2020-11-08
@@ -1024,7 +1209,7 @@ use sendfile = yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
                 2020-11-04
@@ -1191,7 +1376,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T16:23:01+08:00">
                 2020-11-04
@@ -1318,7 +1503,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-30T16:06:55+08:00">
                 2020-10-30
@@ -1448,7 +1633,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-28T19:43:30+08:00">
                 2020-10-28
@@ -1496,130 +1681,6 @@ set_state done
 <p>所以就以为是底层openstack有问题，但我没有底层openstack的管理权限，所以只好找有权限的同事帮忙，最后确定没有这方面的问题．<br>最后，就是怀疑bastion这台虚机有问题了．发现里面什么时候安装了devstack，删除devstack后，正常了．<br>但为什么之前一又没问题呢？在有devstack的情况下，代码作下列更改问题也消失．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#set_img_properties bionic 18.04 bionic-server-cloudimg-amd64.img &amp;</span><br><span class="line">set_img_properties bionic 18.04 bionic-server-cloudimg-amd64.img</span><br></pre></td></tr></table></figure></p>
 <p>devstack这些东西不要乱在机器上装啊，习惯要好．上了一大课．</p>
 <p>另外，如果ssh连接慢的话，可以尝试在sshd.conf中添加：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UseDNS no</span><br><span class="line">GSSAPIAuthentication no</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/10/22/如何将国外的ftp气象大数据下载回来/" itemprop="url">如何将国外的ftp气象大数据下载回来</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
-                2020-10-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-10-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下：</p>
-<p>1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install curlftpfs -y</span><br><span class="line">#sudo fusermount -zu /mnt/ftp</span><br><span class="line">sudo mkdir -p /mnt/ftp &amp;&amp; sudo chown -R $USER /mnt/ftp</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt;/etc/fstab&apos; &lt;&lt;EOF</span><br><span class="line">curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data /mnt/ftp fuse defaults,rw,allow_other,uid=1000,gid=1000,_netdev 0 0</span><br><span class="line">EOF</span><br><span class="line">sudo mount -a</span><br></pre></td></tr></table></figure></p>
-<p>2, 安装nginx指向/mnt/ftp将ftp变http<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install nginx -y</span><br><span class="line">sudo vim /etc/nginx/sites-available/default</span><br><span class="line">        #root /var/www/html;</span><br><span class="line">        root /mnt/ftp;</span><br><span class="line">        location / &#123;</span><br><span class="line">                try_files $uri $uri/ =404;</span><br><span class="line">                autoindex on;</span><br><span class="line">                autoindex_exact_size off;</span><br><span class="line">                autoindex_localtime on;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
-<p>3, 国内采用下列命令下载．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -c -m http://3.18.xx.xx</span><br><span class="line">#rsync -avztur -e &quot;ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/xxx.pem&quot; --progress ubuntu@3.18.xx.xx:/mnt/ftp .</span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -1705,8 +1766,8 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">77</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1756,7 +1817,7 @@ set_state done
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
