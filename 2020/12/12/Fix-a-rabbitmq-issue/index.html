@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="问题rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:11-lxd-869-lxd-29-lxd-9初步sosreport分析11-lxd-8上看到system_limit错误1234=ERROR REPORT==== 17-Apr-2020::13:19:44 ===Too many processes=ERROR REPORT==== 17-Apr-2020::13:19">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fix a rabbitmq issue">
+<meta property="og:url" content="http://yoursite.com/2020/12/12/Fix-a-rabbitmq-issue/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="问题rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:11-lxd-869-lxd-29-lxd-9初步sosreport分析11-lxd-8上看到system_limit错误1234=ERROR REPORT==== 17-Apr-2020::13:19:44 ===Too many processes=ERROR REPORT==== 17-Apr-2020::13:19">
+<meta property="og:updated_time" content="2020-12-12T04:01:11.560Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fix a rabbitmq issue">
+<meta name="twitter:description" content="问题rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:11-lxd-869-lxd-29-lxd-9初步sosreport分析11-lxd-8上看到system_limit错误1234=ERROR REPORT==== 17-Apr-2020::13:19:44 ===Too many processes=ERROR REPORT==== 17-Apr-2020::13:19">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/12/12/Fix-a-rabbitmq-issue/"/>
+
+
+
+
+
+  <title>Fix a rabbitmq issue | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/Fix-a-rabbitmq-issue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Fix a rabbitmq issue</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
+                2020-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>问题</strong><br>rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:<br>11-lxd-8<br>69-lxd-2<br>9-lxd-9<br><strong>初步sosreport分析</strong><br>11-lxd-8上看到system_limit错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Too many processes</span><br><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Ranch listener &#123;acceptor,&#123;0,0,0,0,0,0,0,0&#125;,5672&#125; connection process start failure; rabbit_connection_sup:start_link/4 crashed with reason: error:system_limit</span><br></pre></td></tr></table></figure></p>
+<p>但是已经设置了LimitNOFILE<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;Limit&apos; lib/systemd/system/rabbitmq-server.service</span><br><span class="line">LimitNOFILE=65536</span><br></pre></td></tr></table></figure></p>
+<p>不过LimitNOFILE似乎是管file_descriptors的, 而不是erlang processes的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;file_descriptors,     [&#123;total_limit,65436&#125;,      &#123;total_used,6415&#125;,      &#123;sockets_limit,58890&#125;,      &#123;sockets_used,6413&#125;]&#125;,</span><br><span class="line">16:28:22  &#123;processes,[&#123;limit,1048576&#125;,&#123;used,118304&#125;]&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>上面的输出显示似乎用了118304个erlang processes还未超出limit. 不过, 这可能是重启机器之后抓的sosreport. 并且limit已经很大, 单纯增加limit似乎也并不是正道. 所以继续寻找线索.</p>
+<p>在69-lxd-2里也看到了’Error while waiting for Mnesia tables’这种错误, 似乎是Mnesia数据库未同步.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var/log/rabbitmq/rabbit@juju-3182a3-69-lxd-2.log.1</span><br><span class="line">=INFO REPORT==== 17-Apr-2020::13:27:26 ===</span><br><span class="line">Waiting for Mnesia tables for 30000 ms, 9 retries left</span><br><span class="line">=WARNING REPORT==== 17-Apr-2020::13:27:56 ===</span><br><span class="line">Error while waiting for Mnesia tables: &#123;timeout_waiting_for_tables,</span><br><span class="line">[rabbit_user,rabbit_user_permission,</span><br><span class="line">rabbit_vhost,rabbit_durable_route,</span><br><span class="line">rabbit_durable_exchange,</span><br><span class="line">rabbit_runtime_parameters,</span><br><span class="line">rabbit_durable_queue]&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3个units上用’netstat -s’看到大量的reset tcp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sos_commands/networking/netstat_-s |head -n2</span><br><span class="line">7154216 connection resets received</span><br><span class="line">34025359 resets sent</span><br></pre></td></tr></table></figure></p>
+<h2 id="深入分析"><a href="#深入分析" class="headerlink" title="深入分析"></a>深入分析</h2><p>9-lxd-9上 通过下列命令看到各个openstack组件上都有到9-lxd-9的rabbitmq tcp连接, 一个组件就有约四五百个连接, 是不是多了一点? 其他两个units没这么多.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat sos_commands/networking/netstat_-W_-neopa| awk &apos;/:5672/ &#123; print $5 &#125;&apos; | awk -F: &apos;&#123; a[$1]++ &#125;; END &#123; for (i in a) print i, a[i] &#125;&apos; |sort -n -k 2 -r |more |head -n 80</span><br></pre></td></tr></table></figure></p>
+<p>但一个组件就有四五百个连接, 每个组件都这么多, 不可能每个组件都有问题吧. 除了大量tcp连接可以造成容器cpu升高, host机器的cpu升高也可以造成容器cpu升高的吧. 所以接着检查host机器的cpu占用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat sos_commands/process/ps_auxwww |head -n 1</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">$ cat sos_commands/process/ps_auxwww |head -n1 &amp;&amp; cat sos_commands/process/ps_auxwww |sort -n -k3 -r | head -n 3</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">nova 1936435 130 0.0 347704 126140 ? Rs 11:40 0:01 /usr/bin/python2 /usr/bin/nova-api-metadata --config-file=/etc/nova/nova.conf --log-file=/var/log/nova/nova-api-metadata.log</span><br><span class="line">libvirt+ 1809025 100 0.0 51373088 236744 ? Sl Mar09 56456:32 qemu-system-x86_64 -enable-kvm -name guest=instance-000099e0,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-26-instance-000099e0/master-key.aes -machine pc-i440fx-</span><br></pre></td></tr></table></figure></p>
+<p>ok, 虚机占用cpu就是100%. 看样子是控制服务(rabbitmq)与计算服务(nova-compute)安装到同一台物理机了, 虚机占用的cpu或者内存大页什么的直接导致rabbitmq cluster挂掉.<br>注:<br>ps命令中第三列相加的cpu大于100%也不一定就意味着cpu一定高, 因为可以这些进程全跑在一个cpu核的, 它可能计算的是一个核的, 要想准确还得使用mpstat来查看</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>调整架构是不可能了, 可以暂时使用isolcpu隔离一些cpu单独通过taskset给rabbitmq使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mpstat -P ALL 能看到所有cpu核的负载情况</span><br><span class="line">cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq</span><br><span class="line">grub中添加isolcpus=1,3来隔离1和3的cpu待用, 然后运行update-grub后重启, 验证:</span><br><span class="line">1, cat /proc/cmdline |grep isolcpu</span><br><span class="line">2, ps -To &apos;pid,lwp,psr,cmd&apos; -p 310597</span><br><span class="line">3, ps -eo pid,cmd,psr |awk &apos;&#123;if($3=3) print $0&#125;&apos;</span><br><span class="line">taskset -p0x8 &lt;pid&gt;绑定&lt;pid&gt;到cpu3</span><br><span class="line">taskset -c 1 /etc/init.d/mysql start</span><br><span class="line">systemd manages the affinity for you. See &quot;man systemd.exec&quot; and CPUAffinity= option.</span><br></pre></td></tr></table></figure></p>
+<h2 id="20201212更新-queue-master-locator-min-master"><a href="#20201212更新-queue-master-locator-min-master" class="headerlink" title="20201212更新 - queue_master_locator=min-master"></a>20201212更新 - queue_master_locator=min-master</h2><p>我们可能需要配置queue_master_locator=min-master - <a href="https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759" target="_blank" rel="external">https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759</a>, 进而可能造成这个bug - <a href="https://bugs.launchpad.net/neutron/+bug/1871850" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1871850</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># Queue masters are mostly on 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report | awk -F&apos;\t&apos; &apos;/^Queues on openstack/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 15</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 15426</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 309</span><br><span class="line"></span><br><span class="line"># Most connections are made to 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report| awk -F&apos;\t&apos; &apos;/^Connections/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 8763</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 14843</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 6413</span><br><span class="line"></span><br><span class="line"># 11-lxd-8 uses the most memory</span><br><span class="line">&gt; cat rabbitmqctl_report| awk &apos;/^Status/ &#123;a=1; print&#125;; a &amp;&amp; /total,/; !NF &#123;a=0&#125;&apos;</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-10-lxd-8&apos;</span><br><span class="line">     [&#123;total,3536412448&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-11-lxd-8&apos;</span><br><span class="line">     [&#123;total,7030459176&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-9-lxd-9&apos;</span><br><span class="line">     [&#123;total,4256377400&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>crontab检查rabbitmq memory使用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"># process_memory_checker.sh</span><br><span class="line">MAILTO=root</span><br><span class="line">process=&quot;bin/beam.smp&quot;</span><br><span class="line">mem_percentage=`ps -o %mem,command ax | grep &quot;$&#123;process&#125;&quot; | grep -v grep | awk &apos;&#123;print $1&#125;&apos;`</span><br><span class="line">threshold_percentage=25</span><br><span class="line">if (( $(echo &quot;$&#123;mem_percentage&#125; &gt; $&#123;threshold_percentage&#125;&quot;|bc -l) ));</span><br><span class="line">then</span><br><span class="line">	echo &quot;Process $&#123;process&#125; on `hostname -f` is using $&#123;mem_percentage&#125;% of total memory (threshold is $&#123;threshold_percentage&#125;%).&quot; | \</span><br><span class="line">	mail -s &quot;Memory usage warning for process $&#123;process&#125; on $(hostname -s)&quot; $&#123;MAILTO&#125; 2&gt; /dev/null;</span><br><span class="line">	exit 1;</span><br><span class="line">fi</span><br><span class="line">echo &quot;No memory issues found for process $&#123;process&#125;&quot;</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
+<p>另外，客户发现memory用到超过vm_memory_high_watermark_paging_ratio (<a href="https://www.rabbitmq.com/memory.html#paging" target="_blank" rel="external">https://www.rabbitmq.com/memory.html#paging</a> )时似乎memory也没有被page到硬盘造成memory一直在增大，这个网页（<a href="https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。" target="_blank" rel="external">https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。</a><br>“rabbitmqctl list_queues name  durable -p openstack”看到的durable都是false, 难道是在设置各组件的olso设置为(charm似乎不支持）amqp_durable_queues=True吗?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[oslo_messaging_rabbit]</span><br><span class="line">amqp_durable_queues = True</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/27/Shell编程注意点/" rel="next" title="Shell编程注意点">
+                <i class="fa fa-chevron-left"></i> Shell编程注意点
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/12/12/RabbitMQ-Deep-Dive/" rel="prev" title="RabbitMQ Deep Dive">
+                RabbitMQ Deep Dive <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">80</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#深入分析"><span class="nav-number">1.</span> <span class="nav-text">深入分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决办法"><span class="nav-number">2.</span> <span class="nav-text">解决办法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20201212更新-queue-master-locator-min-master"><span class="nav-number">3.</span> <span class="nav-text">20201212更新 - queue_master_locator=min-master</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -231,6 +231,264 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/02/01/Green-on-T440P-integrated-webcam-by-Joshua/" itemprop="url">Green on T440P integrated webcam(by Joshua)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-01T16:46:53+08:00">
+                2018-02-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-01)</strong></p>
+<p>我发现我的t440p的集成摄像头成绿色像，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">root@t440p:~# lsusb -d 04f2:b39a -vvv</span><br><span class="line">root@t440p:~# lsusb -d 04f2:b39a</span><br><span class="line">Bus 003 Device 006: ID 04f2:b39a Chicony Electronics Co., Ltd</span><br><span class="line"></span><br><span class="line">root@t440p:~# v4l2-ctl -V -d /dev/video0</span><br><span class="line">Format Video Capture:</span><br><span class="line">	Width/Height      : 1280/720</span><br><span class="line">	Pixel Format      : &apos;MJPG&apos;</span><br><span class="line">	Field             : None</span><br><span class="line">	Bytes per Line    : 0</span><br><span class="line">	Size Image        : 1843200</span><br><span class="line">	Colorspace        : sRGB</span><br><span class="line">	Transfer Function : Default</span><br><span class="line">	YCbCr Encoding    : Default</span><br><span class="line">	Quantization      : Default</span><br><span class="line">	Flags             :</span><br></pre></td></tr></table></figure></p>
+<p>最后从这个网页找到了答案 - <a href="https://help.ubuntu.com/community/Webcam/Troubleshooting" target="_blank" rel="external">https://help.ubuntu.com/community/Webcam/Troubleshooting</a></p>
+<p>安装guvcview工具，将其中的”White Balance Temperature, Auto”打勾即可。<br><img src="http://img.blog.csdn.net/20180201164449436?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="蓝牙键盘"><a href="#蓝牙键盘" class="headerlink" title="蓝牙键盘"></a>蓝牙键盘</h2><p>蓝牙键盘配对后过一会超时后要重连，但经常重连不上。采用下列方法trust蓝牙之下情况好多了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install bluez bluez-tools</span><br><span class="line"></span><br><span class="line">$ bluetoothctl</span><br><span class="line">[NEW] Controller 00:15:00:CB:B0:FF t440p #2 [default]</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">[NEW] Controller 00:1A:7D:DA:71:13 t440p #1</span><br><span class="line"></span><br><span class="line"># First, turn bluetooth power on (if your device is off)</span><br><span class="line">[bluetooth]# power on</span><br><span class="line">Changing power on succeeded</span><br><span class="line"></span><br><span class="line"># Then, make sure your agent is registered:</span><br><span class="line">[bluetooth]# agent on</span><br><span class="line">Agent registered</span><br><span class="line">[bluetooth]# default-agent</span><br><span class="line">Default agent request successful</span><br><span class="line"></span><br><span class="line"># Now you can scan for devices from the console</span><br><span class="line">[bluetooth]# scan on</span><br><span class="line">Discovery started</span><br><span class="line">[CHG] Controller 00:15:00:CB:B0:FF Discovering: yes</span><br><span class="line">...</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"># You can manually pair from here as well</span><br><span class="line">[bluetooth]# pairable on</span><br><span class="line">Changing pairable on succeeded</span><br><span class="line">[bluetooth]# pair 90:7F:61:00:23:C3</span><br><span class="line"></span><br><span class="line">[bluetooth]# trust 90:7F:61:00:23:C3</span><br><span class="line">[CHG] Device 90:7F:61:00:23:C3 Trusted: yes</span><br><span class="line">Changing 90:7F:61:00:23:C3 trust succeeded</span><br><span class="line"></span><br><span class="line">[bluetooth]# connect 90:7F:61:00:23:C3</span><br><span class="line">[bluetooth]# quit</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/30/Assembly-Language-Learning-by-Joshua/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/01/30/Assembly-Language-Learning-by-Joshua/" itemprop="url">Assembly Language Learning (by Joshua)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-01-30T12:10:21+08:00">
+                2018-01-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-01-30)</strong></p>
+<h2 id="汇编测试程序"><a href="#汇编测试程序" class="headerlink" title="汇编测试程序"></a>汇编测试程序</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ cat hello.asm </span><br><span class="line">; Hello World9%] [#######################################################################################################] </span><br><span class="line">; Compile asm: nasm -f elf64 -g -F dwarf hello.asm</span><br><span class="line">; Link asm:    ld -o hello hello.o</span><br><span class="line">; Debug asm:   [gdb|cgdb|kdbg] hello </span><br><span class="line">; Debug asm: or using insight, because kdbg can&apos;t see memory well</span><br><span class="line"></span><br><span class="line">section .data</span><br><span class="line">    msg db &apos;Hello, world!&apos;, 0</span><br><span class="line">    msglen: equ $-msg</span><br><span class="line">section .bss</span><br><span class="line">section .text</span><br><span class="line">    global _start</span><br><span class="line"></span><br><span class="line">_start:</span><br><span class="line">    nop</span><br><span class="line">    mov eax, 4       ; sys_write sys call</span><br><span class="line">    mov ebx, 1       ; stdout</span><br><span class="line">    mov ecx, msg</span><br><span class="line">    mov edx, msglen</span><br><span class="line">    int 80H</span><br><span class="line">    mov eax, 1       ; exit sys call</span><br><span class="line">    mov ebx, 0       ; return 0</span><br><span class="line">    int 80H         </span><br><span class="line">    mov ebp, esp</span><br></pre></td></tr></table></figure>
+<h2 id="编译与链接"><a href="#编译与链接" class="headerlink" title="编译与链接"></a>编译与链接</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nasm -f elf64 -g -F dwarf hello.asm</span><br><span class="line">ld -o hello hello.o</span><br></pre></td></tr></table></figure>
+<h2 id="用gdb调试"><a href="#用gdb调试" class="headerlink" title="用gdb调试"></a>用gdb调试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ gdb hello</span><br><span class="line">...</span><br><span class="line">(gdb) b 16</span><br><span class="line">Breakpoint 1 at 0x4000b1: file hello.asm, line 16.</span><br><span class="line">(gdb) r</span><br><span class="line">Starting program: /bak/work/asm/hello </span><br><span class="line"></span><br><span class="line">Breakpoint 1, _start () at hello.asm:16</span><br><span class="line">16	    mov eax, 4       ; sys_write sys call</span><br><span class="line">(gdb) n</span><br><span class="line">17	    mov ebx, 1       ; stdout</span><br><span class="line">(gdb) i r eax</span><br><span class="line">eax            0x4	4</span><br><span class="line">(gdb) set $eax=0x4</span><br></pre></td></tr></table></figure>
+<h2 id="用cgdb调试"><a href="#用cgdb调试" class="headerlink" title="用cgdb调试"></a>用cgdb调试</h2><p>cgdb能方便调试的过程中查看代码，如下图：<br><img src="http://img.blog.csdn.net/20180130120215608?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用kDbg调试"><a href="#用kDbg调试" class="headerlink" title="用kDbg调试"></a>用kDbg调试</h2><p>kDbg方便查看寄存器，但是查看内存不是很方便。如图：<br><img src="http://img.blog.csdn.net/20180130120334887?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用insight调试"><a href="#用insight调试" class="headerlink" title="用insight调试"></a>用insight调试</h2><p>kDgb不方便查看内存，所以有了insight, insight在ubuntu 16.04上的安装步骤如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install autoconf autogen texinfo zlib1g-dev tcl-dev tk-dev mesa-common-dev libjpeg-dev libtogl-dev python-dev flex bison itcl3 itk3 iwidgets4</span><br><span class="line">git clone --recursive git://sourceware.org/git/insight.git</span><br><span class="line">cd insight &amp;&amp; autoconf</span><br><span class="line">./configure --prefix=/usr/. --libdir=/usr/lib64 --disable-binutils --disable-elfcpp --disable-gas --disable-gold \</span><br><span class="line">--disable-gprof --disable-ld --disable-rpath --disable-zlib --enable-sim --with-gdb-datadir=/usr/share/insight \</span><br><span class="line">--with-jit-reader-dir=/usr/lib64/insight --with-separate-debug-dir=&apos;/usr/lib/debug&apos; --with-expat --with-python --without-libunwind</span><br><span class="line">make -j8 &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://img.blog.csdn.net/20180130120523311?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h2 id="用sasm调试"><a href="#用sasm调试" class="headerlink" title="用sasm调试"></a>用sasm调试</h2><p>sasm的安装方法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">axel http://download.opensuse.org/repositories/home:/Dman95/xUbuntu_16.04/amd64/sasm_3.9.0_amd64.deb</span><br><span class="line">sudo dpkg -i sasm_3.9.0_amd64.deb</span><br><span class="line">sudo apt-get -f install</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://img.blog.csdn.net/20180130120714341?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXVxaTk5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>注意，使用sasm时，代码一是需要添加’%include “io64.inc”‘，二是_start需要变成CMAIN， 三是自己的代码写在下列代码的”write your code here“处。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">%include &quot;io64.inc&quot;</span><br><span class="line">section .text</span><br><span class="line">global CMAIN</span><br><span class="line">CMAIN:</span><br><span class="line">    ;write your code here</span><br><span class="line">    xor eax, eax</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>故完整的测试代码修改为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/asm$ cat hello2.asm </span><br><span class="line">%include &quot;io64.inc&quot;</span><br><span class="line">section .data</span><br><span class="line">    msg db &apos;Hello, world!&apos;, 0</span><br><span class="line">    msglen: equ $-msg</span><br><span class="line">section .bss</span><br><span class="line">section .text</span><br><span class="line">global CMAIN</span><br><span class="line">CMAIN:</span><br><span class="line">    nop</span><br><span class="line">    mov eax, 4       ; sys_write sys call</span><br><span class="line">    mov ebx, 1       ; stdout</span><br><span class="line">    mov ecx, msg</span><br><span class="line">    mov edx, msglen</span><br><span class="line">    int 80H</span><br><span class="line">    mov eax, 1       ; exit sys call</span><br><span class="line">    mov ebx, 0       ; return 0</span><br><span class="line">    int 80H         </span><br><span class="line">    mov ebp, esp</span><br><span class="line">    </span><br><span class="line">    xor eax, eax</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/01/25/将声音也输出到耳机-by-joshua/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1343,274 +1601,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/16/通配符中一个星号两个星号和globstar的关系/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/16/通配符中一个星号两个星号和globstar的关系/" itemprop="url">通配符中一个星号两个星号和globstar的关系</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-16T15:48:59+08:00">
-                2017-11-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>今天在处理一个AppArmor的问题时，遇到一个奇怪的问题，在/etc/apparmor.d/usr.bin.nova-compute文件中明明已经有了下面对/tmp及/var/tmp目录的配置。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/tmp/* rw,</span><br><span class="line">/tmp/*/ rw,</span><br><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
-<p>但是在运行”sudo /etc/init.d/apparmor reload &amp;&amp; sudo service nova-compute restart“命令后仍然在syslog里能看到下列错误信息。奇了怪了，这是怎么一回事呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766810] audit: type=1400 audit(1510750176.727:10140): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br><span class="line">Nov 15 12:49:36 juju-864213-xenial-mitaka-ceph-11 kernel: [705198.766828] audit: type=1400 audit(1510750176.727:10141): apparmor=&quot;DENIED&quot; operation=&quot;open&quot; profile=&quot;/usr/bin/nova-compute&quot; name=&quot;/var/tmp/&quot; pid=16922 comm=&quot;nova-compute&quot; requested_mask=&quot;r&quot; denied_mask=&quot;r&quot; fsuid=113 ouid=0</span><br></pre></td></tr></table></figure></p>
-<h2 id="globstar模式下的通配符"><a href="#globstar模式下的通配符" class="headerlink" title="globstar模式下的通配符"></a>globstar模式下的通配符</h2><p>通配符有一个星号，两个星号，还有逗号，globstar模式可以开启，还可以关闭。这些混在一起会有什么影响呢？<br>如果想要很方便地遍历所有的目录和文件得用两个星号的通配符。globstar是Bash 4.0才引入的选项，当设置启用globstar(shopt -s globstar)时，两个星号意为对通配符进行展开就可以匹配任何当前目录(包括子目录)以及其的文件；若不启用globstar(shopt -u globstar)，两个星号通配符的作用和一个星号通配符是相同的。</p>
-<ul>
-<li>~/tmp/* -  匹配当前目录的文件，及当前目录的下一级目录(不包括当前目录），与’ls ~/tmp’及”ls ~/tmp/“的效果同。</li>
-<li>~/tmp/*/ - 匹配当前目录的下一级目录(不包括当前目录）</li>
-<li>~/tmp/<em>* - 禁用globstar时，与~/tmp/</em>完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的文件和目录（也包括当前目录）</li>
-<li>~/tmp/<em>*/ - 禁用globstar时，与~/tmp/</em>/ 完全一样(不包括当前目录）；但启用globstar时，不止取一级，递归取所有级的目录（也包括当前目录）</li>
-</ul>
-<p>当启用globstar时，英语的解释如下（注：里面说的file包括文件和目录，在Linux里目录是特殊的文件）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Substitutes for any number of characters, except /.</span><br><span class="line">/tmp/* matches any file in /tmp. </span><br><span class="line">/tmp/*/ matches any directory in /tmp</span><br><span class="line"></span><br><span class="line">Substitutes for any number of characters, including /.</span><br><span class="line">/tmp/** matches all files and directories underneath /tmp.</span><br><span class="line">/tmp/**/ matches all directories underneath /tmp.</span><br></pre></td></tr></table></figure>
-<p>请看实验数据：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~/tmp$ tree .</span><br><span class="line">.</span><br><span class="line">├── l0_dir1</span><br><span class="line">│   ├── l1_dir</span><br><span class="line">│   │   ├── l2_dir</span><br><span class="line">│   │   │   └── l3_file</span><br><span class="line">│   │   └── l2_file</span><br><span class="line">│   └── l1_file</span><br><span class="line">├── l0_dir2</span><br><span class="line">└── l0_file</span><br><span class="line">4 directories, 4 files</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -s globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/l3_file  /home/hua/tmp/l0_dir1/l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_file         /home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/:</span><br><span class="line">l2_dir  l2_file</span><br><span class="line">/home/hua/tmp/l0_dir1/l1_dir/l2_dir/:</span><br><span class="line">l3_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ shopt -u globstar</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/*/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/**/</span><br><span class="line">/home/hua/tmp/l0_dir1/:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2/:</span><br><span class="line"></span><br><span class="line">hua@t440p:~/tmp$ ls ~/tmp/&#123;,**&#125;</span><br><span class="line">/home/hua/tmp/l0_file</span><br><span class="line">/home/hua/tmp/:</span><br><span class="line">l0_dir1  l0_dir2  l0_file</span><br><span class="line">/home/hua/tmp/l0_dir1:</span><br><span class="line">l1_dir  l1_file</span><br><span class="line">/home/hua/tmp/l0_dir2:</span><br></pre></td></tr></table></figure>
-<h2 id="问题的解决"><a href="#问题的解决" class="headerlink" title="问题的解决"></a>问题的解决</h2><p>学习了上面的理论之后，是不是想到了问题所在了，那就是下列两个配置没有包括当前目录：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/** rw,</span><br><span class="line">/var/tmp/* rw,</span><br></pre></td></tr></table></figure></p>
-<p>所以它应该修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/tmp/&#123;,**&#125; rw,</span><br><span class="line">/var/tmp/&#123;,**&#125; rw,</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/11/13/Use-hexo-to-create-blog/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/11/13/Use-hexo-to-create-blog/" itemprop="url">Use hexo to create blog</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-11-13T17:02:52+08:00">
-                2017-11-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>独立博客可以采用wordpress搭建动态博客，也可以采用Markdown语法编写静态博客(no db, no cms, simple, minimal)发布到有git版本控制的github上, jekyll与hexo是一个将markdown文件产生目录生成静态网站的程序。</p>
-<p>1, 登陆GitHub，新建一个repository, 命名为你的用户名 + github.io。如我的用户名为zhhuabj，所以repository命名为zhhuabj.github.io</p>
-<p>2, 创建第一个网页index.html</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">echo “my blog” &gt;&gt; index.html</span><br><span class="line">git add .</span><br><span class="line">git commit -m “first commit”</span><br><span class="line">git push -u origin master</span><br></pre></td></tr></table></figure>
-<p>3, 访问<a href="https://zhhuabj.github.io/" target="_blank" rel="external">https://zhhuabj.github.io/</a></p>
-<p>4, [使用jekyll可省略]打开<a href="https://github.com/zhhuabj/zhhuabj.github.io/settings，" target="_blank" rel="external">https://github.com/zhhuabj/zhhuabj.github.io/settings，</a> 点击Launch automatic page generator按钮开始设置样式。</p>
-<p>5, CSDN博客迁移</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install beautifulsoup</span><br><span class="line">git clone https://github.com/gaocegege/csdn-blog-export.git</span><br><span class="line">cd csdn-blog-export</span><br><span class="line">./main.py -u quqi99 -f html</span><br><span class="line">./main.py -u quqi99 -f markdown</span><br></pre></td></tr></table></figure>
-<p>6, 使用jekyll本地写博客</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ruby ruby-dev</span><br><span class="line">gem sources --remove https://rubygems.org/</span><br><span class="line">gem sources -a https://ruby.taobao.org/</span><br><span class="line">gem sources -l</span><br><span class="line">sudo gem install jekyll</span><br><span class="line">cd zhhuabj.github.io/jekyll</span><br><span class="line">jekyll new .</span><br><span class="line">cp -r ../csdn-blog-export/*.md _posts/</span><br><span class="line">jekyll serve  #http://localhost:4000/</span><br><span class="line">vi _config.yml</span><br></pre></td></tr></table></figure>
-<p>7, 改用jekyll-bootstrap, 先扫描 _post，layout, 然后是目录和 page，</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">装入一个 site 对象后，用什么 Liquide render出来</span><br><span class="line">git clone https://github.com/plusjade/jekyll-bootstrap.git</span><br><span class="line">cp -r jekyll-bootstrap/* zhhuabj.github.io/*</span><br><span class="line">vi _config.yml</span><br><span class="line">cd zhhuabj.github.io</span><br><span class="line">sudo gem install jekyll-sitemap</span><br><span class="line">jekyll serve #http://127.0.0.1:4000/</span><br></pre></td></tr></table></figure>
-<p>8, 改用hexo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">   sudo apt install npm node.js nodejs-legacy </span><br><span class="line">   sudo npm install hexo hexo-generator-feed -g</span><br><span class="line">   sudo npm install hexo-deployer-git --save</span><br><span class="line">   sudo npm install git --save</span><br><span class="line">   cd zhhuabj.github.io</span><br><span class="line">   hexo init .</span><br><span class="line">   hexo server    #http://localhost:4000/</span><br><span class="line">   hexo new &quot;my test post&quot;</span><br><span class="line">   </span><br><span class="line">   $ vim _config.yml</span><br><span class="line">deploy:</span><br><span class="line">  type: git  #注意前面有两个空格，冒号后有一个空格</span><br><span class="line">  #repository: https://github.com/zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  # 如果使用ssh免密码方式除了github上提交公钥，同时改成下面一句</span><br><span class="line">  repository: git@github.com:zhhuabj/zhhuabj.github.io.git</span><br><span class="line">  branch: master</span><br><span class="line">  #user: zhhuabj</span><br><span class="line">  #pass: password</span><br><span class="line">  </span><br><span class="line">   cp -r ../csdn-blog-export/*.md source/_posts/</span><br><span class="line">   hexo generate</span><br><span class="line">   hexo deploy  #cp -r public/* .</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1661,7 +1651,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

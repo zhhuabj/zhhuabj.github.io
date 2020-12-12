@@ -231,6 +231,263 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/27/set-up-rabbitmq-pacemaker-cluster/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/02/27/set-up-rabbitmq-pacemaker-cluster/" itemprop="url">set up rabbitmq pacemaker cluster</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-27T19:22:45+08:00">
+                2020-02-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-02-27<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="test-steps"><a href="#test-steps" class="headerlink" title="test steps"></a>test steps</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line">juju add-model ha</span><br><span class="line">juju deploy ubuntu rabbit1 --series=bionic --config hostname=rabbit1 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">juju deploy ubuntu rabbit2 --series=bionic --config hostname=rabbit2 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">juju deploy ubuntu rabbit3 --series=bionic --config hostname=rabbit3 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">ubuntu@zhhuabj-bastion:~$ juju status |grep ready</span><br><span class="line">rabbit1/0*  active    idle   0        10.5.0.7               ready</span><br><span class="line">rabbit2/0*  active    idle   1        10.5.0.15              ready</span><br><span class="line">rabbit3/0*  active    idle   2        10.5.0.12              ready</span><br><span class="line"></span><br><span class="line">#run the following commands in 3 units</span><br><span class="line">echo -e &quot;10.5.0.7 rabbit1\n10.5.0.15 rabbit2\n10.5.0.12 rabbit3&quot; |sudo tee -a /etc/hosts</span><br><span class="line"></span><br><span class="line">echo -e &quot;net.ipv4.ip_nonlocal_bind = 1\nnet.ipv4.ip_forward = 1&quot; |sudo tee -a /etc/sysctl.conf</span><br><span class="line">sudo sysctl -p</span><br><span class="line"></span><br><span class="line">sudo apt install chrony -y      ##https://www.server-world.info/en/note?os=Ubuntu_18.04&amp;p=ntp</span><br><span class="line">sudo systemctl restart chrony</span><br><span class="line"></span><br><span class="line">sudo apt install pacemaker corosync fence-agents resource-agents crmsh pcs -y</span><br><span class="line">sudo apt install rabbitmq-server -y</span><br><span class="line"></span><br><span class="line">HOSTNAME=$(hostname)</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/rabbitmq/rabbitmq-env.conf</span><br><span class="line">RABBITMQ_NODENAME=rabbit@$HOSTNAME</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/corosync/corosync.conf</span><br><span class="line">totem &#123;</span><br><span class="line">    version: 2</span><br><span class="line">    secauth: off</span><br><span class="line">    cluster_name: quqicluster</span><br><span class="line">    transport: udpu</span><br><span class="line">    token: 55000</span><br><span class="line">    rrp_problem_count_timeout: 110000</span><br><span class="line">    rrp_problem_count_threshold: 30</span><br><span class="line">    token_retransmits_before_loss_const: 30</span><br><span class="line">&#125;</span><br><span class="line">nodelist &#123;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit1</span><br><span class="line">        nodeid: 1</span><br><span class="line">    &#125;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit2</span><br><span class="line">        nodeid: 2</span><br><span class="line">    &#125;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit3</span><br><span class="line">        nodeid: 3</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">quorum &#123;</span><br><span class="line">    provider: corosync_votequorum</span><br><span class="line">&#125;</span><br><span class="line">logging &#123;</span><br><span class="line">    fileline: off</span><br><span class="line">    to_stderr: no</span><br><span class="line">    to_logfile: yes</span><br><span class="line">    logfile: /var/log/corosync.log</span><br><span class="line">    to_syslog: yes</span><br><span class="line">    syslog_facility: daemon</span><br><span class="line">    debug: on</span><br><span class="line">    timestamp: on</span><br><span class="line">    logger_subsys &#123;</span><br><span class="line">        subsys: QUORUM</span><br><span class="line">        debug: on</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">#sudo systemctl restart corosync   #use pcs instead for management</span><br><span class="line">sudo systemctl restart pcsd</span><br><span class="line">sudo systemctl enable pcsd</span><br><span class="line">#configure node authentication</span><br><span class="line">sudo passwd hacluster   #change the password to &apos;password&apos; for the user hacluster</span><br><span class="line">sudo pcs cluster auth -u hacluster -p password rabbit1 rabbit2 rabbit3</span><br><span class="line">#create the cluster</span><br><span class="line">sudo pcs cluster setup --force --name quqicluster rabbit1 rabbit2 rabbit3</span><br><span class="line">sudo pcs cluster enable --all</span><br><span class="line">sudo pcs cluster start --all</span><br><span class="line">sudo pcs status</span><br><span class="line">sudo pcs status corosync</span><br><span class="line">sudo pcs cluster status</span><br><span class="line">sudo corosync-cfgtool -s</span><br><span class="line">sudo corosync-cmapctl | grep members</span><br><span class="line">sudo pcs property set stonith-enabled=false  #Resource start-up disabled since no STONITH resources have been defined</span><br><span class="line">sudo pcs property set no-quorum-policy=ignore</span><br><span class="line">sudo crm_verify -L -V</span><br><span class="line">sudo pcs property set pe-warn-series-max=1000 pe-input-series-max=1000 pe-error-series-max=1000</span><br><span class="line">sudo pcs property set cluster-recheck-interval=5</span><br><span class="line">sudo pcs resource delete rabbitmq-clone --force</span><br><span class="line">sudo pcs resource create rabbitmq-clone ocf:heartbeat:rabbitmq-cluster --clone ordered=true interleave=true</span><br><span class="line">sudo pcs resource update rabbitmq-clone op monitor interval=30 timeout=120</span><br><span class="line">sudo pcs resource update rabbitmq-clone op start interval=0 timeout=100</span><br><span class="line">sudo pcs resource update rabbitmq-clone op stop interval=0 timeout=90</span><br><span class="line">#sudo pcs resource update rabbitmq-clone meta ordered=true interleave=true</span><br><span class="line">sudo pcs resource show rabbitmq-clone</span><br><span class="line">sudo pcs resource</span><br><span class="line">sudo pcs config show</span><br><span class="line">sudo pcs status</span><br><span class="line">sudo rabbitmqctl cluster_status</span><br><span class="line">sudo crm resource restart rabbitmq-clone</span><br><span class="line">sudo crm resource clean rabbitmq-clone</span><br><span class="line">sudo rabbitmqctl list_users</span><br><span class="line">sudo rabbitmqctl cluster_status</span><br><span class="line"></span><br><span class="line">#or use crm command instead of pcs</span><br><span class="line">wget https://raw.githubusercontent.com/ClusterLabs/crmsh/master/contrib/bash_completion.sh</span><br><span class="line">sudo cp bash_completion.sh /etc/bash_completion.d/crmsh</span><br><span class="line">source /etc/bash_completion.d/crmsh</span><br><span class="line">sudo crm configure show</span><br><span class="line">sudo crm ra list ocf |grep rabbit</span><br><span class="line">sudo crm ra meta rabbitmq-cluster</span><br><span class="line">sudo crm configure property stonith-enabled=false</span><br><span class="line">sudo crm configure primitive rabbitmq ocf:heartbeat:rabbitmq-cluster \</span><br><span class="line">  op monitor interval=30 timeout=120 \</span><br><span class="line">  op start interval=0 timeout=100 \</span><br><span class="line">  op stop interval=0 timeout=90</span><br><span class="line">sudo crm configure clone rabbitmq-clone rabbitmq \</span><br><span class="line">  meta ordered=true interleave=true</span><br><span class="line"></span><br><span class="line">#configure a VIP 10.5.0.122 by using pcs/corosync</span><br><span class="line">sudo pcs resource create rabbitvip ocf:heartbeat:IPaddr2 ip=10.5.0.122 cidr_netmask=24 nic=ens3 op monitor interval=30s</span><br><span class="line">#or configure a VIP 10.5.0.122 by using haproxy (not test)</span><br><span class="line">sudo apt install -y haproxy</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/haproxy/haproxy.cfg</span><br><span class="line">listen httpd</span><br><span class="line">    bind 10.5.0.122:5672</span><br><span class="line">    balance source</span><br><span class="line">    option tcpka</span><br><span class="line">    option httpchk</span><br><span class="line">    option tcplog</span><br><span class="line">    server juju-3f992e-ha-0 10.5.0.12:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">    server juju-3f992e-ha-1 10.5.0.7:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">    server juju-3f992e-ha-2 10.5.0.10:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">EOF</span><br><span class="line">sudo pcs resource create lb-haproxy systemd:haproxy --clone</span><br><span class="line">sudo pcs constraint colocation add lb-haproxy-clone with vip   #make haproxy and vip in the same nodes</span><br><span class="line">sudo pcs constraint order start vip then lb-haproxy-clone kind=Optional  #make first start vip before starting haproxy</span><br><span class="line">sudo pcs resource</span><br></pre></td></tr></table></figure>
+<h2 id="standby-test"><a href="#standby-test" class="headerlink" title="standby test"></a>standby test</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@rabbit1:~$ sudo crm node standby rabbit1</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit1:~$ sudo crm status</span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: rabbit1 (version 1.1.18-2b07d5c5a9) - partition with quorum</span><br><span class="line">Last updated: Fri Feb 28 03:00:32 2020</span><br><span class="line">Last change: Fri Feb 28 02:58:53 2020 by root via crm_attribute on rabbit1</span><br><span class="line">3 nodes configured</span><br><span class="line">4 resources configured</span><br><span class="line">Node rabbit1: standby</span><br><span class="line">Online: [ rabbit2 rabbit3 ]</span><br><span class="line">Full list of resources:</span><br><span class="line"> Clone Set: rabbitmq-clone-clone [rabbitmq-clone]</span><br><span class="line">     Started: [ rabbit2 rabbit3 ]</span><br><span class="line">     Stopped: [ rabbit1 ]</span><br><span class="line"> rabbitvip      (ocf::heartbeat:IPaddr2):       Started rabbit2</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit2:~$ sudo rabbitmqctl cluster_status</span><br><span class="line">Cluster status of node rabbit@rabbit2</span><br><span class="line">[&#123;nodes,[&#123;disc,[rabbit@rabbit2]&#125;]&#125;,</span><br><span class="line"> &#123;running_nodes,[rabbit@rabbit2]&#125;,</span><br><span class="line"> &#123;cluster_name,&lt;&lt;&quot;rabbit@rabbit2&quot;&gt;&gt;&#125;,</span><br><span class="line"> &#123;partitions,[]&#125;,</span><br><span class="line"> &#123;alarms,[&#123;rabbit@rabbit2,[]&#125;]&#125;]</span><br></pre></td></tr></table></figure>
+<h2 id="some-logs"><a href="#some-logs" class="headerlink" title="some logs"></a>some logs</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@rabbit1:~$ sudo rabbitmqctl cluster_status</span><br><span class="line">Cluster status of node rabbit@rabbit1</span><br><span class="line">[&#123;nodes,[&#123;disc,[rabbit@rabbit1]&#125;]&#125;,</span><br><span class="line"> &#123;running_nodes,[rabbit@rabbit1]&#125;,</span><br><span class="line"> &#123;cluster_name,&lt;&lt;&quot;rabbit@rabbit1&quot;&gt;&gt;&#125;,</span><br><span class="line"> &#123;partitions,[]&#125;,</span><br><span class="line"> &#123;alarms,[&#123;rabbit@rabbit1,[]&#125;]&#125;]</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit1:~$ sudo pcs resource show rabbitmq-clone</span><br><span class="line"> Resource: rabbitmq-clone (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">  Operations: monitor interval=10 timeout=40 (rabbitmq-clone-monitor-interval-10)</span><br><span class="line">              start interval=0s timeout=100 (rabbitmq-clone-start-interval-0s)</span><br><span class="line">              stop interval=0s timeout=90 (rabbitmq-clone-stop-interval-0s)</span><br><span class="line">ubuntu@rabbit1:~$</span><br><span class="line">ubuntu@rabbit1:~$ sudo crm status</span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: rabbit1 (version 1.1.18-2b07d5c5a9) - partition with quorum</span><br><span class="line">Last updated: Fri Feb 28 02:52:34 2020</span><br><span class="line">Last change: Fri Feb 28 02:49:43 2020 by root via cibadmin on rabbit1</span><br><span class="line"></span><br><span class="line">3 nodes configured</span><br><span class="line">4 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ rabbit1 rabbit2 rabbit3 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Clone Set: rabbitmq-clone-clone [rabbitmq-clone]</span><br><span class="line">     Started: [ rabbit1 rabbit2 rabbit3 ]</span><br><span class="line"> rabbitvip      (ocf::heartbeat:IPaddr2):       Started rabbit1</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster auth -u hacluster -p password rabbit1 rabbit2 rabbit3</span><br><span class="line">rabbit3: Authorized</span><br><span class="line">rabbit2: Authorized</span><br><span class="line">rabbit1: Authorized</span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster setup --force --name quqicluster rabbit1 rabbit2 rabbit3</span><br><span class="line">Destroying cluster on nodes: rabbit1, rabbit2, rabbit3...</span><br><span class="line">rabbit1: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit3: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit2: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit3: Successfully destroyed cluster</span><br><span class="line">rabbit1: Successfully destroyed cluster</span><br><span class="line">rabbit2: Successfully destroyed cluster</span><br><span class="line"></span><br><span class="line">Sending &apos;pacemaker_remote authkey&apos; to &apos;rabbit1&apos;, &apos;rabbit2&apos;, &apos;rabbit3&apos;</span><br><span class="line">rabbit3: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">rabbit1: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">rabbit2: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">Sending cluster config files to the nodes...</span><br><span class="line">rabbit1: Succeeded</span><br><span class="line">rabbit2: Succeeded</span><br><span class="line">rabbit3: Succeeded</span><br><span class="line"></span><br><span class="line">Synchronizing pcsd certificates on nodes rabbit1, rabbit2, rabbit3...</span><br><span class="line">rabbit3: Success</span><br><span class="line">rabbit2: Success</span><br><span class="line">rabbit1: Success</span><br><span class="line">Restarting pcsd on the nodes in order to reload the certificates...</span><br><span class="line">rabbit3: Success</span><br><span class="line">rabbit1: Success</span><br><span class="line">rabbit2: Success</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster enable --all</span><br><span class="line">rabbit1: Cluster Enabled</span><br><span class="line">rabbit2: Cluster Enabled</span><br><span class="line">rabbit3: Cluster Enabled</span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster start --all</span><br><span class="line">rabbit1: Starting Cluster...</span><br><span class="line">rabbit2: Starting Cluster...</span><br><span class="line">rabbit3: Starting Cluster...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ubuntu@juju-3f992e-ha-2:~$ sudo pcs resource show rabbitmq-clone</span><br><span class="line"> Clone: rabbitmq-clone</span><br><span class="line">  Meta Attrs: ordered=true interleave=true</span><br><span class="line">  Resource: rabbitmq (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">   Operations: monitor interval=30 timeout=120 (rabbitmq-monitor-30)</span><br><span class="line">               start interval=0 timeout=100 (rabbitmq-start-0)</span><br><span class="line">               stop interval=0 timeout=90 (rabbitmq-stop-0)</span><br><span class="line"></span><br><span class="line"> Clone: rabbitmq-clone</span><br><span class="line">  Meta Attrs: interleave=true ordered=true</span><br><span class="line">  Resource: rabbitmq (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">   Attributes: set_policy=&quot;ha-all ^(?!amq\.).* &#123;&quot;ha-mode&quot;:&quot;all&quot;&#125;&quot;</span><br><span class="line">   Operations: start interval=0s timeout=100 (rabbitmq-start-interval-0s)</span><br><span class="line">               stop interval=0s timeout=90 (rabbitmq-stop-interval-0s)</span><br><span class="line">               monitor interval=30 timeout=120 (rabbitmq-monitor-interval-30)</span><br></pre></td></tr></table></figure>
+<p>[1] <a href="https://www.andylouse.net/openstack-queens-cluster-mode-system-optimize-and-configuration" target="_blank" rel="external">https://www.andylouse.net/openstack-queens-cluster-mode-system-optimize-and-configuration</a><br>[2] <a href="https://www.centos.bz/2019/06/linux%E4%B8%8B%E6%90%AD%E5%BB%BAhaproxypacemakercorosync%E9%9B%86%E7%BE%A4/" target="_blank" rel="external">https://www.centos.bz/2019/06/linux%E4%B8%8B%E6%90%AD%E5%BB%BAhaproxypacemakercorosync%E9%9B%86%E7%BE%A4/</a><br>[3] <a href="https://www.sunmite.com/openstack/RabbitMQ-High-availability-with-Pacemaker.html" target="_blank" rel="external">https://www.sunmite.com/openstack/RabbitMQ-High-availability-with-Pacemaker.html</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" itemprop="url">How to set up systemd-resolved + dnssec</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
+                2020-02-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="Set-up-test-env"><a href="#Set-up-test-env" class="headerlink" title="Set up test env"></a>Set up test env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#first let us know 8.8.8.8 supports dnssec, while 114.114.114.114 doesn&apos;t support</span><br><span class="line">dig paypal.com +dnssec @8.8.8.8 |grep RRSIG</span><br><span class="line">dig paypal.com +dnssec @114.114.114.114 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#set up dnsmasq as upstream dns server</span><br><span class="line">IFACE=dummy0</span><br><span class="line">SUBNET=10.0.0</span><br><span class="line">sudo ip link add $IFACE type dummy</span><br><span class="line">sudo ifconfig $IFACE $&#123;SUBNET&#125;.1/24</span><br><span class="line">#https://www.cnblogs.com/taoyuxuan/p/11205491.html</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo -S /test/ --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line"></span><br><span class="line">#sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/ --host-record=test.test,$&#123;SUBNET&#125;.1 --conf-file=/dev/null --log-queries &amp;</span><br><span class="line">sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/10.0.0.1 --host-record=test.test,$&#123;SUBNET&#125;.1 --log-queries \</span><br><span class="line">    --dnssec --conf-file=/usr/share/dnsmasq-base/trust-anchors.conf --dnssec-check-unsigned --dnssec-debug --server=8.8.8.8 &amp;</span><br><span class="line">dig paypal.com +dnssec @10.0.0.1 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#test dns server with dig</span><br><span class="line">ubuntu@bastion:~$ dig -t a test.test @10.0.0.1 | grep EDNS</span><br><span class="line">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="line">ubuntu@bastion:~$ dig -t aaaa test.test @10.0.0.1 | grep EDNS</span><br><span class="line"># again, should return &quot;; EDNS ...&quot; but doesn&apos;t</span><br><span class="line"></span><br><span class="line">#configure systemd-resolved to look at only 10.0.0.1</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos; /etc/systemd/resolved.conf</span><br><span class="line">[Resolve]</span><br><span class="line">DNS=10.0.0.1</span><br><span class="line">DNSSEC=yes</span><br><span class="line">Cache=no</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos;  /etc/resolv.conf</span><br><span class="line">nameserver 127.0.0.53</span><br><span class="line">options edns0</span><br><span class="line"></span><br><span class="line">#debug with systemd-resolved</span><br><span class="line">sudo systemctl disable systemd-resolved   #seems systemd-resolved always restart if not disable it as well</span><br><span class="line">sudo systemctl stop systemd-resolved</span><br><span class="line">sudo SYSTEMD_LOG_LEVEL=debug script -c /lib/systemd/systemd-resolved /tmp/debug.txt</span><br><span class="line">systemd-resolve --status --no-pager |egrep &apos;DNSSEC|DNS Servers&apos;</span><br><span class="line">#repeat the following 3 lines to test every time - ./src/resolve/resolved-dns-server.c</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve test.test -t A</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve test.test -t A   #don&apos;t reset, try directly</span><br><span class="line">systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve example.com ubuntu.com us.archive.ubuntu.com packages.icinga.com mirror.steadfast.net archive.ubuntu.com ppa.launchpad.net private-ppa.launchpad.net sigok.verteiltesysteme.net sigfail.verteiltesysteme.net verisign.com www.verisign.com</span><br></pre></td></tr></table></figure>
+<h2 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h2><ul>
+<li>LLMNR: 当dns服务不可用时, 支持使用组播dns协议(mDNS)继续在子网内局部查询dns直至网络连接还原为止.</li>
+<li>Knot-DNS: 类似于dnsmasq, bind9的dns server</li>
+<li>EDNS:允许将DNS消息大小从标准的512字节扩展（当UDP用作传输协议时），而无需切换到TCP. 它能提升访问CDN的性能，因为：标准DNS协议只能传递域名参数查IP,　而不能传递域名+用户参数来源查IP．查询下游的CDN, DNS服务器应该是根据用户的来源查询,而不是将上游DNS服务做为来源查询.由于国内的运营商之间互联的带宽是很低的,　所以造成访问速度超慢.</li>
+<li>EDNS0:可以将UDP包从512字节扩展到4096字节从而可以容纳DNSEC包, systemd-resolved通过/etc/resovled.conf里的’options edns0’通知dns server可以edns0, server再回的时候会将其+1, 所以: 雖然是EDNS0 封包，可是不代表這是 DNSSEC 封包，在EDNS0 中有一個 bit: DO 被設定為 1 的時候，才代表這是 DNSSEC 封包 (通过: dig +dnssec example.com ns |grep EDNS  命令可以查看)</li>
+</ul>
+<h2 id="Some-bugs"><a href="#Some-bugs" class="headerlink" title="Some bugs"></a>Some bugs</h2><p>1, <a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639</a><br>upstream dns能力被检测正确让dnssec工作(现在一旦突然检查错了, resovle就停止work了), 或者允许disable能力检查<br><a href="https://github.com/systemd/systemd/issues/6490" target="_blank" rel="external">https://github.com/systemd/systemd/issues/6490</a><br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br><a href="https://github.com/systemd/systemd/pull/8849" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8849</a><br>a, 第一种解决方案<br> resolve不能看到timeout or error了就降级(tcp-&gt;dns over tls -&gt; edns0)声称不支持某个特性, 它的特性应该独立于实际查询<br><a href="https://github.com/systemd/systemd/issues/9384" target="_blank" rel="external">https://github.com/systemd/systemd/issues/9384</a><br>b, 允许disable dnsec能力检查<br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br>c, 从resolved中移除dnssec</p>
+<p>如有些咖啡厅等公共网络不支持ends0查询，会响应domain not found, 即收到＇NXDOMAIN when queried with EDNS0＇消息时(the query is with EDNS0 enabled and D0 bit set to zero)需要继续只根据EDNS0继续重试<br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br><a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a>  - 代码<br>journalctl -b -u systemd-resolve | grep DVE-2018  - 确诊<br>Workaround:<br>sudo systemctl disable systemd-resolved.service<br>sudo service systemd-resolved stop<br>sudo rm /etc/resolv.conf<br>sudo nano /etc/NetworkManager/NetworkManager.conf<br> then add “dns=default” under [main]<br>sudo service network-manager restart</p>
+<p>上面的降级（resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch）应该只在DNSSEC=allow-downgrade or DNSSEC=no时运行．在真实世界中，NetworkManager’s在无法降级时会告诉用户关掉dnssec<br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501</a></p>
+<p>2, <a href="https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3" target="_blank" rel="external">https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3</a><br>systemd-resolved只是一个stub resovler, 它只是转发dns请求到upstream dns server并等待请求(等待时间为RTT)，它没有考虑到上游递归dns服务器(interative resolver, eg: dnsmasq)的query timeout(authoritative server是用内存来存储dns记录所以它快，但也不是所有的都快），这样systemd-resolved会经常错误的降级（Therefore it often mistakenly degrades the feature set of its　upstream resolvers if it takes them longer than usual to answer a query），特别当DNSSEC=yes不充许降级时就更严重，所以systemd-resolved应该使用RTT+上游的查询时间，而不是只用RTT (DNS_TIMEOUT_MAX_USEC=DNS_SERVER_FEATURE_RETRY_ATTEMPTS * DNS_TIMEOUT_MAX_USEC = 15s），当然，这也不是解决根本问题，但可以缓解．</p>
+<p>3, <a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a><br> <a href="https://github.com/systemd/systemd/issues/11171" target="_blank" rel="external">https://github.com/systemd/systemd/issues/11171</a><br><a href="https://github.com/systemd/systemd/issues/4315" target="_blank" rel="external">https://github.com/systemd/systemd/issues/4315</a> - <a href="https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb" target="_blank" rel="external">https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb</a><br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br>这个commit (7abcaa93ab - debian/patches/resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch)可以解决上面关于降级的问题，但是它又引入了回归bug, 没DNSSEC=yes时没有做安全检查 (为DNSSEC=yes时不从UDP+ends0(DNS_SERVER_FEATURE_LEVEL_EDNS0)降级互UDP(DNS_SERVER_FEATURE_LEVEL_UDP)但upstream还未接受patch，故先在debian/patches/resolved_disable-connection-downgrade-when-DNSSEC-yes.patch</p>
+<p>4, <a href="https://github.com/dns-violations/dns-violations/issues/62" target="_blank" rel="external">https://github.com/dns-violations/dns-violations/issues/62</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383</a><br>dnsmasq 2.79当返回空时省略了EDNS0 OPT记录 (例如访问无AAAA记录时 - patch - 1682d15a744880b0398af75eadf68fe66128af78)) , systemd-resolved能hang (但只是使用了dnsmasq的router会如此)</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/16/利用squid的tcp-outgoing-address特性选择第二块网卡出流量-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1530,354 +1787,6 @@ done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/14/OpenStack开发过程中常用Git操作场景/" itemprop="url">OpenStack开发过程中常用Git操作场景</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
-                2019-10-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>  OpenStack开发过程中常用Git操作场景( by quqi99 )</p>
-<p>作者：张华  发表于：2013-07-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<pre><code>    Git是一个分布式的代码管理库，linux之父开发，用了三年多了，直观感受的优点如下：
-
-一是真正的分布式，既不用担心哪天服务器坏了代码丢失了，也不用担心像中美之间网速慢啊或断网什么的影响开发，因为本地就是一个代码库。
-二是体积小，对存储进行了优化。
-三是速度快，因为比较的是哈希。
-四是差异比较算法很智能，能到达行级，甚至一行中的列级。
-五是支持对二进制的差异比较，如一个Word文档什么的。
-六是其它。。。
-
-
-    虽然对原理也算熟，用得也算多，但一段时间不用还是容易忘，下面记下一些日常工作场景常用到的命令：
-</code></pre><p>场景一：如何往社区提交一个Bug<br>      安装git： sudo yum install git git-review<br>     下载代码：git clone <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a></p>
-<p>1    通过ssh-keygen命令创建密钥, 然后在“<a href="https://review.openstack.org/#/settings/ssh-keys" target="_blank" rel="external">https://review.openstack.org/#/settings/ssh-keys</a> 界面设置public key.<br>2    运行“git review -s”命令设置git-review, 这步会在.git/config文件中添加一个名为gerrit的远程分支ssh://zhhuabj@review.openstack.org:29418/openstack/neutron.git，并且可以通过ssh访问：ssh -p 29418 review.openstack.org)<br>      如果报“Permission denied (publickey)”这样的错的话，简单运行”ssh-add”命令将ssh key添加到ssh agent即可</p>
-<pre><code>还有一种可能是用户弄错了，ssh -i zhhuabj_lcy01.pem ubuntu@162.213.**  -vvv
-</code></pre><p>3   如果想要修改一个bug时，先创建一个本地分支,<br>      git checkout -b task/132002<br>4  写完代码之后，也得运行一下pep8测试吧<br>      pep8 –count –repeat –show-source .  或者     ./run_tests.sh -p -N<br>5  或者也运行一下单元测试吧<br>      nosetests -s -v test_backend_sql.py  &amp;&amp; nosetests -s -v test_db_plugin:TestNetworksV2.test_list_shared_networks_with_non_admin_user<br>      或者 python -m testtools.run neutron.tests.unit.test_security_groups_rpc<br>      或者 python setup.py testr –slowest –testr-args=’–subunit  neutron.tests.unit.test_security_groups_rpc’ |  subunit2pyunit<br>      或者 ./run_test.sh -N testtools.run neutron.tests.unit.test_security_groups_rpc<br>6  提交代码到本地库<br>      git add -u (修改的文件）， 若创建了新文件 git add -i<br>      git commit<br>      提交信息的格式一般如下，一般分三段，第一段是标准说清楚你要做什么，如果你在改hyper-v模块最好有hyper-v的字眼，这样大家在收到邮件时只看标题就知道你在做什么了，这很重要；第二段简短描述；第三段一般使用“Fixed bug #161317”，＃号很重要，这样会自动在gerrit上链接到bug上。<br>      Add documentation for upgrading hyperv OpenStack compute node</p>
-<pre><code>This guide covers how to upgrade and configure hyperv OpenStack
-compute node from Grizzly to Havana
-
-Fixed bug #161317
-如果是延用上次提交的信息使用命令：git commit --amend
-</code></pre><p>7  本来在git review通过后gerrit会自动rebase到master分支的，但是有冲突的话没人帮你改，所以自己在git review前最好在本地做一个rebase操作，有冲突及时改：<br>      git rebase master  有冲突再解决冲突之后继续执行：git rebase –continue<br>8  提交代码评审<br>      git review 或者 git review master</p>
-<pre><code>这时会在gerrit服务器上创建一个本地分支：refs/for/master/task/132002, 如果上面改bug时不建分支的话，这里就变成了: refs/for/master，下一个人提交直接就被冲掉了。
-</code></pre><p>9 如果社区上的jenkins出错，确定不是你自己的代码造成的，可以回复“recheck no bug” 触发重新检查，或者”recheck bug ###”</p>
-<p>10 说说依赖提交，例如如果一个patch在社区已经被很多人+1了，但这时候有人希望提交一个相关的其他patch, 你当然不想破坏这么多已经+1的成果，所以你会希望再提一个patch但它会依赖前一个patch。注意两点：生成一个新的gerrit评审页是由Change-Id决定的；而是否在一个评审页上产生一个新的change set去破坏+1是由commit id决定的。所以只要保证前一个patch的commit id不变就行了，然后在这个基础上再提交一个patch再git review即可。当然，在git review之前最好先git rebase一下，不然如果本地git rebase的话就会产生一个新的commit id这样同样会产生一个新的change set，不过gerrit还比较智能，那些+1会自动添加上（Automatically re-added by Gerrit trivial rebase detection script.），　一个例子见：<a href="https://review.openstack.org/#/c/51375/" target="_blank" rel="external">https://review.openstack.org/#/c/51375/</a></p>
-<p>场景二：如何rebase代码<br>git rebase用于在一个分支中合并另一分支，举个例子，一家公司想要用OpenStack做二次开发的话，<br>在公司内部的git库里创建了三个分支：my-master, my-grizzly, my-havana<br>OpenStack的git库里的分支叫：    github-master, github-grizzly, github-havana<br>现在大家把内部代码都提交在my-havana分支，那么也需要时不时将社区的github-havana的代码rebase合并到my-havana分支中<br>1，首先在.git/config里要有两个remote分支，一个指向内部的版本库，一个指向github的版本库，如.git/config的相应配置如下：<br>[core]<br>        repositoryformatversion = 0<br>        filemode = true<br>        bare = false<br>        logallrefupdates = true<br>[remote “my-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/my-origin/</em><br>        url = git://<your_ip>/neutron.git<br>[remote “github-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/github-origin/</em><br>        url = <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a><br>[branch “master”]<br>        remote = my-origin<br>        merge = refs/heads/master<br>[branch “my-havana”]<br>        remote = my-origin<br>        merge = refs/heads/my-havana<br>[branch “my-grizzly”]<br>        remote = my-origin<br>        merge = refs/heads/my-grizzly<br>2, 更新上面所有的remote分支 git remote update<br>3, 因为是要将社区的havana分支的代码同步到自己havana分支，所以为两个远程分支创建对应的本地分支<br>   git checkout -b github-havana github/stable/havana<br>   git checkout -b my-havana origin/my-havana<br>4, 合并，成功后应该用git log -1能看到一个新的合并提交。如果有冲突的话就解决冲突再git merge next<br>   git checkout my-havana<br>   git merget github-havana<br>5, 运行单元测试<br>  tox –recreate -e py27,pep8<br>  ./run_tests.sh -V -f<br>6, 用-n参数(dry-run)测试提交, 提交到名为my-origin的远程分支的my-havana分支中：<br>   git push -n my-origin HEAD:refs/heads/my-havana<br>   若没有问题的话真正提交：<br>   git push  my-origin HEAD:refs/heads/my-havana</your_ip></p>
-<p>场景三：cherry pick代码<br>例如，一个社区bug 1161195被提交到master分支, 社区没有批准进stable-havana分支，或者来不及等它进，这时候公司内部要求进my-havana分支的话，可以将这个bug通过cherry pick合并过来。<br>1, 为这个任务创建一个bug.<br>   git checkout stable-havana<br>   git pull<br>   git checkout -b bug/1161195<br>2, 在社区找到bug 1161195的代码提交id, 如:5f3fa391ed499750ad68ad5b000b4e2e0a86978e<br>   可以通过 git log |grep -B 30 <commit-id>查看确认<br>3, 在bug/1161195分支上执行cherry pick命令：<br>   git cherry-pick -s  -x  <commit-id><br>4, 提交代码评审<br>   git commit or git commit –amend<br>   git review stable-havana</commit-id></commit-id></p>
-<p>另一个例子：</p>
-<p>git clone <a href="https://github.com/openstack/charm-ceilometer" target="_blank" rel="external">https://github.com/openstack/charm-ceilometer</a><br>git checkout stable/16.07 </p>
-<h1 id="come-from-lauchpad-page"><a href="#come-from-lauchpad-page" class="headerlink" title="come from lauchpad page"></a>come from lauchpad page</h1><p>git fetch git://git.openstack.org/openstack/charm-ceilometer refs/changes/00/375100/1 &amp;&amp; git cherry-pick FETCH_HEAD</p>
-<p>git review stable/18.07</p>
-<p>场景四：将git产生的patch变成和svn兼容</p>
-<p>#!/bin/sh<br>#</p>
-<h1 id="git-svn-diff"><a href="#git-svn-diff" class="headerlink" title="git-svn-diff"></a>git-svn-diff</h1><h1 id="Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch"><a href="#Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch" class="headerlink" title="Generate an SVN-compatible diff against the tip of the tracking branch"></a>Generate an SVN-compatible diff against the tip of the tracking branch</h1><p>REV=<code>git svn find-rev $(git rev-list --date-order --max-count=1 master)</code><br>git diff –no-prefix $(git rev-list –date-order –max-count=1 master) $<em> |sed -e “s/^+++ .</em>/&amp; (working copy)/“ \<br>-e “s/^— .<em>/&amp; (revision $REV)/“ \<br>-e “s/^diff –git [^[:space:]]</em>/Index:/“ -e “s/^index.*/===================================================================/“</p>
-<p>在本机上创建一个共享的git库：</p>
-<p>sudo groupadd git<br>sudo useradd -d /home/git -m -g git git<br>sudo passwd git<br>su - git<br>mkdir /home/git/patent.git<br>cd patent.git/<br>git init –bare –shared</p>
-<h1 id="test-in-another-directory"><a href="#test-in-another-directory" class="headerlink" title="test in another directory"></a>test in another directory</h1><p>cd /bak/tmp<br>git clone git@9.123.136.122:/home/git/patent.git<br>cd patent<br>cp test.doc .<br>git add test.doc<br>git commit -m “init commit”<br>git push origin master</p>
-<p>这时候肯定是希望大家通过git用户可以访问git库，但又不希望他们通过ssh登录这台机器，所以修改/etc/passwd文件，</p>
-<p>将     “  git:x:502:503::/home/git:/bin/bash ”</p>
-<p>改成：git:x:502:503::/home/git:/usr/bin/git-shell</p>
-<p>这时候还需要将每个客户端的公钥加到/home/git/.ssh/authorized_keys文件里，公钥可以通过ssh-keygen -t rsa生成。</p>
-<p>场景五，使用git命令操作bzr与hg</p>
-<p>sudo apt-get install mercurial python-hglib<br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg</a><br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr</a><br>sudo chmod 755 ./git-remote-<em><br>sudo mv git-remote-</em> /usr/bin</p>
-<p>examples:<br>git clone “bzr::lp:ubuntu/ifupdown”<br>git clone “bzr::lp:debian/ifupdown”<br>git clone “hg::<a href="http://anonscm.debian.org/hg/collab-maint/ifupdown/" target="_blank" rel="external">http://anonscm.debian.org/hg/collab-maint/ifupdown/</a>“</p>
-<p>场景六，依赖提交</p>
-<p>有一种情况，我向社区同时提交了两个有依赖的提交，在本地提交这两个提交之后直接git review即可。<br>现在前一个提交（假设提交id为：187f）要修改，怎么办呢？<br>a, git rebase 187f^ –interactive， 回到要修改的提交的前一个点上<br>b, 修改那个提交，最后git commit –amend<br>c, git rebase –continue, 继续变基并且返回到原来的HEAD处<br>如果中间出现“interactive rebase already started”， 用“git rebase -i –abort”命令重来。</p>
-<p>场景七, 在lp上创建私有git仓库, 并使用lp评审代码</p>
-<p>git clone <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a></p>
-<p>git remote set-url –push origin no_push</p>
-<h1 id="注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。"><a href="#注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。" class="headerlink" title="注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。"></a>注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。</h1><p>#如果有+git的话，提交PR时， 原本指定target是<a href="https://git.launchpad.net/layer-snap，" target="_blank" rel="external">https://git.launchpad.net/layer-snap，</a> 但它会自动变回~zhhuabj/+git/layer-snap:master</p>
-<p>#并且可能会报这种错误”’~zhhuabj/+git/layer-snap:lp1847574 is not mergeable into layer-snap:master’“</p>
-<h1 id="git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap"><a href="#git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap" class="headerlink" title="git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap"></a>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap</h1><p>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/layer-snap<br>git push –set-upstream zhhuabj master  #then you will see the new repo in <a href="https://code.launchpad.net/~zhhuabj/+git" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git</a></p>
-<p>git remote -v<br>git branch -a<br>git fetch –all<br>git fetch –all –prune</p>
-<p>#git fetch origin</p>
-<p>#git checkout master</p>
-<p>#git rebase origin/master</p>
-<p>git checkout -b lp1847574<br>git commit -m ‘test’<br>git commit –amend -author=’Hua <xxx.mail.com>‘<br>git push –set-upstream zhhuabj lp1847574</xxx.mail.com></p>
-<h1 id="Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574"><a href="#Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574" class="headerlink" title="Propose for merging - https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574"></a>Propose for merging - <a href="https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574</a></h1><h1 id="zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master"><a href="#zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master" class="headerlink" title="~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master"></a>~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master</h1><p>#target repository -&gt; other: ~openstack-charm-testers/xxxstack-bundles/+git/xxxstack-bundles<br>target repository -&gt; other: <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a><br>target branch: refs/heads/master</p>
-<p>场景八: 内核</p>
-<p>git remote add xenial git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git<br>git fetch xenial<br>git log –no-merges –oneline xenial/hwe…xenial/master drivers/net/ethernet/mellanox/mlx5/</p>
-<p>其它命令：</p>
-<p>git reset HEAD~1                      撤销最后一次提交。<br>git reset –hard HEAD^             撤销最后一次提交并清除本地修改</p>
-<p>git reset –hard Merge_Head  和服务器保持一致</p>
-<p>git clean -dfx                               删除本地未在版本库的东西</p>
-<p>git stash  &amp; git stash list &amp; git stash pop  暂存代码</p>
-<p>git rebase -i –abort </p>
-<p>git tag –contains af055e37a91d215d7174d0b84c86795ca81086a7</p>
-<p>git branch -a –contains <sha1></sha1></p>
-<p>git tag –contains <sha1></sha1></p>
-<p>git grep smp_call_function_many</p>
-<h1 id="refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html"><a href="#refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html" class="headerlink" title="refer https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html"></a>refer <a href="https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html" target="_blank" rel="external">https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html</a></h1><p>git log v4.13..master –oneline –no-merges kernel/smp.c</p>
-<p>git log v4.13..master –grep=smp –oneline –no-merges kernel/smp.c</p>
-<p>git log |grep Ibaf4385              一个patch只有一部分，另一部分肯定是被其他patch覆盖了， 可用’git log’查找   </p>
-<p>git revert 7b60534</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" itemprop="url">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
-                2019-08-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="作者：张华-发表于：2017-06-23"><a href="#作者：张华-发表于：2017-06-23" class="headerlink" title="作者：张华 发表于：2017-06-23"></a>作者：张华 发表于：2017-06-23</h2><p>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> ) ##</p>
-<p>I have two Meizu MX4 ubuntu cellphones, now I will re-install Flyme or native google android on them. All softwares can be downloaded from the link: <a href="https://pan.baidu.com/s/1bpo0xbx" target="_blank" rel="external">https://pan.baidu.com/s/1bpo0xbx</a></p>
-<p>1, Start MX4 Ubuntu, and enable ‘Developer Mode’ from ‘System Setting -&gt; About Cellphone’ menu.</p>
-<p>2, Install the tools adb and fastboot from the link <a href="http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz" target="_blank" rel="external">http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/bak/java/platform-tools:$PATH</span><br></pre></td></tr></table></figure>
-<p>3, Make sure your cellphone can connect to compute (Ubuntu) via USB and adb</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lsusb |grep Meizu</span><br><span class="line">  Bus 003 Device 010: ID 2a45:0c02 Meizu Corp. MX Phone (MTP &amp; ADB)</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">  SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2a45&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">$ cat ~/.android/adb_usb.ini</span><br><span class="line">  2a45</span><br><span class="line">$ sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">$ adb kill-server &amp;&amp; adb start-server</span><br><span class="line">$ adb devices</span><br><span class="line">  List of devices attached</span><br><span class="line">  75HABLMCYUR3	device</span><br><span class="line">$ sudo apt-get install go-mtpfs mtp-tools gmtp</span><br><span class="line">$ sudo mtp-detect</span><br><span class="line">  libmtp version: 1.1.10</span><br><span class="line">  Listing raw device(s)</span><br><span class="line">  Device 0 (VID=2a45 and PID=0c02) is a Meizu MX Phone (MTP+ADB).</span><br><span class="line">  Found 1 device(s):</span><br><span class="line">  Meizu: MX Phone (MTP+ADB) (2a45:0c02) @ bus 3, dev 10</span><br></pre></td></tr></table></figure>
-<p>4, Brush the thirty party recovery. Shutdown your cellphone, and press POWER + VOL-DOWN to enter fastboot mode. Use usb to connect cellphone and compute, than run:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/tools/mx4 $ fastboot flash recovery recovery.img</span><br><span class="line">sending &apos;recovery&apos; (10000 KB)...</span><br><span class="line">OKAY [  0.506s]</span><br><span class="line">writing &apos;recovery&apos;...</span><br><span class="line">OKAY [  0.410s]</span><br><span class="line">finished. total time: 0.916s</span><br></pre></td></tr></table></figure></p>
-<p>5, Press POWER + VOL-UP to enter above recoerty, and Click ‘Install Zip -&gt; Install zip from sideload’, then run:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/java/platform-tools$ adb sideload update.zip</span><br><span class="line">sending: &apos;sideload&apos;  100%</span><br></pre></td></tr></table></figure>
-<p>NOTE: if you want to install raw google android, just run ‘adb sideload cm-13.0-20160820-UNOFFICIAL-mx4.zip’ instead.</p>
-<p>6, Reboot the cellphone. OK.</p>
-<h2 id="附录-小米手机线刷开发版-国际版"><a href="#附录-小米手机线刷开发版-国际版" class="headerlink" title="附录 - 小米手机线刷开发版/国际版"></a>附录 - 小米手机线刷开发版/国际版</h2><p>现在, 小米不再允许行货和国际版互刷ROM, 它加入了防回滚保护（Anti-Rollback Protection）机制. 这意味着，如果手机当前处于较高的MIUI版本，降级刷机大概率会变砖。实测发现，行货机刷国际版ROM将卡死在Recovery界面，显示“this MIUI version can’t be installed on this device”。当然，想要绕过官方的限制也有办法，前提是解锁bootloader，然后用TWRP、fastboot或者MiFlash刷机。使用MiFlash时切记勾选“Clean All”，不要选“clean all and lock”。如果你不幸刷在国际版和国行版ROM之间刷机成砖，只有进入EDL（紧急下载）模式自救。然而，EDL模式仅对极为有限的小米账号开放权限。本文测试的手机是mi note lte不再之列.</p>
-<p>1, 下载dev rom是virgo_images_5.12.4_20151126.0000.5_4.4_cn_eb14b0eb8d.tgz (<a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a>). rom里的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">NOTE: 这步应该在解锁, 以及在开发模式打开充许OEM之后运行</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn</span><br><span class="line">flash_all.bat  flash_all_except_data_storage.bat  flash_all_except_data_storage.sh  flash_all_except_storage.bat  flash_all_except_storage.sh  flash_all.sh  images  misc.txt</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn/images/</span><br><span class="line">8974_msimage.mbn  cache.img  emmc_appsboot.mbn  gpt_backup0.bin  gpt_main0.bin  MPRG8974.mbn  patch0.xml   rawprogram0.xml  rpm.mbn   sdi.mbn     tz.mbn</span><br><span class="line">boot.img          dummy.img  flash.xml          gpt_both0.bin    misc.img       NON-HLOS.bin  persist.img  recovery.img     sbl1.mbn  system.img  userdata.img</span><br><span class="line"></span><br><span class="line">$ cat flash_all.sh</span><br><span class="line">fastboot $* getvar product 2&gt;&amp;1 | grep &quot;^product: *MSM8974$&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching image and device&quot;; exit 1; fi</span><br><span class="line">fastboot $* getvar board_version 2&gt;&amp;1 | grep &quot;^board_version: *5.[^5]&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching board version&quot;; exit 1; fi</span><br><span class="line"></span><br><span class="line">fastboot $* flash tz `dirname $0`/images/tz.mbn</span><br><span class="line">fastboot $* flash dbi `dirname $0`/images/sdi.mbn</span><br><span class="line">fastboot $* flash sbl1 `dirname $0`/images/sbl1.mbn</span><br><span class="line">fastboot $* flash rpm `dirname $0`/images/rpm.mbn</span><br><span class="line">fastboot $* flash aboot `dirname $0`/images/emmc_appsboot.mbn</span><br><span class="line">fastboot $* erase boot</span><br><span class="line">fastboot $* erase DDR</span><br><span class="line">fastboot $* flash misc `dirname $0`/images/misc.img</span><br><span class="line">fastboot $* flash modem+modem1 `dirname $0`/images/NON-HLOS.bin</span><br><span class="line">fastboot $* flash system+system1 `dirname $0`/images/system.img</span><br><span class="line">fastboot $* flash cache `dirname $0`/images/cache.img</span><br><span class="line">fastboot $* flash userdata `dirname $0`/images/userdata.img</span><br><span class="line">fastboot $* flash recovery `dirname $0`/images/recovery.img</span><br><span class="line">fastboot $* flash boot+boot1 `dirname $0`/images/boot.img</span><br><span class="line">fastboot $* reboot</span><br></pre></td></tr></table></figure></p>
-<p>2, 手机通过MTP模式连接电脑, 通过lsusb找到设备号为: Bus 003 Device 029: ID 2717:0360<br>3, adb连接手机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2717&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">$ adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">d6b38a3a	device</span><br></pre></td></tr></table></figure></p>
-<p>如果不出来, 是需要 狂按”设置我的设备 -&gt; 全部参数 -&gt; MINU版本”进入开发者模式, 然后”设置 -&gt; 更多设置 -&gt; 开发者选项”打开USB调试”和”FASTBOOT刷机模式”<br>4, 和Meizu是一样的, 也是音量下+电源键进入fastboot模式, 不连电脑，音量下+电源键长按进入fastboot,USB线连接电脑. 注: 同样, 也是音量上+电源键可安装第三方recovery, 见 [5].<br>5, 刷机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">#./flash_all_except_storage.sh  #clean cache, but not clean data</span><br></pre></td></tr></table></figure></p>
-<p>6, 继续root, 刷机成功之后, 已经是开发版, 进入手机，安全中心 -&gt; 授权管理 -&gt; ROOT,反复确认后，手机会下载对应的ROOT包安装后重启。机后，安全中心 -&gt; 授权管理已经可以进入. 这时候就可以使用’adb root’了.</p>
-<p>注: 遗憾地是, 机子刚好音量下键损坏, 这样借助如刷机精灵里的实用工具进入fastboot或recovery模式. 好吧, 又得整到windows上了. 照着文档[4]. (注: 其实不用转到windows, 直接在linux下使用”adb reboot bootloader”也可以重启至fastboot模式”<br>1, 安装小米助手, 当手机连上win7电脑时会自动安装驱动 - <a href="http://zhushou.xiaomi.com/" target="_blank" rel="external">http://zhushou.xiaomi.com/</a><br>2, 安装线刷工具 - <a href="http://bigota.d.miui.com/tools/MiPhone20141107.exe" target="_blank" rel="external">http://bigota.d.miui.com/tools/MiPhone20141107.exe</a><br>3, 线刷包解压 - <a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a><br>4, 安装刷机精灵, 使用里面的fastboot实用工具根本无法进入fastboot, 所以直接采用刷机精灵的一键刷机功能上传线刷包线刷. 但出错了, 说是刷入的版本比机子已有的版本低会线刷失败.<br>5, 但上一步一键刷机功能代替音量减键成功让手机进入了fastboot模式, 所以此时切换成小米的刷机工具再试, 结果小米的刷机工具也有bug, 报找不到远程分区.<br>6, 试图找到小米原生的线刷包恢复, 但官网上找不着.<br>7, 还好, 手机进入fastboot模式之后, 没有刷机成功, 只要手机还有电, 再重启还是进入的是flashboot模式, 这样避免了坏的音量键及进不了系统. 继续找啊找试啊试, 终于发现这个包是好的(Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, <a href="https://firmwarefile.com/xiaomi-mi-note-lte" target="_blank" rel="external">https://firmwarefile.com/xiaomi-mi-note-lte</a> )<br>8, 这个网站(<a href="https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备" target="_blank" rel="external">https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备</a>. 注: 这个tool也可在driver菜单自动安装驱动.<br>9, 这样成功换上了Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, 这似乎是国际稳定版哦.</p>
-<p>如何将国际稳定版转成国际开发版呢? 再线刷一遍. 这次都在linux下进行.<br>1,Install Global Developer ROM for Redmi Note 4G<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># search in google by &apos;eveloper bigota.d.miui.com redmi note 4g -stable&apos;, and download fastboot rom - https://c.mi.com/thread-510369-1-0.html</span><br><span class="line">#NOTE: this recovery - http://bigota.d.miui.com/7.11.6/miui_MINoteGlobal_7.11.6_ce58816710_6.0.zip</span><br><span class="line">wget http://bigota.d.miui.com/7.11.6/virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">tar -xf virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">cd virgo_global_images_7.11.6_20171106.0000.00_6.0_global</span><br><span class="line">adb reboot bootloader</span><br><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">运行./flash_all.sh相当于:</span><br><span class="line">#https://blog.csdn.net/quqi99/article/details/51636869</span><br><span class="line">fastboot flash boot boot.img</span><br><span class="line">fastboot flash recovery recovery.img</span><br><span class="line">fastboot erase system</span><br><span class="line">fastboot flash system system.img</span><br><span class="line">#fastboot flash userdata userdata.img</span><br><span class="line">#fastboot flash cache cache.img</span><br></pre></td></tr></table></figure></p>
-<p>2, Custom TWRP for Xiaomi Redmi Note 4G (twrp-3.3.1-0-dior.img - <a href="https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html" target="_blank" rel="external">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</a>),<br>注: 目前小米也关闭了解锁功能(<a href="https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM" target="_blank" rel="external">https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM</a>, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机.<br>但mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ adb reboot bootloader</span><br><span class="line">$ fastboot oem device-info</span><br><span class="line">...</span><br><span class="line">(bootloader) 	Device tampered: true</span><br><span class="line">(bootloader) 	Device unlocked: true</span><br><span class="line">(bootloader) 	Charger screen enabled: false</span><br><span class="line">(bootloader) 	Display panel:</span><br><span class="line">OKAY [  0.006s]</span><br><span class="line">finished. total time: 0.006s</span><br></pre></td></tr></table></figure></p>
-<p>继续刷TWRP:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.twrp.me/dior/twrp-3.3.1-0-dior.img</span><br><span class="line">adb reboot bootloader              #enter fastboot mode</span><br><span class="line">#fastboot devices                     #just for case when locking BL lock</span><br><span class="line"># fastboot flash unlock unlock.key  #if need to unlock, eg https://www.techmesto.com/guide-unlock-bootloader-nokia-android-phones/</span><br><span class="line">#fastboot oem unlock</span><br><span class="line">fastboot flash recovery twrp-3.3.1-0-dior.img</span><br><span class="line">fastboot reboot</span><br></pre></td></tr></table></figure></p>
-<p>但是上面刷了之后不work,, 刷了TWRP之后’adb reboot recovery’进入的还是Mi-Recovery 2.0.1模式, 官网说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</span><br><span class="line">Note many devices will replace your custom recovery automatically during first boot. To prevent this, use Google to find the proper key combo to enter recovery. After typing fastboot reboot, hold the key combo and boot to TWRP. Once TWRP is booted, TWRP will patch the stock ROM to prevent the stock ROM from replacing TWRP. If you don&apos;t follow this step, you will have to repeat the install.</span><br></pre></td></tr></table></figure></p>
-<p>但运行完’fastboot reboot’再按音量上键+电源键根本就进不了recovery模式, 可能是我的音量键有问题的原因吧. 此路不通.这个网页说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://www.reddit.com/r/Xiaomi/comments/bdurg8/replace_mi_recovery_with_twrp/</span><br><span class="line">With the new protection you need to boot from adb to twrp, by fastboot boot twrp.img. When boot in twrp transfer the image and flash inside from twrp. Now, it will reboot on TWRP recovery.</span><br></pre></td></tr></table></figure></p>
-<p>所以我们可以先’fastboot boot’来启动TWRP, 再将TWRP持久化. 但是试了很多多twrp版本都报下列错”dtb not found”.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ fastboot boot twrp-3.3.1-0-dior.img</span><br><span class="line">downloading &apos;boot.img&apos;...</span><br><span class="line">OKAY [  0.433s]</span><br><span class="line">booting...</span><br><span class="line">FAILED (remote: dtb not found)</span><br><span class="line">finished. total time: 0.449s</span><br></pre></td></tr></table></figure></p>
-<p>无奈下载网页(<a href="http://en.miui.com/thread-213264-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-213264-1-1.html</a>) 或这个网页(<a href="http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功" target="_blank" rel="external">http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot boot twrp.img</span><br></pre></td></tr></table></figure></p>
-<p>但语言却不是英语看不懂啊, 没办法, 只好在网上找一个有图的, 照着大致的位置点了.<br><img src="https://img-blog.csdnimg.cn/20190822112723313.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190822112742744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>上面需要事先将supersu下载放到手机上, 注意: 只有/sdcard/Download是可写的. (其他目录需要root权限运行”adb remount  #mount -o remount,rw /system”才行”.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push SR5-SuperSU-v2.82-SR5-20171001224502.zip /sdcard/Download/</span><br></pre></td></tr></table></figure>
-<p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
-<p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
-<p>4, 安装必要的软件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># use adb via wifi</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb install Complete\ Linux\ Installer_v3.0\ BETA_apkpure.com.apk</span><br><span class="line"></span><br><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"></span><br><span class="line"># grep &apos;system&apos; /proc/mounts</span><br><span class="line">mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system</span><br><span class="line"></span><br><span class="line"># ssh server -  by install SSHDroid and use supersu to give it root</span><br><span class="line"></span><br><span class="line"># ssh client</span><br><span class="line">ln -s /data/data/berserker.android.apps.sshdroid/dropbear/ssh /system/bin/ssh</span><br><span class="line">chmod o+rx /system/bin/ssh</span><br><span class="line"></span><br><span class="line"># key</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/dropbear/</span><br><span class="line">./dropbearkey -t rsa -f ../home/.ssh/id_rsa &gt; ../home/.ssh/id_rsa.pub</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/home</span><br><span class="line">echo &apos;ssh hua@t440p -i ~/.ssh/id_rsa&apos; &gt; ./ssht440p.sh</span><br><span class="line">sh ssht440p.sh</span><br><span class="line"></span><br><span class="line"># use vi in adb shell, we don&apos;t need to add busybox prefix in ssh</span><br><span class="line">busybox vi /etc/hosts</span><br></pre></td></tr></table></figure></p>
-<p>5, run ubuntu 18.04 on android by using linuxdeploy<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#run ubuntu 18.04 on android by using linuxdeploy</span><br><span class="line">#https://www.maketecheasier.com/install-ubuntu-on-android-linux-deploy/</span><br><span class="line">wget https://github.com/meefik/busybox/releases/download/1.30.1/busybox-1.30.1-41.apk</span><br><span class="line">adb install busybox-1.30.1-41.apk  #install into /system/xbin</span><br><span class="line">wget https://github.com/meefik/linuxdeploy/releases/download/2.4.0/linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install vnc_viewer_remote_desktop.apk</span><br><span class="line"></span><br><span class="line">#enter linuxdeploy</span><br><span class="line">telnet 192.168.99.249 5023</span><br><span class="line"></span><br><span class="line">#but hit the error: chroot: can&apos;t execute &apos;/bin/su&apos;: No such file or directory</span><br><span class="line">/su/bin/su root</span><br><span class="line">/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell</span><br><span class="line">mkdir /data/local/mnt/&#123;dev,sys,proc&#125;</span><br><span class="line">#for d in dev sys proc; do mount -o bind /$d /data/local/mnt/$d; done</span><br><span class="line">#umount /data/local/mnt/&#123;dev,proc,sys&#125;</span><br><span class="line">chroot /data/local/mnt/ /bin/pwd</span><br><span class="line">ls /data/local/mnt/bin/su</span><br><span class="line"></span><br><span class="line">上面的chroot错误实际上是image文件没有创建的原因</span><br><span class="line">ls /data/data/ru.meefik.linuxdeploy/files/config/linux.conf</span><br><span class="line">rm -rf /sdcard/linux.img</span><br><span class="line">vi /data/user/0/ru.meefik.linuxdeploy/files/include/bootstrap/rootfs/deploy.sh</span><br><span class="line"></span><br><span class="line">20191012更新</span><br><span class="line">架构使用armhf，源使用http://mirrors.ustc.edu.cn/ubuntu-ports/时可以进入debootstrap了， 但是在lsb_base这步总是出错， 怀疑是科大的源有问题， 所以换成腾讯的源https://mirrors.cloud.tencent.com/ubuntu-ports/后可以debootstrap成功， 但是在chroot /data/local/mnt bin/su - root -c &apos;DEBIAN_FRONTEND=nointeractive apt-get install -yfq --no-install-recommends dbus&apos;这步也是相当地慢(才0.10k/s)，不得已， 又退回使用http://ports.ubuntu.com/ubuntu-ports/， 然后就成功了， 在手机上通过‘ssh ubuntu@localhost’登录bionic。</span><br><span class="line">1, 但ubuntu里的chrome仍然无法在外面使用，而使用android版本的chrome又无法打开SF(需要设置浏览器中的查看桌面版网页，但仍然无法选择sf owner), 试试microsoft edge</span><br><span class="line">2, 下面adb或者ssh两种方式连接手机</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br><span class="line">3, 手机外接大屏幕的话，采用android中的”无线投屏&quot;或者在连接好adb之后运行“sudo snap install --channel=edge scrcpy &amp;&amp; scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800&quot; (注：若电脑的scrcpy容器是黑屏的话是因为手机是黑屏的）</span><br><span class="line"></span><br><span class="line">若手机未root的话, 可以这个投屏:</span><br><span class="line">将手机与电脑连接至相同wifi 记录WLAN设置中手机的IP地址</span><br><span class="line">连接数据线并允许调试</span><br><span class="line">终端执行 adb tcpip 5555 并在手机上点击“ 确定 ” ( 即在手机上开启5555端口 )</span><br><span class="line">终端执行 adb connect [手机IP]:5555 并在手机上点击“ 确定 ”( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">拔掉数据线</span><br><span class="line">终端执行 adb reconnect offline 强制未授权设备重新连接</span><br><span class="line">终端执行 adb connect [手机IP]:5555 重新进行连接 ( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800</span><br><span class="line">想用声音的话, 可结合usbaudio - https://github.com/rom1v/usbaudio , 但是似乎usbaudio不支持android 8.1以上版本了</span><br></pre></td></tr></table></figure></p>
-<h2 id="root-redmi4x-20200618更新"><a href="#root-redmi4x-20200618更新" class="headerlink" title="root redmi4x - 20200618更新"></a>root redmi4x - 20200618更新</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">安装要用到的软件</span><br><span class="line">1, xiaomi redmi 4x usb driver (Universal ADB Driver V6.0.zip - https://www.skyneel.com/xiaomi-usb-driver)</span><br><span class="line">2, xiaomi redmi 4x unlock bootloader (miflash_unlock-en-4.5.514.47.zip - https://en.miui.com/unlock/）</span><br><span class="line">3, xiaomi redmi 4x TWRP recovery (twrp-3.3.1-0-santoni.img - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">4, xiaomi redmi 4x supersu (UPDATE-SuperSU-v2.82-20170528234214.zip - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">5, xiaomi redmi 4x adb/fast-boot tool (platform-tools_r30.0.2-windows.zip - https://developer.android.com/studio/releases/platform-tools)</span><br><span class="line">6, [option] mi flash (https://www.skyneel.com/xiaomi-mi-flash-tool)</span><br><span class="line"></span><br><span class="line">unlock bootloader</span><br><span class="line">#https://www.skyneel.com/unlock-bootloader-xiaomi-devices</span><br><span class="line">1, 打开开发者模式， 并在开发者模式中打开USB调试， 并同时打开充许OEM解锁</span><br><span class="line">2, 先关机，USB线连上， 然后长按音量下+电源键进入fastboot模式, ( 注: 音量上+电源键是安装第三方recovery)</span><br><span class="line">3 , 并用这个手机的小米帐号登录后解锁手机。</span><br><span class="line">注: 目前小米也关闭了解锁功能(https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机. 见我之前的一篇博客.</span><br><span class="line">mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true&quot;</span><br><span class="line">redmi 4x采用此段方法解锁</span><br><span class="line"></span><br><span class="line">flash TWRP</span><br><span class="line">1, usb连接手机，并在手机上点击信任后， 就可以使用adb命令了</span><br><span class="line">D:\&gt;adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">aa89d2927d93    device</span><br><span class="line">2, 进入bootloader模式： adb reboot bootloader</span><br><span class="line">3, 因为上面我们已经unlock bootloader了， 所以&apos;fastboot devices&apos;能看到东西</span><br><span class="line">E:\tools\redmi4x&gt;fastboot devices</span><br><span class="line">aa89d2927d93    fastboot</span><br><span class="line">4， fastboot.exe flash recovery twrp-3.3.1-0-santoni.img - fastboot.exe flash recovery twrp-3.3.1-0-santoni.img</span><br><span class="line">5, fastboot reboot</span><br><span class="line">6, 刷TWRP成功后， 再使用&apos;adb reboot recovery&apos;命令(相当于音量上+电源键的recovery模式)就能看到TWRP界面了， 而不是mi-recovery 3.0了</span><br><span class="line">但上面recovery twrp-3.3.1-0-santoni.img刷了之后不work, 进入的还是mi-recovery, 这时就又相当于我之前的一篇博客遇到的问题了（https://blog.csdn.net/quqi99/article/details/73613138), 所以得在不替换现有的mi-recovery的情况下同时又使用TWRP（fastboot boot twrp-3.3.1-0-santoni.img）安装supersu（可参考 - https://in.c.mi.com/thread-79402-1-1.html）</span><br></pre></td></tr></table></figure>
-<p>完整步骤:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">1, set up adb</span><br><span class="line"></span><br><span class="line">sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/udev/rules.d/51-android.rules&apos; &lt;&lt; EOF</span><br><span class="line">EOF</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">adb devices</span><br><span class="line"></span><br><span class="line">2, enable developer mode, and enable usb debugging and OEM unlock in developer mode</span><br><span class="line"></span><br><span class="line">3, unlock bootloader in the page https://www.miui.com/unlock/index.html</span><br><span class="line"></span><br><span class="line">4, install global developer firmware because supersu can only be used in developer version</span><br><span class="line"></span><br><span class="line">#click &apos;Global -&gt; Fast boot Developer&apos; in https://mifirm.net/model/santoni.ttt to find download link</span><br><span class="line">axel http://bigota.d.miui.com/9.6.27/santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">tar -xf santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">adb reboot bootloader</span><br><span class="line">cd santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2 &amp;&amp; ./flash_all.sh</span><br><span class="line"></span><br><span class="line">5, then repeat the step 2 in new global deveoper version</span><br><span class="line"></span><br><span class="line">6, copy supersu into your cellphone</span><br><span class="line"></span><br><span class="line">adb push UPDATE-SuperSU-v2.82-20170528234214.zip /sdcard/Download/</span><br><span class="line">adb shell -- ls /sdcard/Download/</span><br><span class="line"></span><br><span class="line">7, boot from twrp instead of mi-recovery temporaily one time to install supersu</span><br><span class="line"></span><br><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem device-info   #double confim uncloked=true</span><br><span class="line">fastboot boot twrp-3.2.3-0-santoni.img</span><br><span class="line">#then install supersu from the GUI</span><br><span class="line"></span><br><span class="line">8, use supersu</span><br><span class="line"></span><br><span class="line">adb root</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br></pre></td></tr></table></figure>
-<p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1928,7 +1837,7 @@ Fixed bug #161317
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

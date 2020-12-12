@@ -231,6 +231,275 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/05/开发用的devstack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/05/开发用的devstack/" itemprop="url">开发用的devstack</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-05T19:13:10+08:00">
+                2020-07-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华  发表于：2014-05-15<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<h2 id="网络环境"><a href="#网络环境" class="headerlink" title="网络环境"></a>网络环境</h2><p>NOTE:下面使用镜像不是万能的，<strong>镜像不同步，会造成包依赖问题进而外在表现更多的包依赖问题</strong>．但由于国内糟糕的网络环境（随意封锁纯技术网站及对出口宽带的小至十几K或者几比特的QoS限速 )，不使用镜像用国内机器又根本无法做实验．无解，enjoy!</p>
+<ul>
+<li><p>debian镜像, 除了下面的mirrors.cloud.tencent.com, 也可考虑 cn.archive.ubuntu.com．</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo cp /etc/apt/sources.list /etc/apt/sources.list_bak</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/apt/sources.list&apos; &lt;&lt; EOF</span><br><span class="line">deb http://mirrors.cloud.tencent.com/ubuntu/ focal main restricted universe multiverse</span><br><span class="line">deb http://mirrors.cloud.tencent.com/ubuntu/ focal-security main restricted universe multiverse</span><br><span class="line">deb http://mirrors.cloud.tencent.com/ubuntu/ focal-updates main restricted universe multiverse</span><br><span class="line">#deb http://mirrors.cloud.tencent.com/ubuntu/ focal-proposed main restricted universe multiverse</span><br><span class="line">#deb http://mirrors.cloud.tencent.com/ubuntu/ focal-backports main restricted universe multiverse</span><br><span class="line">EOF</span><br><span class="line">sudo sed -i s/mirrors.cloud.tencent.com/mirrors.aliyun.com/g /etc/apt/sources.list</span><br><span class="line">sudo apt clean all</span><br><span class="line">sudo apt update</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>pip镜像, 当前用户，root用户，如果创建了专门的stack用户的话，最好都添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/.pip/</span><br><span class="line">cat &lt;&lt; EOF &gt; ~/.pip/pip.conf</span><br><span class="line">[global]</span><br><span class="line">index-url = http://pypi.douban.com/simple</span><br><span class="line">[install]</span><br><span class="line">trusted-host=pypi.douban.com</span><br><span class="line">disable-pip-version-check = true</span><br><span class="line">timeout = 120</span><br><span class="line">EOF</span><br><span class="line">如果添加了上述设置，但感觉&quot;sudo pip3 install -r requirements.txt＂还是慢未生效，那是因为需要在root用户中也添加：</span><br><span class="line">sudo mkdir /root/.pip</span><br><span class="line">sudo bash -c &apos;cat &gt; /root/.pip/pip.conf&apos; &lt;&lt; EOF</span><br><span class="line">[global]</span><br><span class="line">index-url = http://pypi.douban.com/simple</span><br><span class="line">[install]</span><br><span class="line">trusted-host=pypi.douban.com</span><br><span class="line">disable-pip-version-check = true</span><br><span class="line">timeout = 120</span><br><span class="line">EOF</span><br><span class="line">或者使用：</span><br><span class="line">[global]</span><br><span class="line">trusted-host=mirrors.aliyun.com</span><br><span class="line">index-url = http://mirrors.aliyun.com/pypi/simple</span><br><span class="line">disable-pip-version-check = true</span><br><span class="line">timeout = 120</span><br><span class="line"></span><br><span class="line">若不使用pip镜像，例如，运行下列命令时，</span><br><span class="line">sudo -H LC_ALL=en_US.UTF-8 http_proxy= https_proxy= no_proxy= PIP_FIND_LINKS= SETUPTOOLS_SYS_PATH_TECHNIQUE=rewrite python3.8 -m pip install -c /bak/openstack/requirements/upper-constraints.txt &apos;glance-store[cinder]!=0.29.0&apos;</span><br><span class="line">会报这种错误：</span><br><span class="line">urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host=&apos;files.pythonhosted.org&apos;, port=443): Read timed out.</span><br><span class="line">局部通过如下添加＂--index-url https://pypi.douban.com/simple＂解决</span><br><span class="line">sudo -H LC_ALL=en_US.UTF-8 http_proxy= https_proxy= no_proxy= PIP_FIND_LINKS= SETUPTOOLS_SYS_PATH_TECHNIQUE=rewrite python3.8 -m pip install -c /bak/openstack/requirements/upper-constraints.txt &apos;glance-store[cinder]!=0.29.0&apos; --index-url https://pypi.douban.com/simple</span><br><span class="line">对于小包可以通过添加超时时间解决（pip --default-timeout=100 install -U pip）</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>openstack镜像, 对github的封锁是间歇性的（如git@github.com:openstack/nova.git），尽量使用https协议，避免使用git协议．也可考虑这个openstack的代码镜像 - <a href="http://git.trystack.cn" target="_blank" rel="external">http://git.trystack.cn</a>, 代码及时性就不好说了．真要开发肯定不能用这种，搭建测试环境暂时可以用．</p>
+</li>
+<li>**此步可选, 注意，若添加了stack用户, 记得运行’sudo su - stack’之后再做上面的pip镜像设置:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">echo &apos;ubuntu     ALL=(ALL) NOPASSWD:ALL&apos; |sudo tee -a /etc/sudoers</span><br><span class="line">echo &apos;precedence ::ffff:0:0/96 100&apos; |sudo tee -a /etc/gai.conf</span><br><span class="line"></span><br><span class="line">sudo useradd -s /bin/bash -d /opt/stack -m stack</span><br><span class="line">echo &quot;stack ALL=(ALL) NOPASSWD: ALL&quot; | sudo tee /etc/sudoers.d/stack</span><br><span class="line">sudo su - stack &amp;&amp; cd /opt/stack</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="运行devstack"><a href="#运行devstack" class="headerlink" title="运行devstack"></a>运行devstack</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">#NOTE: this can cause bastion unable to be SSHed</span><br><span class="line">#juju deploy ubuntu openstack --series=focal --config hostname=openstack --constraints &quot;mem=8G cores=2 root-disk=60G&quot;</span><br><span class="line">sudo mkdir -p /bak/openstack &amp;&amp; sudo chown -R $(whoami) /bak/openstack &amp;&amp; cd /bak/openstack</span><br><span class="line">git clone https://github.com/openstack/devstack.git &amp;&amp; cd devstack</span><br><span class="line">sudo bash -c &apos;cat &gt; local.conf&apos; &lt;&lt;EOF</span><br><span class="line">[[local|localrc]]</span><br><span class="line"></span><br><span class="line">#proxychains wget https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz -O /bak/openstack/devstack/files/etcd-v3.3.12-linux-amd64.tar.gz</span><br><span class="line">#files.pythonhosted.org is easy to &apos;read timed out&apos;</span><br><span class="line"># Host IP - get your Server/VM IP address from ip addr command</span><br><span class="line">#HOST_IP=10.0.2.30</span><br><span class="line"></span><br><span class="line">#OFFLINE=True</span><br><span class="line">DEST=/bak/openstack</span><br><span class="line">mkdir -p \$DEST</span><br><span class="line">sudo mkdir -p \$DEST&amp;&amp; sudo chown -R $(whoami) \$DEST &amp;&amp; cd \$DEST</span><br><span class="line"></span><br><span class="line">## use proxy</span><br><span class="line">#export GIT_SSL_NO_VERIFY=1</span><br><span class="line">#export http_proxy=</span><br><span class="line">#export https_proxy=</span><br><span class="line">#export no_proxy=&quot;127.0.0.1,localhost,&lt;local-ip&gt;&quot;</span><br><span class="line"></span><br><span class="line">USE_PYTHON3=True</span><br><span class="line">DOWNLOAD_DEFAULT_IMAGES=False</span><br><span class="line">IMAGE_URLS=&quot;http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img&quot;</span><br><span class="line"></span><br><span class="line"># use TryStack git mirror</span><br><span class="line">GIT_BASE=http://git.trystack.cn</span><br><span class="line">NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git</span><br><span class="line">SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git</span><br><span class="line"></span><br><span class="line"># Password for KeyStone, Database, RabbitMQ and Service</span><br><span class="line">ADMIN_PASSWORD=password</span><br><span class="line">DATABASE_PASSWORD=\$ADMIN_PASSWORD</span><br><span class="line">RABBIT_PASSWORD=\$ADMIN_PASSWORD</span><br><span class="line">SERVICE_PASSWORD=\$ADMIN_PASSWORD</span><br><span class="line">SERVICE_TIMEOUT=300  #fix the error &apos;g-api did not start&apos;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">./stack.sh</span><br></pre></td></tr></table></figure>
+<h2 id="Use-it"><a href="#Use-it" class="headerlink" title="Use it"></a>Use it</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">source accrc/admin/admin</span><br><span class="line">$ env |grep OS_</span><br><span class="line">OS_PROJECT_DOMAIN_ID=default</span><br><span class="line">OS_CACERT=</span><br><span class="line">OS_AUTH_URL=http://192.168.99.190/identity</span><br><span class="line">OS_USER_DOMAIN_ID=default</span><br><span class="line">OS_USERNAME=admin</span><br><span class="line">OS_PROJECT_NAME=admin</span><br><span class="line">OS_PASSWORD=password</span><br><span class="line"></span><br><span class="line">source &lt;(openstack complete)</span><br><span class="line">openstack complete |sudo tee /etc/bash_completion.d/openstack.bash_completion &gt; /dev/null</span><br><span class="line"></span><br><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --image cirros-0.5.1-x86_64-disk --flavor m1.tiny --key-name mykey --nic net-id=$(openstack network list | awk &apos;/private/ &#123;print $2&#125;&apos;) i1</span><br><span class="line">fix_ip=$(openstack server list | awk &apos;/private/ &#123;print $8&#125;&apos; |awk -F&apos;=&apos; &apos;&#123;print $2&#125;&apos; |awk -F&apos;,&apos; &apos;&#123;print $1&#125;&apos;)</span><br><span class="line">public_network=$(openstack network show public -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $public_network -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address $fix_ip --port $(openstack port list --fixed-ip ip-address=$fix_ip -c id -f value)</span><br><span class="line"></span><br><span class="line">sg_id=$(openstack security group list --project=$(openstack server show i1 -f value -c project_id) |grep default |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">openstack security group rule create --protocol tcp --dst-port 22 $sg_id</span><br><span class="line">openstack security group rule create --protocol icmp $sg_id</span><br><span class="line">ping $fip</span><br><span class="line">ssh cirros@$fip -v</span><br></pre></td></tr></table></figure>
+<h2 id="Debug-it"><a href="#Debug-it" class="headerlink" title="Debug it"></a>Debug it</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vim ../logs/</span><br><span class="line">sudo systemctl --failed</span><br><span class="line">sudo systemctl list-units |grep devstack |grep failed |awk &apos;&#123;print $2&#125;&apos;</span><br><span class="line">sudo systemctl stop &quot;devstack@*&quot;</span><br><span class="line">sudo systemctl status devstack@g-api.service</span><br><span class="line"></span><br><span class="line">sudo journalctl -f --unit devstack@n-cpu.service</span><br><span class="line">see - https://docs.openstack.org/devstack/latest/systemd.html</span><br></pre></td></tr></table></figure>
+<h2 id="another-localrc-local-conf"><a href="#another-localrc-local-conf" class="headerlink" title="another localrc/local.conf"></a>another localrc/local.conf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir -p /bak/openstack &amp;&amp; sudo chown -R $(whoami) /bak/openstack &amp;&amp; cd /bak/openstack</span><br><span class="line">sudo chown -R $(whoami) ~/.config</span><br><span class="line">git clone https://github.com/openstack/devstack.git</span><br><span class="line">cd devstack &amp;&amp; wget https://raw.githubusercontent.com/zhhuabj/exercise/master/o7k/localrc</span><br><span class="line">./stack.sh</span><br><span class="line">source accrc/admin/admin</span><br></pre></td></tr></table></figure>
+<h2 id="代码更改"><a href="#代码更改" class="headerlink" title="代码更改"></a>代码更改</h2><p>1, 当将devstack中的OFFLINE设置为True后重新运行./stack.sh报下列错：<br>apache2.service: Failed with result ‘start-limit-hit’<br>Soluation:<br>从这个网页找到了答案：<a href="https://www.hiroom2.com/2017/02/18/linux-systemd-s-start-request-repeated-too-quickly-for-xxx-service/" target="_blank" rel="external">https://www.hiroom2.com/2017/02/18/linux-systemd-s-start-request-repeated-too-quickly-for-xxx-service/</a><br>修改文件（/lib/systemd/system/apache2.service）添加下设置禁用掉systemd对重启服务次数的限制．<br>StartLimitIntervalSec=0<br>StartLimitBurst=0<br>然后运行<br>sudo systemctl daemon-reload<br>sudo systemctl reset-failed apache2.service</p>
+<p>2, 运行＂cd /bak/openstack/horizon &amp;&amp; /usr/bin/python3.8 manage.py compilemessages＂报下列错：<br>ModuleNotFoundError: No module named ‘django.utils.log.NullHandler’; ‘django.utils.log’ is not a package<br>Solution:<br>sed -i “s/django.utils.log.NullHandler/logging.NullHandler/g” ./openstack_dashboard/local/local_settings.py</p>
+<p>3, 运行＂sudo ebtables -t broute -L＂报下列错：<br>table `broute’ is incompatible, use ‘nft’ tool<br>Solution:<br>Try Switching to iptable-legacy<br>sudo apt update &amp;&amp; sudo apt upgrade<br>sudo apt -y install iptables arptables ebtables<br>sudo update-alternatives –set iptables /usr/sbin/iptables-legacy || true<br>sudo update-alternatives –set ip6tables /usr/sbin/ip6tables-legacy || true<br>sudo update-alternatives –set arptables /usr/sbin/arptables-legacy || true<br>sudo update-alternatives –set ebtables /usr/sbin/ebtables-legacy || true</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/04/Autoinstall-Ubuntu20-04-KVM-Instance/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/04/Autoinstall-Ubuntu20-04-KVM-Instance/" itemprop="url">Autoinstall Ubuntu20.04 KVM Instance</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-04T15:22:49+08:00">
+                2020-07-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-07-04<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我们将使用 non-GUI (text or console)的方式尽可能的自动通过KVM安装Ubuntu20.04虚机．<br>目前，Ubuntu20.04已经默认使用subiquity作为安装工具了 (之前使用debian-installer，使用preseed机制进行自动安装），subiquity使用cloud-init进行自动安装．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget http://cdimage.ubuntu.com/ubuntu/releases/20.04/release/ubuntu-20.04-live-server-arm64.iso</span><br><span class="line">wget http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso</span><br></pre></td></tr></table></figure></p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><p>打开硬件虚拟化，及安装KVM相关包．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install cpu-checker -y</span><br><span class="line">sudo kvm-ok  #remember to enable VT-x and VT-d in BIOS</span><br><span class="line">sudo apt install qemu qemu-kvm libvirt-daemon libvirt-clients bridge-utils virt-manager libosinfo-bin</span><br><span class="line">sudo systemctl status libvirtd</span><br><span class="line">lsmod |grep -i kvm</span><br><span class="line">egrep -c &apos;(vmx|svm)&apos; /proc/cpuinfo</span><br><span class="line">osinfo-query os|grep ubuntu</span><br></pre></td></tr></table></figure></p>
+<h2 id="virt-install-console-only模式安装kvm虚机"><a href="#virt-install-console-only模式安装kvm虚机" class="headerlink" title="virt-install + console only模式安装kvm虚机"></a>virt-install + console only模式安装kvm虚机</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo virt-install --name=demo --ram=8192 --vcpus=2 --hvm --virt-type=kvm \</span><br><span class="line">    --connect=qemu:///system --os-variant=ubuntu20.04 --os-type=linux --accelerate \</span><br><span class="line">    --disk=/game/demo.qcow2,bus=virtio,format=qcow2,cache=none,sparse=true,size=32 \</span><br><span class="line">    --network=bridge=virbr0,model=rtl8139 --nographics -v \</span><br><span class="line">    --location &apos;http://mirrors.cloud.tencent.com/ubuntu/dists/bionic/main/installer-amd64/&apos; --extra-args=&apos;console=ttyS0,115200n8 serial&apos;</span><br></pre></td></tr></table></figure>
+<p>正常情况下，上面使用（–extra-args=’console=ttyS0,115200n8 serial’）参数应该就能自动通过console连接的(sudo virsh console demo), 但暂不清楚为什么不行 (实际上在后来调试时发现上面命令其实已经将下列内容添加到了虚机内部的/etc/default/grub文件).<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GRUB_TERMINAL=serial</span><br><span class="line">GRUB_SERIAL_COMMAND=&quot;serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1&quot;</span><br></pre></td></tr></table></figure></p>
+<p>OK, 我们可以继续采用下列两种方法之一在虚机内部enable console, 方法一如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ arp -an |grep $(sudo virsh domiflist demo |awk &apos;/default/ &#123;print $5&#125;&apos;)</span><br><span class="line">? (192.168.122.62) at 52:54:00:e8:fb:47 [ether] on virbr0</span><br><span class="line">ssh demo@192.168.122.62</span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;quiet splash console=ttyS0&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line">init 6</span><br></pre></td></tr></table></figure></p>
+<p>方法二如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">sudo virsh destroy demo</span><br><span class="line">sudo guestmount -d demo -i /mnt</span><br><span class="line">$ sudo cat /mnt/etc/default/grub |tail -n2</span><br><span class="line">GRUB_TERMINAL=serial</span><br><span class="line">GRUB_SERIAL_COMMAND=&quot;serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1&quot;</span><br><span class="line"></span><br><span class="line"># but above GRUB_SERIAL_COMMAND doesn&apos;t work, so remove them and use the following</span><br><span class="line">sudo vim /mnt/etc/default/grub</span><br><span class="line">#GRUB_CMDLINE_LINUX=&quot;&quot;</span><br><span class="line">GRUB_CMDLINE_LINUX=&quot;console=tty0 console=ttyS0,19200n8&quot;</span><br><span class="line"></span><br><span class="line">sudo vim /mnt/boot/grub/grub.cfg</span><br><span class="line">menuentry &apos;Ubuntu&apos; --class ubuntu --class gnu-linux --class gnu ...</span><br><span class="line">...</span><br><span class="line">        #linux  /boot/vmlinuz-5.4.0-40-generic root=UUID=646ea42b-f96e-465a-b20a-546ba34b03d6 ro  quiet splash $vt_handoff</span><br><span class="line">        linux   /boot/vmlinuz-5.4.0-40-generic root=UUID=646ea42b-f96e-465a-b20a-546ba34b03d6 ro console=ttyS0,19200 earlyprint=serial,ttyS0,19200 quiet splash $vt_handoff</span><br><span class="line"></span><br><span class="line">sudo guestunmount /mnt</span><br><span class="line">sudo virsh start demo &amp;&amp; sudo virsh --connect qemu:///system console demo</span><br></pre></td></tr></table></figure></p>
+<h2 id="基于legacy-d-i-preseed机制自动安装"><a href="#基于legacy-d-i-preseed机制自动安装" class="headerlink" title="基于legacy d-i/preseed机制自动安装"></a>基于legacy d-i/preseed机制自动安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: we use legacy iso (legacy way uses debian-installer + preseed, new way uses subiquity + init-cloud)</span><br><span class="line">#       for new way pls refer - https://ubuntu.com/server/docs/install/autoinstall-quickstart</span><br><span class="line"># wget http://releases.ubuntu.com/20.04/ubuntu-20.04-live-server-amd64.iso</span><br><span class="line">wget http://cdimage.ubuntu.com/ubuntu-legacy-server/releases/20.04/release/ubuntu-20.04-legacy-server-amd64.iso</span><br><span class="line">wget http://mirrors.cloud.tencent.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/initrd.gz</span><br><span class="line">wget http://mirrors.cloud.tencent.com/ubuntu/dists/focal/main/installer-amd64/current/legacy-images/netboot/ubuntu-installer/amd64/linux</span><br><span class="line">wget https://help.ubuntu.com/lts/installation-guide/example-preseed.txt</span><br><span class="line">sed -e &quot;s/#.*//g&quot; example-preseed.txt  |awk &apos;&#123;if (length!=0) print $0&#125;&apos; &gt; preseed.cfg</span><br><span class="line">sed -i &quot;s/archive.ubuntu.com/mirrors.cloud.tencent.com/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/unassigned-hostname/openstack/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/unassigned-domain/lan/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/US\/Eastern/Asia\/Shanghai/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;s/ubuntu-desktop/standard, ubuntu-server/g&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/ubuntu-server/a\d-i pkgsel\/include string openssh-server&quot; preseed.cfg  #append a line after the matched line</span><br><span class="line">sed -i &quot;/openssh-server/a\d-i pkgsel\/upgrade select none&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/confirm_nooverwrite/a\d-i passwd\/user-fullname string demo&quot; preseed.cfg #create a new user demo</span><br><span class="line">sed -i &quot;/demo/a\d-i passwd\/user-password password password&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/user-password/a\d-i passwd\/user-password-again password password&quot; preseed.cfg</span><br><span class="line">sed -i &quot;/user-password-again/a\d-i user-setup\/allow-password-weak boolean true&quot; preseed.cfg</span><br><span class="line">sudo python -m http.server  #http://localhost:8000/preseed.cfg</span><br><span class="line">sudo mount -o ro /bak/images/ubuntu-20.04-legacy-server-amd64.iso /mnt/</span><br><span class="line">sudo virt-install --name demo --ram 8192 --vcpus 2 --virt-type kvm \</span><br><span class="line">   --connect=qemu:///system --os-variant=ubuntu20.04 --os-type=linux --accelerate \</span><br><span class="line">   --disk=/game/demo.qcow2,bus=virtio,format=qcow2,cache=none,sparse=true,size=32 \</span><br><span class="line">   --network bridge=virbr0 --graphics none --force --debug \</span><br><span class="line">   --cdrom=/bak/images/ubuntu-20.04-legacy-server-amd64.iso \</span><br><span class="line">   --boot kernel=./linux,initrd=./initrd.gz,kernel_args=&quot;console=ttyS0 url=http://192.168.99.135:8080/preseed.cfg debian-installer/allow_unauthenticated_ssl=true&quot;</span><br><span class="line"></span><br><span class="line">NOTE: 实际安装中，报找不着http://192.168.99.135:8080/preseed.cfg以致无法自动安装，奇怪．</span><br></pre></td></tr></table></figure>
+<h2 id="基于subiquity-cloud-init新机制自动安装"><a href="#基于subiquity-cloud-init新机制自动安装" class="headerlink" title="基于subiquity/cloud-init新机制自动安装"></a>基于subiquity/cloud-init新机制自动安装</h2><p>参考 - <a href="https://ubuntu.com/server/docs/install/autoinstall-quickstart" target="_blank" rel="external">https://ubuntu.com/server/docs/install/autoinstall-quickstart</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"># The crypted password is just &quot;ubuntu&quot;.</span><br><span class="line">cat &gt; user-data &lt;&lt; &apos;EOF&apos;</span><br><span class="line">#cloud-config</span><br><span class="line">autoinstall:</span><br><span class="line">  version: 1</span><br><span class="line">  identity:</span><br><span class="line">    hostname: openstack</span><br><span class="line">    password: &quot;$6$exDY1mhS4KUYCE/2$zmn9ToZwTKLhCw.b4/b.ZRTIZM30JZ4QrOQ2aOXJ8yk96xpcCof0kxKwuX1kqLG/ygbJ1f8wxED22bTL4F46P0&quot;</span><br><span class="line">    username: ubuntu</span><br><span class="line">EOF</span><br><span class="line">touch meta-data</span><br><span class="line"></span><br><span class="line">sudo python -m http.server</span><br><span class="line"></span><br><span class="line"># Install ubuntu 20.04 with subiquity/cloud-init</span><br><span class="line">sudo umount /mnt</span><br><span class="line">sudo mount -o ro /bak/images/ubuntu-20.04-live-server-amd64.iso /mnt/   #remember to use live rather than legacy</span><br><span class="line">truncate -s 20G /game/demo.img</span><br><span class="line">sudo qemu-system-x86_64 -cdrom /bak/images/ubuntu-20.04-live-server-amd64.iso -bios /usr/share/qemu/OVMF.fd -nographic -serial mon:stdio -m 8096 -kernel /mnt/casper/vmlinuz -initrd /mnt/casper/initrd -append &apos;autoinstall ds=nocloud-net;s=http://localhost:8000/ console=ttyS0,115200n8&apos; -hda /game/demo.img</span><br><span class="line"></span><br><span class="line"># Boot the installed system</span><br><span class="line">kvm -no-reboot -m 8092 -drive file=/game/demo.img,format=raw,cache=none,if=virtio</span><br></pre></td></tr></table></figure></p>
+<h2 id="Hack-Ubiquity’s-source-code"><a href="#Hack-Ubiquity’s-source-code" class="headerlink" title="Hack Ubiquity’s source code"></a>Hack Ubiquity’s source code</h2><p>see - <a href="https://blog.csdn.net/quqi99/article/details/76553404" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/76553404</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/30/juju-reactive-charm/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1304,263 +1573,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/27/set-up-rabbitmq-pacemaker-cluster/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/02/27/set-up-rabbitmq-pacemaker-cluster/" itemprop="url">set up rabbitmq pacemaker cluster</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-27T19:22:45+08:00">
-                2020-02-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-02-27<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="test-steps"><a href="#test-steps" class="headerlink" title="test steps"></a>test steps</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line">juju add-model ha</span><br><span class="line">juju deploy ubuntu rabbit1 --series=bionic --config hostname=rabbit1 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">juju deploy ubuntu rabbit2 --series=bionic --config hostname=rabbit2 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">juju deploy ubuntu rabbit3 --series=bionic --config hostname=rabbit3 --constraints &quot;mem=1G cores=1 root-disk=6G&quot;</span><br><span class="line">ubuntu@zhhuabj-bastion:~$ juju status |grep ready</span><br><span class="line">rabbit1/0*  active    idle   0        10.5.0.7               ready</span><br><span class="line">rabbit2/0*  active    idle   1        10.5.0.15              ready</span><br><span class="line">rabbit3/0*  active    idle   2        10.5.0.12              ready</span><br><span class="line"></span><br><span class="line">#run the following commands in 3 units</span><br><span class="line">echo -e &quot;10.5.0.7 rabbit1\n10.5.0.15 rabbit2\n10.5.0.12 rabbit3&quot; |sudo tee -a /etc/hosts</span><br><span class="line"></span><br><span class="line">echo -e &quot;net.ipv4.ip_nonlocal_bind = 1\nnet.ipv4.ip_forward = 1&quot; |sudo tee -a /etc/sysctl.conf</span><br><span class="line">sudo sysctl -p</span><br><span class="line"></span><br><span class="line">sudo apt install chrony -y      ##https://www.server-world.info/en/note?os=Ubuntu_18.04&amp;p=ntp</span><br><span class="line">sudo systemctl restart chrony</span><br><span class="line"></span><br><span class="line">sudo apt install pacemaker corosync fence-agents resource-agents crmsh pcs -y</span><br><span class="line">sudo apt install rabbitmq-server -y</span><br><span class="line"></span><br><span class="line">HOSTNAME=$(hostname)</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/rabbitmq/rabbitmq-env.conf</span><br><span class="line">RABBITMQ_NODENAME=rabbit@$HOSTNAME</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/corosync/corosync.conf</span><br><span class="line">totem &#123;</span><br><span class="line">    version: 2</span><br><span class="line">    secauth: off</span><br><span class="line">    cluster_name: quqicluster</span><br><span class="line">    transport: udpu</span><br><span class="line">    token: 55000</span><br><span class="line">    rrp_problem_count_timeout: 110000</span><br><span class="line">    rrp_problem_count_threshold: 30</span><br><span class="line">    token_retransmits_before_loss_const: 30</span><br><span class="line">&#125;</span><br><span class="line">nodelist &#123;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit1</span><br><span class="line">        nodeid: 1</span><br><span class="line">    &#125;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit2</span><br><span class="line">        nodeid: 2</span><br><span class="line">    &#125;</span><br><span class="line">    node &#123;</span><br><span class="line">        ring0_addr: rabbit3</span><br><span class="line">        nodeid: 3</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">quorum &#123;</span><br><span class="line">    provider: corosync_votequorum</span><br><span class="line">&#125;</span><br><span class="line">logging &#123;</span><br><span class="line">    fileline: off</span><br><span class="line">    to_stderr: no</span><br><span class="line">    to_logfile: yes</span><br><span class="line">    logfile: /var/log/corosync.log</span><br><span class="line">    to_syslog: yes</span><br><span class="line">    syslog_facility: daemon</span><br><span class="line">    debug: on</span><br><span class="line">    timestamp: on</span><br><span class="line">    logger_subsys &#123;</span><br><span class="line">        subsys: QUORUM</span><br><span class="line">        debug: on</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">#sudo systemctl restart corosync   #use pcs instead for management</span><br><span class="line">sudo systemctl restart pcsd</span><br><span class="line">sudo systemctl enable pcsd</span><br><span class="line">#configure node authentication</span><br><span class="line">sudo passwd hacluster   #change the password to &apos;password&apos; for the user hacluster</span><br><span class="line">sudo pcs cluster auth -u hacluster -p password rabbit1 rabbit2 rabbit3</span><br><span class="line">#create the cluster</span><br><span class="line">sudo pcs cluster setup --force --name quqicluster rabbit1 rabbit2 rabbit3</span><br><span class="line">sudo pcs cluster enable --all</span><br><span class="line">sudo pcs cluster start --all</span><br><span class="line">sudo pcs status</span><br><span class="line">sudo pcs status corosync</span><br><span class="line">sudo pcs cluster status</span><br><span class="line">sudo corosync-cfgtool -s</span><br><span class="line">sudo corosync-cmapctl | grep members</span><br><span class="line">sudo pcs property set stonith-enabled=false  #Resource start-up disabled since no STONITH resources have been defined</span><br><span class="line">sudo pcs property set no-quorum-policy=ignore</span><br><span class="line">sudo crm_verify -L -V</span><br><span class="line">sudo pcs property set pe-warn-series-max=1000 pe-input-series-max=1000 pe-error-series-max=1000</span><br><span class="line">sudo pcs property set cluster-recheck-interval=5</span><br><span class="line">sudo pcs resource delete rabbitmq-clone --force</span><br><span class="line">sudo pcs resource create rabbitmq-clone ocf:heartbeat:rabbitmq-cluster --clone ordered=true interleave=true</span><br><span class="line">sudo pcs resource update rabbitmq-clone op monitor interval=30 timeout=120</span><br><span class="line">sudo pcs resource update rabbitmq-clone op start interval=0 timeout=100</span><br><span class="line">sudo pcs resource update rabbitmq-clone op stop interval=0 timeout=90</span><br><span class="line">#sudo pcs resource update rabbitmq-clone meta ordered=true interleave=true</span><br><span class="line">sudo pcs resource show rabbitmq-clone</span><br><span class="line">sudo pcs resource</span><br><span class="line">sudo pcs config show</span><br><span class="line">sudo pcs status</span><br><span class="line">sudo rabbitmqctl cluster_status</span><br><span class="line">sudo crm resource restart rabbitmq-clone</span><br><span class="line">sudo crm resource clean rabbitmq-clone</span><br><span class="line">sudo rabbitmqctl list_users</span><br><span class="line">sudo rabbitmqctl cluster_status</span><br><span class="line"></span><br><span class="line">#or use crm command instead of pcs</span><br><span class="line">wget https://raw.githubusercontent.com/ClusterLabs/crmsh/master/contrib/bash_completion.sh</span><br><span class="line">sudo cp bash_completion.sh /etc/bash_completion.d/crmsh</span><br><span class="line">source /etc/bash_completion.d/crmsh</span><br><span class="line">sudo crm configure show</span><br><span class="line">sudo crm ra list ocf |grep rabbit</span><br><span class="line">sudo crm ra meta rabbitmq-cluster</span><br><span class="line">sudo crm configure property stonith-enabled=false</span><br><span class="line">sudo crm configure primitive rabbitmq ocf:heartbeat:rabbitmq-cluster \</span><br><span class="line">  op monitor interval=30 timeout=120 \</span><br><span class="line">  op start interval=0 timeout=100 \</span><br><span class="line">  op stop interval=0 timeout=90</span><br><span class="line">sudo crm configure clone rabbitmq-clone rabbitmq \</span><br><span class="line">  meta ordered=true interleave=true</span><br><span class="line"></span><br><span class="line">#configure a VIP 10.5.0.122 by using pcs/corosync</span><br><span class="line">sudo pcs resource create rabbitvip ocf:heartbeat:IPaddr2 ip=10.5.0.122 cidr_netmask=24 nic=ens3 op monitor interval=30s</span><br><span class="line">#or configure a VIP 10.5.0.122 by using haproxy (not test)</span><br><span class="line">sudo apt install -y haproxy</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/haproxy/haproxy.cfg</span><br><span class="line">listen httpd</span><br><span class="line">    bind 10.5.0.122:5672</span><br><span class="line">    balance source</span><br><span class="line">    option tcpka</span><br><span class="line">    option httpchk</span><br><span class="line">    option tcplog</span><br><span class="line">    server juju-3f992e-ha-0 10.5.0.12:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">    server juju-3f992e-ha-1 10.5.0.7:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">    server juju-3f992e-ha-2 10.5.0.10:5672 check inter 2000 rise 2 fall 5</span><br><span class="line">EOF</span><br><span class="line">sudo pcs resource create lb-haproxy systemd:haproxy --clone</span><br><span class="line">sudo pcs constraint colocation add lb-haproxy-clone with vip   #make haproxy and vip in the same nodes</span><br><span class="line">sudo pcs constraint order start vip then lb-haproxy-clone kind=Optional  #make first start vip before starting haproxy</span><br><span class="line">sudo pcs resource</span><br></pre></td></tr></table></figure>
-<h2 id="standby-test"><a href="#standby-test" class="headerlink" title="standby test"></a>standby test</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@rabbit1:~$ sudo crm node standby rabbit1</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit1:~$ sudo crm status</span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: rabbit1 (version 1.1.18-2b07d5c5a9) - partition with quorum</span><br><span class="line">Last updated: Fri Feb 28 03:00:32 2020</span><br><span class="line">Last change: Fri Feb 28 02:58:53 2020 by root via crm_attribute on rabbit1</span><br><span class="line">3 nodes configured</span><br><span class="line">4 resources configured</span><br><span class="line">Node rabbit1: standby</span><br><span class="line">Online: [ rabbit2 rabbit3 ]</span><br><span class="line">Full list of resources:</span><br><span class="line"> Clone Set: rabbitmq-clone-clone [rabbitmq-clone]</span><br><span class="line">     Started: [ rabbit2 rabbit3 ]</span><br><span class="line">     Stopped: [ rabbit1 ]</span><br><span class="line"> rabbitvip      (ocf::heartbeat:IPaddr2):       Started rabbit2</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit2:~$ sudo rabbitmqctl cluster_status</span><br><span class="line">Cluster status of node rabbit@rabbit2</span><br><span class="line">[&#123;nodes,[&#123;disc,[rabbit@rabbit2]&#125;]&#125;,</span><br><span class="line"> &#123;running_nodes,[rabbit@rabbit2]&#125;,</span><br><span class="line"> &#123;cluster_name,&lt;&lt;&quot;rabbit@rabbit2&quot;&gt;&gt;&#125;,</span><br><span class="line"> &#123;partitions,[]&#125;,</span><br><span class="line"> &#123;alarms,[&#123;rabbit@rabbit2,[]&#125;]&#125;]</span><br></pre></td></tr></table></figure>
-<h2 id="some-logs"><a href="#some-logs" class="headerlink" title="some logs"></a>some logs</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@rabbit1:~$ sudo rabbitmqctl cluster_status</span><br><span class="line">Cluster status of node rabbit@rabbit1</span><br><span class="line">[&#123;nodes,[&#123;disc,[rabbit@rabbit1]&#125;]&#125;,</span><br><span class="line"> &#123;running_nodes,[rabbit@rabbit1]&#125;,</span><br><span class="line"> &#123;cluster_name,&lt;&lt;&quot;rabbit@rabbit1&quot;&gt;&gt;&#125;,</span><br><span class="line"> &#123;partitions,[]&#125;,</span><br><span class="line"> &#123;alarms,[&#123;rabbit@rabbit1,[]&#125;]&#125;]</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit1:~$ sudo pcs resource show rabbitmq-clone</span><br><span class="line"> Resource: rabbitmq-clone (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">  Operations: monitor interval=10 timeout=40 (rabbitmq-clone-monitor-interval-10)</span><br><span class="line">              start interval=0s timeout=100 (rabbitmq-clone-start-interval-0s)</span><br><span class="line">              stop interval=0s timeout=90 (rabbitmq-clone-stop-interval-0s)</span><br><span class="line">ubuntu@rabbit1:~$</span><br><span class="line">ubuntu@rabbit1:~$ sudo crm status</span><br><span class="line">Stack: corosync</span><br><span class="line">Current DC: rabbit1 (version 1.1.18-2b07d5c5a9) - partition with quorum</span><br><span class="line">Last updated: Fri Feb 28 02:52:34 2020</span><br><span class="line">Last change: Fri Feb 28 02:49:43 2020 by root via cibadmin on rabbit1</span><br><span class="line"></span><br><span class="line">3 nodes configured</span><br><span class="line">4 resources configured</span><br><span class="line"></span><br><span class="line">Online: [ rabbit1 rabbit2 rabbit3 ]</span><br><span class="line"></span><br><span class="line">Full list of resources:</span><br><span class="line"></span><br><span class="line"> Clone Set: rabbitmq-clone-clone [rabbitmq-clone]</span><br><span class="line">     Started: [ rabbit1 rabbit2 rabbit3 ]</span><br><span class="line"> rabbitvip      (ocf::heartbeat:IPaddr2):       Started rabbit1</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster auth -u hacluster -p password rabbit1 rabbit2 rabbit3</span><br><span class="line">rabbit3: Authorized</span><br><span class="line">rabbit2: Authorized</span><br><span class="line">rabbit1: Authorized</span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster setup --force --name quqicluster rabbit1 rabbit2 rabbit3</span><br><span class="line">Destroying cluster on nodes: rabbit1, rabbit2, rabbit3...</span><br><span class="line">rabbit1: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit3: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit2: Stopping Cluster (pacemaker)...</span><br><span class="line">rabbit3: Successfully destroyed cluster</span><br><span class="line">rabbit1: Successfully destroyed cluster</span><br><span class="line">rabbit2: Successfully destroyed cluster</span><br><span class="line"></span><br><span class="line">Sending &apos;pacemaker_remote authkey&apos; to &apos;rabbit1&apos;, &apos;rabbit2&apos;, &apos;rabbit3&apos;</span><br><span class="line">rabbit3: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">rabbit1: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">rabbit2: successful distribution of the file &apos;pacemaker_remote authkey&apos;</span><br><span class="line">Sending cluster config files to the nodes...</span><br><span class="line">rabbit1: Succeeded</span><br><span class="line">rabbit2: Succeeded</span><br><span class="line">rabbit3: Succeeded</span><br><span class="line"></span><br><span class="line">Synchronizing pcsd certificates on nodes rabbit1, rabbit2, rabbit3...</span><br><span class="line">rabbit3: Success</span><br><span class="line">rabbit2: Success</span><br><span class="line">rabbit1: Success</span><br><span class="line">Restarting pcsd on the nodes in order to reload the certificates...</span><br><span class="line">rabbit3: Success</span><br><span class="line">rabbit1: Success</span><br><span class="line">rabbit2: Success</span><br><span class="line"></span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster enable --all</span><br><span class="line">rabbit1: Cluster Enabled</span><br><span class="line">rabbit2: Cluster Enabled</span><br><span class="line">rabbit3: Cluster Enabled</span><br><span class="line">ubuntu@rabbit3:~$ sudo pcs cluster start --all</span><br><span class="line">rabbit1: Starting Cluster...</span><br><span class="line">rabbit2: Starting Cluster...</span><br><span class="line">rabbit3: Starting Cluster...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ubuntu@juju-3f992e-ha-2:~$ sudo pcs resource show rabbitmq-clone</span><br><span class="line"> Clone: rabbitmq-clone</span><br><span class="line">  Meta Attrs: ordered=true interleave=true</span><br><span class="line">  Resource: rabbitmq (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">   Operations: monitor interval=30 timeout=120 (rabbitmq-monitor-30)</span><br><span class="line">               start interval=0 timeout=100 (rabbitmq-start-0)</span><br><span class="line">               stop interval=0 timeout=90 (rabbitmq-stop-0)</span><br><span class="line"></span><br><span class="line"> Clone: rabbitmq-clone</span><br><span class="line">  Meta Attrs: interleave=true ordered=true</span><br><span class="line">  Resource: rabbitmq (class=ocf provider=heartbeat type=rabbitmq-cluster)</span><br><span class="line">   Attributes: set_policy=&quot;ha-all ^(?!amq\.).* &#123;&quot;ha-mode&quot;:&quot;all&quot;&#125;&quot;</span><br><span class="line">   Operations: start interval=0s timeout=100 (rabbitmq-start-interval-0s)</span><br><span class="line">               stop interval=0s timeout=90 (rabbitmq-stop-interval-0s)</span><br><span class="line">               monitor interval=30 timeout=120 (rabbitmq-monitor-interval-30)</span><br></pre></td></tr></table></figure>
-<p>[1] <a href="https://www.andylouse.net/openstack-queens-cluster-mode-system-optimize-and-configuration" target="_blank" rel="external">https://www.andylouse.net/openstack-queens-cluster-mode-system-optimize-and-configuration</a><br>[2] <a href="https://www.centos.bz/2019/06/linux%E4%B8%8B%E6%90%AD%E5%BB%BAhaproxypacemakercorosync%E9%9B%86%E7%BE%A4/" target="_blank" rel="external">https://www.centos.bz/2019/06/linux%E4%B8%8B%E6%90%AD%E5%BB%BAhaproxypacemakercorosync%E9%9B%86%E7%BE%A4/</a><br>[3] <a href="https://www.sunmite.com/openstack/RabbitMQ-High-availability-with-Pacemaker.html" target="_blank" rel="external">https://www.sunmite.com/openstack/RabbitMQ-High-availability-with-Pacemaker.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/02/25/How-to-set-up-systemd-resolved-dnssec/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/02/25/How-to-set-up-systemd-resolved-dnssec/" itemprop="url">How to set up systemd-resolved + dnssec</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
-                2020-02-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="Set-up-test-env"><a href="#Set-up-test-env" class="headerlink" title="Set up test env"></a>Set up test env</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#first let us know 8.8.8.8 supports dnssec, while 114.114.114.114 doesn&apos;t support</span><br><span class="line">dig paypal.com +dnssec @8.8.8.8 |grep RRSIG</span><br><span class="line">dig paypal.com +dnssec @114.114.114.114 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#set up dnsmasq as upstream dns server</span><br><span class="line">IFACE=dummy0</span><br><span class="line">SUBNET=10.0.0</span><br><span class="line">sudo ip link add $IFACE type dummy</span><br><span class="line">sudo ifconfig $IFACE $&#123;SUBNET&#125;.1/24</span><br><span class="line">#https://www.cnblogs.com/taoyuxuan/p/11205491.html</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line">#sudo dnsmasq -h -R -d -C /dev/null -z -i $IFACE -I lo -S /test/ --host-record=test.test,$&#123;SUBNET&#125;.1 -2 $IFACE &amp;</span><br><span class="line"></span><br><span class="line">#sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/ --host-record=test.test,$&#123;SUBNET&#125;.1 --conf-file=/dev/null --log-queries &amp;</span><br><span class="line">sudo dnsmasq --no-hosts --no-resolv --no-daemon --no-dhcp-interface==$IFACE --bind-interfaces --interface=$IFACE \</span><br><span class="line">    --except-interface=lo --server=/test/10.0.0.1 --host-record=test.test,$&#123;SUBNET&#125;.1 --log-queries \</span><br><span class="line">    --dnssec --conf-file=/usr/share/dnsmasq-base/trust-anchors.conf --dnssec-check-unsigned --dnssec-debug --server=8.8.8.8 &amp;</span><br><span class="line">dig paypal.com +dnssec @10.0.0.1 |grep RRSIG</span><br><span class="line"></span><br><span class="line">#test dns server with dig</span><br><span class="line">ubuntu@bastion:~$ dig -t a test.test @10.0.0.1 | grep EDNS</span><br><span class="line">; EDNS: version: 0, flags:; udp: 4096</span><br><span class="line">ubuntu@bastion:~$ dig -t aaaa test.test @10.0.0.1 | grep EDNS</span><br><span class="line"># again, should return &quot;; EDNS ...&quot; but doesn&apos;t</span><br><span class="line"></span><br><span class="line">#configure systemd-resolved to look at only 10.0.0.1</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos; /etc/systemd/resolved.conf</span><br><span class="line">[Resolve]</span><br><span class="line">DNS=10.0.0.1</span><br><span class="line">DNSSEC=yes</span><br><span class="line">Cache=no</span><br><span class="line">ubuntu@bastion:~$ grep -Ev &apos;#|^$&apos;  /etc/resolv.conf</span><br><span class="line">nameserver 127.0.0.53</span><br><span class="line">options edns0</span><br><span class="line"></span><br><span class="line">#debug with systemd-resolved</span><br><span class="line">sudo systemctl disable systemd-resolved   #seems systemd-resolved always restart if not disable it as well</span><br><span class="line">sudo systemctl stop systemd-resolved</span><br><span class="line">sudo SYSTEMD_LOG_LEVEL=debug script -c /lib/systemd/systemd-resolved /tmp/debug.txt</span><br><span class="line">systemd-resolve --status --no-pager |egrep &apos;DNSSEC|DNS Servers&apos;</span><br><span class="line">#repeat the following 3 lines to test every time - ./src/resolve/resolved-dns-server.c</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve test.test -t A</span><br><span class="line">sudo systemd-resolve --flush-caches; sudo systemd-resolve --reset-server-features; systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve test.test -t A   #don&apos;t reset, try directly</span><br><span class="line">systemd-resolve paypal.com -t A</span><br><span class="line">systemd-resolve example.com ubuntu.com us.archive.ubuntu.com packages.icinga.com mirror.steadfast.net archive.ubuntu.com ppa.launchpad.net private-ppa.launchpad.net sigok.verteiltesysteme.net sigfail.verteiltesysteme.net verisign.com www.verisign.com</span><br></pre></td></tr></table></figure>
-<h2 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h2><ul>
-<li>LLMNR: 当dns服务不可用时, 支持使用组播dns协议(mDNS)继续在子网内局部查询dns直至网络连接还原为止.</li>
-<li>Knot-DNS: 类似于dnsmasq, bind9的dns server</li>
-<li>EDNS:允许将DNS消息大小从标准的512字节扩展（当UDP用作传输协议时），而无需切换到TCP. 它能提升访问CDN的性能，因为：标准DNS协议只能传递域名参数查IP,　而不能传递域名+用户参数来源查IP．查询下游的CDN, DNS服务器应该是根据用户的来源查询,而不是将上游DNS服务做为来源查询.由于国内的运营商之间互联的带宽是很低的,　所以造成访问速度超慢.</li>
-<li>EDNS0:可以将UDP包从512字节扩展到4096字节从而可以容纳DNSEC包, systemd-resolved通过/etc/resovled.conf里的’options edns0’通知dns server可以edns0, server再回的时候会将其+1, 所以: 雖然是EDNS0 封包，可是不代表這是 DNSSEC 封包，在EDNS0 中有一個 bit: DO 被設定為 1 的時候，才代表這是 DNSSEC 封包 (通过: dig +dnssec example.com ns |grep EDNS  命令可以查看)</li>
-</ul>
-<h2 id="Some-bugs"><a href="#Some-bugs" class="headerlink" title="Some bugs"></a>Some bugs</h2><p>1, <a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1857639</a><br>upstream dns能力被检测正确让dnssec工作(现在一旦突然检查错了, resovle就停止work了), 或者允许disable能力检查<br><a href="https://github.com/systemd/systemd/issues/6490" target="_blank" rel="external">https://github.com/systemd/systemd/issues/6490</a><br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br><a href="https://github.com/systemd/systemd/pull/8849" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8849</a><br>a, 第一种解决方案<br> resolve不能看到timeout or error了就降级(tcp-&gt;dns over tls -&gt; edns0)声称不支持某个特性, 它的特性应该独立于实际查询<br><a href="https://github.com/systemd/systemd/issues/9384" target="_blank" rel="external">https://github.com/systemd/systemd/issues/9384</a><br>b, 允许disable dnsec能力检查<br><a href="https://github.com/systemd/systemd/issues/14435" target="_blank" rel="external">https://github.com/systemd/systemd/issues/14435</a><br>c, 从resolved中移除dnssec</p>
-<p>如有些咖啡厅等公共网络不支持ends0查询，会响应domain not found, 即收到＇NXDOMAIN when queried with EDNS0＇消息时(the query is with EDNS0 enabled and D0 bit set to zero)需要继续只根据EDNS0继续重试<br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br><a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a>  - 代码<br>journalctl -b -u systemd-resolve | grep DVE-2018  - 确诊<br>Workaround:<br>sudo systemctl disable systemd-resolved.service<br>sudo service systemd-resolved stop<br>sudo rm /etc/resolv.conf<br>sudo nano /etc/NetworkManager/NetworkManager.conf<br> then add “dns=default” under [main]<br>sudo service network-manager restart</p>
-<p>上面的降级（resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch）应该只在DNSSEC=allow-downgrade or DNSSEC=no时运行．在真实世界中，NetworkManager’s在无法降级时会告诉用户关掉dnssec<br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1796501</a></p>
-<p>2, <a href="https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3" target="_blank" rel="external">https://github.com/systemd/systemd/pull/9264/commits/844c58fb27b4420f5f8b07070fe2319af6537ae3</a><br>systemd-resolved只是一个stub resovler, 它只是转发dns请求到upstream dns server并等待请求(等待时间为RTT)，它没有考虑到上游递归dns服务器(interative resolver, eg: dnsmasq)的query timeout(authoritative server是用内存来存储dns记录所以它快，但也不是所有的都快），这样systemd-resolved会经常错误的降级（Therefore it often mistakenly degrades the feature set of its　upstream resolvers if it takes them longer than usual to answer a query），特别当DNSSEC=yes不充许降级时就更严重，所以systemd-resolved应该使用RTT+上游的查询时间，而不是只用RTT (DNS_TIMEOUT_MAX_USEC=DNS_SERVER_FEATURE_RETRY_ATTEMPTS * DNS_TIMEOUT_MAX_USEC = 15s），当然，这也不是解决根本问题，但可以缓解．</p>
-<p>3, <a href="https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970" target="_blank" rel="external">https://github.com/systemd/systemd/commit/7abcaa93ab13b1a7b11d50fcd43938de44687970</a><br> <a href="https://github.com/systemd/systemd/issues/11171" target="_blank" rel="external">https://github.com/systemd/systemd/issues/11171</a><br><a href="https://github.com/systemd/systemd/issues/4315" target="_blank" rel="external">https://github.com/systemd/systemd/issues/4315</a> - <a href="https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb" target="_blank" rel="external">https://github.com/poettering/systemd/commit/fc50d3f20d56862520635c3703fd90725b288afb</a><br><a href="https://github.com/systemd/systemd/pull/8608" target="_blank" rel="external">https://github.com/systemd/systemd/pull/8608</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1727237</a><br>这个commit (7abcaa93ab - debian/patches/resolved-Mitigate-DVE-2018-0001-by-retrying-NXDOMAIN-with.patch)可以解决上面关于降级的问题，但是它又引入了回归bug, 没DNSSEC=yes时没有做安全检查 (为DNSSEC=yes时不从UDP+ends0(DNS_SERVER_FEATURE_LEVEL_EDNS0)降级互UDP(DNS_SERVER_FEATURE_LEVEL_UDP)但upstream还未接受patch，故先在debian/patches/resolved_disable-connection-downgrade-when-DNSSEC-yes.patch</p>
-<p>4, <a href="https://github.com/dns-violations/dns-violations/issues/62" target="_blank" rel="external">https://github.com/dns-violations/dns-violations/issues/62</a><br><a href="https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/systemd/+bug/1785383</a><br>dnsmasq 2.79当返回空时省略了EDNS0 OPT记录 (例如访问无AAAA记录时 - patch - 1682d15a744880b0398af75eadf68fe66128af78)) , systemd-resolved能hang (但只是使用了dnsmasq的router会如此)</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1611,7 +1623,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

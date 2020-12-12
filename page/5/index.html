@@ -231,6 +231,357 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/14/OpenStack开发过程中常用Git操作场景/" itemprop="url">OpenStack开发过程中常用Git操作场景</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
+                2019-10-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>  OpenStack开发过程中常用Git操作场景( by quqi99 )</p>
+<p>作者：张华  发表于：2013-07-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<pre><code>    Git是一个分布式的代码管理库，linux之父开发，用了三年多了，直观感受的优点如下：
+
+一是真正的分布式，既不用担心哪天服务器坏了代码丢失了，也不用担心像中美之间网速慢啊或断网什么的影响开发，因为本地就是一个代码库。
+二是体积小，对存储进行了优化。
+三是速度快，因为比较的是哈希。
+四是差异比较算法很智能，能到达行级，甚至一行中的列级。
+五是支持对二进制的差异比较，如一个Word文档什么的。
+六是其它。。。
+
+
+    虽然对原理也算熟，用得也算多，但一段时间不用还是容易忘，下面记下一些日常工作场景常用到的命令：
+</code></pre><p>场景一：如何往社区提交一个Bug<br>      安装git： sudo yum install git git-review<br>     下载代码：git clone <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a></p>
+<p>1    通过ssh-keygen命令创建密钥, 然后在“<a href="https://review.openstack.org/#/settings/ssh-keys" target="_blank" rel="external">https://review.openstack.org/#/settings/ssh-keys</a> 界面设置public key.<br>2    运行“git review -s”命令设置git-review, 这步会在.git/config文件中添加一个名为gerrit的远程分支ssh://zhhuabj@review.openstack.org:29418/openstack/neutron.git，并且可以通过ssh访问：ssh -p 29418 review.openstack.org)<br>      如果报“Permission denied (publickey)”这样的错的话，简单运行”ssh-add”命令将ssh key添加到ssh agent即可</p>
+<pre><code>还有一种可能是用户弄错了，ssh -i zhhuabj_lcy01.pem ubuntu@162.213.**  -vvv
+</code></pre><p>3   如果想要修改一个bug时，先创建一个本地分支,<br>      git checkout -b task/132002<br>4  写完代码之后，也得运行一下pep8测试吧<br>      pep8 –count –repeat –show-source .  或者     ./run_tests.sh -p -N<br>5  或者也运行一下单元测试吧<br>      nosetests -s -v test_backend_sql.py  &amp;&amp; nosetests -s -v test_db_plugin:TestNetworksV2.test_list_shared_networks_with_non_admin_user<br>      或者 python -m testtools.run neutron.tests.unit.test_security_groups_rpc<br>      或者 python setup.py testr –slowest –testr-args=’–subunit  neutron.tests.unit.test_security_groups_rpc’ |  subunit2pyunit<br>      或者 ./run_test.sh -N testtools.run neutron.tests.unit.test_security_groups_rpc<br>6  提交代码到本地库<br>      git add -u (修改的文件）， 若创建了新文件 git add -i<br>      git commit<br>      提交信息的格式一般如下，一般分三段，第一段是标准说清楚你要做什么，如果你在改hyper-v模块最好有hyper-v的字眼，这样大家在收到邮件时只看标题就知道你在做什么了，这很重要；第二段简短描述；第三段一般使用“Fixed bug #161317”，＃号很重要，这样会自动在gerrit上链接到bug上。<br>      Add documentation for upgrading hyperv OpenStack compute node</p>
+<pre><code>This guide covers how to upgrade and configure hyperv OpenStack
+compute node from Grizzly to Havana
+
+Fixed bug #161317
+如果是延用上次提交的信息使用命令：git commit --amend
+</code></pre><p>7  本来在git review通过后gerrit会自动rebase到master分支的，但是有冲突的话没人帮你改，所以自己在git review前最好在本地做一个rebase操作，有冲突及时改：<br>      git rebase master  有冲突再解决冲突之后继续执行：git rebase –continue<br>8  提交代码评审<br>      git review 或者 git review master</p>
+<pre><code>这时会在gerrit服务器上创建一个本地分支：refs/for/master/task/132002, 如果上面改bug时不建分支的话，这里就变成了: refs/for/master，下一个人提交直接就被冲掉了。
+</code></pre><p>9 如果社区上的jenkins出错，确定不是你自己的代码造成的，可以回复“recheck no bug” 触发重新检查，或者”recheck bug ###”</p>
+<p>10 说说依赖提交，例如如果一个patch在社区已经被很多人+1了，但这时候有人希望提交一个相关的其他patch, 你当然不想破坏这么多已经+1的成果，所以你会希望再提一个patch但它会依赖前一个patch。注意两点：生成一个新的gerrit评审页是由Change-Id决定的；而是否在一个评审页上产生一个新的change set去破坏+1是由commit id决定的。所以只要保证前一个patch的commit id不变就行了，然后在这个基础上再提交一个patch再git review即可。当然，在git review之前最好先git rebase一下，不然如果本地git rebase的话就会产生一个新的commit id这样同样会产生一个新的change set，不过gerrit还比较智能，那些+1会自动添加上（Automatically re-added by Gerrit trivial rebase detection script.），　一个例子见：<a href="https://review.openstack.org/#/c/51375/" target="_blank" rel="external">https://review.openstack.org/#/c/51375/</a></p>
+<p>场景二：如何rebase代码<br>git rebase用于在一个分支中合并另一分支，举个例子，一家公司想要用OpenStack做二次开发的话，<br>在公司内部的git库里创建了三个分支：my-master, my-grizzly, my-havana<br>OpenStack的git库里的分支叫：    github-master, github-grizzly, github-havana<br>现在大家把内部代码都提交在my-havana分支，那么也需要时不时将社区的github-havana的代码rebase合并到my-havana分支中<br>1，首先在.git/config里要有两个remote分支，一个指向内部的版本库，一个指向github的版本库，如.git/config的相应配置如下：<br>[core]<br>        repositoryformatversion = 0<br>        filemode = true<br>        bare = false<br>        logallrefupdates = true<br>[remote “my-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/my-origin/</em><br>        url = git://<your_ip>/neutron.git<br>[remote “github-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/github-origin/</em><br>        url = <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a><br>[branch “master”]<br>        remote = my-origin<br>        merge = refs/heads/master<br>[branch “my-havana”]<br>        remote = my-origin<br>        merge = refs/heads/my-havana<br>[branch “my-grizzly”]<br>        remote = my-origin<br>        merge = refs/heads/my-grizzly<br>2, 更新上面所有的remote分支 git remote update<br>3, 因为是要将社区的havana分支的代码同步到自己havana分支，所以为两个远程分支创建对应的本地分支<br>   git checkout -b github-havana github/stable/havana<br>   git checkout -b my-havana origin/my-havana<br>4, 合并，成功后应该用git log -1能看到一个新的合并提交。如果有冲突的话就解决冲突再git merge next<br>   git checkout my-havana<br>   git merget github-havana<br>5, 运行单元测试<br>  tox –recreate -e py27,pep8<br>  ./run_tests.sh -V -f<br>6, 用-n参数(dry-run)测试提交, 提交到名为my-origin的远程分支的my-havana分支中：<br>   git push -n my-origin HEAD:refs/heads/my-havana<br>   若没有问题的话真正提交：<br>   git push  my-origin HEAD:refs/heads/my-havana</your_ip></p>
+<p>场景三：cherry pick代码<br>例如，一个社区bug 1161195被提交到master分支, 社区没有批准进stable-havana分支，或者来不及等它进，这时候公司内部要求进my-havana分支的话，可以将这个bug通过cherry pick合并过来。<br>1, 为这个任务创建一个bug.<br>   git checkout stable-havana<br>   git pull<br>   git checkout -b bug/1161195<br>2, 在社区找到bug 1161195的代码提交id, 如:5f3fa391ed499750ad68ad5b000b4e2e0a86978e<br>   可以通过 git log |grep -B 30 <commit-id>查看确认<br>3, 在bug/1161195分支上执行cherry pick命令：<br>   git cherry-pick -s  -x  <commit-id><br>4, 提交代码评审<br>   git commit or git commit –amend<br>   git review stable-havana</commit-id></commit-id></p>
+<p>另一个例子：</p>
+<p>git clone <a href="https://github.com/openstack/charm-ceilometer" target="_blank" rel="external">https://github.com/openstack/charm-ceilometer</a><br>git checkout stable/16.07 </p>
+<h1 id="come-from-lauchpad-page"><a href="#come-from-lauchpad-page" class="headerlink" title="come from lauchpad page"></a>come from lauchpad page</h1><p>git fetch git://git.openstack.org/openstack/charm-ceilometer refs/changes/00/375100/1 &amp;&amp; git cherry-pick FETCH_HEAD</p>
+<p>git review stable/18.07</p>
+<p>20201014更新, charm patch合并了, 要使用还得cherry-pick到stable branch, cherry-pick直接在review.opendev.org上就有一个’cherry-pick’按钮直接可以做不需要用这里的方法, 如果界面上失败那多半是因为这个fix已经在那个分支了. 在要做cherry-pick之后可以检查一下(<a href="https://docs.openstack.org/charm-guide/latest/release-schedule.html)下一个分支是不是马上要release了" target="_blank" rel="external">https://docs.openstack.org/charm-guide/latest/release-schedule.html)下一个分支是不是马上要release了</a>, 如果是也许就不需要做了.</p>
+<p>场景四：将git产生的patch变成和svn兼容</p>
+<p>#!/bin/sh<br>#</p>
+<h1 id="git-svn-diff"><a href="#git-svn-diff" class="headerlink" title="git-svn-diff"></a>git-svn-diff</h1><h1 id="Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch"><a href="#Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch" class="headerlink" title="Generate an SVN-compatible diff against the tip of the tracking branch"></a>Generate an SVN-compatible diff against the tip of the tracking branch</h1><p>REV=<code>git svn find-rev $(git rev-list --date-order --max-count=1 master)</code><br>git diff –no-prefix $(git rev-list –date-order –max-count=1 master) $<em> |sed -e “s/^+++ .</em>/&amp; (working copy)/“ \<br>-e “s/^— .<em>/&amp; (revision $REV)/“ \<br>-e “s/^diff –git [^[:space:]]</em>/Index:/“ -e “s/^index.*/===================================================================/“</p>
+<p>在本机上创建一个共享的git库：</p>
+<p>sudo groupadd git<br>sudo useradd -d /home/git -m -g git git<br>sudo passwd git<br>su - git<br>mkdir /home/git/patent.git<br>cd patent.git/<br>git init –bare –shared</p>
+<h1 id="test-in-another-directory"><a href="#test-in-another-directory" class="headerlink" title="test in another directory"></a>test in another directory</h1><p>cd /bak/tmp<br>git clone git@9.123.136.122:/home/git/patent.git<br>cd patent<br>cp test.doc .<br>git add test.doc<br>git commit -m “init commit”<br>git push origin master</p>
+<p>这时候肯定是希望大家通过git用户可以访问git库，但又不希望他们通过ssh登录这台机器，所以修改/etc/passwd文件，</p>
+<p>将     “  git:x:502:503::/home/git:/bin/bash ”</p>
+<p>改成：git:x:502:503::/home/git:/usr/bin/git-shell</p>
+<p>这时候还需要将每个客户端的公钥加到/home/git/.ssh/authorized_keys文件里，公钥可以通过ssh-keygen -t rsa生成。</p>
+<p>场景五，使用git命令操作bzr与hg</p>
+<p>sudo apt-get install mercurial python-hglib<br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg</a><br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr</a><br>sudo chmod 755 ./git-remote-<em><br>sudo mv git-remote-</em> /usr/bin</p>
+<p>examples:<br>git clone “bzr::lp:ubuntu/ifupdown”<br>git clone “bzr::lp:debian/ifupdown”<br>git clone “hg::<a href="http://anonscm.debian.org/hg/collab-maint/ifupdown/" target="_blank" rel="external">http://anonscm.debian.org/hg/collab-maint/ifupdown/</a>“</p>
+<p>场景六，依赖提交</p>
+<p>有一种情况，我向社区同时提交了两个有依赖的提交，在本地提交这两个提交之后直接git review即可。<br>现在前一个提交（假设提交id为：187f）要修改，怎么办呢？<br>a, git rebase 187f^ –interactive， 回到要修改的提交的前一个点上<br>b, 修改那个提交，最后git commit –amend<br>c, git rebase –continue, 继续变基并且返回到原来的HEAD处<br>如果中间出现“interactive rebase already started”， 用“git rebase -i –abort”命令重来。</p>
+<p>场景七, 在lp上创建私有git仓库, 并使用lp评审代码</p>
+<p>git clone <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a></p>
+<p>git remote set-url –push origin no_push</p>
+<h1 id="注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。"><a href="#注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。" class="headerlink" title="注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。"></a>注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。</h1><p>#如果有+git的话，提交PR时， 原本指定target是<a href="https://git.launchpad.net/layer-snap，" target="_blank" rel="external">https://git.launchpad.net/layer-snap，</a> 但它会自动变回~zhhuabj/+git/layer-snap:master</p>
+<p>#并且可能会报这种错误”’~zhhuabj/+git/layer-snap:lp1847574 is not mergeable into layer-snap:master’“</p>
+<h1 id="git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap"><a href="#git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap" class="headerlink" title="git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap"></a>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap</h1><p>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/layer-snap<br>git push –set-upstream zhhuabj master  #then you will see the new repo in <a href="https://code.launchpad.net/~zhhuabj/+git" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git</a></p>
+<p>git remote -v<br>git branch -a<br>git fetch –all<br>git fetch –all –prune</p>
+<p>#git fetch origin</p>
+<p>#git checkout master</p>
+<p>#git rebase origin/master</p>
+<p>git checkout -b lp1847574<br>git commit -m ‘test’<br>git commit –amend -author=’Hua <xxx.mail.com>‘<br>git push –set-upstream zhhuabj lp1847574</xxx.mail.com></p>
+<p>#如果更新了代码再提交时如果rebase后可能需要添加-f参数 - <a href="https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch" target="_blank" rel="external">https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch</a></p>
+<p>The -f is actually required because of the rebase. Whenever you do a rebase you would need to do a force push because the remote branch cannot be fast-forwarded to your commit. You’d always want to make sure that you do a pull before pushing, but if you don’t like to force push to master or dev for that matter, you can create a new branch to push to and then merge or make a PR.</p>
+<h1 id="git-push-f-–set-upstream-zhhuabj-lp1847574"><a href="#git-push-f-–set-upstream-zhhuabj-lp1847574" class="headerlink" title="git push -f –set-upstream zhhuabj lp1847574"></a>git push -f –set-upstream zhhuabj lp1847574</h1><h1 id="Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574"><a href="#Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574" class="headerlink" title="Propose for merging - https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574"></a>Propose for merging - <a href="https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574</a></h1><h1 id="zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master"><a href="#zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master" class="headerlink" title="~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master"></a>~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master</h1><p>#target repository -&gt; other: ~openstack-charm-testers/xxxstack-bundles/+git/xxxstack-bundles<br>target repository -&gt; other: <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a><br>target branch: refs/heads/master</p>
+<p>场景八: 内核</p>
+<p>git remote add xenial git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git<br>git fetch xenial<br>git log –no-merges –oneline xenial/hwe…xenial/master drivers/net/ethernet/mellanox/mlx5/</p>
+<p>其它命令：</p>
+<p>git reset HEAD~1                      撤销最后一次提交。<br>git reset –hard HEAD^             撤销最后一次提交并清除本地修改</p>
+<p>git reset –hard Merge_Head  和服务器保持一致</p>
+<p>git clean -dfx                               删除本地未在版本库的东西</p>
+<p>git stash  &amp; git stash list &amp; git stash pop  暂存代码</p>
+<p>git rebase -i –abort </p>
+<p>git tag –contains af055e37a91d215d7174d0b84c86795ca81086a7</p>
+<p>git branch -a –contains <sha1></sha1></p>
+<p>git tag –contains <sha1></sha1></p>
+<p>git grep smp_call_function_many</p>
+<h1 id="refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html"><a href="#refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html" class="headerlink" title="refer https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html"></a>refer <a href="https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html" target="_blank" rel="external">https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html</a></h1><p>git log v4.13..master –oneline –no-merges kernel/smp.c</p>
+<p>git log v4.13..master –grep=smp –oneline –no-merges kernel/smp.c</p>
+<p>git log |grep Ibaf4385              一个patch只有一部分，另一部分肯定是被其他patch覆盖了， 可用’git log’查找   </p>
+<p>git revert 7b60534</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/22/Root-Mi-note-lte-with-SuperSU-without-flashing-TWRP-Recovery-permanently/" itemprop="url">Root Mi note lte with SuperSU without flashing TWRP Recovery permanently</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
+                2019-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="作者：张华-发表于：2017-06-23"><a href="#作者：张华-发表于：2017-06-23" class="headerlink" title="作者：张华 发表于：2017-06-23"></a>作者：张华 发表于：2017-06-23</h2><p>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> ) ##</p>
+<p>I have two Meizu MX4 ubuntu cellphones, now I will re-install Flyme or native google android on them. All softwares can be downloaded from the link: <a href="https://pan.baidu.com/s/1bpo0xbx" target="_blank" rel="external">https://pan.baidu.com/s/1bpo0xbx</a></p>
+<p>1, Start MX4 Ubuntu, and enable ‘Developer Mode’ from ‘System Setting -&gt; About Cellphone’ menu.</p>
+<p>2, Install the tools adb and fastboot from the link <a href="http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz" target="_blank" rel="external">http://esausilva.com/wp-content/plugins/cimy-counter/cc_redirect.php?cc=platform-tools-linux&amp;fn=http://esausilva.com/misc/android/platform-tools-linux.tar.gz</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/bak/java/platform-tools:$PATH</span><br></pre></td></tr></table></figure>
+<p>3, Make sure your cellphone can connect to compute (Ubuntu) via USB and adb</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ sudo lsusb |grep Meizu</span><br><span class="line">  Bus 003 Device 010: ID 2a45:0c02 Meizu Corp. MX Phone (MTP &amp; ADB)</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">  SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2a45&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">$ cat ~/.android/adb_usb.ini</span><br><span class="line">  2a45</span><br><span class="line">$ sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">$ adb kill-server &amp;&amp; adb start-server</span><br><span class="line">$ adb devices</span><br><span class="line">  List of devices attached</span><br><span class="line">  75HABLMCYUR3	device</span><br><span class="line">$ sudo apt-get install go-mtpfs mtp-tools gmtp</span><br><span class="line">$ sudo mtp-detect</span><br><span class="line">  libmtp version: 1.1.10</span><br><span class="line">  Listing raw device(s)</span><br><span class="line">  Device 0 (VID=2a45 and PID=0c02) is a Meizu MX Phone (MTP+ADB).</span><br><span class="line">  Found 1 device(s):</span><br><span class="line">  Meizu: MX Phone (MTP+ADB) (2a45:0c02) @ bus 3, dev 10</span><br></pre></td></tr></table></figure>
+<p>4, Brush the thirty party recovery. Shutdown your cellphone, and press POWER + VOL-DOWN to enter fastboot mode. Use usb to connect cellphone and compute, than run:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/tools/mx4 $ fastboot flash recovery recovery.img</span><br><span class="line">sending &apos;recovery&apos; (10000 KB)...</span><br><span class="line">OKAY [  0.506s]</span><br><span class="line">writing &apos;recovery&apos;...</span><br><span class="line">OKAY [  0.410s]</span><br><span class="line">finished. total time: 0.916s</span><br></pre></td></tr></table></figure></p>
+<p>5, Press POWER + VOL-UP to enter above recoerty, and Click ‘Install Zip -&gt; Install zip from sideload’, then run:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:/bak/java/platform-tools$ adb sideload update.zip</span><br><span class="line">sending: &apos;sideload&apos;  100%</span><br></pre></td></tr></table></figure>
+<p>NOTE: if you want to install raw google android, just run ‘adb sideload cm-13.0-20160820-UNOFFICIAL-mx4.zip’ instead.</p>
+<p>6, Reboot the cellphone. OK.</p>
+<h2 id="附录-小米手机线刷开发版-国际版"><a href="#附录-小米手机线刷开发版-国际版" class="headerlink" title="附录 - 小米手机线刷开发版/国际版"></a>附录 - 小米手机线刷开发版/国际版</h2><p>现在, 小米不再允许行货和国际版互刷ROM, 它加入了防回滚保护（Anti-Rollback Protection）机制. 这意味着，如果手机当前处于较高的MIUI版本，降级刷机大概率会变砖。实测发现，行货机刷国际版ROM将卡死在Recovery界面，显示“this MIUI version can’t be installed on this device”。当然，想要绕过官方的限制也有办法，前提是解锁bootloader，然后用TWRP、fastboot或者MiFlash刷机。使用MiFlash时切记勾选“Clean All”，不要选“clean all and lock”。如果你不幸刷在国际版和国行版ROM之间刷机成砖，只有进入EDL（紧急下载）模式自救。然而，EDL模式仅对极为有限的小米账号开放权限。本文测试的手机是mi note lte不再之列.</p>
+<p>1, 下载dev rom是virgo_images_5.12.4_20151126.0000.5_4.4_cn_eb14b0eb8d.tgz (<a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a>). rom里的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">NOTE: 这步应该在解锁, 以及在开发模式打开充许OEM之后运行</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn</span><br><span class="line">flash_all.bat  flash_all_except_data_storage.bat  flash_all_except_data_storage.sh  flash_all_except_storage.bat  flash_all_except_storage.sh  flash_all.sh  images  misc.txt</span><br><span class="line">$ ls virgo_images_5.12.4_20151126.0000.5_4.4_cn/images/</span><br><span class="line">8974_msimage.mbn  cache.img  emmc_appsboot.mbn  gpt_backup0.bin  gpt_main0.bin  MPRG8974.mbn  patch0.xml   rawprogram0.xml  rpm.mbn   sdi.mbn     tz.mbn</span><br><span class="line">boot.img          dummy.img  flash.xml          gpt_both0.bin    misc.img       NON-HLOS.bin  persist.img  recovery.img     sbl1.mbn  system.img  userdata.img</span><br><span class="line"></span><br><span class="line">$ cat flash_all.sh</span><br><span class="line">fastboot $* getvar product 2&gt;&amp;1 | grep &quot;^product: *MSM8974$&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching image and device&quot;; exit 1; fi</span><br><span class="line">fastboot $* getvar board_version 2&gt;&amp;1 | grep &quot;^board_version: *5.[^5]&quot;</span><br><span class="line">if [ $? -ne 0 ] ; then echo &quot;Missmatching board version&quot;; exit 1; fi</span><br><span class="line"></span><br><span class="line">fastboot $* flash tz `dirname $0`/images/tz.mbn</span><br><span class="line">fastboot $* flash dbi `dirname $0`/images/sdi.mbn</span><br><span class="line">fastboot $* flash sbl1 `dirname $0`/images/sbl1.mbn</span><br><span class="line">fastboot $* flash rpm `dirname $0`/images/rpm.mbn</span><br><span class="line">fastboot $* flash aboot `dirname $0`/images/emmc_appsboot.mbn</span><br><span class="line">fastboot $* erase boot</span><br><span class="line">fastboot $* erase DDR</span><br><span class="line">fastboot $* flash misc `dirname $0`/images/misc.img</span><br><span class="line">fastboot $* flash modem+modem1 `dirname $0`/images/NON-HLOS.bin</span><br><span class="line">fastboot $* flash system+system1 `dirname $0`/images/system.img</span><br><span class="line">fastboot $* flash cache `dirname $0`/images/cache.img</span><br><span class="line">fastboot $* flash userdata `dirname $0`/images/userdata.img</span><br><span class="line">fastboot $* flash recovery `dirname $0`/images/recovery.img</span><br><span class="line">fastboot $* flash boot+boot1 `dirname $0`/images/boot.img</span><br><span class="line">fastboot $* reboot</span><br></pre></td></tr></table></figure></p>
+<p>2, 手机通过MTP模式连接电脑, 通过lsusb找到设备号为: Bus 003 Device 029: ID 2717:0360<br>3, adb连接手机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">$ cat /etc/udev/rules.d/51-android.rules</span><br><span class="line">SUBSYSTEM==&quot;usb&quot;, ATTR&#123;idVendor&#125;==&quot;2717&quot;, MODE=&quot;0666&quot;, SYMLINK+=&quot;android_adb&quot;</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">$ adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">d6b38a3a	device</span><br></pre></td></tr></table></figure></p>
+<p>如果不出来, 是需要 狂按”设置我的设备 -&gt; 全部参数 -&gt; MINU版本”进入开发者模式, 然后”设置 -&gt; 更多设置 -&gt; 开发者选项”打开USB调试”和”FASTBOOT刷机模式”<br>4, 和Meizu是一样的, 也是音量下+电源键进入fastboot模式, 不连电脑，音量下+电源键长按进入fastboot,USB线连接电脑. 注: 同样, 也是音量上+电源键可安装第三方recovery, 见 [5].<br>5, 刷机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">#./flash_all_except_storage.sh  #clean cache, but not clean data</span><br></pre></td></tr></table></figure></p>
+<p>6, 继续root, 刷机成功之后, 已经是开发版, 进入手机，安全中心 -&gt; 授权管理 -&gt; ROOT,反复确认后，手机会下载对应的ROOT包安装后重启。机后，安全中心 -&gt; 授权管理已经可以进入. 这时候就可以使用’adb root’了.</p>
+<p>注: 遗憾地是, 机子刚好音量下键损坏, 这样借助如刷机精灵里的实用工具进入fastboot或recovery模式. 好吧, 又得整到windows上了. 照着文档[4]. (注: 其实不用转到windows, 直接在linux下使用”adb reboot bootloader”也可以重启至fastboot模式”<br>1, 安装小米助手, 当手机连上win7电脑时会自动安装驱动 - <a href="http://zhushou.xiaomi.com/" target="_blank" rel="external">http://zhushou.xiaomi.com/</a><br>2, 安装线刷工具 - <a href="http://bigota.d.miui.com/tools/MiPhone20141107.exe" target="_blank" rel="external">http://bigota.d.miui.com/tools/MiPhone20141107.exe</a><br>3, 线刷包解压 - <a href="http://pan.baidu.com/s/1bfGxVg" target="_blank" rel="external">http://pan.baidu.com/s/1bfGxVg</a><br>4, 安装刷机精灵, 使用里面的fastboot实用工具根本无法进入fastboot, 所以直接采用刷机精灵的一键刷机功能上传线刷包线刷. 但出错了, 说是刷入的版本比机子已有的版本低会线刷失败.<br>5, 但上一步一键刷机功能代替音量减键成功让手机进入了fastboot模式, 所以此时切换成小米的刷机工具再试, 结果小米的刷机工具也有bug, 报找不到远程分区.<br>6, 试图找到小米原生的线刷包恢复, 但官网上找不着.<br>7, 还好, 手机进入fastboot模式之后, 没有刷机成功, 只要手机还有电, 再重启还是进入的是flashboot模式, 这样避免了坏的音量键及进不了系统. 继续找啊找试啊试, 终于发现这个包是好的(Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, <a href="https://firmwarefile.com/xiaomi-mi-note-lte" target="_blank" rel="external">https://firmwarefile.com/xiaomi-mi-note-lte</a> )<br>8, 这个网站(<a href="https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备" target="_blank" rel="external">https://xiaomiflashtool.com/)下载的最新的xiaomiflashtool反而不行说找不着设备</a>. 注: 这个tool也可在driver菜单自动安装驱动.<br>9, 这样成功换上了Xiaomi_Mi_Note_LTE_V9.5.1.0.MXEMIFA_20180406.0000.00_Global_6.0_XFT.zip, 这似乎是国际稳定版哦.</p>
+<p>如何将国际稳定版转成国际开发版呢? 再线刷一遍. 这次都在linux下进行.<br>1,Install Global Developer ROM for Redmi Note 4G<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># search in google by &apos;eveloper bigota.d.miui.com redmi note 4g -stable&apos;, and download fastboot rom - https://c.mi.com/thread-510369-1-0.html</span><br><span class="line">#NOTE: this recovery - http://bigota.d.miui.com/7.11.6/miui_MINoteGlobal_7.11.6_ce58816710_6.0.zip</span><br><span class="line">wget http://bigota.d.miui.com/7.11.6/virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">tar -xf virgo_global_images_7.11.6_20171106.0000.00_6.0_global_be457b58a3.tgz</span><br><span class="line">cd virgo_global_images_7.11.6_20171106.0000.00_6.0_global</span><br><span class="line">adb reboot bootloader</span><br><span class="line">chmod +x flash_all.sh</span><br><span class="line">./flash_all.sh</span><br><span class="line">运行./flash_all.sh相当于:</span><br><span class="line">#https://blog.csdn.net/quqi99/article/details/51636869</span><br><span class="line">fastboot flash boot boot.img</span><br><span class="line">fastboot flash recovery recovery.img</span><br><span class="line">fastboot erase system</span><br><span class="line">fastboot flash system system.img</span><br><span class="line">#fastboot flash userdata userdata.img</span><br><span class="line">#fastboot flash cache cache.img</span><br></pre></td></tr></table></figure></p>
+<p>2, Custom TWRP for Xiaomi Redmi Note 4G (twrp-3.3.1-0-dior.img - <a href="https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html" target="_blank" rel="external">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</a>),<br>注: 目前小米也关闭了解锁功能(<a href="https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM" target="_blank" rel="external">https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM</a>, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机.<br>但mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true”<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ adb reboot bootloader</span><br><span class="line">$ fastboot oem device-info</span><br><span class="line">...</span><br><span class="line">(bootloader) 	Device tampered: true</span><br><span class="line">(bootloader) 	Device unlocked: true</span><br><span class="line">(bootloader) 	Charger screen enabled: false</span><br><span class="line">(bootloader) 	Display panel:</span><br><span class="line">OKAY [  0.006s]</span><br><span class="line">finished. total time: 0.006s</span><br></pre></td></tr></table></figure></p>
+<p>继续刷TWRP:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">wget https://dl.twrp.me/dior/twrp-3.3.1-0-dior.img</span><br><span class="line">adb reboot bootloader              #enter fastboot mode</span><br><span class="line">#fastboot devices                     #just for case when locking BL lock</span><br><span class="line"># fastboot flash unlock unlock.key  #if need to unlock, eg https://www.techmesto.com/guide-unlock-bootloader-nokia-android-phones/</span><br><span class="line">#fastboot oem unlock</span><br><span class="line">fastboot flash recovery twrp-3.3.1-0-dior.img</span><br><span class="line">fastboot reboot</span><br></pre></td></tr></table></figure></p>
+<p>但是上面刷了之后不work,, 刷了TWRP之后’adb reboot recovery’进入的还是Mi-Recovery 2.0.1模式, 官网说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://twrp.me/xiaomi/xiaomiredminote4gsinglesim.html</span><br><span class="line">Note many devices will replace your custom recovery automatically during first boot. To prevent this, use Google to find the proper key combo to enter recovery. After typing fastboot reboot, hold the key combo and boot to TWRP. Once TWRP is booted, TWRP will patch the stock ROM to prevent the stock ROM from replacing TWRP. If you don&apos;t follow this step, you will have to repeat the install.</span><br></pre></td></tr></table></figure></p>
+<p>但运行完’fastboot reboot’再按音量上键+电源键根本就进不了recovery模式, 可能是我的音量键有问题的原因吧. 此路不通.这个网页说:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://www.reddit.com/r/Xiaomi/comments/bdurg8/replace_mi_recovery_with_twrp/</span><br><span class="line">With the new protection you need to boot from adb to twrp, by fastboot boot twrp.img. When boot in twrp transfer the image and flash inside from twrp. Now, it will reboot on TWRP recovery.</span><br></pre></td></tr></table></figure></p>
+<p>所以我们可以先’fastboot boot’来启动TWRP, 再将TWRP持久化. 但是试了很多多twrp版本都报下列错”dtb not found”.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ fastboot boot twrp-3.3.1-0-dior.img</span><br><span class="line">downloading &apos;boot.img&apos;...</span><br><span class="line">OKAY [  0.433s]</span><br><span class="line">booting...</span><br><span class="line">FAILED (remote: dtb not found)</span><br><span class="line">finished. total time: 0.449s</span><br></pre></td></tr></table></figure></p>
+<p>无奈下载网页(<a href="http://en.miui.com/thread-213264-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-213264-1-1.html</a>) 或这个网页(<a href="http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功" target="_blank" rel="external">http://en.miui.com/thread-628692-1-1.html)上提到的twrp均可成功</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastboot boot twrp.img</span><br></pre></td></tr></table></figure></p>
+<p>但语言却不是英语看不懂啊, 没办法, 只好在网上找一个有图的, 照着大致的位置点了.<br><img src="https://img-blog.csdnimg.cn/20190822112723313.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20190822112742744.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>上面需要事先将supersu下载放到手机上, 注意: 只有/sdcard/Download是可写的. (其他目录需要root权限运行”adb remount  #mount -o remount,rw /system”才行”.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push SR5-SuperSU-v2.82-SR5-20171001224502.zip /sdcard/Download/</span><br></pre></td></tr></table></figure>
+<p>这样就完成了在不替换现有的mi-recovery的情况下同时又使用TWRP安装supersu, 可参考 - <a href="https://in.c.mi.com/thread-79402-1-1.html" target="_blank" rel="external">https://in.c.mi.com/thread-79402-1-1.html</a></p>
+<p>3, 可选  - 本来正常情况TWRP能直接flash的话, 应该可以这样安装supersu的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb reboot recovery        #enter recovery mode</span><br><span class="line">adb sideload adb sideload SR5-SuperSU-v2.82-SR5-20171001224502.zip</span><br></pre></td></tr></table></figure></p>
+<p>4, 安装必要的软件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"># use adb via wifi</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb install Complete\ Linux\ Installer_v3.0\ BETA_apkpure.com.apk</span><br><span class="line"></span><br><span class="line">adb shell</span><br><span class="line">su</span><br><span class="line"></span><br><span class="line"># grep &apos;system&apos; /proc/mounts</span><br><span class="line">mount -o rw,remount -t ext4 /dev/block/platform/msm_sdcc.1/by-name/system /system</span><br><span class="line"></span><br><span class="line"># ssh server -  by install SSHDroid and use supersu to give it root</span><br><span class="line"></span><br><span class="line"># ssh client</span><br><span class="line">ln -s /data/data/berserker.android.apps.sshdroid/dropbear/ssh /system/bin/ssh</span><br><span class="line">chmod o+rx /system/bin/ssh</span><br><span class="line"></span><br><span class="line"># key</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/dropbear/</span><br><span class="line">./dropbearkey -t rsa -f ../home/.ssh/id_rsa &gt; ../home/.ssh/id_rsa.pub</span><br><span class="line">cd /data/data/berserker.android.apps.sshdroid/home</span><br><span class="line">echo &apos;ssh hua@t440p -i ~/.ssh/id_rsa&apos; &gt; ./ssht440p.sh</span><br><span class="line">sh ssht440p.sh</span><br><span class="line"></span><br><span class="line"># use vi in adb shell, we don&apos;t need to add busybox prefix in ssh</span><br><span class="line">busybox vi /etc/hosts</span><br></pre></td></tr></table></figure></p>
+<p>5, run ubuntu 18.04 on android by using linuxdeploy<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#run ubuntu 18.04 on android by using linuxdeploy</span><br><span class="line">#https://www.maketecheasier.com/install-ubuntu-on-android-linux-deploy/</span><br><span class="line">wget https://github.com/meefik/busybox/releases/download/1.30.1/busybox-1.30.1-41.apk</span><br><span class="line">adb install busybox-1.30.1-41.apk  #install into /system/xbin</span><br><span class="line">wget https://github.com/meefik/linuxdeploy/releases/download/2.4.0/linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install linuxdeploy-2.4.0-251.apk</span><br><span class="line">adb install vnc_viewer_remote_desktop.apk</span><br><span class="line"></span><br><span class="line">#enter linuxdeploy</span><br><span class="line">telnet 192.168.99.249 5023</span><br><span class="line"></span><br><span class="line">#but hit the error: chroot: can&apos;t execute &apos;/bin/su&apos;: No such file or directory</span><br><span class="line">/su/bin/su root</span><br><span class="line">/data/user/0/ru.meefik.linuxdeploy/files/bin/linuxdeploy shell</span><br><span class="line">mkdir /data/local/mnt/&#123;dev,sys,proc&#125;</span><br><span class="line">#for d in dev sys proc; do mount -o bind /$d /data/local/mnt/$d; done</span><br><span class="line">#umount /data/local/mnt/&#123;dev,proc,sys&#125;</span><br><span class="line">chroot /data/local/mnt/ /bin/pwd</span><br><span class="line">ls /data/local/mnt/bin/su</span><br><span class="line"></span><br><span class="line">上面的chroot错误实际上是image文件没有创建的原因</span><br><span class="line">ls /data/data/ru.meefik.linuxdeploy/files/config/linux.conf</span><br><span class="line">rm -rf /sdcard/linux.img</span><br><span class="line">vi /data/user/0/ru.meefik.linuxdeploy/files/include/bootstrap/rootfs/deploy.sh</span><br><span class="line"></span><br><span class="line">20191012更新</span><br><span class="line">架构使用armhf，源使用http://mirrors.ustc.edu.cn/ubuntu-ports/时可以进入debootstrap了， 但是在lsb_base这步总是出错， 怀疑是科大的源有问题， 所以换成腾讯的源https://mirrors.cloud.tencent.com/ubuntu-ports/后可以debootstrap成功， 但是在chroot /data/local/mnt bin/su - root -c &apos;DEBIAN_FRONTEND=nointeractive apt-get install -yfq --no-install-recommends dbus&apos;这步也是相当地慢(才0.10k/s)，不得已， 又退回使用http://ports.ubuntu.com/ubuntu-ports/， 然后就成功了， 在手机上通过‘ssh ubuntu@localhost’登录bionic。</span><br><span class="line">1, 但ubuntu里的chrome仍然无法在外面使用，而使用android版本的chrome又无法打开SF(需要设置浏览器中的查看桌面版网页，但仍然无法选择sf owner), 试试microsoft edge</span><br><span class="line">2, 下面adb或者ssh两种方式连接手机</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br><span class="line">3, 手机外接大屏幕的话，采用android中的”无线投屏&quot;或者在连接好adb之后运行“sudo snap install --channel=edge scrcpy &amp;&amp; scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800&quot; (注：若电脑的scrcpy容器是黑屏的话是因为手机是黑屏的）</span><br><span class="line"></span><br><span class="line">若手机未root的话, 可以这个投屏:</span><br><span class="line">将手机与电脑连接至相同wifi 记录WLAN设置中手机的IP地址</span><br><span class="line">连接数据线并允许调试</span><br><span class="line">终端执行 adb tcpip 5555 并在手机上点击“ 确定 ” ( 即在手机上开启5555端口 )</span><br><span class="line">终端执行 adb connect [手机IP]:5555 并在手机上点击“ 确定 ”( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">拔掉数据线</span><br><span class="line">终端执行 adb reconnect offline 强制未授权设备重新连接</span><br><span class="line">终端执行 adb connect [手机IP]:5555 重新进行连接 ( 此处可用 adb devices 检查连接情况 )</span><br><span class="line">scrcpy --fullscreen --show-touches --bit-rate 2M --max-size 800</span><br><span class="line">想用声音的话, 可结合usbaudio - https://github.com/rom1v/usbaudio , 但是似乎usbaudio不支持android 8.1以上版本了</span><br></pre></td></tr></table></figure></p>
+<h2 id="root-redmi4x-20200618更新"><a href="#root-redmi4x-20200618更新" class="headerlink" title="root redmi4x - 20200618更新"></a>root redmi4x - 20200618更新</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">安装要用到的软件</span><br><span class="line">1, xiaomi redmi 4x usb driver (Universal ADB Driver V6.0.zip - https://www.skyneel.com/xiaomi-usb-driver)</span><br><span class="line">2, xiaomi redmi 4x unlock bootloader (miflash_unlock-en-4.5.514.47.zip - https://en.miui.com/unlock/）</span><br><span class="line">3, xiaomi redmi 4x TWRP recovery (twrp-3.3.1-0-santoni.img - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">4, xiaomi redmi 4x supersu (UPDATE-SuperSU-v2.82-20170528234214.zip - https://www.skyneel.com/supersu-zip-app)</span><br><span class="line">5, xiaomi redmi 4x adb/fast-boot tool (platform-tools_r30.0.2-windows.zip - https://developer.android.com/studio/releases/platform-tools)</span><br><span class="line">6, [option] mi flash (https://www.skyneel.com/xiaomi-mi-flash-tool)</span><br><span class="line"></span><br><span class="line">unlock bootloader</span><br><span class="line">#https://www.skyneel.com/unlock-bootloader-xiaomi-devices</span><br><span class="line">1, 打开开发者模式， 并在开发者模式中打开USB调试， 并同时打开充许OEM解锁</span><br><span class="line">2, 先关机，USB线连上， 然后长按音量下+电源键进入fastboot模式, ( 注: 音量上+电源键是安装第三方recovery)</span><br><span class="line">3 , 并用这个手机的小米帐号登录后解锁手机。</span><br><span class="line">注: 目前小米也关闭了解锁功能(https://www.miui.com/unlock/index.html)不允许行货和国际版互刷ROM, 小米增加了一段区域对照码, 想绕开限制, 只有先不互刷先解锁(即国行版先刷国内ROM骗过解锁), 然后再用TWRP, fastboot或mifalsh刷机. 见我之前的一篇博客.</span><br><span class="line">mi note lte无须解锁, 因为’fastboot oem device-info’显示’Device unloced: true&quot;</span><br><span class="line">redmi 4x采用此段方法解锁</span><br><span class="line"></span><br><span class="line">flash TWRP</span><br><span class="line">1, usb连接手机，并在手机上点击信任后， 就可以使用adb命令了</span><br><span class="line">D:\&gt;adb devices</span><br><span class="line">List of devices attached</span><br><span class="line">aa89d2927d93    device</span><br><span class="line">2, 进入bootloader模式： adb reboot bootloader</span><br><span class="line">3, 因为上面我们已经unlock bootloader了， 所以&apos;fastboot devices&apos;能看到东西</span><br><span class="line">E:\tools\redmi4x&gt;fastboot devices</span><br><span class="line">aa89d2927d93    fastboot</span><br><span class="line">4， fastboot.exe flash recovery twrp-3.3.1-0-santoni.img - fastboot.exe flash recovery twrp-3.3.1-0-santoni.img</span><br><span class="line">5, fastboot reboot</span><br><span class="line">6, 刷TWRP成功后， 再使用&apos;adb reboot recovery&apos;命令(相当于音量上+电源键的recovery模式)就能看到TWRP界面了， 而不是mi-recovery 3.0了</span><br><span class="line">但上面recovery twrp-3.3.1-0-santoni.img刷了之后不work, 进入的还是mi-recovery, 这时就又相当于我之前的一篇博客遇到的问题了（https://blog.csdn.net/quqi99/article/details/73613138), 所以得在不替换现有的mi-recovery的情况下同时又使用TWRP（fastboot boot twrp-3.3.1-0-santoni.img）安装supersu（可参考 - https://in.c.mi.com/thread-79402-1-1.html）</span><br></pre></td></tr></table></figure>
+<p>完整步骤:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">1, set up adb</span><br><span class="line"></span><br><span class="line">sudo apt-get install android-tools-adb android-tools-fastboot</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/udev/rules.d/51-android.rules&apos; &lt;&lt; EOF</span><br><span class="line">EOF</span><br><span class="line">sudo udevadm control --reload-rules &amp;&amp; sudo udevadm trigger</span><br><span class="line">adb kill-server &amp;&amp; adb start-server</span><br><span class="line">sudo mtp-detect</span><br><span class="line">adb devices</span><br><span class="line"></span><br><span class="line">2, enable developer mode, and enable usb debugging and OEM unlock in developer mode</span><br><span class="line"></span><br><span class="line">3, unlock bootloader in the page https://www.miui.com/unlock/index.html</span><br><span class="line"></span><br><span class="line">4, install global developer firmware because supersu can only be used in developer version</span><br><span class="line"></span><br><span class="line">#click &apos;Global -&gt; Fast boot Developer&apos; in https://mifirm.net/model/santoni.ttt to find download link</span><br><span class="line">axel http://bigota.d.miui.com/9.6.27/santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">tar -xf santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2.tgz</span><br><span class="line">adb reboot bootloader</span><br><span class="line">cd santoni_global_images_9.6.27_20190627.0000.00_7.1_global_67dc2b29e2 &amp;&amp; ./flash_all.sh</span><br><span class="line"></span><br><span class="line">5, then repeat the step 2 in new global deveoper version</span><br><span class="line"></span><br><span class="line">6, copy supersu into your cellphone</span><br><span class="line"></span><br><span class="line">adb push UPDATE-SuperSU-v2.82-20170528234214.zip /sdcard/Download/</span><br><span class="line">adb shell -- ls /sdcard/Download/</span><br><span class="line"></span><br><span class="line">7, boot from twrp instead of mi-recovery temporaily one time to install supersu</span><br><span class="line"></span><br><span class="line">adb reboot bootloader</span><br><span class="line">fastboot oem device-info   #double confim uncloked=true</span><br><span class="line">fastboot boot twrp-3.2.3-0-santoni.img</span><br><span class="line">#then install supersu from the GUI</span><br><span class="line"></span><br><span class="line">8, use supersu</span><br><span class="line"></span><br><span class="line">adb root</span><br><span class="line">/su/bin/su root</span><br><span class="line">setprop service.adb.tcp.port 5555</span><br><span class="line">setprop persist.adb.tcp.port 5555</span><br><span class="line">start adbd</span><br><span class="line">adb connect 192.168.99.249:5555</span><br><span class="line">adb devices</span><br></pre></td></tr></table></figure>
+<p>[1] <a href="https://news.mydrivers.com/1/596/596856.htm" target="_blank" rel="external">https://news.mydrivers.com/1/596/596856.htm</a><br>[2] <a href="http://en.miui.com/thread-140154-1-1.html" target="_blank" rel="external">http://en.miui.com/thread-140154-1-1.html</a><br>[3] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[4] <a href="https://mrxn.net/other/xiaominote-shuaji.html" target="_blank" rel="external">https://mrxn.net/other/xiaominote-shuaji.html</a><br>[5] <a href="http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802" target="_blank" rel="external">http://en.miui.com/forum.php?mod=viewthread&amp;tid=279802</a><br>[6] <a href="http://www.miui.com/thread-9286730-1-1.html" target="_blank" rel="external">http://www.miui.com/thread-9286730-1-1.html</a><br>[7] <a href="https://www.getdroidtips.com/custom-rom-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/custom-rom-redmi-note-4g/</a><br>[8] <a href="https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/" target="_blank" rel="external">https://www.getdroidtips.com/official-twrp-recovery-for-xiaomi-redmi-note-4g/</a><br>[9] <a href="https://mi-globe.com/miui-firmware-rom-builder/" target="_blank" rel="external">https://mi-globe.com/miui-firmware-rom-builder/</a><br>[10] <a href="https://xiaomi.eu/community/threads/9-8-15.51822/" target="_blank" rel="external">https://xiaomi.eu/community/threads/9-8-15.51822/</a><br>[11] <a href="https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/" target="_blank" rel="external">https://aubykhan.wordpress.com/2013/07/21/android-tip-boot-into-twrp-or-cwm-recovery-without-flashing/</a><br>[11] <a href="https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip" target="_blank" rel="external">https://qc5.androidfilehost.com/dl/hhcuqmQO_jb6GzZK8aDvbw/1566669181/24421527759888026/TWRP_virgo.zip</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/24/如何让OpenStack支持多个FIP/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1522,374 +1873,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/IPv6来啦/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/03/IPv6来啦/" itemprop="url">IPv6来啦</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-03T16:01:05+08:00">
-                2018-08-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-08-03)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里用的是中国移动的宽带, 一直挺稳定的, 而且昨天发现ISP下发了IPv6地址(不是子网, 形如: 2409:8a00:7805:xxxx:xxxx:xxxx:xxxx:xxxx/64, 打xxxx的部分是动态变化的). 好吧, 咱就用用.</p>
-<p><strong>20200814更新</strong><br>联通宽带在安装的时候要告诉师傅将光猫改桥接(后台改), 改桥接之后，会有公网IP及IPv6 (TL-WDR7660路由器需要在IPv6也设置为像IPv6一样宽带联网才能使用IPv6的）．<br>即使改桥接后得到的公网IP也是作了限制的，并且所有端口全是封的，给联通打电话时，他们会装作不慬公网，不懂端口，一问三不知．总之，最后他们还是偷偷地给改好了．<br>但是WDR7660下接的WNDR4300 openwrt路由器却无法获取IPv6地址，估计没有安装odhcpv6的原因吧，待确定．</p>
-<h2 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h2><ul>
-<li><p>配置/etc/config/network使用’option ip6assign ‘64’</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config interface &apos;lan&apos;                    </span><br><span class="line">        ...      </span><br><span class="line">        option ip6assign &apos;64&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置/etc/confignetwork删除config globals ‘globals’段中和 IPv6 ULA-Prefix相关的配置 (注: 使用IPv6 ULA-Prefix的话, LAN中机器就会得到一个以它打头的IPv6地址, 但如何从外网访问这个地址呢? 有三种方式: 一是使用我们现在使用的relay方式得到是ISP提供的全球可路由的IPv6地址；二是配置ULA-Prefix=2409:8a00:7805:1::/80之后再使用下列的neigh proxy的方法解决, 但这种一般是子网长度80比64大, 但ISP并没有给我们分配subnet, 只是分配了IPv6地址, 所以无法保证2409:8a00:7805:1::/80这个前缀与ISP分配的2409:8a00:7805:xxxx:xxxx:xxxx:xxxx:xxxx/64一致；三是ULA-Prefix配置一个与ISP分配的不同的路由然后通过配置路由的方式但前提是也得有全球可路由的IPv6 subnet啊. 所以这里我们选择了relay模式来实现外网访问内网的目的.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">config globals &apos;globals&apos;</span><br><span class="line">        option ula_prefix &apos;fd89:714c:1c30::/48&apos;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w net.ipv6.conf.all.proxy_ndp=1</span><br><span class="line">ip -6 neigh add proxy 2409:8a00:7805:1::430 dev pppoe-wan</span><br><span class="line">ip -6 neigh show proxy</span><br></pre></td></tr></table></figure>
-<ul>
-<li>配置/etc/config/dhcp使用relay模式, relay模式意味着openwrt通过默认的odhcpd作为中继自动为LAN的其他机器配置ISP的IPv6地址<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;wan&apos;                                                                                                                       </span><br><span class="line">        option interface &apos;wan&apos;                                                                                                          </span><br><span class="line">        option ignore &apos;1&apos;                                                                                                               </span><br><span class="line">        option dhcpv6 &apos;disabled&apos;                                                                                                        </span><br><span class="line">        option ndp &apos;relay&apos;                                                                                                              </span><br><span class="line">        option ra &apos;relay&apos;                                                                                                               </span><br><span class="line">        option master &apos;1&apos;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </span><br><span class="line">config dhcp &apos;lan&apos;                                                                                                                       </span><br><span class="line">        option interface &apos;lan&apos;                                                                                                          </span><br><span class="line">        option start &apos;100&apos;                                                                                                              </span><br><span class="line">        option limit &apos;150&apos;                                                                                                              </span><br><span class="line">        option leasetime &apos;12h&apos;                                                                                                          </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;                                                                                               </span><br><span class="line">        option ndp &apos;relay&apos;                                                                                                              </span><br><span class="line">        option ra &apos;relay&apos;                                                                                                               </span><br><span class="line">        option dhcpv6 &apos;relay&apos;</span><br><span class="line"></span><br><span class="line"># actually I use 60, not 64</span><br><span class="line">cat /etc/config/network</span><br><span class="line">config interface &apos;lan&apos;</span><br><span class="line">	...</span><br><span class="line">	option ip6assign &apos;60&apos;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>配置完之后就可以通过下列命令重启路由器服务就可以在br-lan与pppoe-wan上获得ISP分配的IPv6地址了.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/network restart</span><br><span class="line">/etc/init.d/odhcpd restart</span><br></pre></td></tr></table></figure></p>
-<p>内网机器直接通过’sudo /etc/init.d/network-manager restart’重启网络也会获取ISP分配的IPv6地址.</p>
-<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><ul>
-<li>内网机器访问br-lan内网网关, 能通是因为下列路由的功能:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ ip -6 route list |grep 2409:8a00:7805:b7df::/64</span><br><span class="line">2409:8a00:7805:b7df::/64 dev eth0  proto ra  metric 100  pref medium</span><br><span class="line"></span><br><span class="line">root@OpenWrt:~# route -A inet6 |grep ::/0</span><br><span class="line">::/0                                        fe80::200:5eff:fe00:134                 UG    1024   0        0</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>注: 后面我们会看到::/0的默认路由会造成很多问题.</p>
-<ul>
-<li><p>内网机器访问pppoe-wan外网网关<br>对于relay模式由于内网机器拿到的本来就是ISP分配的可路由的IP所以自然能通. 但对于nat模式由于内网机器分配的是和ISP不同网段的IP, 所以需要在路由器上做NAT6, 如:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#ip6tables -t nat -I POSTROUTING -o pppoe-wan -j MASQUERADE</span><br><span class="line">ip6tables -t nat -I POSTROUTING -s `uci get network.globals.ula_prefix` -j MASQUERADE &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>外网访问内网机器<br>如果使用relay由于内网机器使用的是全球可路由的IPv6地址, 外网直接就是可以访问内网机器的；但如果是不同子网需要做路由；如果只是前缀相同只是子网长度不同可以做neigh proxy</p>
-</li>
-<li>但是此时我们发现内网机器无法访问外网(如ping6 ipv6.baidu.com), 但此时在路由器上却是可以访问外网的. 原因就在于上面使用::/0的默认路由似乎有问题(报这个错: Destination unreachable: Unknown code 5), 改成了2000::/3就好了:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;`</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip -6 route add default from 2409:8a00:7805::48 dev pppoe-wan</span><br></pre></td></tr></table></figure></p>
-<p>但上面两种方法仍然遇到了不稳定的问题, 感觉是openwrt的odhcpd不稳定, 照下列方法更换为6relayd之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.shintaku.cc/files/6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">opkg install 6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">vi /etc/config/6relayd</span><br><span class="line">config relay</span><br><span class="line">        option master &apos;wan&apos;</span><br><span class="line">        option network &apos;lan&apos;</span><br><span class="line">        option rd &apos;relay&apos;</span><br><span class="line">        option dhcpv6 &apos;relay&apos;</span><br><span class="line">        option ndp &apos;relay&apos;</span><br><span class="line">/etc/init.d/odhcpd disable</span><br><span class="line">/etc/init.d/odhcpd stop</span><br><span class="line">/etc/init.d/6relayd enable</span><br><span class="line">/etc/init.d/6relayd start</span><br></pre></td></tr></table></figure></p>
-<p>接着使用tcpdump查看好像是DHCPv6 reply包从pppoe-wan过不来br-lan口:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">08:22:53.810272 IP6 2400:da00:2::29 &gt; 2409:8a00:7805:b7df:8d79:6c9:315a:9ca3: ICMP6, echo reply, seq 7, length 64</span><br></pre></td></tr></table></figure></p>
-<p>所以接着, 在/etc/config/firewall文件的 Allow-ICMPv6-Forward项中添加了下列行后确认已经有了129(129就是reply)相关的iptables rules之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        list icmp_type &apos;router-solicitation&apos;    </span><br><span class="line">        list icmp_type &apos;neighbour-solicitation&apos; </span><br><span class="line">        list icmp_type &apos;router-advertisement&apos;   </span><br><span class="line">        list icmp_type &apos;neighbour-advertisement&apos;</span><br><span class="line">        </span><br><span class="line">root@OpenWrt:~# ip6tables-save |grep Allow-ICMPv6-Forward |grep 129</span><br><span class="line">-A zone_wan_forward -p ipv6-icmp -m icmp6 --icmpv6-type 129 -m limit --limit 1000/sec -m comment --comment Allow-ICMPv6-Forward -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<p>google查到的和这个bug相同(<a href="https://github.com/openwrt/odhcpd/issues/37" target="_blank" rel="external">https://github.com/openwrt/odhcpd/issues/37</a>), 但里面的所有方法都试过了不成功.<br>似乎是ISP使用的是Statefull DHCPV6的方式, 6relayd可以把ra信息relay过来，但LAN端机器似乎无法跟DHCPV6服务器通信。</p>
-<h2 id="2018-0805更新"><a href="#2018-0805更新" class="headerlink" title="2018-0805更新"></a>2018-0805更新</h2><p>今天通过这个帖子(<a href="https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题" target="_blank" rel="external">https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题</a>:<br>OpenWRT默认是在wan口使用DHCPv6 Client, 在LAN口使用odhcpd开启RA和DHCPv6. 这个默认配置适用于国外主流ISP, 因为他们DHCPv6-PD (prefix delegation)把一个至少/64地址段分配给客户使用(还有的使用小于64的地址段给客户分配静态IP).<br>不过中国移动给客户分配的是SLAAC地址, 没有使用DHCPv6, 也就没使用DHCPv6-PD, 这样拿不到前缀(ISP分配的2409:8a00:7805:xxx::/64地址的第4段总是变化的), 所以odhcpd也就无法根据这个前缀设置路由, 所以我们需要手工设置确保可以在OpenWrt上ping通内网机器, 这样才能保证reply消息到达br-lan之后能到达内网机器, 如:<br>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan<br>所以最终添加在/etc/firewall.user的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># make ipv6 relay to work</span><br><span class="line">PREFIX=`ip -6 route list dev br-lan |grep 2409:8a00 |awk -F &apos;::/&apos; &apos;&#123;print $1&quot;::/64&quot;&#125;&apos; |uniq`</span><br><span class="line">ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line"># NOTE: too too important, we must add &apos;metric&apos; option, or this route will have expire time, or use &apos;ip&apos; to add route</span><br><span class="line">route -A inet6 add $PREFIX dev br-lan metric 1 &gt; /dev/null 2&gt;&amp;1                                </span><br><span class="line">                                                                                                               </span><br><span class="line"># make ipv6 nat to work                                                                                        </span><br><span class="line">#ip -6 route add default from $PREFIX dev pppoe-wan &gt; /dev/null 2&gt;&amp;1                                           </span><br><span class="line">#route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;` &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure></p>
-<p>再就是得配置replay消息能从pppoe-wan到达br-lan, 所以最终使用下列配置(也记得去掉IPv6 ULA-Prefix):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;wan&apos;                                </span><br><span class="line">        option interface &apos;wan&apos;                   </span><br><span class="line">        option ignore &apos;1&apos;                        </span><br><span class="line">        option ndp &apos;relay&apos;                       </span><br><span class="line">        option ra &apos;relay&apos;                        </span><br><span class="line">        option master &apos;1&apos;                                      </span><br><span class="line">config dhcp &apos;lan&apos;             </span><br><span class="line">        option interface &apos;lan&apos;</span><br><span class="line">        option start &apos;100&apos;    </span><br><span class="line">        option limit &apos;150&apos;    </span><br><span class="line">        option leasetime &apos;12h&apos;</span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;</span><br><span class="line">        option ndp &apos;relay&apos;               </span><br><span class="line">        option ra &apos;relay&apos;</span><br></pre></td></tr></table></figure></p>
-<p>可新问题又来了, 这条路由总是过期, 如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2409:8a00:7805:da41::/64 dev br-lan  proto kernel  metric 256  expires 259019sec</span><br></pre></td></tr></table></figure></p>
-<p>重新执行一下上面的命令又能恢复, 太不稳定了, 还是转回ipv6 NAT模式吧.</p>
-<h2 id="20180902更新"><a href="#20180902更新" class="headerlink" title="20180902更新"></a>20180902更新</h2><p>上述静态路由过期的问题原因找到, 原因是需要添加metric</p>
-<ul>
-<li>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan               # 会有过期时间 </li>
-<li>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan metric 1 # 无过期时间<br>或者使用ip命令它添加的无过期时间 - ip -6 route del 2409:8a00:7805:d9b1::/64 dev br-lan</li>
-</ul>
-<h2 id="转试NAT6"><a href="#转试NAT6" class="headerlink" title="转试NAT6"></a>转试NAT6</h2><p>上面使用replay时的bug解不了, 无奈之下, 只好使用NAT6, 外面访问不了内网就访问不了吧, 起码可以内网访问外网啊. </p>
-<ul>
-<li><p>在/etc/config/network中配置了ula_prefix=2001:192:168:99::/64, 这时路由器上的br-lan除了ISP分配的IP之外, 也会多时我们这个自己配置的地址: 2001:192:168:99:0:0:0:1/64</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">config globals &apos;globals&apos;</span><br><span class="line">        option ula_prefix &apos;2001:192:168:99::/64&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修改/etc/config/dhcp将relay模式改到server模式即NAT模式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;lan&apos;                                </span><br><span class="line">        option interface &apos;lan&apos;                   </span><br><span class="line">        option start &apos;100&apos;                       </span><br><span class="line">        option limit &apos;150&apos;                       </span><br><span class="line">        option leasetime &apos;12h&apos;                   </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;        </span><br><span class="line">        option dhcpv6 &apos;server&apos;                   </span><br><span class="line">        option ra_management &apos;2&apos;                 </span><br><span class="line">        option ra &apos;server&apos;                       </span><br><span class="line">        option ra_default &apos;1&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在/etc/firewall.user中添加下列SNAT规则</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip6tables -t nat -I POSTROUTING -s `uci get network.globals.ula_prefix` -j MASQUERADE &gt; /dev/null 2&gt;&amp;1 </span><br><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;` &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>之后, 内网机器随便手动配置一个IP如2001:192:168:99:0:0:0:3/64并添加默认路由之后就可以访问外网了.<br>如果想外网访问2001:192:168:99::3/64, 是不能够使用下面的neigh proxy方式的, 因为网段和ISP分配的可路由网段根据就不一样嘛. 唯一的办法其实就是做DNAT<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w net.ipv6.conf.all.proxy_ndp=1</span><br><span class="line">ip -6 neigh add proxy 2001:192:168:99:0:0:0:3 dev pppoe-wan</span><br><span class="line">ip -6 neigh show proxy</span><br></pre></td></tr></table></figure></p>
-<h2 id="VPS不支持IPv6时如何使用IPv6"><a href="#VPS不支持IPv6时如何使用IPv6" class="headerlink" title="VPS不支持IPv6时如何使用IPv6"></a>VPS不支持IPv6时如何使用IPv6</h2><p>VPS若不支持IPv6, 可以通过tunnelbroker来配置6in4隧道支持IPv6, 但前提是VPS要能支持配置允许proto-41流量通过 (iptables -A INPUT -p 41 -j ACCEPT), 目前google cloud VPS是无法配置这个的.<br>若您的VPS支持这个, 可以继续. 先在<a href="https://www.tunnelbroker.net/" target="_blank" rel="external">https://www.tunnelbroker.net/</a> 登录后在’User Functions -&gt; Create Regular Tunnel’菜单创建 Create Regular Tunnel, 然后:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/network/interfaces</span><br><span class="line">auto he-ipv6</span><br><span class="line">iface he-ipv6 inet6 v4tunnel</span><br><span class="line">        address 2001:470:a:xx::2</span><br><span class="line">        netmask 64</span><br><span class="line">        endpoint 216.218.226.xx</span><br><span class="line">        local 162.xx.xx.xx</span><br><span class="line">        ttl 255</span><br><span class="line">        gateway 2001:470:a:4c4::1</span><br><span class="line">EOF</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/sysctl.conf</span><br><span class="line">net.ipv6.conf.all.disable_ipv6 = 0</span><br><span class="line">net.ipv6.conf.default.disable_ipv6 = 0</span><br><span class="line">net.ipv6.conf.lo.disable_ipv6 = 0</span><br><span class="line">EOF</span><br><span class="line">sudo sysctl -p</span><br><span class="line">sudo apt install -y ifupdown</span><br><span class="line">sudo ifup he-ipv6</span><br><span class="line"># can&apos;t do tunnelbroker as 6in4 is unsupported (NAT/gateways won&apos;t pass proto-41)</span><br><span class="line">#sudo iptables -t nat -A PREROUTING -p 41 -d &lt;VPS-IP&gt; -j DNAT --to-destination &lt;tunnelbroker-ip&gt;</span><br><span class="line">#sudo iptables -t nat -A POSTROUTING -p 41 -d &lt;tunnelbroker-ip&gt; -j SNAT --to-source &lt;VPS-IP&gt;</span><br><span class="line">#sudo iptables -A INPUT -p 41 -j ACCEPT</span><br></pre></td></tr></table></figure>
-<p>使用tunnelbroker需要VPS有公网IPv4地址, 若没有, 可以使用miredo(sudo apt-get install miredo), 但前提也是要防火墙允许proto-41的流量</p>
-<h2 id="附件-OpenWRT自动恢复网络脚本"><a href="#附件-OpenWRT自动恢复网络脚本" class="headerlink" title="附件 - OpenWRT自动恢复网络脚本"></a>附件 - OpenWRT自动恢复网络脚本</h2><p>1, /etc/init.d/cron enable<br>2, crontab -e<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*/4 * * * * /root/auto_restart.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br><span class="line">0 1 * * * /root/auto_restart_haproxy.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br></pre></td></tr></table></figure></p>
-<p>3, auto_restart.sh<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /root/auto_restart.sh </span><br><span class="line">#! /bin/sh</span><br><span class="line"># /etc/init.d/cron start</span><br><span class="line"># /etc/init.d/cron enable</span><br><span class="line"># crontab -e</span><br><span class="line"># */5 * * * * /root/auto_restart.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br><span class="line">EXIST=$(ip route list 0.0.0.0/0)</span><br><span class="line">if test -z &quot;$EXIST&quot;</span><br><span class="line">then</span><br><span class="line">   echo $(date) &apos;default route disappears, adding it now ...&apos;</span><br><span class="line">   route add default dev pppoe-wan</span><br><span class="line">   sleep 5</span><br><span class="line">   echo $(date) &apos;check network connection ...&apos;</span><br><span class="line">   #ping -c 1 114.114.114.114 &amp;&gt; /dev/null &amp;&amp; echo &apos;success&apos; || /etc/init.d/network restart;</span><br><span class="line">   if ping -c 1 114.114.114.114 &amp;&gt; /dev/null</span><br><span class="line">   then</span><br><span class="line">      echo &apos;ping success&apos;</span><br><span class="line">   else</span><br><span class="line">      echo &apos;ping failed&apos;</span><br><span class="line">      /etc/init.d/network restart</span><br><span class="line">      # for ipv6</span><br><span class="line">      /etc/init.d/odhcpd restart</span><br><span class="line">      sleep 5</span><br><span class="line">      PREFIX=`ip -6 route list dev br-lan |grep 2409:8a00 |awk -F &apos;::/&apos; &apos;&#123;print $1&quot;::/64&quot;&#125;&apos; |uniq`</span><br><span class="line">      ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">      # NOTE: too too important, we must add &apos;metric&apos; option, or this route will have expire time, or use &apos;ip&apos; to add route</span><br><span class="line">      route -A inet6 add $PREFIX dev br-lan metric 1 &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">   fi</span><br><span class="line">fi</span><br><span class="line">root@OpenWrt:~# cat /root/auto_restart_haproxy.sh </span><br><span class="line">#! /bin/sh</span><br><span class="line">echo $(date) &apos;restarting haproxy ...&apos;</span><br><span class="line">/etc/init.d/haproxy restart</span><br></pre></td></tr></table></figure></p>
-<h2 id="20190119更新-最终的设置"><a href="#20190119更新-最终的设置" class="headerlink" title="20190119更新 - 最终的设置"></a>20190119更新 - 最终的设置</h2><p>使用relay模式即使按上面说的加metric之后有缓解但还是容易时不是断线, 不清楚什么原因, 这里一个android关于忽略RA的帖子, 估计有关吧. - <a href="https://issuetracker.google.com/issues/36949115" target="_blank" rel="external">https://issuetracker.google.com/issues/36949115</a><br>换回stateful IPv6还需要继续在openwrt上配置DHCPv6  Server的, 并且android等某些系统并不支持stateful IPv6<br>换回stateless IPv6也有问题, 在ubuntu系统上可以通过命令”echo ‘precedence ::ffff:0:0/96 100’ &gt;&gt; /etc/gai.conf”配置IPv4优先, 但android系统下对4G网络可以配置是否使用IPv4/IPv6, 但对于wifi则没这个配置项. 而stateless IPv6会给android分配2001:192:168:99::1的DHCPv6, 而在openwrt上要pdnsd支持IPv6的话还得再编译, 也是麻烦.<br>所以最后退回为单纯的SLAAC配置, 仅是通过openwrt路由器拿RA, 并不配置DHCPv6. 所以最终的配置为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;lan&apos;                                </span><br><span class="line">        option interface &apos;lan&apos;                   </span><br><span class="line">        option start &apos;100&apos;                       </span><br><span class="line">        option limit &apos;150&apos;                       </span><br><span class="line">        option leasetime &apos;12h&apos;                   </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;        </span><br><span class="line">        option ra &apos;server&apos;</span><br></pre></td></tr></table></figure></p>
-<p>并且禁用掉用于提供DHCPv6的odhcpd服务.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/odhcpd disable</span><br><span class="line">/etc/init.d/odhcpd stop</span><br></pre></td></tr></table></figure></p>
-<p>看来要想支持IPv6好, 需要全生态链的所有软件都能支持IPv6好并且方便啊, 目前看到的android, openwrt与pdnsd在这方面都就有所欠缺.<br>但上面改了之后, 是不再给client发dhcp信息了, 但同样网卡上也没有配置IPv6地址(静态指定的除外), 原因仍然是openwrt上的bug, /etc/init.d/radvd脚本没有根据/etc/config/radvd里的配置生成/var/etc/radvd.conf, 那我们人工生成一个配置文件:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /var/etc/radvd2.conf </span><br><span class="line">interface br-lan</span><br><span class="line">&#123;</span><br><span class="line">   AdvSendAdvert on;</span><br><span class="line">   prefix 2001:192:168:99::/64</span><br><span class="line">   &#123;</span><br><span class="line">       AdvOnLink on;</span><br><span class="line">       AdvAutonomous on;</span><br><span class="line">   &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>然后修改/etc/init.d/radvd中的下列三行即可:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#[ -z &quot;$RADVD_CONFIG_FILE&quot; ] &amp;&amp; return 1</span><br><span class="line">#service_start /usr/sbin/radvd -C &quot;$RADVD_CONFIG_FILE&quot; -m stderr_syslog -p /var/run/radvd.pid</span><br><span class="line">service_start /usr/sbin/radvd -C /var/etc/radvd2.conf -m stderr_syslog -p /var/run/radvd.pid</span><br></pre></td></tr></table></figure></p>
-<p>即使如此, 仍然有一些软件如和包之类的无法在IPv6与IPv4之间做fallback.<br>好吧, 看来IPv6的生态链太有问题了, 还是故意再把radvd恢复成不可用状态吧. 这样android手机就不会配置IPv6地址也不会配置DHCPv6从页可以正常使用和包之类的其他对IPv6支持不大好的软件, 同时ubuntu上想要使用IPv6的话就做静态配置指定IPv6地址吧.</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/13/用OpenSSL做自签名的证书/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/07/13/用OpenSSL做自签名的证书/" itemprop="url">用OpenSSL做自签名的证书</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-13T13:10:13+08:00">
-                2018-07-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2014-04-18<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>(<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>加密技术回顾<br>非对称加密算法如RSA的特点如下:<br>1, 公钥加密私钥解密, 大家都可以用我的公钥给我发加密的数据了, 因为只有我有私钥才能解密.<br>2, 私钥加密公钥解密叫数字签名(例如所谓的UEFI secure boot就是在主板硬件里集成一些操作系统的公钥，由主板硬件去校验操作系统是法合法，但关键是微软把持了公钥的申请，主板硬件厂商没有提供界面让用法自定义公钥，尤其在移动领域很多win8的硬件根本不提供关闭secure boot的选项这样就造成只能安装win8一种系统）, 大家收到我用私钥加密后的数据, 看用公钥能不能打得开, 能打开说明这数据确实是由我所发的, 因为别人没有我的私钥不可能伪造这些数据.<br>非对称加密去处很费时间, 我们一般采用对称密钥算法如DES来加密, 但对称密钥的保存是一个问题.<br>所以我们可以采用非对称加密算法来加密先协商交换对称密钥, 这就叫SSL. 假设客户端A的公私钥对是(P1,V1), 服务端B的公私钥对是(P2,V2), A需要确认和它通信的是B, 那么SSL的过程是:<br>首先, A和B都持有对方的公钥.<br>step1, A-&gt;B: hello 是step2, B-&gt;A: 用V2加密过的P1（即用户证书，A就用P2解密出P1, 这种数字签名方式让A确定了和它通信的是B）<br>step3, A-&gt;B: ok<br>step4, B-&gt;A: 用V1加密的一段信息<br>step5, A-&gt;B: 用P1加密一个自动生成的对称密钥K（用之前的P1解密成功这段信息则认为B是可信的了）<br>step6, B-&gt;A: 用K加密的数据（之后两对密钥功能结束，由K来加解密数据）<br>总结一下, 这里(P2,V2)就是certificate authority (CA)用来给客户签名用的公私钥。<br>(P1,V1)是客户自己的公私钥，提交给CA，CA所做的事情就是上述step2用(P2,V2)来给客户的(P1,V1)签名，简单吧？<br>V2是CA公司要保密的，而P2就是公用CA证书要安装到客户端</p>
-<p>用V2加密过（签名过）的P1，称为用户证书，和用户私钥V1连起一个文件后, 一般被安装在服务器端。</p>
-<p>X.509证书是一些标准字段的集合, 是包含有关用户或设备及其相应公钥信息的一种非常通用的证书格式, 目前版本是3. 必要字段包括:<br>1, 版本号<br>2, 由CA给每一个证书分配的序列号;<br>3, 证书使用的签名算法<br>4, 证书的认证机构<br>5, 证书的有效日期<br>6, 证书的所有人的唯一标识<br>7, 认证机构使用私钥的数字签名<br>8, 公钥信息<br>不同于PGP证书任何人都可以扮演认证者的角色, X.509证书的认证者只能是CA或由CA指定的人.要获得一份X.509证书，必须请求CA发给你证书。用户提供自己的公钥，证明自己拥有相应的私钥，并提供有关自己的某些特定信息。然后在这些信息上数字签名，并将整个数据包(称为证书请求)发给CA。CA做一些努力来验证用户提供的信息是正确的，然后就生成证书并返回给用户。<br>OpenSSL对X.509的支持如下:<br>(1) 证书请求管理<br>(2) 证书生成<br>(3) 证书吊销及CRL管理<br>(4) X509名字管理<br>(5) 属性管理<br>(6) 扩展管理<br>(7) 验证及信任管理</p>
-<p>用OpenSSL做自签名的证书(pem格式)步骤:<br>1, 先生成CA的公私钥<br>   mkdir CA &amp; cd CA<br>   mkdir newcerts private<br>   echo ‘01’ &gt; serial #会生成以为个数字为名字的pem文件, 且每个数字自增1<br>   touch index.txt #生成记录数据库<br>   使用配置文件, 由于openssl命令行参数太多, 为避免写太多, 就使用一个配置文件代替, 如<a href="https://github.com/openstack/nova/blob/master/nova/CA/openssl.cnf.tmpl" target="_blank" rel="external">https://github.com/openstack/nova/blob/master/nova/CA/openssl.cnf.tmpl</a><br>   生成(P2,V2), 这时候P2=cacert.pem, V2=private/cakey.pem<br>   openssl req -new -x509 -extensions v3_ca -keyout private/cakey.pem -out cacert.pem -days 365 -config ./openssl.cnf -batch -nodes<br>   查看证书信息, openssl x509 -in cacert.pem -noout -text<br>2, 生成<p1,v1>,即Certificate signing Reqeust(CSR), P1=req.pem, V1=key.pem<br>   openssl req -new -nodes -out req.pem -config ./openssl.cnf<br>3, 用CA的私钥V2为P1签名, 即在newcerts目录生成用户证书cert.pem, 并更新数据库文件index.txt及serail文件<br>   openssl ca -out cert.pem -config ./openssl.cnf -infiles req.pem<br>   查看证书信息, openssl x509 -in cert.pem -noout -text<br>4, 安装证书<br>   用户私钥key.pem(V1)和用V2加密过的用户公钥(cert.pem)安装到服务端(有的服务器碉要把这两个文件连成一个,可以执行: cat key.pem cert.pem &gt; key-cert.pem), 如:<br>   /home/httpd/ssl/cert.pem Site certificate<br>   /home/httpd/ssl/key.pem Site private key<br>   最后将CA的公钥P2=cacert.pem安装到客户端</p1,v1></p>
-<p>在OpenStack PKI认证中：<br>1, Keystone产生了CA公私钥: CA.pem, CA.key<br>2, Keystone产生了用户公私钥: keystone.pub, keystone.key<br>3, Keystone产生了用户证书: keystone.pem (即使用CA.key对keystone.pub进行了签名)<br>假如nova要使用PKI认证的话：<br>1, CA端，即keystone端，安装有: CA.pem, CA.key, keystone.key, keystone.pem<br>2, 用户端，即nova端，安装有：keystone.pem<br>过程：<br>1, 用户拿用户名和密码去keystone认证，keystone将用户信息通过keystone.key进行签名后作为token返回用户<br>2, 用户用这一token去访问nova, nova拿到token后，使用keystone.pem解密。（而原来的UUID方式nova还得再拿token去keystone那边验证一下是否有效，所以使用PKI方式能减轻keystone的压力。</p>
-<p>再举个例子，如在安装openconnect时生成证书：</p>
-<p>sudo apt-get -y install build-essential pkg-config libgnutls28-dev libreadline-dev libseccomp-dev libwrap0-dev libnl-nf-3-dev liblz4-dev gnutls-bin</p>
-<p>#Create CA certificate<br>mkdir -p /tmp/cert &amp;&amp; cd /tmp/cert<br>cat &gt; /tmp/cert/ca.tmpl &lt;&lt; EOF<br>cn = “sts CA”<br>organization = “sts CA”<br>serial = 1<br>expiration_days = 3650<br>ca<br>signing_key<br>cert_signing_key<br>crl_signing_key<br>EOF</p>
-<p>#Generate CA secret KEY: V2<br>certtool –generate-privkey –outfile CA.key</p>
-<p>#Generate CA certifice: P2 signed by V2<br>certtool –generate-self-signed –load-privkey CA.key –template ca.tmpl –outfile CA.pem</p>
-<p>#Create User certificate (here is for VPN server)<br>cat &gt; /tmp/cert/vpnserver.tmpl &lt;&lt; EOF<br>cn = “sts vpn server”<br>organization = “sts”<br>expiration_days = 3650<br>signing_key<br>encryption_key<br>tls_www_server<br>EOF</p>
-<p>#Generate User secret KEY: V1<br>certtool –generate-privkey –outfile vpnserver.key</p>
-<p>#Generate User certificate: <p1 signed="" by="" v2=""><br>certtool –generate-certificate –load-privkey vpnserver.key –load-ca-certificate CA.pem –load-ca-privkey CA.key –template vpnserver.tmpl –outfile vpnserver.pem</p1></p>
-<p>#CA.pem,vpnserver,pem,vpnserver.key need to be installed in vpnserver<br>sudo cp CA.pem /etc/ssl/certs/CA.pem<br>sudo cp vpnserver.pem /etc/ssl/private/vpnserver.pem<br>sudo cp vpnserver.key /etc/ssl/private/vpnserver.key<br>OpenStack创建CA的方法：</p>
-<p>openssl genrsa -out /etc/keystone/ssl/private/cakey.pem 1024<br>openssl req -new -x509 -extensions v3_ca -key /etc/keystone/ssl/private/cakey.pem -out /etc/keystone/ssl/certs/ca.pem -days 3650 -config /etc/keystone/ssl/certs/openssl.conf -subj /C=US/ST=Unset/L=Unset/O=Unset/CN=localhost<br>openssl genrsa -out /etc/keystone/ssl/private/keystonekey.pem 1024<br>openssl req -key /etc/keystone/ssl/private/keystonekey.pem -new -out /etc/keystone/ssl/certs/req.pem -config /etc/keystone/ssl/certs/openssl.conf -subj /C=US/ST=Unset/L=Unset/O=Unset/CN=localhost<br>openssl ca -batch -out /etc/keystone/ssl/certs/keystone.pem -config /etc/keystone/ssl/certs/openssl.conf -days 3650d -cert /etc/keystone/ssl/certs/ca.pem -keyfile /etc/keystone/ssl/private/cakey.pem -infiles /etc/keystone/ssl/certs/req.pem</p>
-<p>再看一个使用easy-rsa为openvpn生成证书的实例：</p>
-<p>sudo apt-get install easy-rsa openssl<br>sudo cp -r /usr/share/easy-rsa/ /etc/openvpn<br>cd /etc/openvpn/easy-rsa<br>sudo chown -R <code>whoami</code>:root /etc/openvpn<br>mkdir /etc/openvpn/easy-rsa/keys<br>source ./vars<br>export KEY_COUNTRY=CN<br>export KEY_PROVINCE=BJ<br>export KEY_CITY=BJ<br>export KEY_ORG=sts<br>export KEY_OU=sts<br>export KEY_NAME=sts<br>export KEY_EMAIL=root@sts<br>export KEY_NAME=”server”<br>./clean-all<br>./build-ca<br>$ ls keys/<br>ca.crt  ca.key  index.txt  serial<br>./build-key-server server<br>$ ls keys/<br>01.pem  ca.key     index.txt.attr  serial      server.crt  server.key<br>ca.crt  index.txt  index.txt.old   serial.old  server.csr<br>cp /etc/openvpn/easy-rsa/keys/{server.crt,server.key,ca.crt} /etc/openvpn</p>
-<p>#It’s ideal for each client connecting to the VPN to have its own unique certificate and key.</p>
-<p>#This is preferable to generating one general certificate and key to use among all client devices.<br>./build-key client1<br>scp ubuntu@<server>:/etc/openvpn/easy-rsa/keys/client1.crt /etc/openvpn/<br>scp ubuntu@<server>:/etc/openvpn/easy-rsa/keys/client1.key /etc/openvpn/<br>scp ubuntu@<server>:/etc/openvpn/easy-rsa/keys/client.ovpn /etc/openvpn/<br>scp ubuntu@<server>:/etc/openvpn/easy-rsa/keys/ca.crt /etc/openvpn/</server></server></server></server></p>
-<p>常见证书格式及转换</p>
-<p>PKCS(Public-Key Cryptography Standards), 是由RSA实验室与其他安全系统开发商共同制定的一个公钥密码标准<br>X.509是常用的通用的证书格式, 所有的证书都符合PKI(Public Key Infrastructure)制定的的ITU-T X509国际标准<br>.cer/.crt是用于存储证书, 以二进制形式存储, 不含私钥<br>.pem跟.cer/.crt的区别是它以ascii来表示<br>pfx/p12用于存放个人证书/私钥, 他通常包含保护密码, 二进制存储, 转换如:openssl pkcs12 -export -clcerts -in server-cert.cer -inkey server-key.key -out server.p12</p>
-<p>JKS和JCEKS是Java密钥库(KeyStore)的两种比较常见类型, 可以使用java提供的证书工具keytool(openssl和keytool都是可以用来管理证书的工具而已)进行转换(如:keytool -import -v -trustcacerts -storepass 123456 -alias server -file cacert.pem -keystore server.jks)</p>
-<p>例如： k8s中的dashboard若不在浏览器里导入p12证书在采用RBAC授权时就会什么也看不到：</p>
-<h1 id="generate-client-certificate-data"><a href="#generate-client-certificate-data" class="headerlink" title="generate client-certificate-data"></a>generate client-certificate-data</h1><p>grep ‘client-certificate-data’ /var/run/kubernetes/admin.kubeconfig | head -n 1 | awk ‘{print $2}’ | base64 -d &gt;&gt; kubecfg.crt</p>
-<h1 id="generate-client-key-data"><a href="#generate-client-key-data" class="headerlink" title="generate client-key-data"></a>generate client-key-data</h1><p>grep ‘client-key-data’ /var/run/kubernetes/admin.kubeconfig | head -n 1 | awk ‘{print $2}’ | base64 -d &gt;&gt; kubecfg.key</p>
-<h1 id="generate-p12"><a href="#generate-p12" class="headerlink" title="generate p12"></a>generate p12</h1><p>openssl pkcs12 -export -clcerts -inkey kubecfg.key -in kubecfg.crt -out kubecfg.p12 -name “kubernetes-client”</p>
-<p>非对称算法可以使用开源的GPG工具，可参考文档： <a href="http://wenku.baidu.com/link?url=d5fWoN46-y7581212dDUEt7dkUfFkriW0bKy_gwUjps4zpKH64jytimWDm-yfuKIwAtu0jFoWW_ocVTJhSeRb2_QQLUz8oIBQulU6jSI133" target="_blank" rel="external">http://wenku.baidu.com/link?url=d5fWoN46-y7581212dDUEt7dkUfFkriW0bKy_gwUjps4zpKH64jytimWDm-yfuKIwAtu0jFoWW_ocVTJhSeRb2_QQLUz8oIBQulU6jSI133</a></p>
-<p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
-<p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
-<p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#x61;&#105;&#108;&#x74;&#111;&#x3a;&#118;&#x65;&#x72;&#x79;&#104;&#117;&#97;&#50;&#x30;&#48;&#x36;&#64;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;">&#118;&#x65;&#x72;&#x79;&#104;&#117;&#97;&#50;&#x30;&#48;&#x36;&#64;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#109;</a>“</p>
-<pre><code>export GPGKEY=A24B36AE
-</code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
-<p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
-<p>迁移KEY</p>
-<p>gpg –output mygpgkey_pub.gpg –armor –export  $GPGKEY<br>gpg –output mygpgkey_sec.gpg –armor –export-secret-key $GPGKEY</p>
-<p>gpg –import mygpgkey_pub.gpg<br>gpg –allow-secret-key-import –import mygpgkey_sec.gpg</p>
-<p>上传公钥到密钥服务器，如：gpg –send-keys –keyserver keyserver.ubuntu.com $GPGKEY 或把公钥导成文本之后直接在<a href="http://keyserver.ubuntu.com/这里提交公钥。" target="_blank" rel="external">http://keyserver.ubuntu.com/这里提交公钥。</a></p>
-<p>查询:</p>
-<p><a href="https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&amp;op=index&amp;search=0x" target="_blank" rel="external">https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&amp;op=index&amp;search=0x</a><public-key-long-format></public-key-long-format></p>
-<p>目前只能用指纹：</p>
-<p>gpg –keyid-format long –list-keys xx.xxx@xx.com<br>gpg –with-colons –fingerprint E6A84FFFCF31A67F | grep fpr | cut -d ‘:’ -f 10<br>gpg –recv-keys C7100A4CD0D8F3AE44212746E6A84FFFCF31A67F</p>
-<p>交互命令窗口：gpg –cert-digest-algo=SHA256 –edit-key $GPGKEY</p>
-<p>给自己加密文件，加密是用公钥，gpg –encrypt -r veryhua2006@gmail.com test.txt, 会生成名为test.txt.gpg的加密文件<br>给自己解决文件，gpg –decrypt test.txt.gpg &gt; test.txt</p>
-<p>给别人加密文件当然要先导入别人的公钥：gpg –import otherpublic.key<br>核对对方的公钥指纹：gpg –fingerprint other@gmail.com<br>为别人加密文件: gpg –encrypt –recipient other@gmail.com test.txt<br>对别人的公钥进行签名，这样别人知道是你发的： gpg –sign-key other@gmail.com</p>
-<p>对文件进行签名： gpg –clearsign file<br>验证签名是否完整： gpg –verity file.asc</p>
-<p>OpenPGP能用于加密邮件，将GPG指纹注册到launchpad中(<a href="https://launchpad.net/~zhhuabj)，这样launchpad将给你发签名或加密过的邮件，然后再用openPGP" target="_blank" rel="external">https://launchpad.net/~zhhuabj)，这样launchpad将给你发签名或加密过的邮件，然后再用openPGP</a> enabled的邮件客户端如thunderbird来接收解密邮件和验证签名。<br>thunderbird通过enigmail插件来支持OpenPGP, Configure OpenPGP support in Thunderbird under Enigmail-&gt;Preferences and add under GnuPG executable path. The path for GnuPG is /usr/bin/gpg.<br>如果不想用邮件客户端，直接用firefox来访问如gmail等webmail的话，安装firegpg插件即可。chrome不需要装插件直接支持pgp解密。</p>
-<p>将GPG指纹（gpg –fingerprint)注册到launchpad中(<a href="https://launchpad.net/~zhhuabj)后会收到一封邮件，内容类似如下，将其存成一个文件，再解密(gpg" target="_blank" rel="external">https://launchpad.net/~zhhuabj)后会收到一封邮件，内容类似如下，将其存成一个文件，再解密(gpg</a> –decrypt file.txt)后就生成了一个验证链接如<a href="https://launchpad.net/token/Hc7J9x7kF55CHTZJs，点击验证即可。" target="_blank" rel="external">https://launchpad.net/token/Hc7J9x7kF55CHTZJs，点击验证即可。</a><br>—–BEGIN PGP MESSAGE—–<br>Version: GnuPG v1.4.11 (GNU/Linux)<br>…….<br>52gY/bZADAl0xhScHvvuYquGS3oApfgtNM3UJWXa<br>=ZgnD<br>—–END PGP MESSAGE—–</p>
-<p>Signed Ubuntu Code of Conduct in <a href="https://launchpad.net/~zhhuabj，" target="_blank" rel="external">https://launchpad.net/~zhhuabj，</a><br>1, 先下载UbuntuCodeofConduct-2.0.txt, <a href="https://launchpad.net/codeofconduct/2.0/+download" target="_blank" rel="external">https://launchpad.net/codeofconduct/2.0/+download</a><br>2, gpg –clearsign UbuntuCodeofConduct-2.0.txt<br>3, 将生成的UbuntuCodeofConduct-2.0.txt.asc文件再上传至 <a href="https://launchpad.net/codeofconduct/2.0/+sign即可。" target="_blank" rel="external">https://launchpad.net/codeofconduct/2.0/+sign即可。</a></p>
-<p>2014-5-23日添加，配置使用Google Authenticator服务</p>
-<p>Google帐户支持密码+临时验证码的两阶段验证方式。<br>临时验证码也支持直接短信发到手机上，也可以在Android手机上安装Google Authenticator服务来接收临时验证码。<br>具体先在<a href="https://accounts.google.com/b/0/SmsAuthConfig页面配置，并先生成google服务端为安装了Google" target="_blank" rel="external">https://accounts.google.com/b/0/SmsAuthConfig页面配置，并先生成google服务端为安装了Google</a> Authenticator服务的客户端生成的密钥。然后再在Google Authenticator里输入这个密钥就可以实现一次一密了。</p>
-<p>2020-05-21更新　－　产生密钥;</p>
-<p>#<a href="https://www.dazhuanlan.com/2019/12/15/5df63aed10999" target="_blank" rel="external">https://www.dazhuanlan.com/2019/12/15/5df63aed10999</a></p>
-<p>#generate ca key pairs<br>mkdir -p ca/{private,certs,newcerts} &amp;&amp; cd ca<br>openssl genrsa -aes256 -passout pass:password -out private/ca.key.pem 4096<br>chmod 400 private/ca.key.pem<br>wget <a href="https://jamielinux.com/docs/openssl-certificate-authority/_downloads/root-config.txt" target="_blank" rel="external">https://jamielinux.com/docs/openssl-certificate-authority/_downloads/root-config.txt</a> -O openssl.cnf<br>sed -i “s,/root/ca,.,g” openssl.cnf<br>openssl req -config ./openssl.cnf -key private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -passin pass:password \<br>     -subj “/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=quqi.com.rootca/emailAddress=quqi@mail.com” -out certs/ca.cert.pem<br>chmod 444 certs/ca.cert.pem<br>openssl x509 -noout -text -in certs/ca.cert.pem #verify</p>
-<p>#generate intermediate key pairs<br>mkdir -p intermediate/{certs,crl,csr,newcerts,private}<br>chmod 744 intermediate/private<br>touch index.txt &amp;&amp; echo 1000 &gt; serial &amp;&amp; echo 1000 &gt; crlnumber<br>openssl genrsa -aes256 -passout pass:password -out intermediate/private/intermediate.key.pem 4096<br>chmod 400 intermediate/private/intermediate.key.pem<br>cp ./openssl.cnf ./openssl-im.cnf</p>
-<p>#modify the following section of openssl-im.cnf file<br>[ CA_default ]<br>dir             = .<br>private_key     = $dir/private/intermediate.key.pem<br>certificate     = $dir/certs/intermediate.cert.pem<br>crl             = $dir/crl/intermediate.crl.pem<br>policy          = policy_loose<br>openssl req -config ./openssl-im.cnf -new -sha256 -passin pass:password \<br>     -subj “/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=quqi.com.imca/emailAddress=quqi@mail.com” \<br>     -key intermediate/private/intermediate.key.pem -out intermediate/csr/intermediate.csr.pem<br>openssl ca -config ./openssl.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -passin pass:password \<br>     -in intermediate/csr/intermediate.csr.pem -out intermediate/certs/intermediate.cert.pem<br>chmod 444 intermediate/certs/intermediate.cert.pem<br>openssl x509 -noout -text -in intermediate/certs/intermediate.cert.pem<br>openssl verify -CAfile certs/ca.cert.pem intermediate/certs/intermediate.cert.pem</p>
-<p>#generate certificate chain<br>cat intermediate/certs/intermediate.cert.pem certs/ca.cert.pem &gt; intermediate/certs/ca-chain.cert.pem<br>chmod 444 intermediate/certs/ca-chain.cert.pem</p>
-<p>#generate clinet.quqi.com key pairs<br>openssl genrsa -out intermediate/private/client.quqi.com.key.pem 2048<br>chmod 444 intermediate/private/client.quqi.com.key.pem<br>openssl req -config ./openssl-im.cnf -key intermediate/private/client.quqi.com.key.pem \<br>     -subj “/C=CN/ST=BJ/O=STS/OU=quqi.com/CN=client.quqi.com/emailAddress=quqi@mail.com” \<br>     -new -sha256 -out intermediate/csr/client.quqi.com.csr.pem<br>openssl ca -config ./openssl.cnf -extensions server_cert -days 3650 -notext -md sha256 -passin pass:password\<br>     -in intermediate/csr/client.quqi.com.csr.pem -out intermediate/certs/client.quqi.com.cert.pem<br>chmod 444 intermediate/certs/client.quqi.com.cert.pem<br>openssl x509 -noout -text -in intermediate/certs/client.quqi.com.cert.pem<br>openssl verify -CAfile intermediate/certs/ca-chain.cert.pem intermediate/certs/client.quqi.com.cert.pem</p>
-<p>参考:<br><a href="http://www.blogjava.net/alwayscy/archive/2006/12/01/84852.html" target="_blank" rel="external">http://www.blogjava.net/alwayscy/archive/2006/12/01/84852.html</a><br><a href="http://blog.sina.com.cn/s/blog_9e9d2211010199yj.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog_9e9d2211010199yj.html</a></p>
-<p><a href="http://lingxiankong.github.io/blog/2014/02/06/openstack-ssl/" target="_blank" rel="external">http://lingxiankong.github.io/blog/2014/02/06/openstack-ssl/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1940,7 +1923,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
