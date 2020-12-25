@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="OpenStack开发过程中常用Git操作场景( by quqi99 ) 作者：张华  发表于：2013-07-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明http://blog.csdn.net/quqi99 )     Git是一个分布式的代码管理库，linux之父开发，用了三年多了，直观感受的优点如下：  一是真正的分布式，既不用担心哪天服务">
-<meta property="og:updated_time" content="2020-12-03T07:27:32.944Z">
+<meta property="og:updated_time" content="2020-12-25T01:55:08.765Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OpenStack开发过程中常用Git操作场景">
 <meta name="twitter:description" content="OpenStack开发过程中常用Git操作场景( by quqi99 ) 作者：张华  发表于：2013-07-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明http://blog.csdn.net/quqi99 )     Git是一个分布式的代码管理库，linux之父开发，用了三年多了，直观感受的优点如下：  一是真正的分布式，既不用担心哪天服务">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
                 2019-10-14
@@ -357,11 +357,15 @@ Fixed bug #161317
 <p>#git checkout master</p>
 <p>#git rebase origin/master</p>
 <p>git checkout -b lp1847574<br>git commit -m ‘test’<br>git commit –amend -author=’Hua <xxx.mail.com>‘<br>git push –set-upstream zhhuabj lp1847574</xxx.mail.com></p>
-<p>#如果更新了代码再提交时如果rebase后可能需要添加-f参数 - <a href="https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch" target="_blank" rel="external">https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch</a></p>
+<p>#如果更新了代码再提交时如果rebase后可能需要添加-f参数, 这里pr将保持不变 - <a href="https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch" target="_blank" rel="external">https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch</a></p>
 <p>The -f is actually required because of the rebase. Whenever you do a rebase you would need to do a force push because the remote branch cannot be fast-forwarded to your commit. You’d always want to make sure that you do a pull before pushing, but if you don’t like to force push to master or dev for that matter, you can create a new branch to push to and then merge or make a PR.</p>
 <h1 id="git-push-f-–set-upstream-zhhuabj-lp1847574"><a href="#git-push-f-–set-upstream-zhhuabj-lp1847574" class="headerlink" title="git push -f –set-upstream zhhuabj lp1847574"></a>git push -f –set-upstream zhhuabj lp1847574</h1><h1 id="Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574"><a href="#Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574" class="headerlink" title="Propose for merging - https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574"></a>Propose for merging - <a href="https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574</a></h1><h1 id="zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master"><a href="#zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master" class="headerlink" title="~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master"></a>~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master</h1><p>#target repository -&gt; other: ~openstack-charm-testers/xxxstack-bundles/+git/xxxstack-bundles<br>target repository -&gt; other: <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a><br>target branch: refs/heads/master</p>
 <p>场景八: 内核</p>
 <p>git remote add xenial git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git<br>git fetch xenial<br>git log –no-merges –oneline xenial/hwe…xenial/master drivers/net/ethernet/mellanox/mlx5/</p>
+<p>场景九：确认charm-ceilometer-278是否包括fix d398cd</p>
+<p><a href="https://api.jujucharms.com/charmstore/v5/ceilometer-278/archive/repo-info" target="_blank" rel="external">https://api.jujucharms.com/charmstore/v5/ceilometer-278/archive/repo-info</a></p>
+<p>$ git branch -r -v |grep e06571<br>  origin/stable/20.10 e06571c Updates for stable branch creation</p>
+<p>$ git branch -r –contains  d398cd |grep 20.10<br>  origin/stable/20.10</p>
 <p>其它命令：</p>
 <p>git reset HEAD~1                      撤销最后一次提交。<br>git reset –hard HEAD^             撤销最后一次提交并清除本地修改</p>
 <p>git reset –hard Merge_Head  和服务器保持一致</p>
@@ -466,10 +470,10 @@ Fixed bug #161317
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Inhaltsverzeichnis
+            Table of Contents
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Übersicht
+            Overview
           </li>
         </ul>
       
@@ -490,7 +494,7 @@ Fixed bug #161317
                 <a href="/archives/">
               
                   <span class="site-state-item-count">80</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -556,7 +560,7 @@ Fixed bug #161317
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
