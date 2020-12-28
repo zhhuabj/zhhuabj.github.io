@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2015-05-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )人啊，总要不断地与记忆作斗争。 1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。   cc -g test.c -o test   静态检查程序错">
+<meta property="og:type" content="article">
+<meta property="og:title" content="回忆pdb基础">
+<meta property="og:url" content="http://yoursite.com/2020/12/28/回忆pdb基础/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2015-05-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )人啊，总要不断地与记忆作斗争。 1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。   cc -g test.c -o test   静态检查程序错">
+<meta property="og:updated_time" content="2020-12-28T02:06:14.163Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="回忆pdb基础">
+<meta name="twitter:description" content="作者：张华  发表于：2015-05-05版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )人啊，总要不断地与记忆作斗争。 1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。   cc -g test.c -o test   静态检查程序错">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/12/28/回忆pdb基础/"/>
+
+
+
+
+
+  <title>回忆pdb基础 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/28/回忆pdb基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">回忆pdb基础</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-28T10:06:02+08:00">
+                2020-12-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2015-05-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>人啊，总要不断地与记忆作斗争。</p>
+<p>1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。<br>   cc -g test.c -o test<br>   静态检查程序错误，splint test.c<br>   单元测试可使用CUnit, gcc -o test.o -I /usr/local/include/CUnit -L /usr/local/lib/ -g testcase.c -l cunit ./test.o</p>
+<p>   若是要调试master可以下载源码用./configure前加上CFLAGS=”-Wall -O2 -g”即可编译。若是ubuntu repo里已经有的package，则直接安装dbg即可编译(没有dbg包时可次优选择dbgsym包）。<br>2, 启动gdb, gdb test<br>   启动GDB的方法有以下几种：<br>    a、gdb <program><br>       program也就是你的执行文件，一般在当然目录下。<br>    b、gdb <program> core<br>       用gdb同时调试一个运行程序和core文件，core是程序非法执行后core dump后产生的文件。<br>       如果产生coredump呢？ 需要执ulimit -c unlimited才可以(缺省是coredump文件大小是0字节所以它不生成）。<br>       并不是所有的异常都会生成coredump文件，附录1是一个运行异常时会产生coredump文件的例子。<br>       运行后coredump文件产生在当前文件夹的core文件中。分析它： gdb ./test ./core, 如下显示了是哪一句出了错误：<br>       (gdb) bt</program></program></p>
+<pre><code>   #0  0x000000000040054d in core_dump () at test.c:5
+   #1  0x0000000000400585 in main () at test.c:10
+c、gdb &lt;program&gt; &lt;PID&gt;
+   通过sudo gdb启动gdb后直接attach &lt;PID&gt;可以attach到正在运行的程序，当然程序得加-g参数编译的。
+</code></pre><p>3, 一些常用gdb命令<br>   l, 列出源代码</p>
+<p>   break 16, 第16行设置断点<br>   b fn1 if a&gt;b, 条件设置断点<br>   break func, 在函数的入口处设置断点<br>   delete/disable/enable/clear 16, 删除第16个断点<br>   delete breakpoints，清除所有断点<br>   info break, 查看断点<br>   r, 运行程序，到断点处处时会停止运行等待用户输入（run), 在gdb中正常结束的程序也可以用此命令重新运行<br>   n, 单步执行(next)<br>   s, 进入函数(step)<br>   c, 继续运行(continue), 到下一个断点处<br>   p <variable>, 打印变量的值<br>   set var i=1, 修改变量的值<br>   info registers, 查看寄存器<br>   bt, 查看函数堆栈<br>   call 函数(参数),调用程序中可见的函数，并传递“参数”，如：call gdb_test(55)<br>   display 表达式：在单步运行时将非常有用，它将在每次单步进行指令后，紧接着输出被设置的表达式及值。如： display a<br>   watch 表达式：设置一个监视点，一旦被监视的“表达式”的值改变，gdb将强行终止正在被调试的程序。如：watch a<br>   q, 退出</variable></p>
+<p>4, 使用GDB调试多进程程序, <a href="https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/</a></p>
+<p>5, 使用cgdb可以很方便的查看代码。<br>6, 性能分析, 比如哪个函数调用了多少次，被谁调用了， 平均每次调用花费多少时间等。这时候要用gprof,gprof是分析profile输出的。<br>   要想执行时输出profile文件编译时要加-pg选项, gcc -o helloworld.o -pg -g helloworld.c<br>   执行上面语句后会在当前目录下生成gmon.out文件, 然后用gprof去读取并显示出来，gprof -b -A -p -q helloworld.o gmon.out &gt;prof_info.txt </p>
+<p>7, gdb也可以调试go语言的程序，采用”go build -gcflags “-N -l” test.go“编译，再’gdb test”即可。可能相比于C会多出一个‘info goroutines’命令。</p>
+<p>附录1, 产生coredump文件的例子</p>
+<p>#include <stdio.h><br>int core_dump() {<br>    int i;<br>    for (i = 5; i &gt;= 0; i–) {<br>        printf(“(%d, %d)\n”, i, 100 / i);<br>    }<br>    return 0;<br>}<br>int main() {<br>    core_dump();<br>    return 0;<br>}</stdio.h></p>
+<p>附录2, 如何分析CoreDump文件</p>
+<p>1, 安装dbgsym，注意安装的是librados2-dbg librbd1-dbg， 而不是librados2-dbgsym librbd1-dbgsym. （注意：有dbg内建包时优先安装dbg包，没有时才安装dbgsym非内建包，这点异常重要，否则会造成gdb调试时缺失符号表，这个网页有解释： <a href="https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）" target="_blank" rel="external">https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）</a><br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs) main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs)-updates main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys C8CAB6595FDFF622<br>sudo apt update<br>sudo apt-get install qemu-system-x86-dbgsym librados2-dbg librbd1-dbg</p>
+<p>For example: /usr/lib/x86_64-linux-gnu/libstdc++.so.6 and the debugging version is at /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6</p>
+<p>(gdb) set debug-file-directory /usr/lib/x86_64-linux-gnu/debug/</p>
+<p>(gdb) directory /xxx/qemu/qemu-2.5+dfsg     #sometimes directory doesn’t take effect, so use the following line</p>
+<p>(gdb) set substitute-path /build/qemu-e2kucK/qemu-2.5+dfsg /xxx/qemu/qemu-2.5+dfsg</p>
+<p>(gdb) l</p>
+<p>(gdb) info sharedlibrary</p>
+<p>2, 解压 - apport-unpack _usr_bin_qemu-system-x86_64.64055.crash ./tmp/</p>
+<p>3, 分析CoreDump (确保/usr/bin/qemu-system-x86_64与版本与之一致）<br>   gdb /usr/bin/qemu-system-x86_64 ./tmp/CoreDump</p>
+<p>4, 查看堆栈<br>(gdb) bt 1</p>
+<p>#0  malloc_consolidate (av=av@entry=0x7fa810000020) at malloc.c:4175</p>
+<p>5, 查看汇编，上面的malloc.c:4175可能由于编译器优化和源代码对不上，所以仍然需要通过编译代码一一比对<br>(gdb) p $rip<br>$5 = (void (*)()) 0x7fa84c275470 <malloc_consolidate+336><br>(gdb) x/2gi $rip<br>   0x7fa84c275320 <malloc_consolidate>: cmpq   $0x0,0x3484d0(%rip)        # 0x7fa84c5bd7f8 <global_max_fast><br>   0x7fa84c275328 <malloc_consolidate+8>: je     0x7fa84c275a8b <malloc_consolidate+1899></malloc_consolidate+1899></malloc_consolidate+8></global_max_fast></malloc_consolidate></malloc_consolidate+336></p>
+<p>6, 采用汇编理解出错代码，结合源代码辅助分析（因为编译器会优化代码，所以不能完全相信CoreDump中的行号）</p>
+<p>注：UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”</p>
+<p>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
+<h1 id="trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging"><a href="#trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging" class="headerlink" title="trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging"></a>trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging</h1><p>sudo add-apt-repository ppa:ubuntu-cloud-archive/mitaka-staging</p>
+<p>sudo add-apt-repository ppa:xxxx</p>
+<p>sudo apt update</p>
+<p>sudo apt install qemu-system-x86=1:2.5+dfsg-5ubuntu10.16~cloud0</p>
+<h1 id="seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget"><a href="#seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget" class="headerlink" title="seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget"></a>seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget</h1><p>wget <a href="http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb" target="_blank" rel="external">http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb</a><br>sudo dpkg -i qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb<br>sudo apt install qemu-system-x86-dbgsym=1:2.5+dfsg-5ubuntu10.16~cloud0<br>gdb /usr/bin/qemu-system-x86_64 10Apr18-instance-000a2f60-qemu-system-x86_64.core.2003745</p>
+<p>#GDB调试<br>sysctl kernel.core_pattern<br>sudo service apport start force_start=1 enabled=1<br>grep enabled /etc/default/apport<br>sudo killall -SIGSEGV ovs-vswitchd<br>sudo cat /var/log/apport.log<br>sudo apt install openvswitch-dbg cgdb</p>
+<p>#cgdb $(which ovs-vswitchd) $(pidof ovs-vswitchd)<br>cgdb ovs-vswitchd /var/crash/_usr_lib_openvswitch-switch_ovs-vswitchd.0.crash</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/12/12/RabbitMQ-Deep-Dive/" rel="next" title="RabbitMQ Deep Dive">
+                <i class="fa fa-chevron-left"></i> RabbitMQ Deep Dive
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">81</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging"><span class="nav-number">1.</span> <span class="nav-text">trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget"><span class="nav-number">2.</span> <span class="nav-text">seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

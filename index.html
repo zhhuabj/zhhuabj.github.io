@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,162 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/28/回忆pdb基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/28/回忆pdb基础/" itemprop="url">回忆pdb基础</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-28T10:06:02+08:00">
+                2020-12-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2015-05-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>人啊，总要不断地与记忆作斗争。</p>
+<p>1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。<br>   cc -g test.c -o test<br>   静态检查程序错误，splint test.c<br>   单元测试可使用CUnit, gcc -o test.o -I /usr/local/include/CUnit -L /usr/local/lib/ -g testcase.c -l cunit ./test.o</p>
+<p>   若是要调试master可以下载源码用./configure前加上CFLAGS=”-Wall -O2 -g”即可编译。若是ubuntu repo里已经有的package，则直接安装dbg即可编译(没有dbg包时可次优选择dbgsym包）。<br>2, 启动gdb, gdb test<br>   启动GDB的方法有以下几种：<br>    a、gdb <program><br>       program也就是你的执行文件，一般在当然目录下。<br>    b、gdb <program> core<br>       用gdb同时调试一个运行程序和core文件，core是程序非法执行后core dump后产生的文件。<br>       如果产生coredump呢？ 需要执ulimit -c unlimited才可以(缺省是coredump文件大小是0字节所以它不生成）。<br>       并不是所有的异常都会生成coredump文件，附录1是一个运行异常时会产生coredump文件的例子。<br>       运行后coredump文件产生在当前文件夹的core文件中。分析它： gdb ./test ./core, 如下显示了是哪一句出了错误：<br>       (gdb) bt</program></program></p>
+<pre><code>   #0  0x000000000040054d in core_dump () at test.c:5
+   #1  0x0000000000400585 in main () at test.c:10
+c、gdb &lt;program&gt; &lt;PID&gt;
+   通过sudo gdb启动gdb后直接attach &lt;PID&gt;可以attach到正在运行的程序，当然程序得加-g参数编译的。
+</code></pre><p>3, 一些常用gdb命令<br>   l, 列出源代码</p>
+<p>   break 16, 第16行设置断点<br>   b fn1 if a&gt;b, 条件设置断点<br>   break func, 在函数的入口处设置断点<br>   delete/disable/enable/clear 16, 删除第16个断点<br>   delete breakpoints，清除所有断点<br>   info break, 查看断点<br>   r, 运行程序，到断点处处时会停止运行等待用户输入（run), 在gdb中正常结束的程序也可以用此命令重新运行<br>   n, 单步执行(next)<br>   s, 进入函数(step)<br>   c, 继续运行(continue), 到下一个断点处<br>   p <variable>, 打印变量的值<br>   set var i=1, 修改变量的值<br>   info registers, 查看寄存器<br>   bt, 查看函数堆栈<br>   call 函数(参数),调用程序中可见的函数，并传递“参数”，如：call gdb_test(55)<br>   display 表达式：在单步运行时将非常有用，它将在每次单步进行指令后，紧接着输出被设置的表达式及值。如： display a<br>   watch 表达式：设置一个监视点，一旦被监视的“表达式”的值改变，gdb将强行终止正在被调试的程序。如：watch a<br>   q, 退出</variable></p>
+<p>4, 使用GDB调试多进程程序, <a href="https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/</a></p>
+<p>5, 使用cgdb可以很方便的查看代码。<br>6, 性能分析, 比如哪个函数调用了多少次，被谁调用了， 平均每次调用花费多少时间等。这时候要用gprof,gprof是分析profile输出的。<br>   要想执行时输出profile文件编译时要加-pg选项, gcc -o helloworld.o -pg -g helloworld.c<br>   执行上面语句后会在当前目录下生成gmon.out文件, 然后用gprof去读取并显示出来，gprof -b -A -p -q helloworld.o gmon.out &gt;prof_info.txt </p>
+<p>7, gdb也可以调试go语言的程序，采用”go build -gcflags “-N -l” test.go“编译，再’gdb test”即可。可能相比于C会多出一个‘info goroutines’命令。</p>
+<p>附录1, 产生coredump文件的例子</p>
+<p>#include <stdio.h><br>int core_dump() {<br>    int i;<br>    for (i = 5; i &gt;= 0; i–) {<br>        printf(“(%d, %d)\n”, i, 100 / i);<br>    }<br>    return 0;<br>}<br>int main() {<br>    core_dump();<br>    return 0;<br>}</stdio.h></p>
+<p>附录2, 如何分析CoreDump文件</p>
+<p>1, 安装dbgsym，注意安装的是librados2-dbg librbd1-dbg， 而不是librados2-dbgsym librbd1-dbgsym. （注意：有dbg内建包时优先安装dbg包，没有时才安装dbgsym非内建包，这点异常重要，否则会造成gdb调试时缺失符号表，这个网页有解释： <a href="https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）" target="_blank" rel="external">https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）</a><br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs) main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs)-updates main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys C8CAB6595FDFF622<br>sudo apt update<br>sudo apt-get install qemu-system-x86-dbgsym librados2-dbg librbd1-dbg</p>
+<p>For example: /usr/lib/x86_64-linux-gnu/libstdc++.so.6 and the debugging version is at /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6</p>
+<p>(gdb) set debug-file-directory /usr/lib/x86_64-linux-gnu/debug/</p>
+<p>(gdb) directory /xxx/qemu/qemu-2.5+dfsg     #sometimes directory doesn’t take effect, so use the following line</p>
+<p>(gdb) set substitute-path /build/qemu-e2kucK/qemu-2.5+dfsg /xxx/qemu/qemu-2.5+dfsg</p>
+<p>(gdb) l</p>
+<p>(gdb) info sharedlibrary</p>
+<p>2, 解压 - apport-unpack _usr_bin_qemu-system-x86_64.64055.crash ./tmp/</p>
+<p>3, 分析CoreDump (确保/usr/bin/qemu-system-x86_64与版本与之一致）<br>   gdb /usr/bin/qemu-system-x86_64 ./tmp/CoreDump</p>
+<p>4, 查看堆栈<br>(gdb) bt 1</p>
+<p>#0  malloc_consolidate (av=av@entry=0x7fa810000020) at malloc.c:4175</p>
+<p>5, 查看汇编，上面的malloc.c:4175可能由于编译器优化和源代码对不上，所以仍然需要通过编译代码一一比对<br>(gdb) p $rip<br>$5 = (void (*)()) 0x7fa84c275470 <malloc_consolidate+336><br>(gdb) x/2gi $rip<br>   0x7fa84c275320 <malloc_consolidate>: cmpq   $0x0,0x3484d0(%rip)        # 0x7fa84c5bd7f8 <global_max_fast><br>   0x7fa84c275328 <malloc_consolidate+8>: je     0x7fa84c275a8b <malloc_consolidate+1899></malloc_consolidate+1899></malloc_consolidate+8></global_max_fast></malloc_consolidate></malloc_consolidate+336></p>
+<p>6, 采用汇编理解出错代码，结合源代码辅助分析（因为编译器会优化代码，所以不能完全相信CoreDump中的行号）</p>
+<p>注：UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”</p>
+<p>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
+<h1 id="trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging"><a href="#trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging" class="headerlink" title="trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging"></a>trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging</h1><p>sudo add-apt-repository ppa:ubuntu-cloud-archive/mitaka-staging</p>
+<p>sudo add-apt-repository ppa:xxxx</p>
+<p>sudo apt update</p>
+<p>sudo apt install qemu-system-x86=1:2.5+dfsg-5ubuntu10.16~cloud0</p>
+<h1 id="seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget"><a href="#seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget" class="headerlink" title="seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget"></a>seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget</h1><p>wget <a href="http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb" target="_blank" rel="external">http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb</a><br>sudo dpkg -i qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb<br>sudo apt install qemu-system-x86-dbgsym=1:2.5+dfsg-5ubuntu10.16~cloud0<br>gdb /usr/bin/qemu-system-x86_64 10Apr18-instance-000a2f60-qemu-system-x86_64.core.2003745</p>
+<p>#GDB调试<br>sysctl kernel.core_pattern<br>sudo service apport start force_start=1 enabled=1<br>grep enabled /etc/default/apport<br>sudo killall -SIGSEGV ovs-vswitchd<br>sudo cat /var/log/apport.log<br>sudo apt install openvswitch-dbg cgdb</p>
+<p>#cgdb $(which ovs-vswitchd) $(pidof ovs-vswitchd)<br>cgdb ovs-vswitchd /var/crash/_usr_lib_openvswitch-switch_ovs-vswitchd.0.crash</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +416,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:01:46+08:00">
                 2020-12-12
@@ -358,7 +514,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#x61;&#105;&#108;&#116;&#x6f;&#x3a;&#60;&#x22;&#x72;&#x61;&#x62;&#98;&#105;&#x74;&#109;&#113;&#x2d;&#x73;&#101;&#x72;&#118;&#101;&#x72;&#64;&#x6a;&#x75;&#106;&#x75;&#45;&#x63;&#x62;&#x64;&#x37;&#x36;&#48;&#45;&#111;&#x63;&#x74;&#x61;&#118;&#x69;&#x61;&#x2d;&#49;&#x30;&#x22;">&#60;&#x22;&#x72;&#x61;&#x62;&#98;&#105;&#x74;&#109;&#113;&#x2d;&#x73;&#101;&#x72;&#118;&#101;&#x72;&#64;&#x6a;&#x75;&#106;&#x75;&#45;&#x63;&#x62;&#x64;&#x37;&#x36;&#48;&#45;&#111;&#x63;&#x74;&#x61;&#118;&#x69;&#x61;&#x2d;&#49;&#x30;&#x22;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#x6f;&#58;&#60;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#x74;&#x6d;&#x71;&#45;&#115;&#x65;&#x72;&#118;&#101;&#114;&#64;&#106;&#117;&#106;&#x75;&#45;&#99;&#x62;&#x64;&#x37;&#54;&#x30;&#x2d;&#111;&#99;&#x74;&#97;&#x76;&#105;&#97;&#45;&#x31;&#x30;&#x22;">&#60;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#x74;&#x6d;&#x71;&#45;&#115;&#x65;&#x72;&#118;&#101;&#114;&#64;&#106;&#117;&#106;&#x75;&#45;&#99;&#x62;&#x64;&#x37;&#54;&#x30;&#x2d;&#111;&#99;&#x74;&#97;&#x76;&#105;&#97;&#45;&#x31;&#x30;&#x22;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -371,7 +527,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x3c;&#34;&#114;&#97;&#x62;&#x62;&#105;&#116;&#x6d;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#x6a;&#x75;&#x2d;&#99;&#98;&#100;&#x37;&#54;&#x30;&#x2d;&#x6f;&#99;&#x74;&#x61;&#x76;&#x69;&#x61;&#x2d;&#x31;&#48;&#34;">&#x3c;&#34;&#114;&#97;&#x62;&#x62;&#105;&#116;&#x6d;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#x6a;&#x75;&#x2d;&#99;&#98;&#100;&#x37;&#54;&#x30;&#x2d;&#x6f;&#99;&#x74;&#x61;&#x76;&#x69;&#x61;&#x2d;&#x31;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#x69;&#108;&#116;&#111;&#x3a;&#60;&#34;&#114;&#x61;&#98;&#x62;&#105;&#116;&#x6d;&#x71;&#45;&#x73;&#x65;&#x72;&#x76;&#x65;&#x72;&#x40;&#x6a;&#x75;&#106;&#117;&#x2d;&#99;&#98;&#x64;&#x37;&#54;&#x30;&#x2d;&#111;&#x63;&#116;&#97;&#x76;&#x69;&#97;&#45;&#49;&#48;&#34;">&#60;&#34;&#114;&#x61;&#98;&#x62;&#105;&#116;&#x6d;&#x71;&#45;&#x73;&#x65;&#x72;&#x76;&#x65;&#x72;&#x40;&#x6a;&#x75;&#106;&#117;&#x2d;&#99;&#98;&#x64;&#x37;&#54;&#x30;&#x2d;&#111;&#x63;&#116;&#97;&#x76;&#x69;&#97;&#45;&#49;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -458,7 +614,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
                 2020-12-12
@@ -606,7 +762,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
                 2020-11-27
@@ -791,7 +947,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
                 2020-11-13
@@ -928,7 +1084,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
                 2020-11-12
@@ -1063,7 +1219,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
                 2020-11-12
@@ -1211,7 +1367,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
                 2020-11-09
@@ -1356,7 +1512,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
                 2020-11-08
@@ -1555,7 +1711,7 @@ use sendfile = yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
                 2020-11-04
@@ -1680,138 +1836,11 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/04/Install-OpenStack-on-MAAS-Nodes/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/04/Install-OpenStack-on-MAAS-Nodes/" itemprop="url">Install OpenStack on MAAS Nodes</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T16:23:01+08:00">
-                2020-11-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><em>作者：张华 发表于：2016-11-09<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</em></p>
-<p>1, Prepare MAAS Nodes</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install -y maas-cli</span><br><span class="line">echo &apos;&lt;key-in-&lt;MAASIP&gt;/MAAS/r/account/prefs/api-keys&gt;&apos; &gt; ~/maas-apikey</span><br><span class="line">maas login admin http://10.230.56.2/MAAS `cat ~/maas-apikey`</span><br><span class="line">maas admin tags read</span><br><span class="line"></span><br><span class="line"># https://juju.is/docs/maas-cloud</span><br><span class="line">sudo bash -c &apos;cat &gt; /tmp/mymmas.yaml&apos; &lt;&lt; EOF</span><br><span class="line">clouds:</span><br><span class="line">   mymmas:</span><br><span class="line">      type: maas</span><br><span class="line">      auth-types: [oauth1]</span><br><span class="line">      endpoint: http://&lt;MAASIP&gt;/MAAS</span><br><span class="line">EOF</span><br><span class="line">juju remove-cloud --local mymmas</span><br><span class="line">juju add-cloud --local mymmas /tmp/mymmas.yaml</span><br><span class="line">juju list-clouds</span><br><span class="line">juju show-cloud mymmas --local</span><br><span class="line">sudo bash -c &apos;cat &gt; /tmp/credential.yaml&apos; &lt;&lt; EOF</span><br><span class="line">credentials:</span><br><span class="line">  mymmas:</span><br><span class="line">    zhhuabj:</span><br><span class="line">      auth-type: oauth1</span><br><span class="line">      maas-oauth: &lt;key-in-&lt;MAASIP&gt;/MAAS/r/account/prefs/api-keys&gt;</span><br><span class="line">EOF</span><br><span class="line">juju remove-credential --local mymmas zhhuabj</span><br><span class="line">juju add-credential --local mymmas -f /tmp/credential.yaml</span><br><span class="line">juju credentials --local</span><br><span class="line">juju show-credential --local mymmas zhhuabj</span><br><span class="line">cat ~/.local/share/juju/credentials.yaml</span><br><span class="line"></span><br><span class="line">juju bootstrap --debug segmaas --no-gui --config image-stream=daily --config default-series=focal --constraints=&quot;tags=virtual&quot;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br></pre></td><td class="code"><pre><span class="line">juju export-bundle --filename /tmp/sriov.yaml   #seg-bundles</span><br><span class="line">series: bionic</span><br><span class="line">applications:</span><br><span class="line">  glance:</span><br><span class="line">    charm: cs:~openstack-charmers-next/glance-423</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">    options:</span><br><span class="line">      debug: true</span><br><span class="line">      verbose: true</span><br><span class="line">      worker-multiplier: 0.25</span><br><span class="line">  keystone:</span><br><span class="line">    charm: cs:~openstack-charmers-next/keystone-508</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">    options:</span><br><span class="line">      admin-password: openstack</span><br><span class="line">      debug: true</span><br><span class="line">      verbose: true</span><br><span class="line">      worker-multiplier: 0.25</span><br><span class="line">  mysql:</span><br><span class="line">    charm: cs:~openstack-charmers-next/percona-cluster-376</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">    options:</span><br><span class="line">      innodb-buffer-pool-size: 512M</span><br><span class="line">      max-connections: 1000</span><br><span class="line">      root-password: admin</span><br><span class="line">      sst-password: admin</span><br><span class="line">  neutron-api:</span><br><span class="line">    charm: local:bionic/neutron-api-0</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">    options:</span><br><span class="line">      debug: true</span><br><span class="line">      enable-sriov: true</span><br><span class="line">      flat-network-providers: physnet1</span><br><span class="line">      neutron-security-groups: true</span><br><span class="line">      supported-pci-vendor-devs: 14e4:16af 8086:1515 8086:1528</span><br><span class="line">      verbose: true</span><br><span class="line">      vlan-ranges: &quot;&quot;</span><br><span class="line">      worker-multiplier: 0.25</span><br><span class="line">  neutron-openvswitch:</span><br><span class="line">    charm: local:bionic/neutron-openvswitch-0</span><br><span class="line">    options:</span><br><span class="line">      debug: true</span><br><span class="line">      enable-local-dhcp-and-metadata: true</span><br><span class="line">      enable-sriov: true</span><br><span class="line">      sriov-device-mappings: physnet1:eno50</span><br><span class="line">      verbose: true</span><br><span class="line">      vlan-ranges: &quot;&quot;</span><br><span class="line">  nova-cloud-controller:</span><br><span class="line">    charm: local:bionic/nova-cloud-controller-501</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">    options:</span><br><span class="line">      debug: true</span><br><span class="line">      network-manager: Neutron</span><br><span class="line">      verbose: true</span><br><span class="line">      worker-multiplier: 0.25</span><br><span class="line">  nova-compute:</span><br><span class="line">    charm: local:bionic/nova-compute-133</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - &quot;1&quot;</span><br><span class="line">    options:</span><br><span class="line">      debug: true</span><br><span class="line">      pci-passthrough-whitelist: &apos;[&#123;&quot;devname&quot;:&quot;eno50&quot;, &quot;physical_network&quot;:&quot;physnet1&quot;&#125;]&apos;</span><br><span class="line">      verbose: true</span><br><span class="line">  ntp:</span><br><span class="line">    charm: cs:ntp-41</span><br><span class="line">  rabbitmq-server:</span><br><span class="line">    charm: cs:~openstack-charmers-next/rabbitmq-server-379</span><br><span class="line">    num_units: 1</span><br><span class="line">    to:</span><br><span class="line">    - lxd:0</span><br><span class="line">machines:</span><br><span class="line">  &quot;0&quot;:</span><br><span class="line">    constraints: tags=buneary</span><br><span class="line">  &quot;1&quot;:</span><br><span class="line">    constraints: tags=duduo</span><br><span class="line">  &quot;2&quot;:</span><br><span class="line">    constraints: tags=virtual</span><br><span class="line">    series: bionic</span><br><span class="line">relations:</span><br><span class="line">- - keystone:shared-db</span><br><span class="line">  - mysql:shared-db</span><br><span class="line">- - nova-cloud-controller:identity-service</span><br><span class="line">  - keystone:identity-service</span><br><span class="line">- - glance:identity-service</span><br><span class="line">  - keystone:identity-service</span><br><span class="line">- - neutron-api:identity-service</span><br><span class="line">  - keystone:identity-service</span><br><span class="line">- - neutron-openvswitch:neutron-plugin-api</span><br><span class="line">  - neutron-api:neutron-plugin-api</span><br><span class="line">- - neutron-api:shared-db</span><br><span class="line">  - mysql:shared-db</span><br><span class="line">- - neutron-api:amqp</span><br><span class="line">  - rabbitmq-server:amqp</span><br><span class="line">- - glance:shared-db</span><br><span class="line">  - mysql:shared-db</span><br><span class="line">- - glance:amqp</span><br><span class="line">  - rabbitmq-server:amqp</span><br><span class="line">- - nova-cloud-controller:image-service</span><br><span class="line">  - glance:image-service</span><br><span class="line">- - nova-cloud-controller:amqp</span><br><span class="line">  - rabbitmq-server:amqp</span><br><span class="line">- - neutron-openvswitch:amqp</span><br><span class="line">  - rabbitmq-server:amqp</span><br><span class="line">- - nova-cloud-controller:shared-db</span><br><span class="line">  - mysql:shared-db</span><br><span class="line">- - nova-cloud-controller:neutron-api</span><br><span class="line">  - neutron-api:neutron-api</span><br><span class="line">- - nova-compute:amqp</span><br><span class="line">  - rabbitmq-server:amqp</span><br><span class="line">- - nova-compute:image-service</span><br><span class="line">  - glance:image-service</span><br><span class="line">- - nova-cloud-controller:cloud-compute</span><br><span class="line">  - nova-compute:cloud-compute</span><br><span class="line">- - nova-compute:neutron-plugin</span><br><span class="line">  - neutron-openvswitch:neutron-plugin</span><br><span class="line">- - ntp:juju-info</span><br><span class="line">  - nova-compute:juju-info</span><br></pre></td></tr></table></figure>
-<p>2, Upload the image</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://api.jujucharms.com/charmstore/v5/openstack-base/archive</span><br><span class="line">source novarc</span><br><span class="line">wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1511.qcow2</span><br><span class="line">glance image-create --name centos --disk-format qcow2 --container-format bare --file ./CentOS-7-x86_64-GenericCloud-1511.qcow2 --progress</span><br></pre></td></tr></table></figure>
-<p>3, Create the network<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: can use seg-bundles instead</span><br><span class="line">neutron net-create private --provider:network_type gre --provider:segmentation_id 1012</span><br><span class="line">neutron subnet-create --allocation-pool start=192.168.21.22,end=192.168.21.122 --gateway 192.168.21.1 private 192.168.21.0/24 --enable_dhcp=True --name private_subnet</span><br><span class="line"></span><br><span class="line">neutron net-create ext_net -- --router:external=True --provider:network_type flat --provider:physical_network physnet1</span><br><span class="line">neutron subnet-create --allocation-pool start=10.230.56.100,end=10.230.56.104 --gateway 10.230.56.1 ext_net 10.230.56.100/21 --enable_dhcp=False --name ext_net_subnet</span><br><span class="line"></span><br><span class="line">neutron router-create provider-router</span><br><span class="line">EXT_NET_ID=$(neutron net-list |grep &apos; ext_net &apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">ROUTER_ID=$(neutron router-list |grep &apos; provider-router &apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">SUBNET_ID=$(neutron subnet-list |grep &apos;192.168.21.0/24&apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">neutron router-interface-add $ROUTER_ID $SUBNET_ID</span><br><span class="line">neutron router-gateway-set $ROUTER_ID $EXT_NET_ID</span><br><span class="line">#neutron router-gateway-clear provider-router</span><br><span class="line">#neutron router-interface-delete provider-router private_subnet</span><br><span class="line">#nova floating-ip-delete 10.230.56.101</span><br><span class="line">#neutron subnet-delete ext_net_subnet</span><br><span class="line">#neutron subnet-delete private_subnet</span><br><span class="line">#neutron net-delete ext_net</span><br><span class="line">#neutron net-delete private</span><br><span class="line">#neutron router-delete provider-router</span><br></pre></td></tr></table></figure></p>
-<p>4, Boot the VM<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">neutron security-group-rule-create --protocol icmp --direction ingress default</span><br><span class="line">neutron security-group-rule-create --protocol tcp --port-range-min 22 --port-range-max 22 --direction ingress default</span><br><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">nova service-list</span><br><span class="line">nova hypervisor-list</span><br><span class="line">nova boot --poll --key-name mykey --image centos --flavor 2 --nic net-id=$(neutron net-list |grep &apos;private&apos; |awk &apos;&#123;print $2&#125;&apos;) --availability-zone nova:node2 i2</span><br><span class="line">nova floating-ip-create</span><br><span class="line">nova floating-ip-associate i2 10.230.56.104</span><br><span class="line">ssh -i mykey centos@10.230.56.104 -v #dd if=/dev/urandom of=/var/tmp/live_mig_test bs=4M count=1000  #~/.local/share/juju/ssh/juju_id_rsa</span><br><span class="line">nova live-migration --block-migrate i2 voltorb</span><br><span class="line">#sudo virsh --connect qemu+ssh://node2/system list</span><br><span class="line">#LIBVIRT_DEBUG=1 virsh migrate --verbose --live --copy-storage-all instance-0000000d qemu+ssh://voltorb/system 2&gt;&amp;1 &gt; debug.log</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/9/">9</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1857,8 +1886,8 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">80</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">81</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1908,7 +1937,7 @@ set_state done
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
