@@ -231,6 +231,148 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/14/猫盘安装群晖synology/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/04/14/猫盘安装群晖synology/" itemprop="url">猫盘安装群晖synology</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
+                2020-04-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-04-14<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里有两个nas, 一个威联通的，一个猫盘，猫盘长期没怎么用，今天一看开机后找不着IP，后来多重启几次后，发现偶尔路由器上能看到IP, 它每次IP都变，并且也容易掉IP．而且还无法打开ssh，所以这个猫盘不是我心目中理想的样子，它很烂．但想着里面还有一块硬盘也不能就这么丢了啊．于是想着把它刷成群晖synology.<br>网上一堆通过什么ttl刷机的方法，那个太麻烦了，还得买线，还得拆机，还得搭线，我们还是寻找软个的方法．其实问题的关键是猫盘打开ssh太麻烦了，如果有了ssh直接刷synology很简单．x3p默认支持ssh，所以我们先通过网络的方式刷x3p，然后再刷synology.</p>
+<h2 id="通过猫盘一键刷机v2-0刷x3p"><a href="#通过猫盘一键刷机v2-0刷x3p" class="headerlink" title="通过猫盘一键刷机v2.0刷x3p"></a>通过猫盘一键刷机v2.0刷x3p</h2><p>我也忘了哪里下载的猫盘一键刷机v2.0工具，大家自行在网上搜索，有名字应该很容易找到该工具的下载地址，或者去百度网盘搜搜．下载安装好后，通过网络刷x3p要知道几个信息：</p>
+<ul>
+<li>猫盘的IP，从路由器里找</li>
+<li>猫盘的mac，从猫盘背后找．但注意一点是，要想每次启动IP不变的话，mac地址前面几位应该固定成78C2C0，后面六位从猫盘背后找．</li>
+<li><p>猫盘的SN, 从猫盘背后找．<br>有了这些信息后，按下列步骤刷x3p</p>
+</li>
+<li><p>打开猫盘一键刷机工具，把上面的信息粘贴进去，点击开始刷机 (注意注意：刷机前一定要关闭win10上的防火墙）</p>
+</li>
+<li>刷好后有提示，这时候需要拔下电源，按住reset！等待10秒以上，按着他不要停！同时连上电源，等网线的灯亮起在松手。</li>
+<li>这时候猫盘应该顶灯不停闪烁，等待15分钟左右，路由器能够看到你的猫盘就算刷好了</li>
+<li>打开网页，地址栏输入猫盘的新ip，进入X3P登录页面. 它有两个帐号，一个admin，密码：123456, 一个root, 密码为Etech12 (呆会ssh时需要使用root用户）</li>
+<li>做到这一步如果想使用x3p就继续升级，如果想使用synology的话做到这一步就算完了．<h2 id="ssh一键刷synology"><a href="#ssh一键刷synology" class="headerlink" title="ssh一键刷synology"></a>ssh一键刷synology</h2>使用root (Etech12)用户ssh登录到系统，一键运行下列命令即可：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -N --no-check-certificate https://raw.githubusercontent.com/Squaregentleman/catdrive-syno/master/install.sh</span><br><span class="line">chmod +x install.sh</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>但是由于你知道的糟糕的网络环境，可能install.sh里面要下载的<a href="https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．" target="_blank" rel="external">https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．</a></p>
+<h2 id="配置synology"><a href="#配置synology" class="headerlink" title="配置synology"></a>配置synology</h2><p>上步安装好synology之后，接着就要配置synology, 本来也没什么好说的，看着文字说明一步一步做就行了．也是因为你知道的糟糕的网络环境，需要先手工下载下列文件，然后做到这一步时看文字选手工安装安装它：<br><a href="https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922" target="_blank" rel="external">https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922</a>　</p>
+<h2 id="配置nfs"><a href="#配置nfs" class="headerlink" title="配置nfs"></a>配置nfs</h2><p>控制面板定义一个共享文件夹如bak, 关联用户admin, 然后要定义NFS权限，如下图，在squash处选择＂映射所有用户为admin. 不然的话，你若通过（sudo mount -t nfs 192.168.99.169:/volume1/bak /cat）mount了的话，然后使用添加sudo如＂sudo ls /cat”才能访问．<br><img src="https://img-blog.csdnimg.cn/20200414113138418.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="autofs配置"><a href="#autofs配置" class="headerlink" title="autofs配置"></a>autofs配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/auto.direct |tail -n 1</span><br><span class="line">/cat    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=admin,password=nanting413     192.168.99.169:/volume1/bak</span><br><span class="line">$ cat /etc/auto.master |tail -n 1</span><br><span class="line">/-	auto.direct</span><br><span class="line"></span><br><span class="line">sudo systemctl restart autofs</span><br></pre></td></tr></table></figure>
+<h2 id="一个大坑"><a href="#一个大坑" class="headerlink" title="一个大坑"></a>一个大坑</h2><p>通过IP访问控制台时，在套件中心要安装软件时，总是会报连接网络失败，问题是我们的网络肯定是好的．找了好久，终于发现仍然是我们特殊的网络环境造成的．<br>需要打开ntp，如下图，但默认使用的ntp服务器是time.google.com，所以被那个了，ntp也就不好使了从而造成无法访问应用软件库．<br><img src="https://img-blog.csdnimg.cn/20200414113835409.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>注：还可以添加这个软件仓库　－　<a href="https://synocommunity.com/#easy-install" target="_blank" rel="external">https://synocommunity.com/#easy-install</a></p>
+<h2 id="rsync同步"><a href="#rsync同步" class="headerlink" title="rsync同步"></a>rsync同步</h2><p> 可通过rsync命令同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avztur --progress --delete --exclude &apos;me/xx&apos; /nas/  /cat</span><br></pre></td></tr></table></figure></p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://post.smzdm.com/p/a4wm2rll/" target="_blank" rel="external">https://post.smzdm.com/p/a4wm2rll/</a><br>[2] <a href="https://post.smzdm.com/p/a6l8zglg/" target="_blank" rel="external">https://post.smzdm.com/p/a6l8zglg/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1605,163 +1747,6 @@ done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/08/Perf火焰图/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/11/08/Perf火焰图/" itemprop="url">Perf火焰图</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-08T15:17:52+08:00">
-                2019-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="Install-perf"><a href="#Install-perf" class="headerlink" title="Install perf"></a>Install perf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: 如果编译ovs时指定了libunwind/libdwarf，则可以不用安装openvswitch-dbg</span><br><span class="line"># 另外，perf指定dwarf时会也像core dump一样收集call strace，另外5秒已经能产生很大的数据量。</span><br><span class="line">#sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">sudo apt install linux-tools-`uname -r`</span><br><span class="line">sudo apt install linux-tools-common</span><br><span class="line">sudo apt install openvswitch-dbg -y</span><br><span class="line">git clone https://github.com/bboymimi/easy-flamegraph.git</span><br><span class="line">cd easy-flamegraph</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/blocked 1000 ms waiting for main to quiesce/ &#123;system(&quot;sudo /usr/bin/perf record -p `pidof ovs-vswitchd` -g --call-graph dwarf sleep 5&quot;)&#125;&apos;</span><br><span class="line">sudo ./gen-flamegraph.sh -i ./perf.data</span><br><span class="line">sudo tar -czvf perf-output.tar.gz perf-output/</span><br><span class="line"></span><br><span class="line">perf不会造成ovs服务中断，而下面的core dump则会造成服务中断，因为是ovs deadlock而不是crash, 如果只是crash则直接去/var/crash目录去找core dump即可也就不存在服务中断的问题了。</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/blocked 1000 ms waiting for main to quiesce/ &#123;system(&quot;sudo /usr/bin/killall -SIGSEGV ovs-vswitchd&quot;)&#125;&apos;</span><br></pre></td></tr></table></figure>
-<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
-<li>火焰图看最宽的那条, 最宽的显示最耗时的, 上下最高则表示调用深度最长</li>
-<li>如若抓应用态的(如ovs)则应添加” –call-graph dwarf “ 参数, ovs最好也安装符号表</li>
-<li>如ovs隔六七秒就死, 可以使用它来抓这六七秒内的调用栈 - sudo perf record -a –call-graph dwarf – sleep 12</li>
-<li>ideal的占一成的话, 那cpu占用率就是9成左右. 如果所有进程耗时都比较平均, 那只能说明整体性能不够</li>
-<li>使用Ctrl + F可以搜索</li>
-<li>offcpuflamegraphs.html 可以用来分析cpu为什么会睡那么久soft-lock相关的问题</li>
-<li>之前使用systemtap, 但这东西需要脚本, 同时也不方便online debug session时安装. 现在主要使用perf, 另外也可以学习ebpf</li>
-</ul>
-<h2 id="Perf-Flame-Graph"><a href="#Perf-Flame-Graph" class="headerlink" title="Perf Flame Graph"></a>Perf Flame Graph</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">sudo perf record --call-graph dwarf -p $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf script | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl &gt; process.svg</span><br></pre></td></tr></table></figure>
-<h2 id="分解"><a href="#分解" class="headerlink" title="分解"></a>分解</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo perf record -F 99 -g -- sleep 30 $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf report -n --stdio</span><br><span class="line">sudo perf script | gzip &gt; out.perf01.gz</span><br><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">; http://svgshare.com can be used to share svg</span><br><span class="line">sudo perf script | ./FlameGraph/stackcollapse-perf.pl | sed &apos;/cpu_idle/d;s/\[unknown\];//g&apos; | ./FlameGraph/flamegraph.pl --width 1000 &gt; perf.svg</span><br><span class="line">google-chrome-stable ./perf.svg</span><br></pre></td></tr></table></figure>
-<h2 id="其他一"><a href="#其他一" class="headerlink" title="其他一"></a>其他一</h2><p>参考： <a href="https://github.com/bboymimi/perf-utils" target="_blank" rel="external">https://github.com/bboymimi/perf-utils</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># To get the all CPUs profiling callstack from user space to kernel space (both kernel and user space)</span><br><span class="line">sudo perf record -a --call-graph dwarf</span><br><span class="line"># To get the all CPUs profiling of kernel space callstack (just kernel space)</span><br><span class="line">sudo perf record -a -g</span><br><span class="line">git clone https://github.com/bboymimi/perf-utils.git</span><br><span class="line">sudo ./perf-utils/easy-flamegraph.sh -i perf.data</span><br><span class="line">google-chrome-stable ./perf-output/2018-01-04_14:18:15.perf.data.svg</span><br></pre></td></tr></table></figure></p>
-<h2 id="其他二"><a href="#其他二" class="headerlink" title="其他二"></a>其他二</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Enable the sysrq </span><br><span class="line">sudo sysctl -w kernel.sysrq=1 </span><br><span class="line"># Dump all active tasks stack - https://www.kernel.org/doc/html/latest/admin-guide/sysrq.html</span><br><span class="line">echo l | sudo tee /proc/sysrq-trigger </span><br><span class="line"># Dumps tasks that are in uninterruptable (blocked) state. </span><br><span class="line">echo p | sudo tee /proc/sysrq-trigger </span><br><span class="line"># Performance profiling and get the flame-graph to see if there is </span><br><span class="line">any performance bottleneck when the problem happened</span><br><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git </span><br><span class="line">sudo perf record -a -g sleep 5 </span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure>
-<p><strong>Profile Java with Perf</strong><br>默认的perf只能分析c与c++程序, 其他用户态的perf-java, perf-python, perf-go应当分别学习, 这里说的是perf-java<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Profile Java with Perf</span><br><span class="line"># https://cloud.tencent.com/developer/article/1416234</span><br><span class="line"># https://my.oschina.net/u/150599/blog/3023394</span><br><span class="line">sudo apt install -y linux-tools-common linux-tools-generic bindfs</span><br><span class="line">mkdir /tmp/containerrootfs</span><br><span class="line">PID=$(docker inspect --format &#123;&#123;.State.Pid&#125;&#125; cas1)</span><br><span class="line">sudo perf record -g -p $PID</span><br><span class="line">sudo perf report</span><br><span class="line">#fix symbols in container</span><br><span class="line">cp perf.data /tmp/containerrootfs/</span><br><span class="line">bindfs /proc/$PID/root /tmp/containerrootfs</span><br><span class="line">perf report --symfs /tmp/containerrootfs</span><br><span class="line">umount /tmp/containerrootfs</span><br><span class="line"></span><br><span class="line"># install java</span><br><span class="line">sudo apt install -y openjdk-8-jdk</span><br><span class="line">dpkg-query -L openjdk-8-jdk</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64</span><br><span class="line"># install perf-map-agent to help generate symbols with FlameGraph</span><br><span class="line">sudo apt install -y cmake pkg-config libfuse-dev libfuse2 autoconf</span><br><span class="line">git clone https://github.com/brendangregg/FlameGraph.git</span><br><span class="line">export FLAMEGRAPH_DIR=/home/ubuntu/FlameGraph</span><br><span class="line">git clone https://github.com/jvm-profiling-tools/perf-map-agent.git</span><br><span class="line">cd perf-map-agent/</span><br><span class="line">cmake .</span><br><span class="line">make</span><br><span class="line">sudo bin/create-links-in /usr/local/bin</span><br><span class="line"></span><br><span class="line"># Use perf-java-flames (</span><br><span class="line"># Need to add one jvm option in java process: -XX:+PreserveFramePointer</span><br><span class="line">perf-java-flames $PID -g</span><br><span class="line">#perf-java-record-stack $PID -g</span><br><span class="line">chromium-browser /bak/work/perf-map-agent/flamegraph-10286.svg</span><br></pre></td></tr></table></figure></p>
-<p><strong>上下文切换高</strong><br>启用sar，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install sysstat</span><br><span class="line">sudo sed -i &apos;s/^ENABLED=&quot;false&quot;/ENABLED=&quot;true&quot;/&apos; /etc/default/sysstat</span><br><span class="line">sudo sed -i &apos;s/^5-55\/10/*\/2/&apos; /etc/cron.d/sysstat</span><br><span class="line">sudo systemctl restart sysstat</span><br></pre></td></tr></table></figure></p>
-<p>后可以观测如上文文切换过高<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">00:00:01       proc/s   cswch/s</span><br><span class="line">Average:       143.82  59339.01</span><br></pre></td></tr></table></figure></p>
-<p>可以搜索火焰图（用户态内核态一起收集)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git</span><br><span class="line">cd perf-production</span><br><span class="line">sudo perf record -a --call-graph dwarf sleep 5</span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure></p>
-<p>也可以使用pidstat -w 1来确定哪个进程的上下文切换高， 或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># https://serverfault.com/questions/190049/find-out-which-task-is-generating-a-lot-of-context-switches-on-linux</span><br><span class="line">sudo perf record -e context-switches -a -g</span><br><span class="line"># then ctrl+c</span><br><span class="line">sudo perf report # inspect the result</span><br></pre></td></tr></table></figure></p>
-<p><strong>Appendix - error - ERROR: No stack counts found </strong><br>遇到下面error是需要: sudo chown -R root:root perf.data, 必须使用root用户, 而非它说的普通用户.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/perf-utils$ sudo ./easy-flamegraph.sh perf.data  -f</span><br><span class="line">Use the /bak/work/perf-utils/perf.data as the source of the FlameGraph.</span><br><span class="line">File /bak/work/perf-utils/perf.data not owned by current user or root (use -f to override)</span><br><span class="line">ERROR: No stack counts found</span><br></pre></td></tr></table></figure></p>
-<h2 id="tool-poormansprofiler"><a href="#tool-poormansprofiler" class="headerlink" title="tool - poormansprofiler"></a>tool - poormansprofiler</h2><p>#see what [multithreaded] programs are blocking on - <a href="https://poormansprofiler.org/" target="_blank" rel="external">https://poormansprofiler.org/</a><br>sudo gdb -ex “set pagination 0” -ex “thread apply all bt”   –batch -p $(pidof ovs-vswitchd)</p>
-<p>mkdir gdb_ovs; cd gdb_ovs; for i in $(seq 1 600); do gdb -ex “set pagination 0” -ex “thread apply all bt” -batch -p $pid &amp;&gt; gdb.ovs-vswitchd.$(date -Is) ; sleep 0.1; done</p>
-<h2 id="tool-tmate"><a href="#tool-tmate" class="headerlink" title="tool - tmate"></a>tool - tmate</h2><p>tmate is used to share ssh with others</p>
-<h2 id="收集符号表"><a href="#收集符号表" class="headerlink" title="收集符号表"></a>收集符号表</h2><ul>
-<li>内核符号表可以通过’sudo cat /proc/kallsyms | tee $(uname -r).kallsyms’命令收集,然后使用’per script –kallsyms’命令使用它. </li>
-<li>用户态符号表在gavin的工具中已得到处理, 非要人工安装的话可以安装到/usr/lib/debug目录, 这也是ddeb包安装的目录</li>
-<li>libunwind是一种符号表新标准.在build包时指定它生成的包体积小, 同时也能找到符号表<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/torvalds/linux/master/tools/perf/perf-archive.sh -O perf-archive.sh </span><br><span class="line">chmod +x perf-archive.sh </span><br><span class="line">./perf-archive.sh # this can take a while, a few minutes</span><br><span class="line"></span><br><span class="line">#sudo cat /proc/kallsyms | tee $(uname -r).kallsyms</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="新工具"><a href="#新工具" class="headerlink" title="新工具"></a>新工具</h2><ul>
-<li>hostspot,   把perf数据用时间轴的方式图像化, 细致到时间点, 能以”Bottom Up” “top Down” Flame Graph”, “Caller/Callee”的方式看, 且能放大 hotspot –kallsyms ../xx-kallsyms</li>
-<li>flamescope, 把perf数据用时间轴时间用热点的方式表示</li>
-<li>speedscope, 把perf数据用<h2 id="perf-debian"><a href="#perf-debian" class="headerlink" title="perf debian"></a>perf debian</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#分文件存放, cpu_50p(cpu &gt; 50%), mem_5G(mem &gt; 5G)</span><br><span class="line">sudo add-apt-repository ppa:mimi0213kimo/easyflamegraph</span><br><span class="line">sudo apt-get update</span><br><span class="line">ls /var/log/easy-flamegraph/mem/</span><br><span class="line">grep -r &apos;USE_EASY_FLAMEGRAPH&apos; /etc/default/easy-flamegraph</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="其他-收集call-trace"><a href="#其他-收集call-trace" class="headerlink" title="其他 - 收集call trace"></a>其他 - 收集call trace</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">pidstat -u -t -p `pidof ovs-vswitchd`,`pidof ovsdb-server` 5 12 &gt; ovs_pidstat.txt &amp;</span><br><span class="line"></span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa &amp;&amp; sudo apt install linux-tools-$(uname -r) -y</span><br><span class="line">sudo perf record -p `pidof ovs-vswitchd` -g --call-graph dwarf sleep 60</span><br><span class="line"></span><br><span class="line">sudo apt install gdb openvswitch-dbg -y</span><br><span class="line">sudo /usr/bin/gdb --batch -p $(pidof ovs-vswitchd) --ex bt --ex quit</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/Unreasonably/ &#123;system(&quot;sudo /usr/bin/gdb --batch -p $(pidof ovs-vswitchd) --ex bt --ex quit&quot;)&#125;&apos;</span><br><span class="line"></span><br><span class="line">#it will restart ovs, but core dump can be found in the dir /var/crash directly if it&apos;s crash rather than deadlock</span><br><span class="line">sudo killall -SIGSEGV ovs-vswitchd</span><br></pre></td></tr></table></figure>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a><br>[2] <a href="http://www.brendangregg.com/flamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/flamegraphs.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1812,7 +1797,7 @@ done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">82</span>
+                  <span class="site-state-item-count">83</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

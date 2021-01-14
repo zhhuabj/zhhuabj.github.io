@@ -231,6 +231,163 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/19/软路由/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/08/19/软路由/" itemprop="url">软路由</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-19T23:24:29+08:00">
+                2020-08-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-08-19<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>升级了500M宽带，但电脑用网线直线WDNR4300路由器用perf3 -s与perf -c 192.168.99.1 -t 3测试时只不到200M．所以在一台式机上安装了软路由，测试结果立马上到接近1000M了．<br>但用了1000M的电力猫之后，速度又下降到120左右，改成有线连接之后，又马又上到1000M．<br>看来瓶颈在于WDNR4300与电力猫．</p>
+<h2 id="安装软路由"><a href="#安装软路由" class="headerlink" title="安装软路由"></a>安装软路由</h2><p>台式机上有两个之前做SR-IOV实验用的千兆网卡 (Winyao WY576T PCI-E X4 双口服务器千兆网卡 82576 1000M), 及一个Intel集成网卡．</p>
+<ul>
+<li>enp6s0f0与enp6s0f1通过passthough映射到KVM虚机. 注意不要使用macvtap+bridge模式，因为这样会造成无法从局域网ping macvtap设备上的IP，当在插一根网线到Intel集成网卡上后，默认路由总是在enp6s0f0上，从而导致无法访问台式机．enp6s0f0映射到openwrt虚机里是eth1用于生成br-lan, enp6s0f1映射到openwrt虚机里是eth0.</li>
+<li>直接KVM安装导入OpenWRT x86镜像即可 (github直接下载)</li>
+</ul>
+<h2 id="网络拓扑"><a href="#网络拓扑" class="headerlink" title="网络拓扑"></a>网络拓扑</h2><p>目前家中的网络拓扑是：</p>
+<ul>
+<li>光猫，打电话改了桥接</li>
+<li>tplink千兆路由器(192.168.2.0/24)拨号, 下接一千兆交换机接NAS, TV, Camera等．</li>
+<li>台式机的enp6s0f0接tplink，从软路由(192.168.98.0/24)出来后，enp6s0f1再接一千兆交换机．</li>
+<li>WNDR4300仍然从tplink出(192.168.99.0/24)</li>
+<li>千兆电力猫连接软路由至卧室（电力猫速度太差，需要改成有线）<h2 id="目前问题"><a href="#目前问题" class="headerlink" title="目前问题"></a>目前问题</h2></li>
+<li>台式机停电再来电自动启动的问题，改了BIOS但还未测试</li>
+<li>tplink上IPv6也要拨号但复用IPv4的拨号连接后是有IPv6地址的（光猫桥接并未挡住什么），客户端直接连接tplink也能拿到IPv6, 但tplink下挂的OpenWRT路由器却拿不到IPv6, 可能是OpenWrt镜像缺包吧，因为在WAN6那里找不到dhcpv6 client，只有dhcp client) ，原因见：　<a href="https://agong.me/2019/soft-router-compile-ipv6-mppddial-by-top-navigation.html" target="_blank" rel="external">https://agong.me/2019/soft-router-compile-ipv6-mppddial-by-top-navigation.html</a> (<strong>20200824更新,就是这个原因</strong>). 那现在另外一个路由器以dhcp接在这个拨号路由器后lan口又如何获取IPv6地址呢?</li>
+<li>ubuntu在/etc/network/interfaces不定义时可以拿到IPv6，但要使用桥接如何定义也能拿到IPv6呢？</li>
+<li>如何将无线网卡给KVM用，同时在openwrt虚机中用它做AP?</li>
+</ul>
+<h2 id="一级路由访问二级路由"><a href="#一级路由访问二级路由" class="headerlink" title="一级路由访问二级路由"></a>一级路由访问二级路由</h2><p>当在一级redmi ax5路由(192.168.2.1)下又接了一个二级openwrt路由(192.168.2.47, 192.168.99.1).<br>那一级路由下的node1(192.168.2.111)如何访问二级路由下的t440p (192.168.99.136)呢?<br>1, 先照着这处贴子将redmi ax5的ssh打开, 必须重启,之后就可以通过root/admin 来ssh了(不影响web管理密码), 然后使用’passwd root’来修改密码.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.2.1/cgi-bin/luci/;stok=5aa4576eb44e9e70dc1557c3e74b57a2/web/home#router</span><br><span class="line"></span><br><span class="line">http://192.168.2.1/cgi-bin/luci/;stok=5aa4576eb44e9e70dc1557c3e74b57a2/api/misystem/set_config_iotdev?bssid=Xiaomi&amp;user_id=longdike&amp;ssid=-h;nvram set ssh%5Fen%3D1; nvram commit;</span><br><span class="line"></span><br><span class="line">http://192.168.2.1/cgi-bin/luci/;stok=5aa4576eb44e9e70dc1557c3e74b57a2/api/misystem/set_config_iotdev?bssid=Xiaomi&amp;user_id=longdike&amp;ssid=-h%3B%20nvram%20set%20ssh_en%3D1%3B%20nvram%20commit%3B%20sed%20-i%20&apos;s%2Fchannel%3D.*%2Fchannel%3D%5C%22debug%5C%22%2Fg&apos;%20%2Fetc%2Finit.d%2Fdropbear%3B%20%2Fetc%2Finit.d%2Fdropbear%20start%3B</span><br><span class="line"></span><br><span class="line">http://192.168.2.1/cgi-bin/luci/;stok=5aa4576eb44e9e70dc1557c3e74b57a2/api/misystem/set_config_iotdev?bssid=Xiaomi&amp;user_id=longdike&amp;ssid=-h%3B%20echo%20-e%20&apos;admin%5Cnadmin&apos;%20%7C%20passwd%20root%3B</span><br></pre></td></tr></table></figure></p>
+<p>2, 在二级路由器上如下图关闭防火墙,<br><img src="https://img-blog.csdnimg.cn/2020082422402826.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>3, 在一级路由下添加静态路由<br>route add -net 192.168.99.0 netmask 255.255.255.0 gw 192.168.2.47</p>
+<p>4, 在二级路由上将192.168.2.47作静态IP绑定(MAC/IP绑定即可)</p>
+<p>5, 如果不行,似乎在一级路由器上上图中lan处防火墙设置中的forwarding不能是REJECT哦.</p>
+<h2 id="DDNS"><a href="#DDNS" class="headerlink" title="DDNS"></a>DDNS</h2><p>miwifi上集成的DDNS服务基本上都是收费的, 花生壳的二级域名壳域名不收费, 但这家公司喜欢删域名, 要求你实名制, 但实名制前又问你最喜欢的动物是什么, 答错了还弄不成实名制, 打电话给客服了, 让你把身份证扫描件发到800@oray.com人工审核, 但也没下文了, 等得头疼. 另外, 就是太喜欢删域名了, 申请的壳域名忽然就删了, 被删了也不知道的怎么被删的, 死得不明不白. 得了, 还是整个免费的吧. 申请一个dnsexit的二级域名, 然后用下列脚本更新.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">bash -c &apos;cat &gt; /data/ddns&apos; &lt;&lt; EOF</span><br><span class="line">#!/bin/sh</span><br><span class="line">myip=$(curl -s http://myip.dnsomatic.com/)</span><br><span class="line">if [ -e &quot;ip.txt&quot; ]</span><br><span class="line">then</span><br><span class="line">  old_ip=$(cat ip.txt)</span><br><span class="line">  if [ &quot;$myip&quot; == &quot;$old_ip&quot; ]</span><br><span class="line">  then</span><br><span class="line">    echo &quot;Your IP $myip didn&apos;t change.&quot;</span><br><span class="line">  else</span><br><span class="line">    echo &quot;$myip&quot; &gt; ip.txt</span><br><span class="line">    echo &quot;The IP Changed from $old_ip to $myip&quot;</span><br><span class="line">    change_dot_com=$(curl -s &quot;http://update.dnsexit.com/RemoteUpdate.sv?login=&lt;user&gt;&amp;password=&lt;password&gt;&amp;host=&lt;domain&gt;&amp;myip=$&#123;myip&#125;&quot;)</span><br><span class="line">    echo &quot;$change_dot_com&quot;</span><br><span class="line">    sleep 2</span><br><span class="line">  fi</span><br><span class="line">  else</span><br><span class="line">    echo &quot;$myip&quot; &gt; ip.txt</span><br><span class="line">    echo &quot;Your IP is $myip&quot;</span><br><span class="line">fi</span><br><span class="line">EOF</span><br><span class="line">chmod +x /data/ddns</span><br><span class="line">crontab -e</span><br><span class="line">*/60 * * * * /data/ddns &gt;/dev/null 2&gt;&amp;1</span><br><span class="line">nslookup -vc quqi99.publicvm.com 8.8.8.8</span><br></pre></td></tr></table></figure>
+<h2 id="防火墙"><a href="#防火墙" class="headerlink" title="防火墙"></a>防火墙</h2><p>1, 默认REJET</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">config defaults</span><br><span class="line">        option syn_flood &apos;0&apos;</span><br><span class="line">        option input &apos;REJECT&apos;</span><br><span class="line">        option output &apos;ACCEPT&apos;</span><br><span class="line">        option forward &apos;REJECT&apos;</span><br><span class="line">        option drop_invalid &apos;1&apos;</span><br><span class="line">        option disable_ipv6 &apos;0&apos;</span><br><span class="line">config zone</span><br><span class="line">        option name &apos;lan&apos;</span><br><span class="line">        option network &apos;lan&apos;</span><br><span class="line">        option input &apos;ACCEPT&apos;</span><br><span class="line">        option output &apos;ACCEPT&apos;</span><br><span class="line">        option forward &apos;ACCEPT&apos;</span><br><span class="line">config zone</span><br><span class="line">        option name &apos;wan&apos;</span><br><span class="line">        list network &apos;wan&apos;</span><br><span class="line">        list network &apos;wan6&apos;</span><br><span class="line">        option input &apos;REJECT&apos;</span><br><span class="line">        option output &apos;ACCEPT&apos;</span><br><span class="line">        option forward &apos;REJECT&apos;</span><br><span class="line">        option masq &apos;1&apos;</span><br><span class="line">        option mtu_fix &apos;1&apos;</span><br></pre></td></tr></table></figure>
+<p>2, 打开22端口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">config rule &apos;ssh&apos;</span><br><span class="line">        option name &apos;ssh&apos;</span><br><span class="line">        option src &apos;wan&apos;</span><br><span class="line">        option dest_port &apos;22&apos;</span><br><span class="line">        option proto &apos;tcp&apos;</span><br><span class="line">        option target &apos;ACCEPT&apos;</span><br><span class="line">        option family &apos;ipv4&apos;</span><br></pre></td></tr></table></figure></p>
+<p>3, 转发2222端口</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">config redirect &apos;wan2222rdr1&apos;</span><br><span class="line">        option proto &apos;tcp&apos;</span><br><span class="line">        option src_dport &apos;2222&apos;</span><br><span class="line">        option dest_ip &apos;192.168.2.47&apos;</span><br><span class="line">        option dest_port &apos;22&apos;</span><br><span class="line">        option src &apos;wan&apos;</span><br><span class="line">        option name &apos;x86_openwrt&apos;</span><br><span class="line">        option target &apos;DNAT&apos;</span><br><span class="line">        option ftype &apos;1&apos;</span><br><span class="line">        option dest &apos;lan&apos;</span><br><span class="line">root@XiaoQiang:~# iptables-save |grep 47</span><br><span class="line">-A zone_lan_postrouting -s 192.168.2.0/24 -d 192.168.2.47/32 -p tcp -m tcp --dport 22 -m comment --comment &quot;!fw3: x86_openwrt (reflection)&quot; -j SNAT --to-source 192.168.2.1</span><br><span class="line">-A zone_lan_prerouting -s 192.168.2.0/24 -d 123.115.196.xxx/32 -p tcp -m tcp --dport 2222 -m comment --comment &quot;!fw3: x86_openwrt (reflection)&quot; -j DNAT --to-destination 192.168.2.47:22</span><br><span class="line">-A zone_wan_prerouting -p tcp -m tcp --dport 2222 -m comment --comment &quot;!fw3: x86_openwrt&quot; -j DNAT --to-destination 192.168.2.47:22</span><br></pre></td></tr></table></figure>
+<p>转发端口时不需要为2222单独定义input规则, 另外, 联通除了封80, 443, 以外其实没有封其它端口, 可用<a href="https://tool.chinaz.com/port/" target="_blank" rel="external">https://tool.chinaz.com/port/</a> 检测 (检测时得做redirect规则, 且开服务)</p>
+<h2 id="https网站不好使"><a href="#https网站不好使" class="headerlink" title="https网站不好使"></a>https网站不好使</h2><p>像csdn与baidu等网站出现HSTS相关的证书错误, 是因为广告过滤大师使用了KoolProxy签发的证书所致, 所以需要关闭广告过滤大师.</p>
+<h2 id="docker"><a href="#docker" class="headerlink" title="docker"></a>docker</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/docker/daemon.json</span><br><span class="line">&quot;data-root&quot;: &quot;/mnt/udisk/docker&quot;,</span><br><span class="line">/etc/init.d/dockerd restart</span><br><span class="line"></span><br><span class="line">#install a better docker frontend - https://koolshare.cn/thread-180474-1-1.html</span><br><span class="line">docker pull portainer/portainer</span><br><span class="line">#create a continer with portainer image, expose port 9000:9000/tcp and bind mount &apos;/var/run/docker.sock:/var/run/docker.sock&apos;</span><br><span class="line">http://192.168.99.1:9000/#/init/admin</span><br><span class="line">http://192.168.99.1:9000/#/dashboard</span><br><span class="line"></span><br><span class="line">#intall docker search ubuntu</span><br><span class="line">docker pull ubuntu</span><br><span class="line">docker run -it ubuntu</span><br><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
+<h2 id="天翼云盘"><a href="#天翼云盘" class="headerlink" title="天翼云盘"></a>天翼云盘</h2><p>天翼云盘是一个独立的家庭云空间，不等同于天翼云，无法获取S3登陆参数，也关闭了API - <a href="https://zhuanlan.zhihu.com/p/38592985" target="_blank" rel="external">https://zhuanlan.zhihu.com/p/38592985</a><br>所以它无法使用s3fs加载块设备，但使用s3fs的方法类似于：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install build-essential libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool s3fs</span><br><span class="line">echo xxx:xxx |sudo tee /etc/passwd-s3fs &amp;&amp; sudo chmod 600 /etc/passwd-s3fs &amp;&amp; sudo chown $USER /etc/passwd-s3fs</span><br><span class="line">sudo mkdir /mnt/tianyi &amp;&amp; sudo chown $USER /mnt/tianyi</span><br><span class="line">s3fs -o passwd_file=/etc/passwd-s3fs -o url=http://oos.ctyunapi.cn bucket-dingjia /mnt/tianyi</span><br><span class="line">df -h</span><br><span class="line">fusermount -u /mnt/tianyi</span><br></pre></td></tr></table></figure>
+<p>它可以使用sharelist，但用途不大．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#sudo apt install nodejs npm -y  &amp;&amp; sudo npm install -g npm</span><br><span class="line">git clone https://github.com/reruin/sharelist.git</span><br><span class="line">cd sharelist &amp;&amp; sudo chmod +x ./install.sh &amp;&amp; sudo ./install.sh  #http://127.0.0.1:33001/</span><br><span class="line">#cd ./sharelist/ &amp;&amp; node app.js                                  #http://127.0.0.1:33001/</span><br></pre></td></tr></table></figure></p>
+<h2 id="BaiduPCS-Web"><a href="#BaiduPCS-Web" class="headerlink" title="BaiduPCS-Web"></a>BaiduPCS-Web</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># server side</span><br><span class="line"># nfs GUI(http://192.168.99.1/cgi-bin/luci/admin/nas/nfs)是坏的(luci-app-nfs - https://github.com/coolsnowwolf/lede/issues/2957)，只能使用CLI</span><br><span class="line">echo &apos;/mnt/sdb1/nfs *(rw,sync,no_root_squash,subtree_check)&apos; &gt;&gt; /etc/exports</span><br><span class="line">/etc/init.d/nfsd restart</span><br><span class="line"></span><br><span class="line"># client side</span><br><span class="line">showmount -e 192.168.99.1</span><br><span class="line">sudo mount -t nfs 192.168.99.1:/mnt/sdb1/nfs /openwrt</span><br><span class="line">sudo fuser -m -v /openwrt/</span><br><span class="line">$ cat /etc/auto.direct |tail -n1</span><br><span class="line">/openwrt    -fstype=nfs4,rsize=32768,wsize=32768     192.168.99.1:/mnt/sdb1/nfs</span><br></pre></td></tr></table></figure>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://hansendong.me/609/" target="_blank" rel="external">https://hansendong.me/609/</a><br>[2] <a href="https://www.right.com.cn/forum/forum.php?mod=viewthread&amp;tid=4040453" target="_blank" rel="external">https://www.right.com.cn/forum/forum.php?mod=viewthread&amp;tid=4040453</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/09/Play-with-MAAS/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1485,148 +1642,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/14/猫盘安装群晖synology/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/04/14/猫盘安装群晖synology/" itemprop="url">猫盘安装群晖synology</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
-                2020-04-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-04-14<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里有两个nas, 一个威联通的，一个猫盘，猫盘长期没怎么用，今天一看开机后找不着IP，后来多重启几次后，发现偶尔路由器上能看到IP, 它每次IP都变，并且也容易掉IP．而且还无法打开ssh，所以这个猫盘不是我心目中理想的样子，它很烂．但想着里面还有一块硬盘也不能就这么丢了啊．于是想着把它刷成群晖synology.<br>网上一堆通过什么ttl刷机的方法，那个太麻烦了，还得买线，还得拆机，还得搭线，我们还是寻找软个的方法．其实问题的关键是猫盘打开ssh太麻烦了，如果有了ssh直接刷synology很简单．x3p默认支持ssh，所以我们先通过网络的方式刷x3p，然后再刷synology.</p>
-<h2 id="通过猫盘一键刷机v2-0刷x3p"><a href="#通过猫盘一键刷机v2-0刷x3p" class="headerlink" title="通过猫盘一键刷机v2.0刷x3p"></a>通过猫盘一键刷机v2.0刷x3p</h2><p>我也忘了哪里下载的猫盘一键刷机v2.0工具，大家自行在网上搜索，有名字应该很容易找到该工具的下载地址，或者去百度网盘搜搜．下载安装好后，通过网络刷x3p要知道几个信息：</p>
-<ul>
-<li>猫盘的IP，从路由器里找</li>
-<li>猫盘的mac，从猫盘背后找．但注意一点是，要想每次启动IP不变的话，mac地址前面几位应该固定成78C2C0，后面六位从猫盘背后找．</li>
-<li><p>猫盘的SN, 从猫盘背后找．<br>有了这些信息后，按下列步骤刷x3p</p>
-</li>
-<li><p>打开猫盘一键刷机工具，把上面的信息粘贴进去，点击开始刷机 (注意注意：刷机前一定要关闭win10上的防火墙）</p>
-</li>
-<li>刷好后有提示，这时候需要拔下电源，按住reset！等待10秒以上，按着他不要停！同时连上电源，等网线的灯亮起在松手。</li>
-<li>这时候猫盘应该顶灯不停闪烁，等待15分钟左右，路由器能够看到你的猫盘就算刷好了</li>
-<li>打开网页，地址栏输入猫盘的新ip，进入X3P登录页面. 它有两个帐号，一个admin，密码：123456, 一个root, 密码为Etech12 (呆会ssh时需要使用root用户）</li>
-<li>做到这一步如果想使用x3p就继续升级，如果想使用synology的话做到这一步就算完了．<h2 id="ssh一键刷synology"><a href="#ssh一键刷synology" class="headerlink" title="ssh一键刷synology"></a>ssh一键刷synology</h2>使用root (Etech12)用户ssh登录到系统，一键运行下列命令即可：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -N --no-check-certificate https://raw.githubusercontent.com/Squaregentleman/catdrive-syno/master/install.sh</span><br><span class="line">chmod +x install.sh</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>但是由于你知道的糟糕的网络环境，可能install.sh里面要下载的<a href="https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．" target="_blank" rel="external">https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．</a></p>
-<h2 id="配置synology"><a href="#配置synology" class="headerlink" title="配置synology"></a>配置synology</h2><p>上步安装好synology之后，接着就要配置synology, 本来也没什么好说的，看着文字说明一步一步做就行了．也是因为你知道的糟糕的网络环境，需要先手工下载下列文件，然后做到这一步时看文字选手工安装安装它：<br><a href="https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922" target="_blank" rel="external">https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922</a>　</p>
-<h2 id="配置nfs"><a href="#配置nfs" class="headerlink" title="配置nfs"></a>配置nfs</h2><p>控制面板定义一个共享文件夹如bak, 关联用户admin, 然后要定义NFS权限，如下图，在squash处选择＂映射所有用户为admin. 不然的话，你若通过（sudo mount -t nfs 192.168.99.169:/volume1/bak /cat）mount了的话，然后使用添加sudo如＂sudo ls /cat”才能访问．<br><img src="https://img-blog.csdnimg.cn/20200414113138418.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
-<h2 id="autofs配置"><a href="#autofs配置" class="headerlink" title="autofs配置"></a>autofs配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/auto.direct |tail -n 1</span><br><span class="line">/cat    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=admin,password=nanting413     192.168.99.169:/volume1/bak</span><br><span class="line">$ cat /etc/auto.master |tail -n 1</span><br><span class="line">/-	auto.direct</span><br><span class="line"></span><br><span class="line">sudo systemctl restart autofs</span><br></pre></td></tr></table></figure>
-<h2 id="一个大坑"><a href="#一个大坑" class="headerlink" title="一个大坑"></a>一个大坑</h2><p>通过IP访问控制台时，在套件中心要安装软件时，总是会报连接网络失败，问题是我们的网络肯定是好的．找了好久，终于发现仍然是我们特殊的网络环境造成的．<br>需要打开ntp，如下图，但默认使用的ntp服务器是time.google.com，所以被那个了，ntp也就不好使了从而造成无法访问应用软件库．<br><img src="https://img-blog.csdnimg.cn/20200414113835409.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>注：还可以添加这个软件仓库　－　<a href="https://synocommunity.com/#easy-install" target="_blank" rel="external">https://synocommunity.com/#easy-install</a></p>
-<h2 id="rsync同步"><a href="#rsync同步" class="headerlink" title="rsync同步"></a>rsync同步</h2><p> 可通过rsync命令同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avztur --progress --delete --exclude &apos;me/xx&apos; /nas/  /cat</span><br></pre></td></tr></table></figure></p>
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://post.smzdm.com/p/a4wm2rll/" target="_blank" rel="external">https://post.smzdm.com/p/a4wm2rll/</a><br>[2] <a href="https://post.smzdm.com/p/a6l8zglg/" target="_blank" rel="external">https://post.smzdm.com/p/a6l8zglg/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1677,7 +1692,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">82</span>
+                  <span class="site-state-item-count">83</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

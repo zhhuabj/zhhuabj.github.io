@@ -231,6 +231,182 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/29/为租户下的虚机提供IPv6-DNS服务/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/10/29/为租户下的虚机提供IPv6-DNS服务/" itemprop="url">为租户下的虚机提供IPv6 DNS服务</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-29T17:37:02+08:00">
+                2018-10-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>当虚机运行下列代码时，我们需要考虑为tenant下的VM提供DNS服务:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import dns</span><br><span class="line">import dns.resolver</span><br><span class="line">answers = dns.resolver.query(&apos;node1&apos;, &apos;AAAA&apos;)</span><br><span class="line">print answers[0].address</span><br></pre></td></tr></table></figure>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>需要截获neutron port event把IP/MAC拿到写到DNS的record中去。neutron port表的fixed_ips字段（在neutron ipallocations表里）同时记录了VM的IPv4与IPv6(netaddr.IPNetwork(fixed_ip[‘ip_address’]).version == 6)地址 [1]，neutron dns_integration特性可以从这里面将IPv4与IPv6地址都取出来记录到neutron-dhcp-agent下的dnsmasq中从而实现ml2-dns内置DNS服务。</p>
+<h2 id="IPv6"><a href="#IPv6" class="headerlink" title="IPv6"></a>IPv6</h2><p>如果只是让OpenStack tenant network支持IPv6的话，很简单，直接用下列命令（下列命令有两个重要属性：<strong>ipv6_address_mode 与 ipv6_ra_mode</strong>）。当然，如果是OpenStack Over Openstack环境的话，可以让底层provider network也支持IPv6。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">neutron subnet-create --ip-version=6 --name=zhhuabj_admin_subnet_v6 --ipv6-address-mode=slaac --ipv6-ra-mode=slaac zhhuabj_admin_net 2001:db8:0:1::/64</span><br><span class="line">neutron router-interface-add zhhuabj_router zhhuabj_admin_subnet_v6</span><br></pre></td></tr></table></figure>
+<p>上面命令相当于：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ cat /var/lib/neutron/ra/5c33033b-a4e1-494d-ab20-e0498b423b6c.radvd.conf</span><br><span class="line">interface qr-10bb0b85-53</span><br><span class="line">&#123;</span><br><span class="line">   AdvSendAdvert on;</span><br><span class="line">   MinRtrAdvInterval 30;</span><br><span class="line">   MaxRtrAdvInterval 100;</span><br><span class="line">   AdvLinkMTU 1458;</span><br><span class="line">   prefix 2001:db8:0:1::/64</span><br><span class="line">   &#123;</span><br><span class="line">        AdvOnLink on;</span><br><span class="line">        AdvAutonomous on;</span><br><span class="line">   &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">$ sudo ip netns exec qdhcp-be442335-ec55-4df8-b68d-dd03fa6edf00 ps -ef|grep radvd</span><br><span class="line">root     16114     1  0 Nov01 ?        00:00:00 radvd -C /var/lib/neutron/ra/5c33033b-a4e1-494d-ab20-e0498b423b6c.radvd.conf -p /var/lib/neutron/external/pids/5c33033b-a4e1-494d-ab20-e0498b423b6c.pid.radvd -m syslog</span><br><span class="line">root     16115 16114  0 Nov01 ?        00:00:00 radvd -C /var/lib/neutron/ra/5c33033b-a4e1-494d-ab20-e0498b423b6c.radvd.conf -p /var/lib/neutron/external/pids/5c33033b-a4e1-494d-ab20-e0498b423b6c.pid.radvd -m syslog</span><br><span class="line">$ sudo ip netns exec qrouter-5c33033b-a4e1-494d-ab20-e0498b423b6c ip addr show qr-10bb0b85-53 |grep inet6 |grep global</span><br><span class="line">    inet6 2001:db8:0:2::1/64 scope global</span><br><span class="line">$ sudo ip netns exec qdhcp-be442335-ec55-4df8-b68d-dd03fa6edf00 ip addr show ns-af35afad-b2 |grep inet6 |grep global</span><br><span class="line">    inet6 2001:db8:0:2:f816:3eff:feef:5190/64 scope global</span><br></pre></td></tr></table></figure>
+<p>如果它不work的话，多半两个原因：<br>1, 底层OpenStack环境 (openstack over openstack)计算节点上的security group应该disable掉, 因为它有类似这种固定的anti-dhcp-spoof for ipv6规则.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-A neutron-openvswi-od7c63bee-9 -p udp -m udp --sport 547 --dport 546 -j DROP                        #Anti-dhcp-spoof for IPv6</span><br></pre></td></tr></table></figure></p>
+<p>2, radvd server端, 至少得有下列防火墙规则:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo ip6tables -A INPUT -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ip6tables -A OUTPUT -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ip6tables -A FORWARD -p icmpv6 -j ACCEPT</span><br><span class="line">sudo ip6tables -A INPUT -p udp --dport 546:547 -j ACCEPT</span><br><span class="line">sudo ufw allow proto udp from fe80::/64 to any port 547</span><br></pre></td></tr></table></figure></p>
+<p>最好测试时先临时采用:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ip6tables -F</span><br><span class="line">sudo ufw disable</span><br><span class="line">sudo sysctl -w net.ipv6.conf.all.forwarding=1</span><br></pre></td></tr></table></figure></p>
+<p>3, radvd进程是否正常启动</p>
+<p>附1： 若是juju搭建的OpenStack环境要enable IPv6支持的话直接在yaml里添加下列内容即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">overrides:</span><br><span class="line">  prefer-ipv6: true</span><br></pre></td></tr></table></figure>
+<p>附2： 使用OpenStack IPv6环境时，直接设置OS_AUTH_URL环境变量指向keystone的IPv6地址即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export OS_AUTH_URL=$&#123;OS_AUTH_PROTOCOL:-http&#125;://[2001:db8:0:1:f816:3eff:fe3e:5e47]:5000/v2.0</span><br></pre></td></tr></table></figure>
+<h2 id="Enable-ML2-DNS"><a href="#Enable-ML2-DNS" class="headerlink" title="Enable ML2-DNS"></a>Enable ML2-DNS</h2><p>该特性有dns_name与dns_domain两个重要的属性，dns_domain可用在network与floatingip中，dns_name可用在port和floatingip中。如创建network时指定dns_name (neutron port-create my-net –dns_name my-port), 这样该dns_name和IP会作为dns record。</p>
+<p>检查OpenStack是否支持dns extention API。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">neutron ext-list |grep dns</span><br><span class="line">| dns-integration           | DNS Integration</span><br></pre></td></tr></table></figure>
+<p>如果不支持，可以修改下列两个文件去支持，dns_domain相当于dnsmasq给不同组织的IP提供DNS服务时的一个区别标志。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/neutron/neutron.conf</span><br><span class="line">dns_domain = example.org.</span><br><span class="line">vi /etc/neutron/plugins/ml2/ml2_conf.ini</span><br><span class="line">[ml2]</span><br><span class="line">extension_drivers = port_security,dns</span><br></pre></td></tr></table></figure>
+<p>如果OpenStack是由juju创建，直接使用下列命令即可enable上述两个配置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">juju config neutron-api enable-ml2-dns</span><br><span class="line">juju config neutron-api enable-ml2-dns=True</span><br></pre></td></tr></table></figure>
+<h2 id="Test-ML2-DNS"><a href="#Test-ML2-DNS" class="headerlink" title="Test ML2-DNS"></a>Test ML2-DNS</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#sudo ip addr del 2001:db8:0:122::1/64 dev ens3</span><br><span class="line">dig google.com @&lt;DNS-SERVER&gt; -p 53 AAAA</span><br><span class="line">sudo tcpdump -ni ens3 ip6 host fe80::f816:3eff:feb4:8d1f</span><br><span class="line">#  tcpdump -n -i ens3 icmp6 and ip6[40] == 134</span><br><span class="line">sudo dhclient -6 -d ens3</span><br><span class="line"></span><br><span class="line">ubuntu@bionic:~$ sudo tcpdump -ni ens3 ip6 host fe80::f816:3eff:feb4:8d1f</span><br><span class="line">tcpdump: verbose output suppressed, use -v or -vv for full protocol decode</span><br><span class="line">listening on ens3, link-type EN10MB (Ethernet), capture size 262144 bytes</span><br><span class="line">13:35:28.263222 IP6 fe80::f816:3eff:feb4:8d1f.546 &gt; ff02::1:2.547: dhcp6 solicit</span><br></pre></td></tr></table></figure>
+<h2 id="designate架构"><a href="#designate架构" class="headerlink" title="designate架构"></a>designate架构</h2><p><img src="https://img-blog.csdnimg.cn/20181029172830827.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_27,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>designate的架构如上图:</p>
+<ul>
+<li>designate-api, 接收来自远端用户的HTTP/HTTPS请求，通过Keystone验证远端用户的合法性，将HTTP/HTTPS请求传递给Central模块。</li>
+<li>designate-sink, 监听来自Nova和Neutron的某些事件，用于自动生成域名资源记录，比如当监听到Nova的compute.instance.create.end事件通知后，自动创建一条对应于刚创建的实例的A记录；当监听到Nuetron的floatingip.update.end事件通知后，自动更新一条相应的A记录。</li>
+<li>designate-central, 业务逻辑处理核心。响应API请求以及处理Sink所监听到的来自Nova和Neutron的特定通知事件。同时会存取数据库，对业务逻辑处理所产生的数据进行持久化存储。</li>
+<li>designate-mdns, 实现了标准的DNS Notify和Zone Transfer的处理. designate-mdns is the service that sends DNS NOTIFY and answers zone transfer (AXFR) requests. This allows Designate to integrate with any DNS server that supports these very standard methods of communicating. designate-mdns also encapsulates all other forms of DNS protocol that Designate performs. For example, sending SOA queries to check that a change is live.</li>
+<li>designate-pool-manager, 连接后端驱动，管理DNS服务器池，与MiniDNS(即designate-mdns)配合同步DNS服务器的域名以及资源记录等数据。</li>
+</ul>
+<p>MiniDNS(designate-mdns)：Hidden Master设计<br><a href="https://blog.csdn.net/andyron/article/details/46053241" target="_blank" rel="external">https://blog.csdn.net/andyron/article/details/46053241</a><br>Hidden Master是DNS网络安全管理系统设计中所推荐的一种最佳实践。主DNS服务器“隐藏”在内网防火墙背后，负责DNS域名资源的管理并同步变更到从DNS服务器；从DNS服务器部署在DMZ区域，对外提供DNS查询服务。由于主DNS服务器不接受DNS查询，增强了安全性。Designate MiniDNS功能模块就采用了Hidden Master的设计思想。所有托管到Designate中的DNS域都将MiniDNS视为主DNS服务器，而其被委托的DNS服务器都作为从DNS服务器。MiniDNS实现了标准的DNS Notify和Zone Transfer协议，负责同步DNS域名资源记录到从DNS服务器上。<br>其工作流程如下图:<br><img src="https://img-blog.csdnimg.cn/20181029173149275.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<ul>
+<li>首先，用户通过Desingate API创建一个example.com的DNS域；</li>
+<li>Designate API将请求传递给Central，Central先将example.com域保存到数据库，接着发送RPC请求给Pool Manager；</li>
+<li>Pool Manager收到来自Central的创建域名的请求之后，调用DNS后端驱动，在该域名被委托的服务器池中的所有服务器中创建example.com域。同时在这些服务器中，指定example.com的master服务器是MiniDNS；</li>
+<li>Pool Manager完成所有从服务器上example.com域的创建之后，发送RPC请求给MiniDNS。</li>
+<li>MiniDNS收到Pool Manager的RPC请求之后，向从服务器发送DNS Notify消息，告诉从服务器example.com有资源更新。</li>
+<li>从服务器收到DNS Notify消息后，要求主从数据库启动Zone Transfer，域迁移的方式可以是AXFR，也可以是IXFR。</li>
+<li>主服务器从数据库中读取为example.com域自动创建的SOA和NS记录，并将SOA和NS记录传送到从服务器。<br>后续任何对example.com域的变更操作都会遵循上述过程，由MiniDNS将变更同步到Designate所委派管理example.com域的DNS服务器上。</li>
+</ul>
+<p>看一下代码结构, designate支持很多backend(eg: bind), 安装bind服务的机器上可使用rndc命令行工具create/delete zone remotely. The traffic between rndc and bind/named(953/tcp) is authenticated with a key. designate将为每个pool生成下列配置, 这样就可以远程运行rndc命令了(rndc -s 10.5.0.29 -p 953 -k /etc/designate/rndc.key status), 其中5353是designate-mdns监听的端口:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># cat /etc/designate/pools.yaml</span><br><span class="line">- id: 794ccc2c-d751-44fe-b57f-8894c9f5c842</span><br><span class="line">  name: default</span><br><span class="line">  description: Pool genergated by Juju</span><br><span class="line">  ns_records:</span><br><span class="line">    - hostname: openstack-au-east-2.oc.xxx.com.</span><br><span class="line">      priority: 10</span><br><span class="line">  nameservers:</span><br><span class="line">    - host: 10.5.0.29</span><br><span class="line">      port: 53</span><br><span class="line">  targets:</span><br><span class="line">    - type: bind9</span><br><span class="line">      masters:</span><br><span class="line">        - host: 10.5.0.23</span><br><span class="line">          port: 5354</span><br><span class="line">      options:</span><br><span class="line">        host: 10.5.0.29</span><br><span class="line">        rndc_host: 10.5.0.29</span><br><span class="line">        rndc_key_file: /etc/designate/rndc.key</span><br><span class="line">  also_notifies: []</span><br></pre></td></tr></table></figure></p>
+<p>在designate-bind节点上装有bind服务(运行在953端口, /usr/sbin/named -f -u bind), 需要确保bind能够访问/etc/bind/named.conf和/etc/bind/rndc.key, 并且能够接受从Pool Manager过来的rndc流量:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"># cat /etc/bind/named.conf</span><br><span class="line">include &quot;/etc/bind/named.conf.options&quot;;</span><br><span class="line">include &quot;/etc/bind/named.conf.local&quot;;</span><br><span class="line">include &quot;/etc/bind/named.conf.default-zones&quot;;</span><br><span class="line">controls &#123;</span><br><span class="line">  inet 127.0.0.1 allow &#123;localhost;&#125;;</span><br><span class="line">  inet 10.5.0.29 allow &#123; 10.5.0.23; &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"># cat /etc/bind/named.conf.options</span><br><span class="line">options &#123;</span><br><span class="line">        directory &quot;/var/cache/bind&quot;;</span><br><span class="line">        dnssec-validation auto;</span><br><span class="line">        auth-nxdomain no;    # conform to RFC1035</span><br><span class="line">        listen-on-v6 &#123; any; &#125;;</span><br><span class="line">        allow-new-zones yes;</span><br><span class="line">        request-ixfr no;</span><br><span class="line">        recursion no;</span><br><span class="line">        statistics-file &quot;/var/cache/bind/named.stats&quot;;</span><br><span class="line">        zone-statistics yes;</span><br><span class="line">        allow-notify &#123; 10.5.0.23; &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>rndc命令:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rndc querylog</span><br><span class="line">rndc status</span><br><span class="line">dig -t A openstack-au-east-2.oc.xxx.com@10.5.0.23</span><br><span class="line">dig -t MX openstack-au-east-2.oc.xxx.com@10.5.0.23</span><br></pre></td></tr></table></figure></p>
+<p>bind DNS服务器可作为缓存服务器, 主DNS服务器和辅助DNS服务器, 配置分配如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># 缓存服务器, 不负责解析，仅为加速，不需要注册</span><br><span class="line">options &#123;</span><br><span class="line">       forward only;</span><br><span class="line">       forwarders &#123;</span><br><span class="line">               168.95.1.1;</span><br><span class="line">               139.175.10.20;</span><br><span class="line">       &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"># 主DNS服务器, 负责解析本地客户端请求</span><br><span class="line">zone &quot;test.com&quot; IN &#123;</span><br><span class="line">       type master;</span><br><span class="line">       file &quot;test.com.zone&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"># 辅助DNS服务器, 辅助服务器的区域数据都是从主服务器复制而来，其数据都是只读的. 根据序列号大小决定是否复制</span><br><span class="line">zone &quot;test.com&quot; IN &#123;</span><br><span class="line">       type slave;</span><br><span class="line">       masters &#123;ip;&#125;;</span><br><span class="line">       file &quot;slaves/test.com.zone&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>区域传送, 解析库文件同步的过程，即辅助DNS服务器从主DNS服务器或其他的辅助DNS服务器请求数据传输过程 。</p>
+<ul>
+<li>完全区域传送：传送区域的所有数据，简称AXFR</li>
+<li>增量区域传送：传送区域中改变的数据部分，简称IXFR<br>bind配置中之DNS主从同步，区域安全传送<br><a href="http://www.it165.net/admin/html/201403/2548.html" target="_blank" rel="external">http://www.it165.net/admin/html/201403/2548.html</a><h2 id="附件-一个designate问题"><a href="#附件-一个designate问题" class="headerlink" title="附件 - 一个designate问题"></a>附件 - 一个designate问题</h2>可能因为designate不断地升级, 而且是多网卡, 这样导致每个designate-bind unit所指定的master ip (designate unit)不是同一子网. 这样会导致create zone的时候有时候会发两次rndc addzone命令.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- designate/7 only programs designate-bind/3 [172.18.248.94] (it does not know about designate-bind/2). It also uses the .247 subnet for the Master IPs instead of the correct 248 subnet.</span><br><span class="line">- designate/8 programs both bind9 servers [172.18.248.94, 172.18.248.99] and uses the correct .248 subnet</span><br><span class="line">- designate/9 only programs designate-bind/3 and also uses the wrong master IPs.</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>并且因为之前的DB问题, 导致bind cache里有很多stale zone, 这样当create zone的时候, 会说zone已存在.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">How to remove stale zones from bind9 dynamic zone configuration</span><br><span class="line"></span><br><span class="line">1,check the list of zones in bind9 like so:</span><br><span class="line">cat /var/cache/bind/*.nzf|grep ^zone|awk &apos;&#123;print $2&#125;&apos;|sed &apos;s/&quot;$/.&quot;,/g&apos; #the sed here adds a trailing dot so we can query the database for the same name</span><br><span class="line">2, check if this zone is currently active by querying the database:</span><br><span class="line">mysql -u root -p designate</span><br><span class="line">select * from zones where name=&quot;xxx.openstack-au-east-2.oc.xxx.com.&quot; WHERE deleted_at IS NOT NULL;</span><br><span class="line">3, rndc delzone xxx.openstack-au-east-2.oc.xx.com</span><br></pre></td></tr></table></figure></p>
+<p>designate recovery service检测到一个zone长期为pending状态时, 再会继续create zone. 这样在日志中会看到一个zone被反复多次create</p>
+<h2 id="附件-Designate环境搭建及测试"><a href="#附件-Designate环境搭建及测试" class="headerlink" title="附件 - Designate环境搭建及测试"></a>附件 - Designate环境搭建及测试</h2><p>ml2dns只能使用neutron.conf配置文件里的域名(如:ml2dns.example.),  network里可以配置外部多个顶级不固定的域名(如:neutron net-update private –dns_domain extdns.example.).<br>ml2dns只为internal fixed ip在dnsmasq里配置域名, designate只为external fip配置域名, dnsmasq里需要配置forwarder到designate-bind中去.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line">juju add-model xenial-queens-designate</span><br><span class="line"># https://paste.ubuntu.com/p/y5NQwXB95R/</span><br><span class="line">juju deploy ./b/openstack.yaml --overlay ./b/o/memcached.yaml --overlay ./b/o/designate.yaml</span><br><span class="line">juju config neutron-api dns-domain=ml2dns.example.</span><br><span class="line">juju config neutron-api reverse-dns-lookup=True</span><br><span class="line">juju config neutron-api enable-ml2-dns=True</span><br><span class="line">juju config designate nameservers=ns1.extdns.example.</span><br><span class="line">./configure</span><br><span class="line">source ~/stsstack-bundles/openstack/novarc</span><br><span class="line">./tools/sec_groups.sh</span><br><span class="line"></span><br><span class="line">  applications:</span><br><span class="line">    neutron-api:</span><br><span class="line">      charm: cs:~openstack-charmers-next/neutron-api</span><br><span class="line">      options:</span><br><span class="line">        enable-ml2-dns: True</span><br><span class="line">        dns-domain: ml2dns.example.</span><br><span class="line">        reverse-dns-lookup: True</span><br><span class="line">        ipv4-ptr-zone-prefix-size: 24</span><br><span class="line">    designate:</span><br><span class="line">      charm: cs:~openstack-charmers-next/designate</span><br><span class="line">      options:</span><br><span class="line">        nameservers: ns1.extdns.example.</span><br><span class="line">    designate-bind:</span><br><span class="line">      charm: cs:~openstack-charmers-next/designate-bind</span><br><span class="line">  relations:</span><br><span class="line">    - [ designate, designate-bind ]</span><br><span class="line">    - [ designate, neutron-api ]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># https://docs.openstack.org/python-designateclient/latest/user/shell-v2.html</span><br><span class="line">sudo apt install -y python-openstackclient python-designateclient</span><br><span class="line"></span><br><span class="line"># create the zone for your external dns, the zone name must end in a &apos;.&apos;</span><br><span class="line">DOMAIN_NAME=extdns.example.</span><br><span class="line">openstack zone create --email extdns@example $DOMAIN_NAME</span><br><span class="line"></span><br><span class="line"># create an &apos;A&apos; record for the automaticall created NS record that points to one or more of the designate-bind units</span><br><span class="line">DESIGNATE_BIND_IP=$(juju status designate-bind --format short | awk &apos;/designate-bind/ &#123;print $3&#125;&apos;)</span><br><span class="line">openstack recordset create --record $DESIGNATE_BIND_IP --type A $DOMAIN_NAME ns1</span><br><span class="line">dig @$DESIGNATE_BIND_IP -type NS</span><br><span class="line"></span><br><span class="line"># tell neutron that for any floating IPs for our tenant network create the the hostname in a given DNS domain</span><br><span class="line">neutron net-update private --dns_domain $DOMAIN_NAME</span><br><span class="line"></span><br><span class="line"># tell neutron to use designate bind as it&apos;s forwarder by dnsmasq&apos;s configuration &apos;--server=10.5.0.16 --domain=ml2dns.example.&apos;</span><br><span class="line"># query path: Project instance -&gt; Neutron dnsmasq -&gt; Designate Bind -&gt; External DNS</span><br><span class="line"># NOTE: must DO NOT SET –dns-nameserver on the tenent subnet</span><br><span class="line">juju config neutron-gateway dns-servers=$DESIGNATE_BIND_IP</span><br><span class="line"></span><br><span class="line"># create a VM for integration test</span><br><span class="line">nova keypair-add --pub-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack port create --network $(neutron net-show private -f value -c id) --dns-name i1 port_i1</span><br><span class="line">$ openstack port show port_i1 -f value -c dns_assignment</span><br><span class="line">fqdn=&apos;i1.ml2dns.example.&apos;, hostname=&apos;i1&apos;, ip_address=&apos;192.168.21.18&apos;</span><br><span class="line"></span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.tiny --key-name mykey --port $(openstack port show port_i1 -f value -c id) i1</span><br><span class="line">public_network=$(openstack network show ext_net -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $public_network -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.21.18 --port $(openstack port list --fixed-ip ip-address=192.168.21.18 -c id -f value)</span><br><span class="line"></span><br><span class="line"># Neutron will create forward and reverse records in dnsmasq for the internal DNS.</span><br><span class="line"># NOTE: must DO NOT SET –dns-nameserver on the tenent subnet, By not setting the dns server</span><br><span class="line">#       the project network will default to using the dnsmasq service associated with the network.</span><br><span class="line">#       This is Neutron handling our project internal DNS records automatically.</span><br><span class="line">openstack subnet unset --dns-nameserver 10.230.64.2 private_subnet</span><br><span class="line">nova boot --hard i1</span><br><span class="line"></span><br><span class="line"># test dns inside VM, 192.168.21.2 is the IP inside qdhcp-xxx namespace</span><br><span class="line">$ ssh cirros@10.5.150.2 -- cat /etc/resolv.conf</span><br><span class="line">search ml2dns.example</span><br><span class="line">nameserver 192.168.21.2</span><br><span class="line"></span><br><span class="line">$ ssh cirros@10.5.150.2 -- nslookup i1.ml2dns.example 192.168.21.2</span><br><span class="line">Server:    192.168.21.2</span><br><span class="line">Address 1: 192.168.21.2 host-192-168-21-2.ml2dns.example</span><br><span class="line">Name:      i1.ml2dns.example</span><br><span class="line">Address 1: 192.168.21.18 i1.ml2dns.example</span><br><span class="line"></span><br><span class="line">$ juju ssh neutron-gateway/0 -- cat /var/lib/neutron/dhcp/bc66c327-265b-4491-95ab-2d2e14d801d2/host |grep i1</span><br><span class="line">fa:16:3e:09:b7:37,i1.ml2dns.example.,192.168.21.18</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Neutron will inform Designate to create the forward and reverse records for the floating IP in the external DNS</span><br><span class="line">dig @$DESIGNATE_BIND_IP i1.extdns.example</span><br><span class="line">dig @$DESIGNATE_BIND_IP -x $fip</span><br><span class="line"></span><br><span class="line">$ dig @$DESIGNATE_BIND_IP i1.extdns.example</span><br><span class="line">...</span><br><span class="line">i1.extdns.example.	3600	IN	A	10.5.150.2</span><br><span class="line">extdns.example.		3600	IN	NS	ns1.extdns.example.</span><br><span class="line">ns1.extdns.example.	3600	IN	A	10.5.0.16</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"># We can also see the external DNS record sets in Designate</span><br><span class="line">openstack recordset list extdns.example.</span><br><span class="line"></span><br><span class="line">$ openstack recordset list extdns.example.</span><br><span class="line">+--------------------------------------+---------------------+------+--------------------------------------------------------------------+--------+--------+</span><br><span class="line">| id                                   | name                | type | records                                                            | status | action |</span><br><span class="line">+--------------------------------------+---------------------+------+--------------------------------------------------------------------+--------+--------+</span><br><span class="line">| 92c8f5d6-eeca-4b0d-968b-deed4697b787 | extdns.example.     | NS   | ns1.extdns.example.                                                | ACTIVE | NONE   |</span><br><span class="line">| a0167123-714d-4c34-8542-ad8b5019c318 | extdns.example.     | SOA  | ns1.extdns.example. extdns.example. 1548816241 3505 600 86400 3600 | ACTIVE | NONE   |</span><br><span class="line">| 99f97832-edea-4727-be68-73536d9145d3 | ns1.extdns.example. | A    | 10.5.0.16                                                          | ACTIVE | NONE   |</span><br><span class="line">| 728808e5-e6dd-4b9d-b7fa-ad260a855ac4 | i1.extdns.example.  | A    | 10.5.150.2                                                         | ACTIVE | NONE   |</span><br><span class="line">+--------------------------------------+---------------------+------+--------------------------------------------------------------------+--------+--------+</span><br></pre></td></tr></table></figure></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://github.com/openstack/neutron/blob/stable/pike/neutron/plugins/ml2/extensions/dns_integration.py#L285" target="_blank" rel="external">https://github.com/openstack/neutron/blob/stable/pike/neutron/plugins/ml2/extensions/dns_integration.py#L285</a><br>[2] <a href="https://docs.openstack.org/mitaka/networking-guide/config-dns-int.html" target="_blank" rel="external">https://docs.openstack.org/mitaka/networking-guide/config-dns-int.html</a><br>[3] <a href="https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/8/html-single/dns-as-a-service_guide/index" target="_blank" rel="external">https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/8/html-single/dns-as-a-service_guide/index</a><br>[4] <a href="https://openstackdevops.wordpress.com/2018/01/27/designate-and-neutron-dns-integration/" target="_blank" rel="external">https://openstackdevops.wordpress.com/2018/01/27/designate-and-neutron-dns-integration/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -857,7 +1033,7 @@
 <p>及：<br><a href="https://help.ubuntu.com/community/GnuPrivacyGuardHowto" target="_blank" rel="external">https://help.ubuntu.com/community/GnuPrivacyGuardHowto</a></p>
 <p>sudo apt-get install rng-tools<br>sudo rngd -r /dev/urandom</p>
 <p>sudo apt-get install gnupg-agent<br>killall -q gpg-agent<br>eval $(gpg-agent –daemon)</p>
-<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#111;&#x3a;&#x76;&#x65;&#x72;&#121;&#104;&#x75;&#97;&#x32;&#x30;&#x30;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;">&#x76;&#x65;&#x72;&#121;&#104;&#x75;&#97;&#x32;&#x30;&#x30;&#x36;&#x40;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a>“</p>
+<p>创建密钥对：gpg –gen-key， 如创建了：”Zhang Hua (zhhuabj) <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#111;&#58;&#x76;&#x65;&#114;&#x79;&#x68;&#117;&#97;&#x32;&#48;&#x30;&#54;&#64;&#103;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#111;&#x6d;">&#x76;&#x65;&#114;&#x79;&#x68;&#117;&#97;&#x32;&#48;&#x30;&#54;&#64;&#103;&#109;&#97;&#105;&#x6c;&#x2e;&#99;&#111;&#x6d;</a>“</p>
 <pre><code>export GPGKEY=A24B36AE
 </code></pre><p>查看公钥：gpg –list-public<br>查看私钥：gpg –list-secret-key<br>查看签名：gpg –list-sig<br>查看公钥指纹：gpg –fingerprint $GPGKEY<br>提取公钥：gpg –armor –output public.key –export $GPGKEY  或者： gpg –export -a $GPGKEY &gt; public.key</p>
 <p>提取私钥：gpg -a –export-secret-keys $KEYID &gt; customer-mirror.key<br>生成公钥回收证书，当私钥出问题时可将它上传密钥服务器声明公钥作废:<br>  gpg –output revoke.asc –gen-revoke $GPGKEY<br>  声明作废：gpg –keyserver Server Address –send-keys $GPGKEY</p>
@@ -1633,146 +1809,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" itemprop="url">Libvirt支持的三种CPU模式与热迁移(by Joshua)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:42:14+08:00">
-                2018-03-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-model’)但热迁移仍然失败。有两全其美的方法吗？</p>
-<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">1, working solution was to create a custom CPU definition in /usr/share/libvirt/cpu_map.xml called SandyBridge-vmx, which contained the full feature flags for that CPU, not just the subset that differs from Westmere/etc., and includes the needed &apos;vmx&apos; feature for nested kvm</span><br><span class="line">&lt;model name=&apos;SandyBridge-vmx&apos;&gt;</span><br><span class="line">&lt;vendor name=&apos;Intel&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;aes&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;avx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;clflush&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cmov&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx16&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx8&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;de&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fpu&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fxsr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lahf_lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mca&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mce&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mmx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;msr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mtrr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;nx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pae&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pat&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pclmuldq&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pge&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pni&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;popcnt&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse36&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;rdtscp&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sep&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.1&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;ssse3&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;syscall&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc-deadline&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;x2apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;xsave&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;vmx&apos;/&gt;</span><br><span class="line">&lt;/model&gt;</span><br><span class="line"></span><br><span class="line">2, And in /etc/nova/nova.conf, we use:</span><br><span class="line">$ sudo grep ^cpu_m /etc/nova/nova.conf</span><br><span class="line">cpu_mode = custom</span><br><span class="line">cpu_model = SandyBridge-vmx</span><br></pre></td></tr></table></figure>
-<h2 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h2><p>Libvirt主要支持三种 CPU mode：</p>
-<ol>
-<li>host-passthrough: libvirt 令 KVM 把宿主机的 CPU 指令集全部透传给虚拟机。因此虚拟机能够最大限度的使用宿主机 CPU 指令集，故性能是最好的。但是在热迁移时，它要求目的节点的 CPU 和源节点的一致。</li>
-<li>host-model: libvirt 根据当前宿主机 CPU 指令集从配置文件 /usr/share/libvirt/cpu_map.xml 选择一种最相配的 CPU 型号。在这种 mode 下，虚拟机的指令集往往比宿主机少，性能相对 host-passthrough 要差一点，但是热迁移时，它允许目的节点 CPU 和源节点的存在一定的差异。</li>
-<li>custom: 这种模式下虚拟机 CPU 指令集数最少，故性能相对最差，但是它在热迁移时跨不同型号 CPU 的能力最强。此外，custom 模式下支持用户添加额外的指令集。</li>
-<li>三种mode的性能排序是：host-passthrough &gt; host-model &gt; custom</li>
-<li>三种mode的热迁移通用性是： custom &gt; host-model &gt; host-passthrough</li>
-</ol>
-<p>实际环境中多采用Intel E5系列的CPU，但是该系列的CPU也有多种型号，常见的有Xeon，Haswell，IvyBridge，SandyBridge等等。即使是host-model，在这些不同型号的CPU之间热迁移虚拟机也可能失败。所以从热迁移的角度，在选择 host-mode时：</p>
-<ul>
-<li>需要充分考虑既有宿主机类型，以后采购扩容时，也需要考虑相同问题</li>
-<li>除非不存在热迁移的场景，否则不应用选择host-passthrough</li>
-<li><p>host-model下不同型号的 CPU 最好能以aggregate hosts划分，在迁移时可以使用aggregate filter来匹配相同型号的物理机</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">openstack aggregate create Broadwell</span><br><span class="line">openstack aggregate create Haswell</span><br><span class="line">openstack aggregate set --property cpu=broadwell Broadwell</span><br><span class="line">openstack aggregate set --property cpu=haswell Haswell</span><br><span class="line">opentack aggregate add host &lt;host1&gt; Haswell</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=broadwell &lt;flavor1&gt;</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=haswell &lt;flavor2&gt;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>如果CPU型号过多，且不便用aggregate hosts划分，建议使用custom mode</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1823,7 +1859,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">82</span>
+                  <span class="site-state-item-count">83</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
