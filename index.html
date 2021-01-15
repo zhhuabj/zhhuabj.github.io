@@ -231,6 +231,163 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/15/OpenStack对NUMA的支持情况/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/15/OpenStack对NUMA的支持情况/" itemprop="url">OpenStack对NUMA的支持情况</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-15T19:11:40+08:00">
+                2021-01-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-03-24<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>理论<br>vCPU topology, libvirt将第一个vCPU在虚机中视为: 1 socket with 1 core and no hyper-threads. 但有的操作系统的license会限制socket的数目，另外一般地在不同的core上的2个threads的性能会比2个在同相core上的threads的性能要好。<br>NUMA topology, NUMA节点有自己独立的RAM、Bus、PCI和pCPU sockets, 为一个VM分配cpu及PCI设备时应该尽量分配同一个NUMA节点上的pCPU。<br>Guest NUMA, 如果一个VM要求的vCPU/RAM/PCIe大于一个NUMA节点所具有的物理pCPU/RAM/PCIe呢？<br>可划分为多个NUMA节点（hw:numa_nodes=N).<br>Large pages, CPU支持4k, 2M/4M, 1G的Hugepage模式(page_sizes=(any|small|large)，这时cpu的页表数目会减少提升TLB页表的命中率，但操作系统默认为4k，运行时间长了很难找到连续的大页空间分配。当前Kernel不允许为NUMA节点预留大页，NUMA节点有特定的RAM，也就是说，NUMA节点也有特定的大页。在的NUMA节点有足够的大页空间，有的可能刚好没有了。<br>Dedicated resource, overcommit_ram=0,overcommit_vcpus=0<br>KSM(kernel shared memory), 将相同的内存分页进行合并，合并之后若再遇到写就再用CoW打开一份，要能阻止宿主机将特定的内存分页合并。<br>例如：我的t440p是一个cpu(socket), 双核，开了超线程，4个core id, 所以siblings也是4(一个物理封装中的逻辑cpu个数，只有一个cpu所以是一个物理，然后双核，超线程).</p>
+<p>1, cpu个数(socket)： cat /proc/cpuinfo | grep “physical id” | sort | uniq | wc -l<br>2, cpu核数： cat /proc/cpuinfo | grep “cpu cores” | uniq<br>3, Logic CPU ID: cat /proc/cpuinfo | grep “core id”<br>4, 每颗cpu的逻辑核数： cat /proc/cpuinfo | grep “siblings”<br>5, 所有cpu的逻辑核数： cat /proc/cpuinfo | grep “processor” | wc -l<br>6, 是否启用超线程(相同则没启用：cat /proc/cpuinfo | grep -e “cpu cores”  -e “siblings” | sort | uniq)</p>
+<p>实际操作<br>Image方式, glance image-update –property hw_numa_nodes=2 hw_numa_cpus.0=0 hw_numa_mem.0=512 hw_numa_cpus.1=0 hw_numa_mem.1=512 image_name<br>Flavor方式, nova flavor-key flv_name set hw:numa_nodes=2 hw:numa_cpus.0=0 hw:numa_mem.0=512 hw:numa_cpus.1=0 hw:numa_mem.1=512<br>hw:numa_nodes=NN                     #guest NUMA node数量<br>hw:numa_mempolicy=preferred|strict   #RAM占用方式<br>hw:numa_cpus.N=<cpu-list>            #guest NUMA node N中的vcpu列表<br>hw:numa_mem.1=<ram-size>             #guest NUMA node N中的RAM大小<br>hw:cpu_thread_policy=prefer|isolate|require<br>hw:cpu_policy=shared|dedicated<br>libvirt.xml</ram-size></cpu-list></p>
+<p><cputune><br>  /<strong> pin vCPU to pCPU set in cputune </strong>/<br>  <vcpupin vcpu="0" cpuset="4-7,12-15"><br></vcpupin></cputune><br>/<strong> expoert guest numa in cpu/numa </strong>/ </p>
+<cpu><br>   <topology sockets="2" cores="2" threads="1"><br>   <numa><br>      <cell id="0" cpus="0-1" memory="1048576"><br>   </cell></numa><br></topology></cpu> 
+
+
+<p>nova-scheduler<br>NUMATopologyFilter<br>一些命令<br>hua@node1:~$ sudo virsh nodeinfo<br>CPU model:           x86_64<br>CPU(s):              4<br>CPU frequency:       3348 MHz<br>CPU socket(s):       1<br>Core(s) per socket:  4<br>Thread(s) per core:  1<br>NUMA cell(s):        1<br>Memory size:         32753068 KiB</p>
+<p>hua@node1:~$ sudo virsh freecell 0<br>0: 9974312 KiB</p>
+<p>附件 - Power SMT</p>
+<p>Power 8有一个SMT特性，即多线程的并发改为一个核内多个指令的并发从而提升性能， 但是KVM Power版本却不支持SMT， 所以需要将SMT关闭，这样造成性能下降，这样pacemaker将会报这种错”Sep 22 06:52:35 juju-b209b8-4-lxd-2 crmd[122100]: notice: High CPU load detected“，从而造成如glance service的vip不work了也就无法ping了。其实，即使SMT=off (echo off &gt; /sys/devices/system/cpu/smt/control)也是可以利offline的核的， 即采用这个网页（<a href="https://www.ibm.com/developerworks/community/blogs/fe313521-2e95-46f2-817d-44a4f27eba32/entry/enabling_smt_on_powerkvm_guests?lang=en）的方法：" target="_blank" rel="external">https://www.ibm.com/developerworks/community/blogs/fe313521-2e95-46f2-817d-44a4f27eba32/entry/enabling_smt_on_powerkvm_guests?lang=en）的方法：</a></p>
+<p>nova针对一个虚机使用8个vcpu有下列三种配置方法：</p>
+<p>1) By default in nova</p>
+<p><vcpu placement="static">8</vcpu></p>
+<cpu><br><topology sockets="8" cores="1" threads="1"><br>…<br></topology></cpu>
+
+<p>2) 4 threads</p>
+<p><vcpu>8</vcpu></p>
+<cpu><br><topology sockets="1" cores="2" threads="4"><br>…<br></topology></cpu> 
+
+<p>3) 8 threads</p>
+<p><vcpu>8</vcpu></p>
+<cpu><br><topology sockets="1" cores="1" threads="8"><br>…<br></topology></cpu>
+
+<p>如想要配置成上面的2）的话，可以：</p>
+<p>openstack flavor set <flavor_uuid> \<br>–vcpus 8 \<br>–property hw:cpu_sockets=1 \<br>–property hw:cpu_cores=2 \<br>–property hw:cpu_threads=4<br>配置成上面的3）的话，可以：</flavor_uuid></p>
+<p>openstack flavor set <flavor_uuid> \<br>–vcpus 8 \<br>–property hw:cpu_sockets=1 \<br>–property hw:cpu_cores=1 \<br>–property hw:cpu_threads=8</flavor_uuid></p>
+<p>Power8在设计上是有缺陷的, 它需要先关闭SMT, 然后在KVM里又可以使用offline CPU, Power9则修复了这个问题, 见: <a href="https://www.linux-kvm.org/images/7/77/01x09a-KVMPower.pdf" target="_blank" rel="external">https://www.linux-kvm.org/images/7/77/01x09a-KVMPower.pdf</a></p>
+<p>另外, 因为SMT关闭了, 当Power8上的KVM未使用上面拓扑时一个使用8个vcpu的虚机占了8个核而不是一个核上的8线程, 这样无形中CPU数少了8倍. 这个机器如果不光是KVM还有mysql的话mysql也存在这种情况, 这样使用perf查看时会看到mysql与kvm并没有哪个特别宽, 都差不多分布比较均匀, 这样反而证明了整体性能需要提升. mysql因为是openstack的底层服务无法使用上面的拓扑使用多线程, 所以最好不要将mysql和kvm安装在一块.</p>
+<p>再说说sbiblings<br>siblings指一个物理cpu上的cpu, 下面的设置是两个cell两个物理cpu，一个物理cpu是32个core超线程是2故共32个thread</p>
+<p>NUMA node0 CPU(s):   0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62<br>NUMA node1 CPU(s):   1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63<br>CPU(s):              64<br>On-line CPU(s) list: 0-63<br>Thread(s) per core:  2<br>Core(s) per socket:  16<br>Socket(s):           2<br>NUMA node(s):        2</p>
+<p>nova中看到的pcpuset与siblings如下：</p>
+<p>pcpuset=set([8,10,12,14,16,18,20,22,24,26,28,30,40,42,44,46,48,50,52,54,56,58,60,62])<br>siblings=[set([16,48]),set([10,42]),set([54,22]),set([46,14]),set([12,44]),set([20,52]),set([26,58]),set([28,60]),set([62,30]),set([18,50]),set([8,40]),set([24,56])]</p>
+<p>当设置cpu_thread_policy=’isolate’时，意味着不用thread只用真正的core.<br>因为siblings对象的引入的目的就是为了无论服务器是否开启了超线程，Nova 同样能够支持物理CPU绑定的功能。<br>这样，当一个虚机使用了[8, 10, 12, 16, 18, 20, 24, 26, 28, 46, 54, 62]这些cpu的话，pinned_cpus会如下：</p>
+<p>pinned_cpus=set([8,10,12,14,16,18,20,22,24,26,28,30,40,42,44,46,48,50,52,54,56,58,60,62])</p>
+<p>所以用thread的话就配置hw:cpu_thread_policy=require, 用core的话就用cpu_thread_policy=’isolate’.<br>而且如果emulator也用了isolate的话（hw:emulator_threads_policy=’isolate’）, not only will it not allow a sibling but it will also require all pcpu to be<br>available on the same numa node.</p>
+<p>参考<br><a href="https://wiki.openstack.org/wiki/VirtDriverGuestCPUMemoryPlacement" target="_blank" rel="external">https://wiki.openstack.org/wiki/VirtDriverGuestCPUMemoryPlacement</a><br><a href="https://specs.openstack.org/openstack/nova-specs/specs/liberty/approved/virt-driver-cpu-pinning.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/liberty/approved/virt-driver-cpu-pinning.html</a><br><a href="http://blog.csdn.net/canxinghen/article/details/41810241" target="_blank" rel="external">http://blog.csdn.net/canxinghen/article/details/41810241</a><br><a href="https://specs.openstack.org/openstack/nova-specs/specs/mitaka/approved/virt-driver-cpu-thread-pinning.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/mitaka/approved/virt-driver-cpu-thread-pinning.html</a><br><a href="http://docs.openstack.org/developer/nova/testing/libvirt-numa.html" target="_blank" rel="external">http://docs.openstack.org/developer/nova/testing/libvirt-numa.html</a><br><a href="https://www.berrange.com/posts/2010/02/12/controlling-guest-cpu-numa-affinity-in-libvirt-with-qemu-kvm-xen/" target="_blank" rel="external">https://www.berrange.com/posts/2010/02/12/controlling-guest-cpu-numa-affinity-in-libvirt-with-qemu-kvm-xen/</a><br><a href="https://review.openstack.org/#/c/140290/" target="_blank" rel="external">https://review.openstack.org/#/c/140290/</a><br><a href="http://slideplayer.com/slide/4868412/" target="_blank" rel="external">http://slideplayer.com/slide/4868412/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/14/Using-BPF-USDT-to-trace-OpenStack/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -846,7 +1003,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#97;&#x69;&#108;&#x74;&#x6f;&#58;&#x3c;&#x22;&#114;&#97;&#x62;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#101;&#x72;&#118;&#101;&#114;&#x40;&#x6a;&#117;&#x6a;&#x75;&#x2d;&#99;&#x62;&#100;&#x37;&#x36;&#x30;&#45;&#x6f;&#99;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#49;&#48;&#34;">&#x3c;&#x22;&#114;&#97;&#x62;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#101;&#x72;&#118;&#101;&#114;&#x40;&#x6a;&#117;&#x6a;&#x75;&#x2d;&#99;&#x62;&#100;&#x37;&#x36;&#x30;&#45;&#x6f;&#99;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#49;&#48;&#34;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#x61;&#x69;&#108;&#116;&#111;&#58;&#x3c;&#34;&#x72;&#97;&#x62;&#98;&#105;&#x74;&#109;&#x71;&#45;&#x73;&#101;&#114;&#118;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#x2d;&#99;&#x62;&#x64;&#x37;&#54;&#x30;&#45;&#111;&#x63;&#116;&#x61;&#118;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;">&#x3c;&#34;&#x72;&#97;&#x62;&#98;&#105;&#x74;&#109;&#x71;&#45;&#x73;&#101;&#114;&#118;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#x2d;&#99;&#x62;&#x64;&#x37;&#54;&#x30;&#45;&#111;&#x63;&#116;&#x61;&#118;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -859,7 +1016,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#x3c;&#34;&#x72;&#x61;&#98;&#x62;&#x69;&#116;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#x76;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#45;&#x63;&#98;&#100;&#x37;&#54;&#x30;&#45;&#111;&#x63;&#116;&#97;&#x76;&#x69;&#x61;&#45;&#49;&#48;&#34;">&#x3c;&#34;&#x72;&#x61;&#98;&#x62;&#x69;&#116;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#x76;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#45;&#x63;&#98;&#100;&#x37;&#54;&#x30;&#45;&#111;&#x63;&#116;&#97;&#x76;&#x69;&#x61;&#45;&#49;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#60;&#34;&#x72;&#97;&#98;&#98;&#x69;&#116;&#109;&#113;&#45;&#x73;&#x65;&#x72;&#x76;&#101;&#x72;&#64;&#x6a;&#117;&#106;&#117;&#x2d;&#x63;&#98;&#x64;&#x37;&#x36;&#x30;&#45;&#x6f;&#x63;&#x74;&#97;&#x76;&#x69;&#x61;&#45;&#x31;&#x30;&#x22;">&#60;&#34;&#x72;&#97;&#98;&#98;&#x69;&#116;&#109;&#113;&#45;&#x73;&#x65;&#x72;&#x76;&#101;&#x72;&#64;&#x6a;&#117;&#106;&#117;&#x2d;&#x63;&#98;&#x64;&#x37;&#x36;&#x30;&#45;&#x6f;&#x63;&#x74;&#97;&#x76;&#x69;&#x61;&#45;&#x31;&#x30;&#x22;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -1657,151 +1814,6 @@ Compression yes
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/09/在KVM中运行win10虚机/" itemprop="url">在KVM中运行win10虚机</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
-                2020-11-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2015-12-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>KVM默认不支持windows 10，需要做一些设置：<br>1, sudo usermod -a -G vboxusers hua<br>2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。PAE支持32位处理器可以访问4GB以上物理内存功能版本的Windows，并且它是NX的先决条件。NX可让处理器帮助保护电脑免受恶意软件的攻击。SSE2（一项使用已久的关于处理器的标准）是一套由越来越多的第三方应用和驱动程序使用的指令集。<br>   cpu model: core2duo<br>   cpu features: nx=require<br>   nic: rtl8139 to e1000</p>
-<p>在ubuntu上制作win 10 usb启动盘的工具：</p>
-<p>sudo add-apt-repository ppa:gezakovacs/ppa<br>sudo apt-get update<br>sudo apt-get install unetbootin</p>
-<p>后续的工作是采用SR-IOV与USB直通，待续。</p>
-<p>20200603更新　－　virtualbox中安装win10</p>
-<p>立刻仅支持windows所以需要一个windows虚机，ubuntu 20.04上的kvm安装win10报错一时半会解不了，换成virtualbox</p>
-<p>安装　－　<a href="https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack" target="_blank" rel="external">https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack</a></p>
-<p>在虚机中若想使用host上的摄像头，还得安装上面链接中的ExtPack, 这样在启动虚机之后在devices -&gt; webcams菜单就能使用host的摄像头了．</p>
-<p>在虚机中若想使用host上的麦克风和音箱怎么办？　在’devices -&gt; audio”菜单中将’audio output’与’audio input’都选上即可．</p>
-<p>鼠标在虚机与host机上无缝切换，　在’devices -&gt; insert guest cd’然后在虚机里打开cd安装驱动即可．</p>
-<p>全屏切换　host + F,  host是指right ctrl键，进入全屏退出全屏都是它．</p>
-<p>20201109更新 - kvm安装win10<br>之前virtualbox安装的win10在开关多次之后，会造成这样一个问题，在chrome上使用fast.com测速时会降到几十K到12M之间，</p>
-<p>而同时在firefox上测速能达到69M左右，在重启机器之后chrome上的测速又能恢复到92M。</p>
-<p>所以不敢再继续使用virtualbox了，改用KVM吧。</p>
-<p>1, 直接将之前的virtualbox镜像转成kvm的 -　qemu-img convert -p -f vdi -O raw win10.vdi win10.img</p>
-<p>2, 导入镜像创建虚机时注意一点，在”Choose the operating system you are installing”处输入win搜索windows时没有win10的版本，需勾选”Include end of life operating systems“才出来。</p>
-<p>3, 第一次默认安装对硬盘和网卡均使用默认驱动。</p>
-<ol>
-<li>安装完启动win10后在里面下载安装virtualbox驱动 - <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso" target="_blank" rel="external">https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso</a></li>
-</ol>
-<p>5, 此时只能将网卡驱动改为virtio(也可以改成mapvtap + virtio)重启机器可以进win10</p>
-<p>6, 但此时若将硬盘也改为virtio驱动会报错的。因为硬盘里还根本没有iscsi-virtio驱动啊。解决办法是在硬盘默认驱动进入win10后，</p>
-<p>   再添加第二块virtio驱动这样iscsi-virtio就装在硬盘了。这时再重启就可以了。见：　<a href="https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio" target="_blank" rel="external">https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio</a></p>
-<p>7, 使用spice这样声音和麦克就都用了。注：如果不将网络与硬盘改为virtio驱动，在likeshuo使用音频会有延时听不清楚。</p>
-<p>8, 可使用spice redirect usb特性将集成视频卡加到虚机，注意：选错usb可能造成蓝牙键盘失去连接。</p>
-<p>９，”rsync -avztur –progress /bak/* /mnt/share/“, /mnt/share是一块iscis盘，bak缺空间，第１步转换后的win10硬盘在iscsi盘上，但之前加了–delete参数导制被删除转了两遍。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1852,7 +1864,7 @@ Compression yes
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">83</span>
+                  <span class="site-state-item-count">84</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
