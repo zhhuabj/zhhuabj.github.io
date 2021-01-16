@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2014-07-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )      Linux内核在发生kernel panic时会打印出Oops信息，把目前的寄存器状态、堆栈内容、以及完整的Call trace都使用内核转储工具kdump dump到一个文件里，之后我们再用gdb来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分析Ubuntu Kernel Kdump文件">
+<meta property="og:url" content="http://yoursite.com/2021/01/16/分析Ubuntu-Kernel-Kdump文件/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2014-07-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )      Linux内核在发生kernel panic时会打印出Oops信息，把目前的寄存器状态、堆栈内容、以及完整的Call trace都使用内核转储工具kdump dump到一个文件里，之后我们再用gdb来">
+<meta property="og:updated_time" content="2021-01-16T10:55:05.345Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分析Ubuntu Kernel Kdump文件">
+<meta name="twitter:description" content="作者：张华  发表于：2014-07-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )      Linux内核在发生kernel panic时会打印出Oops信息，把目前的寄存器状态、堆栈内容、以及完整的Call trace都使用内核转储工具kdump dump到一个文件里，之后我们再用gdb来">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/16/分析Ubuntu-Kernel-Kdump文件/"/>
+
+
+
+
+
+  <title>分析Ubuntu Kernel Kdump文件 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/分析Ubuntu-Kernel-Kdump文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">分析Ubuntu Kernel Kdump文件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:54:49+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2014-07-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>(<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>      Linux内核在发生kernel panic时会打印出Oops信息，把目前的寄存器状态、堆栈内容、以及完整的Call trace都使用内核转储工具kdump dump到一个文件里，之后我们再用gdb来分析.<br>      kexec是一个快速启动的机制，允许通过已经运行的内核的上下文不经过BIOS启动一个linux内核，它是实现kdump的关键。首先用户空间的工具kexec-tools将捕获内核的地址传递给生产内核，从而在系统崩溃时能找到捕获内核的地址并运行。</p>
+<p>1, 安装linux-crashdump (sudo apt-get install linux-crashdump)将安装crash, kexec-tools, makedumpfile三个工具，安装后会产生如下grub2选项。</p>
+<p>hua@node1:~$ cat /etc/default/grub.d/kexec-tools.cfg<br>GRUB_CMDLINE_LINUX_DEFAULT=”$GRUB_CMDLINE_LINUX_DEFAULT crashkernel=384M-:128M”</p>
+<p>2,  修改kdump配置文件(/etc/default/kdump-tools): USE_KDUMP=1</p>
+<p>3, 启动kdump, sudo /etc/init.d/kdump-tools start ，或重启机器会看到如下信息代表成功。</p>
+<p>hua@node1:~$ cat /var/crash/kexec_cmd   #捕获镜像与生产镜像用的是同一个<br>/sbin/kexec -p –command-line=”BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses vt.handoff=7 irqpoll maxcpus=1 nousb” –initrd=/boot/initrd.img-4.4.0-9-generic /boot/vmlinuz-4.4.0-9-generic</p>
+<p>hua@node1:~$ cat /proc/cmdline<br>BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses crashkernel=384M-:128M vt.handoff=7</p>
+<p>hua@node1:~$ sudo dmesg | grep crash<br>[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses crashkernel=384M-:128M vt.handoff=7<br>[    0.000000] Reserving 128MB of memory at 704MB for crashkernel (System RAM: 32640MB)</p>
+<p>cat /etc/sysctl.conf</p>
+<h1 id="VMCORE-setup"><a href="#VMCORE-setup" class="headerlink" title="VMCORE setup"></a>VMCORE setup</h1><p>kernel.hung_task_panic = 0<br>kernel.panic = 0<br>kernel.panic_on_io_nmi = 0<br>kernel.panic_on_oops = 0<br>kernel.panic_on_unrecovered_nmi = 0<br>kernel.softlockup_panic = 0<br>kernel.unknown_nmi_panic = 0</p>
+<p> kernel.sysrq=1</p>
+<p>kernel.hung_task_timeout_secs = 0</p>
+<p>sysctl -w vm.dirty_ratio=5                  #写缓存频率</p>
+<p>fs.pipe-user-pages-soft = 16384<br>fs.xfs.panic_mask = 0<br>kernel.hardlockup_panic = 0<br>kernel.hung_task_check_count = 4194304<br>kernel.hung_task_panic = 0<br>kernel.hung_task_timeout_secs = 120<br>kernel.hung_task_warnings = 8<br>kernel.panic = 0<br>kernel.panic_on_io_nmi = 0<br>kernel.panic_on_oops = 0<br>kernel.panic_on_unrecovered_nmi = 0<br>kernel.panic_on_warn = 0<br>kernel.soft_watchdog = 1<br>kernel.softlockup_all_cpu_backtrace = 0<br>kernel.softlockup_panic = 0<br>kernel.unknown_nmi_panic = 0</p>
+<p>4,  按组合键Alt+SysRq+c就可以产生一个panic（或 echo c &gt; /proc/sysrq-trigger）, 然后在/var/crash/目录可以找到crash日志</p>
+<pre><code>ubuntu里也有一个命令如sudo apport-cli -f -P `pidof firefox`用于收集panic时的kernel日志的
+</code></pre><p>5, 一般拿过来的crash log是通过base64加密过，可解密:apport-unpack 00069866-linux-image-3.2.0-23-generic.0.txt ./tmp/</p>
+<p>6, crash工具需要内核调试信息dbgsym才可以工作，先看看有没有/user/lib/debug/boot这个目录，没有的话从这里下载<a href="http://ddebs.ubuntu.com/pool/main/l/linux/，" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/，</a> 或者：<br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs) main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/ddebs.list</p>
+<p>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty main restricted universe multiverse<br>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty-updates main restricted universe multiverse<br>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty-proposed main restricted universe multiverse</p>
+<p>   sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys ECDCAD72428D7C01<br>   sudo apt-get update<br>   sudo apt-get install systemtap<br>   sudo apt-get install linux-image-$(uname -r)-dbgsym</p>
+<p>   sudo apt-get source linux-image-$(uname -r)</p>
+<p>或者使用“axel -n 64”命令高速下载后安装‘sudo dpkg -i *.ddeb’</p>
+<p>没有时再：</p>
+<p><a href="https://wiki.ubuntu.com/Kernel/Systemtap" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Systemtap</a><br><a href="http://chrisarges.net/2015/10/02/building-ubuntu-kernels-with-debug-symbols.html" target="_blank" rel="external">http://chrisarges.net/2015/10/02/building-ubuntu-kernels-with-debug-symbols.html</a></p>
+<p>6, crash /usr/lib/debug/boot/vmlinux-3.5.0-17-generic VmDump</p>
+<p>注意：使用4.4内核调试实时内核时（ sudo crash /usr/lib/debug/boot/vmlinux-4.4.0-9-generic）报错“invalid structure member offset: module_core_size”， 见这个bug (<a href="https://www.redhat.com/archives/crash-utility/2016-January/msg00030.html" target="_blank" rel="external">https://www.redhat.com/archives/crash-utility/2016-January/msg00030.html</a> ), 我采用(sudo crash –no_modules /usr/lib/debug/boot/vmlinux-4.4.0-9-generic)避免模块的初始化错误中断crash</p>
+<p>自己调试机运行的什么版本的kernel和客户运行的没有关系，只需要使用–mod参数指定和客户运行的debug symbol的版本一致即可。</p>
+<p>wget <a href="http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</a> -O /home/zhhuabj/debs/4.13.0-37.42/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</p>
+<p>strings vmcore.201803282124 |less  #NOTE: vmcore may first need to unzip<br>dpkg -x linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb /home/zhhuabj/debs/4.13.0-37.42/<br>cat run_crash.sh</p>
+<p>exec crash –mod /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/lib/modules/4.13.0-37-generic /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/boot/vmlinux-4.13.0-37-generic vmcore.201803282124</p>
+<p>NOTE: 上面的方法可能不成功，例如，4.13.0-37是artful的GA Kernel，但对于xenial来说是HWE Kernel。sosreport中的uname显示版本号（上面是通过strings命令查看的版本号，似乎不能显示更详细的版本号)是“4.13.0-37-generic #42~16.04.1”，这种版本号就是在xenial中使用4.13.0-37 hwe kernel。所以正确的debug symbol应该是：<a href="https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb" target="_blank" rel="external">https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb</a></p>
+<p>附录一， 如何利用dump文件找到源码中出错误的地方</p>
+<p>因为编译优化会产生代码行号不一致，所以一般是理解汇编，再看源码作为参考：</p>
+<p>1, 查看backtrace列表，exception RIP是kmem_cache_alloc_trace+0x7c (或者查看RIP寄存器)</p>
+<p>crash&gt; bt -l<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br> …</p>
+<p> #5 [ffff881f136edb30] general_protection at ffffffff817650c8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 1514<br>    [exception RIP: kmem_cache_alloc_trace+0x7c]</p>
+<p>2, 将标识符 kmem_cache_alloc_trace+0x7c 转换为其所对应的物理地址 0xffffffff811af2fc<br>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
+<p>查看汇编也可以使用x/100gi命令：</p>
+<p>故对于动态链接库采用gdb查看CoreDump时可以采用x/100gi $rip代替</p>
+<p>(gdb) p $rip<br>$2 = (void (*)()) 0x7fa84c275470 <malloc_consolidate+336><br>(gdb) x/2gi $rip<br>=&gt; 0x7fa84c275470 <malloc_consolidate+336>: mov    0x8(%rbx),%rax<br>   0x7fa84c275474 <malloc_consolidate+340>: and    $0xfffffffffffffff8,%rax</malloc_consolidate+340></malloc_consolidate+336></malloc_consolidate+336></p>
+<p>readelf命令也可以查看物理地址:<br>readelf -wL vmlinux<br>Decoded dump of debug contents of section .debug_line:<br>[… search for %rip value …]<br>skbuff.c                                    2918  0xffffffff81614495<br>skbuff.c                                    2911  0xffffffff816144b8<br>skbuff.c                                    2904  0xffffffff816144ba<br>skbuff.c                                    2825  0xffffffff816144bc</p>
+<p>3, 用addr2line命令来找出其对应的源代码<br>   -e, 标明需要对其进行地址转换的程序的名称。<br>   -f, 显示函数名称，以及它们的所在文件和行数信息。<br>   -i, 如果要转换的地址属于一个内联函数, 那么，所有作用域内从第一个非内联函数起的信息都会被列出。<br>addr2line 0xffffffff811af2fc -e /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic -f -i<br>get_freepointer<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:260<br>get_freepointer_safe<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:275<br>slab_alloc_node<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2416<br>slab_alloc<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2455<br>kmem_cache_alloc_trace<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2472</p>
+<p>或者如果已经安装了源码的话可以直接使用crash的list命令查看相关代码。<br>crash&gt; list *0xffffffff816144ba<br>0xffffffff816144ba is in skb_segment (/build/buildd/linux-3.13.0/net/core/skbuff.c:2904).<br>2899                    skb_shinfo(nskb)-&gt;tx_flags = skb_shinfo(head_skb)-&gt;tx_flags &amp;<br>2900                            SKBTX_SHARED_FRAG;<br>2901<br>2902                    while (pos &lt; offset + len) {<br>2903                            if (i &gt;= nfrags) {<br>2904                                    BUG_ON(skb_headlen(list_skb));<br>[…]</p>
+<p>注意，对应用态的动态链接库使用addr2line却显示了下列的问号（因为动态链接库要重定位），对动态链接库如何使用addr2line待查。<br>$ addr2line 0x7fa84c275470 -f -i -e /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6<br>??<br>??:0</p>
+<p>4, 确认源代码, 直接看源码，或者若是结构体直接采用下列命令显示行号后和汇编里的代码对行号。</p>
+<p>crash&gt; struct -o transction_s.t_locaked_list</p>
+<p>附录二，从soft lookup的例子熟悉kernel开发流程</p>
+<p>1, 使用’crash&gt; log &gt; log.txt’可以看到很多有用的信息</p>
+<p>2, 说明systemd进程是在等锁(_raw_spin_lock_irq)，其他类似很多日志表明其他一些进程也是类似在等锁，所以systemd等进程不会是凶手<br>[ 1043.679592] NMI watchdog: Watchdog detected hard LOCKUP on cpu 17<br>…<br>[ 1043.679646] CPU: 17 PID: 86236 Comm: systemd Not tainted 4.13.0-37-generic #42~16.04.1-Ubuntu<br>…<br>[ 1043.679664] Call Trace:<br>[ 1043.679671]  _raw_spin_lock_irq+0x28/0x30<br>…</p>
+<p>3, 真正造成死锁的是40号CPU的sgdisk（sgdisk -&gt; block_ioctl -&gt; blkdev_ioctl -&gt; blkdev_reread_part -&gt; <strong>blkdev_reread_part -&gt; rescan_partitions -&gt; drop_partitions -&gt; invalidate_partition -&gt; </strong>invalidate_device -&gt; invalidate_bdev -&gt; invalidate_bh_lrus -&gt; on_each_cpu_cond -&gt; on_each_cpu_mask -&gt; smp_call_function_many）</p>
+<p>其smp_call_function_many用于要求其他CPU执行相关函数， 所以原因可能是：</p>
+<p>1) 其他CPU也stuck了，这需要一个个检查其他CPU的情况。但crash显示其他CPU都在等待spin lock而无法访问状态.</p>
+<p>PID: 384217 TASK: ffff8fa582ed9e40 CPU: 47 COMMAND: “ceph-osd”<br>bt: read error: kernel virtual address: fffffe000081b000 type: “stack contents”</p>
+<p>bt: read of stack at fffffe000081b000 failed</p>
+<p>需禁用KASLR后(nokaslr)并设置一旦watchdog捕获到panic后立即抓crash(nmi_watchdog=panic)后重新生成fresh crash</p>
+<p>2）40号CPU自己在执行长任务。</p>
+<p>[ 1062.041799] Kernel panic - not syncing: softlockup: hung tasks<br>[ 1062.042657] CPU: 40 PID: 383965 Comm: sgdisk Tainted: G             L  4.13.0-37-generic #42~16.04.1-Ubuntu<br>[ 1062.043524] Hardware name: Lenovo ThinkSystem SR650 -[7X06CTO1WW]-/-[7X06CTO1WW]-, BIOS -[IVE116S-1.20]- 02/08/2018<br>[ 1062.044396] Call Trace:<br>[ 1062.045251]  <irq><br>[ 1062.046093]  dump_stack+0x63/0x8b<br>[ 1062.046931]  panic+0xe4/0x24d<br>[ 1062.047752]  watchdog_timer_fn+0x219/0x220<br>[ 1062.048557]  ? watchdog_park_threads+0x70/0x70<br>[ 1062.049358]  <strong>hrtimer_run_queues+0xe7/0x230<br>[ 1062.050149]  hrtimer_interrupt+0xb1/0x200<br>[ 1062.050941]  smp_trace_apic_timer_interrupt+0x6f/0xa0<br>[ 1062.051720]  ? </strong>brelse+0x30/0x30<br>[ 1062.052486]  smp_apic_timer_interrupt+0xe/0x10<br>[ 1062.053244]  apic_timer_interrupt+0x1af/0x1c0<br>[ 1062.053984]  </irq><br>[ 1062.054707] RIP: 0010:smp_call_function_many+0x20b/0x270<br>[ 1062.055433] RSP: 0018:ffffbaae766efc40 EFLAGS: 00000202 ORIG_RAX: ffffffffffffff10<br>[ 1062.056159] RAX: 0000000000000003 RBX: 0000000000000130 RCX: 000000000000000b<br>[ 1062.056877] RDX: ffff8f487dee7b18 RSI: 0000000000000130 RDI: ffff8f486e974280<br>[ 1062.057588] RBP: ffffbaae766efc78 R08: 0000000000000000 R09: c4ff7effffddea38<br>[ 1062.058295] R10: fffff1c6f324aac0 R11: ffff8f486e974280 R12: ffffffffb88915b0<br>[ 1062.058998] R13: 0000000000000000 R14: ffff8f487e123a00 R15: 0000000000000130<br>[ 1062.059696]  ? <strong>brelse+0x30/0x30<br>[ 1062.060387]  ? </strong>brelse+0x30/0x30<br>[ 1062.061067]  on_each_cpu_mask+0x28/0x70<br>[ 1062.061733]  ? mark_buffer_async_write+0x20/0x20<br>[ 1062.062398]  on_each_cpu_cond+0xb6/0x160<br>[ 1062.063053]  ? <strong>brelse+0x30/0x30<br>[ 1062.063686]  invalidate_bh_lrus+0x29/0x30<br>[ 1062.064303]  invalidate_bdev+0x3a/0x60<br>[ 1062.064906]  </strong>invalidate_device+0x4d/0x60<br>[ 1062.065489]  invalidate_partition+0x31/0x50<br>[ 1062.066054]  rescan_partitions+0x50/0x330<br>[ 1062.066602]  ? security_capable+0x4e/0x70<br>[ 1062.067130]  __blkdev_reread_part+0x65/0x70<br>[ 1062.067659]  blkdev_reread_part+0x23/0x40<br>[ 1062.068168]  blkdev_ioctl+0x38f/0x930<br>[ 1062.068657]  ? mempool_free_slab+0x17/0x20<br>[ 1062.069130]  ? mempool_free+0x2f/0x90<br>[ 1062.069579]  block_ioctl+0x3d/0x50<br>[ 1062.070012]  do_vfs_ioctl+0xa4/0x600<br>[ 1062.070430]  ? blkdev_fsync+0x35/0x50<br>[ 1062.070854]  ? vfs_fsync_range+0x4e/0xb0<br>[ 1062.071281]  SyS_ioctl+0x79/0x90<br>[ 1062.071712]  entry_SYSCALL_64_fastpath+0x24/0xab<br>[ 1062.072150] RIP: 0033:0x7f3b43fe0f47<br>[ 1062.072579] RSP: 002b:00007ffe7affbc58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010<br>[ 1062.073021] RAX: ffffffffffffffda RBX: 00007ffe7afffaa8 RCX: 00007f3b43fe0f47<br>[ 1062.073455] RDX: 00007ffe7affbb90 RSI: 000000000000125f RDI: 0000000000000004<br>[ 1062.073876] RBP: 00007ffe7affba20 R08: 0000555ea8d45a80 R09: 0000000000000001<br>[ 1062.074281] R10: 0000555ea8d45a80 R11: 0000000000000246 R12: 0000000000000001<br>[ 1062.074691] R13: 00007ffe7afffaa8 R14: 0000000000000000 R15: 00007ffe7affe8d2</p>
+<p>4, upstream kernel中搜索invalidate_bh_lrus，及使用google搜索相应的信息<br>git log –grep=invalidate_bh_lrus<br>git grep invalidate_bh_lrus<br>git blame fs/block_dev.c</p>
+<p>5, 向Ubuntu贡献patch, 订阅邮件列表(<a href="https://lists.ubuntu.com/mailman/listinfo/kernel-team" target="_blank" rel="external">https://lists.ubuntu.com/mailman/listinfo/kernel-team</a>), 该页面上有”kernel-team Archives”的链接,里面对SRU的相关的内容类似如下(<a href="https://lists.ubuntu.com/archives/kernel-team/2018-March/thread.html" target="_blank" rel="external">https://lists.ubuntu.com/archives/kernel-team/2018-March/thread.html</a>), PATCH0是patch的说明，之后有PATH1等，被接受是ACK，已经合并到branch是APPLIED。机器人会解析这些邮件标题然后自动往lp bug中更新。所以SRU时并不在lp bug提交的并不是debdiff，而是在邮件里提交的patch，patch是由git-send-email生成的(最初先发到自己邮箱测试)，测试通过后发到邮件列表kernel-team@lists.ubuntu.com：<br>[SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Kai-Heng Feng<br>[SRU] [A/B] [PATCH 1/2] ACPI / battery: Add quirk for Asus GL502VSK and UX305LA   Kai-Heng Feng<br>[SRU] [A/B] [PATCH 2/2] ACPI / battery: Add quirk for Asus UX360UA and UX410UAK   Kai-Heng Feng<br>ACK / APPLIED[B]: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Seth Forshee<br>ACK: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Colin Ian King<br>APPLIED[Artful/backlog]: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Kleber Souza</p>
+<p>Reference<br>1, <a href="http://my.oschina.net/guol/blog/128030" target="_blank" rel="external">http://my.oschina.net/guol/blog/128030</a></p>
+<p>2, <a href="http://www.inaddy.org/mini-howtos/dumps/using-ubuntu-crash-dump-with-kdum" target="_blank" rel="external">http://www.inaddy.org/mini-howtos/dumps/using-ubuntu-crash-dump-with-kdum</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/" rel="next" title="Building Ubuntu Kernels with Debug Symbols">
+                <i class="fa fa-chevron-left"></i> Building Ubuntu Kernels with Debug Symbols
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/" rel="prev" title="Perform a bisect test to identify the kernel problem">
+                Perform a bisect test to identify the kernel problem <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">89</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#VMCORE-setup"><span class="nav-number">1.</span> <span class="nav-text">VMCORE setup</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

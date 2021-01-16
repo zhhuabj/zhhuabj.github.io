@@ -231,6 +231,611 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/Fix-a-rabbitmq-issue/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/12/Fix-a-rabbitmq-issue/" itemprop="url">Fix a rabbitmq issue</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
+                2020-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>问题</strong><br>rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:<br>11-lxd-8<br>69-lxd-2<br>9-lxd-9<br><strong>初步sosreport分析</strong><br>11-lxd-8上看到system_limit错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Too many processes</span><br><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Ranch listener &#123;acceptor,&#123;0,0,0,0,0,0,0,0&#125;,5672&#125; connection process start failure; rabbit_connection_sup:start_link/4 crashed with reason: error:system_limit</span><br></pre></td></tr></table></figure></p>
+<p>但是已经设置了LimitNOFILE<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;Limit&apos; lib/systemd/system/rabbitmq-server.service</span><br><span class="line">LimitNOFILE=65536</span><br></pre></td></tr></table></figure></p>
+<p>不过LimitNOFILE似乎是管file_descriptors的, 而不是erlang processes的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;file_descriptors,     [&#123;total_limit,65436&#125;,      &#123;total_used,6415&#125;,      &#123;sockets_limit,58890&#125;,      &#123;sockets_used,6413&#125;]&#125;,</span><br><span class="line">16:28:22  &#123;processes,[&#123;limit,1048576&#125;,&#123;used,118304&#125;]&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>上面的输出显示似乎用了118304个erlang processes还未超出limit. 不过, 这可能是重启机器之后抓的sosreport. 并且limit已经很大, 单纯增加limit似乎也并不是正道. 所以继续寻找线索.</p>
+<p>在69-lxd-2里也看到了’Error while waiting for Mnesia tables’这种错误, 似乎是Mnesia数据库未同步.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var/log/rabbitmq/rabbit@juju-3182a3-69-lxd-2.log.1</span><br><span class="line">=INFO REPORT==== 17-Apr-2020::13:27:26 ===</span><br><span class="line">Waiting for Mnesia tables for 30000 ms, 9 retries left</span><br><span class="line">=WARNING REPORT==== 17-Apr-2020::13:27:56 ===</span><br><span class="line">Error while waiting for Mnesia tables: &#123;timeout_waiting_for_tables,</span><br><span class="line">[rabbit_user,rabbit_user_permission,</span><br><span class="line">rabbit_vhost,rabbit_durable_route,</span><br><span class="line">rabbit_durable_exchange,</span><br><span class="line">rabbit_runtime_parameters,</span><br><span class="line">rabbit_durable_queue]&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3个units上用’netstat -s’看到大量的reset tcp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sos_commands/networking/netstat_-s |head -n2</span><br><span class="line">7154216 connection resets received</span><br><span class="line">34025359 resets sent</span><br></pre></td></tr></table></figure></p>
+<h2 id="深入分析"><a href="#深入分析" class="headerlink" title="深入分析"></a>深入分析</h2><p>9-lxd-9上 通过下列命令看到各个openstack组件上都有到9-lxd-9的rabbitmq tcp连接, 一个组件就有约四五百个连接, 是不是多了一点? 其他两个units没这么多.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat sos_commands/networking/netstat_-W_-neopa| awk &apos;/:5672/ &#123; print $5 &#125;&apos; | awk -F: &apos;&#123; a[$1]++ &#125;; END &#123; for (i in a) print i, a[i] &#125;&apos; |sort -n -k 2 -r |more |head -n 80</span><br></pre></td></tr></table></figure></p>
+<p>但一个组件就有四五百个连接, 每个组件都这么多, 不可能每个组件都有问题吧. 除了大量tcp连接可以造成容器cpu升高, host机器的cpu升高也可以造成容器cpu升高的吧. 所以接着检查host机器的cpu占用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat sos_commands/process/ps_auxwww |head -n 1</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">$ cat sos_commands/process/ps_auxwww |head -n1 &amp;&amp; cat sos_commands/process/ps_auxwww |sort -n -k3 -r | head -n 3</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">nova 1936435 130 0.0 347704 126140 ? Rs 11:40 0:01 /usr/bin/python2 /usr/bin/nova-api-metadata --config-file=/etc/nova/nova.conf --log-file=/var/log/nova/nova-api-metadata.log</span><br><span class="line">libvirt+ 1809025 100 0.0 51373088 236744 ? Sl Mar09 56456:32 qemu-system-x86_64 -enable-kvm -name guest=instance-000099e0,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-26-instance-000099e0/master-key.aes -machine pc-i440fx-</span><br></pre></td></tr></table></figure></p>
+<p>ok, 虚机占用cpu就是100%. 看样子是控制服务(rabbitmq)与计算服务(nova-compute)安装到同一台物理机了, 虚机占用的cpu或者内存大页什么的直接导致rabbitmq cluster挂掉.<br>注:<br>ps命令中第三列相加的cpu大于100%也不一定就意味着cpu一定高, 因为可以这些进程全跑在一个cpu核的, 它可能计算的是一个核的, 要想准确还得使用mpstat来查看</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>调整架构是不可能了, 可以暂时使用isolcpu隔离一些cpu单独通过taskset给rabbitmq使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mpstat -P ALL 能看到所有cpu核的负载情况</span><br><span class="line">cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq</span><br><span class="line">grub中添加isolcpus=1,3来隔离1和3的cpu待用, 然后运行update-grub后重启, 验证:</span><br><span class="line">1, cat /proc/cmdline |grep isolcpu</span><br><span class="line">2, ps -To &apos;pid,lwp,psr,cmd&apos; -p 310597</span><br><span class="line">3, ps -eo pid,cmd,psr |awk &apos;&#123;if($3=3) print $0&#125;&apos;</span><br><span class="line">taskset -p0x8 &lt;pid&gt;绑定&lt;pid&gt;到cpu3</span><br><span class="line">taskset -c 1 /etc/init.d/mysql start</span><br><span class="line">systemd manages the affinity for you. See &quot;man systemd.exec&quot; and CPUAffinity= option.</span><br></pre></td></tr></table></figure></p>
+<h2 id="20201212更新-queue-master-locator-min-master"><a href="#20201212更新-queue-master-locator-min-master" class="headerlink" title="20201212更新 - queue_master_locator=min-master"></a>20201212更新 - queue_master_locator=min-master</h2><p>我们可能需要配置queue_master_locator=min-master - <a href="https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759" target="_blank" rel="external">https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759</a>, 进而可能造成这两个bug (控制平面居然影响了数据面） - <a href="https://bugs.launchpad.net/neutron/+bug/1871850" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1871850</a><br><a href="https://bugs.launchpad.net/neutron/+bug/1869808" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1869808</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># Queue masters are mostly on 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report | awk -F&apos;\t&apos; &apos;/^Queues on openstack/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 15</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 15426</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 309</span><br><span class="line"></span><br><span class="line"># Most connections are made to 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report| awk -F&apos;\t&apos; &apos;/^Connections/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 8763</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 14843</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 6413</span><br><span class="line"></span><br><span class="line"># 11-lxd-8 uses the most memory</span><br><span class="line">&gt; cat rabbitmqctl_report| awk &apos;/^Status/ &#123;a=1; print&#125;; a &amp;&amp; /total,/; !NF &#123;a=0&#125;&apos;</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-10-lxd-8&apos;</span><br><span class="line">     [&#123;total,3536412448&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-11-lxd-8&apos;</span><br><span class="line">     [&#123;total,7030459176&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-9-lxd-9&apos;</span><br><span class="line">     [&#123;total,4256377400&#125;,</span><br></pre></td></tr></table></figure></p>
+<p>crontab检查rabbitmq memory使用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"># process_memory_checker.sh</span><br><span class="line">MAILTO=root</span><br><span class="line">process=&quot;bin/beam.smp&quot;</span><br><span class="line">mem_percentage=`ps -o %mem,command ax | grep &quot;$&#123;process&#125;&quot; | grep -v grep | awk &apos;&#123;print $1&#125;&apos;`</span><br><span class="line">threshold_percentage=25</span><br><span class="line">if (( $(echo &quot;$&#123;mem_percentage&#125; &gt; $&#123;threshold_percentage&#125;&quot;|bc -l) ));</span><br><span class="line">then</span><br><span class="line">	echo &quot;Process $&#123;process&#125; on `hostname -f` is using $&#123;mem_percentage&#125;% of total memory (threshold is $&#123;threshold_percentage&#125;%).&quot; | \</span><br><span class="line">	mail -s &quot;Memory usage warning for process $&#123;process&#125; on $(hostname -s)&quot; $&#123;MAILTO&#125; 2&gt; /dev/null;</span><br><span class="line">	exit 1;</span><br><span class="line">fi</span><br><span class="line">echo &quot;No memory issues found for process $&#123;process&#125;&quot;</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
+<p>另外，客户发现memory用到超过vm_memory_high_watermark_paging_ratio (<a href="https://www.rabbitmq.com/memory.html#paging" target="_blank" rel="external">https://www.rabbitmq.com/memory.html#paging</a> )时似乎memory也没有被page到硬盘造成memory一直在增大，这个网页（<a href="https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。" target="_blank" rel="external">https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。</a><br>“rabbitmqctl list_queues name  durable -p openstack”看到的durable都是false, 难道是在设置各组件的olso设置为(charm似乎不支持）amqp_durable_queues=True吗?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[oslo_messaging_rabbit]</span><br><span class="line">amqp_durable_queues = True</span><br></pre></td></tr></table></figure></p>
+<p>但这个patch说上面配置被废弃了 - <a href="https://bugs.launchpad.net/oslo.messaging/+bug/1433956" target="_blank" rel="external">https://bugs.launchpad.net/oslo.messaging/+bug/1433956</a>, 但master code中有这个配置，还没细查。另外，这个网页（<a href="https://elkano.org/blog/high-availability-rabbitmq-cluster-openstack/）说用这个配置：" target="_blank" rel="external">https://elkano.org/blog/high-availability-rabbitmq-cluster-openstack/）说用这个配置：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[oslo_messaging_rabbit]</span><br><span class="line">rabbit_hosts=node1:5672,node2:5672,node3:5672</span><br><span class="line">rabbit_retry_interval=1</span><br><span class="line">rabbit_retry_backoff=2</span><br><span class="line">rabbit_max_retries=0</span><br><span class="line">rabbit_ha_queues=true</span><br><span class="line">rabbit_userid = openstack</span><br><span class="line">rabbit_password = openstack_pass</span><br><span class="line">amqp_auto_delete = true</span><br><span class="line">amqp_durable_queues=True</span><br></pre></td></tr></table></figure></p>
+<p>charm ./charmhelpers/contrib/openstack/templates/section-rabbitmq-oslo 中有下面代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 8 &#123;% if rabbitmq_ha_queues -%&#125;</span><br><span class="line"> 9 rabbit_ha_queues = True</span><br><span class="line">10 rabbit_durable_queues = False</span><br><span class="line">11 &#123;% endif -%&#125;</span><br></pre></td></tr></table></figure></p>
+<p>其他debug手段:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo rabbitmqctl -p openstack list_queues|grep -vw 0</span><br><span class="line"></span><br><span class="line"># returns a list with info about memory dynamically allocated by the Erlang emulator</span><br><span class="line">rabbitmqctl eval &apos;erlang:memory().&apos;</span><br><span class="line">rabbitmq-diagnostics memory_breakdown  #for new version</span><br></pre></td></tr></table></figure></p>
+<p>内存使用量一直突然增长可能是这个错误造成的， 详见：<a href="https://bugs.launchpad.net/oslo.messaging/+bug/1789177" target="_blank" rel="external">https://bugs.launchpad.net/oslo.messaging/+bug/1789177</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;no exchange&apos; var/log/rabbitmq/rabbit@juju-0aa49a-10-lxd-8.log |wc -l</span><br><span class="line">3511</span><br><span class="line">$ grep -r &apos;no exchange&apos; var/log/rabbitmq/rabbit@juju-0aa49a-10-lxd-8.log |head -n1</span><br><span class="line">operation basic.publish caused a channel exception not_found: no exchange &apos;reply_bee2ebfe01854e0595ddaa7462dc4054&apos; in vhost &apos;openstack&apos;</span><br></pre></td></tr></table></figure></p>
+<p>这是关于rabbitm HA一个非常好的贴子（<a href="https://blog.csdn.net/zyz511919766/article/details/41896823" target="_blank" rel="external">https://blog.csdn.net/zyz511919766/article/details/41896823</a>), 也就是说，在rabbitmq non-ha中，exchange与 bindings也是在所在节点上的，而queue只处于一个节点。在rabbitmq ha环境中，只是将queue也根据policy放置在所有或某些节点上。当consumer从rabbitmq的某个节点消费queue时，consumer死掉了，consumer创建的reply-xxx queues也会被删掉但此时可能consumer没有收到basic cancel signal（eg：当reply-xxx被删后刚好consumer在重启）, 这样，consumer没ack消息这样server还会继续给consumer发, 但此时就会报no exchange (exchange与reply-xxx queue都是consumer创建的，reply-xxx queue为0时exchange也会被删除）。<br>但是，有一点没闹明白，consumer重启之后不是会调用 reconnect继续重建exchange与reploy-xxx queue么？不过在重建之前，server会继续发， 这段期间就会有no exchange错误吧，这样会耗费大量的cpu，这样或许也是cpu升级的原因 （Lots of exchanges create problems during failover under high load）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;^reply_&apos; sos_commands/rabbitmq/rabbitmqctl_report |grep exchange |head -n1</span><br><span class="line">reply_0003bee270e54c8cb9b78ba3b51ba4e2  exchange        reply_0003bee270e54c8cb9b78ba3b51ba4e2  queue   reply_0003bee270e54c8cb9b78ba3b51ba4e2  []      openstack</span><br><span class="line">$ grep -r &apos;^reply_&apos; sos_commands/rabbitmq/rabbitmqctl_report |grep exchange |wc -l</span><br><span class="line">24991</span><br></pre></td></tr></table></figure></p>
+<p>24991肯定会造成memory一直升高，所以一个最好办法就是设置x-cancel-on-ha-failover让queue没了时也取消consumer。另一个办法是也可以哪出哪些consumer在作怪.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat sos_commands/networking/netstat_-W_-neopa| awk &apos;/:5672/ &#123; print $5 &#125;&apos; | awk -F: &apos;&#123; a[$1]++ &#125;; END &#123; for (i in a) print i, a[i] &#125;&apos; |sort -n -k 2 -r |more |head -n 3</span><br><span class="line">10.160.0.106 96</span><br><span class="line">10.160.0.208 86</span><br><span class="line">10.160.0.75 83</span><br></pre></td></tr></table></figure></p>
+<p>也可以用下面的policy缓解:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#rabbitmqctl set_policy min-masters-queue -p openstack &apos;.*&apos; &apos;&#123;&quot;queue-master-locator&quot;:&quot;min-masters&quot;&#125;&apos; --apply-to queues --priority 10</span><br><span class="line">rabbitmqctl set_policy HA -p openstack &apos;^(?!amq\\.).*&apos; &apos;&#123;&quot;queue-master-locator&quot;:&quot;min-masters&quot;, &quot;ha-mode&quot;:&quot;all&quot;, &quot;ha-sync-mode&quot;:&quot;automatic&quot;&#125;&apos;</span><br></pre></td></tr></table></figure></p>
+<p>但是exchange只是记录的一个名称，是不占用内存的，queues可能会占用内存。但30481个queue也就1.2G左右，也不大啊。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat rabbitmq_report.txt |gawk -F&apos;\t&apos; &apos;/^Queues on openstack/ &#123;a=1;next&#125;; a &amp;&amp; NF &#123;mem+=$17; n+=1&#125;; !NF &#123;a=0&#125; END &#123;print n, mem&#125;&apos;</span><br><span class="line">30481 1248040000</span><br></pre></td></tr></table></figure></p>
+<p>相较，rabbitmqctl status显示queue_procs与queue_slave_procs占用的内存更大, queue_procs占了约199G. 队列占用的内存指的是队列进程消耗的，并不包含消息体（在二进制中）。当内存不足时，这部分的内存将交换到磁盘上。</p>
+<ul>
+<li>queue_procs：主队列，索引和消息保存在内存中。排队的消息数量越多，通常会将此内容归因于此部分。但是，这在很大程度上取决于队列属性以及消息是否作为瞬态发布</li>
+<li>queue_slave_procs：队列镜像，索引和消息保存在内存中。减少镜像（副本）的数量或不使用固有的瞬态数据镜像队列可以减少镜像使用的RAM量。排队的消息数量越多，通常会将此内容归因于此部分。但是，这在很大程度上取决于队列属性以及消息是否作为瞬态发布。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;queue_procs,199051279736&#125;,</span><br><span class="line">&#123;queue_slave_procs,1243762680&#125;,</span><br></pre></td></tr></table></figure>
+<p>这个网页（<a href="https://www.rabbitmq.com/monitoring.html#diagnostics-observer）提到&#39;rabbitmq-diagnostics" target="_blank" rel="external">https://www.rabbitmq.com/monitoring.html#diagnostics-observer）提到&#39;rabbitmq-diagnostics</a> observer’命令可以像top一样查看erlang虚拟机内进程的内存使用量，但rabbitmq-server 3.8版本才支持啊。那perf是否可以查看erlang虚机机内进程的call trace呢？但这篇文章说了怎么查erlang下的进程所用内存：<br>RabbitMQ及Erlang内存使用分析 - <a href="https://blog.csdn.net/jaredcoding/article/details/78115235" target="_blank" rel="external">https://blog.csdn.net/jaredcoding/article/details/78115235</a><br>RabbitMQ运维经验分享 - <a href="https://my.oschina.net/hackandhike/blog/801052" target="_blank" rel="external">https://my.oschina.net/hackandhike/blog/801052</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rabbitmqctl status #single node status</span><br><span class="line">rabbitmqctl report #cluster status</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/27/Shell编程注意点/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/27/Shell编程注意点/" itemprop="url">Shell编程注意点</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
+                2020-11-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华 写于：发表于：2011-04-06<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>1在shell脚本中调用另一个脚本的三种不同方式(fork,exec, source)<br>       我们先谈谈在shell脚本中调用另一个脚本的三种不同方式的区别（fork,exec, source )</p>
+<p>fork ( /directory/script.sh ), fork是最普通的,就是直接在脚本里面用/directory/script.sh来调用script.sh这个脚本.运行的时候开一个sub-shell执行调用的脚本，sub-shell执行的时候,parent-shell还在。sub-shell执行完毕后返回parent-shell.sub-shell从parent-shell继承环境变量.但是sub-shell中的环境变量不会带回parent-shell</p>
+<p>exec(exec /directory/script.sh) exec与fork不同，不需要新开一个sub-shell来执行被调用的脚本. 被调用的脚本与父脚本在同一个shell内执行。但是使用exec调用一个新脚本以后,父脚本中exec行之后的内容就不会再执行了。这是exec和source的区别</p>
+<p>source(source/directory/script.sh)与fork的区别是不新开一个sub-shell来执行被调用的脚本，而是在同一个shell中执行.所以被调用的脚本中声明的变量和环境变量,都可以在主脚本中得到和使用.</p>
+<p>可以通过下面这两个脚本来体会三种调用方式的不同:</p>
+<p>1.sh </p>
+<p>#!/bin/bash<br>A=B<br>echo “PID for 1.sh before exec/source/fork:$$”<br>exportA<br>echo “1.sh: /$A is $A”<br>case $1 in<br>       exec)<br>               echo “using exec…”<br>               exec ./2.sh ;;<br>       source)<br>               echo “using source…”<br>               ../2.sh ;;<br>        *)<br>               echo”using fork by default…”<br>               ./2.sh ;;<br>esac<br>echo”PID for 1.sh after exec/source/fork:$$”<br>echo “1.sh:/$A is $A”<br>2.sh </p>
+<p>#!/bin/bash<br>echo”PID for 2.sh: $$”<br>echo “2.sh get /$A=$A from1.sh”<br>A=C<br>export A<br>echo “2.sh: /$A is $A”</p>
+<p>执行情况：<br>$./1.sh<br>PID for 1.sh beforeexec/source/fork:5845364<br>1.sh: $A is B<br>using fork bydefault…<br>PID for 2.sh: 5242940<br>2.sh get $A=B from 1.sh<br>2.sh:$A is C<br>PID for 1.sh after exec/source/fork:5845364<br>1.sh: $A isB<br>$ ./1.sh exec<br>PID for 1.sh beforeexec/source/fork:5562668<br>1.sh: $A is B<br>using exec…<br>PID for2.sh: 5562668<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>$./1.sh source<br>PID for 1.sh beforeexec/source/fork:5156894<br>1.sh: $A is B<br>using source…<br>PIDfor 2.sh: 5156894<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>PIDfor 1.sh after exec/source/fork:5156894<br>1.sh: $A is C<br>$<br>2函数调用<br>先看一个例子，执行mysql的函数mysqlExec,如下：</p>
+<p>source“mysql.conf”</p>
+<p>mysqlExec(){<br>sql=$1<br>sqlOp=<code>echo${sql:0:6}| tr A-Z a-z</code><br>if[ “$sqlOp” != “select” ]; then<br>  sql=$sql”;select row_count();”<br>fi</p>
+<p>#use different mysql command depends on the password</p>
+<p>if[ -z $MYSQL_PASSWORD ]<br>then<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -se “${sql};”<br>else<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -p$MYSQL_PASSWORD-se “${sql};”<br>fi<br>status=$?<br>if[ $status -eq 0 ]; then<br>  if[ “$sqlOp” != “select” ]; then<br>    log “OK $sql”<br>  fi<br>else<br>  log “Occur DB Error, can retry in 3 seconds later -&gt; $sql”<br>  sleep3<br>  echo “DB_ERROR”<br>fi<br>return $status<br>exit<br>}</p>
+<p>函数调用要注意两点：<br>1）函数中可以用echo,如上面的echo “DB_ERROR”，在调用时要获取echo的值，应该这样:<br>campaign=<code>mysqlExec&quot;$sql&quot;</code><br>if[ “x$campaign” == “x” -o “$campaign” ==”DB_ERROR” ]; then<br>continue<br>fi<br>2)函数中也可以有返回值，如上面的return $status，在调用时应该通过$?获得，如：<br>if[ $? -eq 0 ]; then<br>echo“zhanghua”<br>fi</p>
+<p>3) 如果想从被调用的函数处返回一个值，可以这样</p>
+<p>   调用gen_conf函数，传一个引用（注意不是变量）config_file进去， gen_conf $host config_file</p>
+<p>   在gen_conf函数中通过__resultvar变量返回值:</p>
+<p>   gen_config{</p>
+<pre><code> local  __resultvar=$2
+eval $__resultvar=&quot;&apos;$config&apos;&quot;
+</code></pre><p>   }</p>
+<p>3shell中的要用局部变量很纠结<br>你会看到shell有一个非常大的缺点，就是它在函数调用时，没有局部变量与全局变量之分，如A脚本调用B脚本中的一个函数，在B脚本内部有一个变量vari（你可能受JAVA影响认为它是局部变量那就大错特错了），如果A脚本中也有这个名为vari的变量，那么在函数返回时，B脚本的那个vari变量会将A脚本的vari变量覆盖，举个例子：<br>updateWithOptimisticLock(){<br>rand=$1<br>campaignId=$2<br>seq=1<br>updateVal=-1<br>status=1<br>while[ true ]; do<br>if[ $seq -gt 3 ]; then<br>log”FATAL ERROR, Update num error, $updatesql”<br>break<br>fi<br>cur=<code>queryCur&quot;$campaignId&quot;</code><br>if[ “$cur” == “DB_ERROR” ]; then<br>continue<br>fi<br>updateVal=$(($cur+$rand))<br>if[ “$rand” == “0” ]; then<br>break<br>fi<br>updatesql=”updatet<em>campaign</em> set num=$updateVal where campaign<em>id=$campaignId andnum=$cur”<br>affectRows=<code>mysqlExec&quot;$updatesql&quot;</code><br>if[ “$affectRows” == “1” ]; then<br>status=0<br>break<br>fi<br>seq=$(($seq+1))<br>done<br>echo$updateVal<br>return$status<br>}<br>调用的伪码如下，这时里面的seq变量会被上述updateWithOptimisticLock函数中的变量seq给覆盖，所以在shell中没有局部变量一说<br>seq=1<br>while[ $seq -le $cycleNum ]; do<br>updateFakeNumWithOptimisticLock$rand $campaignId<br>done<br>4使用xargs来传参数<br>在shell中的管道符|很强大，可以将前一条命令的标准输出作为下一条命令的标准输入，但是如果下一条命令不是标准输入而是需要传参的话，那怎么办呢，用xargs即可，例如下列shell中xargs命令的-i选项告诉xargs用前一条命令的标准输出去替换{}。<br>find. | xargs zgrep “<url>/Search?” | sed’s/.*q=/([-</url></em><em>()~.%+0-9A-Za-z]</em>/).*//1/‘ | sort -nr | uniq -c | sort-nr | head -1000 | xargs -i php -r “echorawurldecode(‘{}’)./“/n/“;” &gt; result.out &amp;</p>
+<p>另， 修改/etc/hosts, 能处理127或localhost打头的多个hostname项如(ubuntu.me.com  ubuntu)， 用‘/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts’是为了避免IPv6 中的node如ff02::1 ip6-allnodes</p>
+<p>/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts |awk ‘$1 ~ /^127|localhost/ {print $0}’ | /bin/sed “s/\s<em>(${CURRENT_HOSTNAME})(\s</em>)/\t${NETCFG_HOSTNAME}/g”</p>
+<p>当然exec也可以实现上述功能，只是exec都是一次性读入内存容易内存溢出，如：<br>find. -name “<em>.m4” -exec grep –color -H “catalina”{} /;<br>5shell中的sed命令使用的正则是缩水版<br>shell中的sed命令使用的正则引擎和我们java中平常所用正则引擎并不一样，功能比较弱。<br>如上节中的|sed ‘s/.</em>q=/([-_<em>()~.%+0-9A-Za-z]</em>/)，就是因为shell的很多正则不支持，才在使用sed命令时用了那么多枚举。</p>
+<p>20191115更新</p>
+<p>上面说法不正确, sed可以加-r参数不用枚举, 例:</p>
+<p>grep -r ‘get_or_set_cached_cell_and_set_connections’ var/log/nova/ |sed -r ‘s/.+(waited|held) (.+) inner.+/\2/g;t;d’ |sort -nr |head -n 5</p>
+<p>nova service-list –bi nova-compute | grep nova-compute | cut -d ‘ ‘ -f 4 | xargs -n 1 -I {} ssh -o StrictHostKeyChecking=no  ubuntu@{} “date; hostname; zgrep MessagingTimeout /var/log/nova/nova-compute.log*; echo -e ‘—————————–\n’”</p>
+<p>数组</p>
+<p>readarray -t cookies&lt;&lt;&lt;”<code>ls -1 /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/cookies/| grep -v 6cc04af0837d3b42</code>“<br>for c in ${cookies[@]}; do grep -rl $c /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/tables; done| sort| uniq -c</p>
+<p>svcs=(<br>nova-compute-kvm<br>neutron-openvswitch<br>)<br>for svc in ${svcs[@]}; do<br>juju config $svc worker-multiplier<br>done</p>
+<p>排序相加</p>
+<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r<br>uid     tgid     total_vm  rss      pgtables_bytes  swapents  oom_score_adj  name<br>100112  832785   5760963   1650592  16789504        76362     0              beam.smp</p>
+<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r | awk ‘{sum+=$4;} END{print sum;}’</p>
+<p>rabbitmq相序相加举例</p>
+<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa |head -n1<br>Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer<br>tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      101        1671174047 178/systemd-resolve  off (0.00/0/0)</p>
+<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa| awk ‘/:5672/ { print $5 }’ | awk -F: ‘{ a[$1]++ }; END { for (i in a) print i, a[i] }’ |sort -n -k 2 -r |more |head -n 10<br>10.164.0.107 69</p>
+<p>实例 - 抓取</p>
+<p>#!/bin/bash</p>
+<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip lynx’ || lynx -dump ftp://ftp.hycom.org/datasets/force/ncep_cfsr/netcdf/ &gt;page.txt<br>grep -r “ftp://“ page.txt |awk ‘{print $2}’ &gt; urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>for url in $(cat urls.txt)<br>do<br>  skip=”0”<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>  for f in ${exist_files[@]}; do<br>    [[ “$name” == “$f” ]] &amp;&amp; skip=”1”; break;<br>  done<br>  if [ “$skip” == “1” ]; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${url}”;<br>    wget -c ${url}<br>  fi<br>done<br>改进版</p>
+<p>#!/bin/bash</p>
+<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip creating lynx’ || lynx -dump <a href="http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html" target="_blank" rel="external">http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html</a> &gt;page.txt<br>[[ -f urls.txt ]] &amp;&amp; echo ‘skip creating urls.txt’ || grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>sed -i ‘/dswsfc/d’ urls.txt<br>sed -i ‘/dlwsfc/d’ urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls . |grep -E &#39;\.nc$&#39;</code>“;  #can’t use multiple commands in [[ ]]<br>[[ -f skip.txt ]] &amp;&amp; echo ‘will use skip.txt’ || printf “%s\n” “${exist_files[@]}” &gt; skip.txt<br>readarray -t skip_files&lt;&lt;&lt;”<code>cat skip.txt</code>“<br>for url in $(cat urls.txt)<br>do<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  realurl=’<a href="http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name" target="_blank" rel="external">http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name</a><br>  if <code>echo ${skip_files[@]} |grep -q &quot;$name&quot;</code>; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${realurl}”;</p>
+<pre><code>#wget -c --limit-rate=3m ${realurl}
+wget -c ${realurl}
+#echo ${realurl} &gt;&gt; skip.txt
+</code></pre><p>  fi<br>done<br>获取绝对目录</p>
+<p>export OS_CACERT=$(dirname “$(realpath -s “${BASH_SOURCE[0]}”)”)/ssl/openstack-ssl/results/cacert.pem<br>从国外下载气象数据</p>
+<p>#gdisk /dev/sdd1   #t, 0700</p>
+<p>#sudo mkfs.ntfs -f -L win /dev/sdd1</p>
+<p>#sudo ntfsfix /dev/sdd1<br>sudo mkfs.ext4 /dev/xvdb<br>sudo parted /dev/xvdb  #print<br>sudo mount /dev/xvdb /mnt/<br>sudo mkdir -p /mnt/ftp<br>sudo chown -R $USER /mnt/<br>sudo apt install curlftpfs -y</p>
+<p>#sudo fusermount -zu /mnt/ftp<br>sudo curlftpfs ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>sudo curlftpfs -o rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>$ scp -i ~/.aws/zhhuabj.pem ubuntu@13.114.59.98:/mnt/ftp/uvel/rarchv.2012_205_00_3zu.nc4 /tmp/<br>rarchv.2012_205_00_3zu.nc4                                                                                                94%  236MB   7.6MB/s   00:01 ETA</p>
+<h1 id="using-direct-io-and-cache-no-to-avoid-using-disk"><a href="#using-direct-io-and-cache-no-to-avoid-using-disk" class="headerlink" title="using direct_io and cache=no to avoid using disk"></a>using direct_io and cache=no to avoid using disk</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp fuse defaults,direct_io,cache=no,rw,allow_other,uid=1000,gid=1000,_netdev 0 0<br>EOF<br>sudo mount -a</p>
+<p>rsync -avztur -e “ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/lxj.pem” –progress ubuntu@3.18.107.xxx:/mnt/ftp .</p>
+<p>注意：　上面加了direct_io,cache=no后总是hang，得去掉．</p>
+<p>#debug curlftpfs<br>sudo fusermount -zu /mnt/ftp/2d<br>sudo curlftpfs -f -v -o debug,ftpfs_debug=3,rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/2d /mnt/ftp/2d<br>1, use lftp to mirror</p>
+<h1 id="lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data"><a href="#lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data" class="headerlink" title="lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/"></a>lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/</h1><p>lftp -c “set ftp:list-options -a;<br>open ‘ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/‘;<br>lcd /home/ubuntu/test;<br>cd 2d<br>mirror -c –use-cache –verbose –allow-chown –allow-suid –no-umask –verbose –parallel=2”</p>
+<p>2, use wget to mirror</p>
+<p>wget -c -m ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/<br>lynx -dump <a href="http://13.59.199.151/new_01hr/" target="_blank" rel="external">http://13.59.199.151/new_01hr/</a> &gt; page.txt<br>grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>aria2c -x 10 -i urls.txt &gt;/dev/null 2&gt;/dev/null &amp;</p>
+<p>并行运行</p>
+<p>token=’111’<br>seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS echo “$token”</p>
+<p>#!/bin/bash -eux<br>PARALLEL_REQS=5<br>SLEEP_SECS=0.1<br>TEMPLOG=$(mktemp).log<br>K8S_ENDPOINT=’/api’<br>export CLUSTER_NAME=”juju-cluster”<br>APISERVER=$(kubectl config view -o jsonpath=”{.clusters[?(@.name==\”$CLUSTER_NAME\”)].cluster.server}”)<br>TOKEN=$(kubectl get secrets -o jsonpath=”{.items[?(@.metadata.annotations[‘kubernetes.io/service-account.name’]==’default’)].data.token}”|base64 –decode)</p>
+<h1 id="trap-ctrl-c-and-call-ctrl-c"><a href="#trap-ctrl-c-and-call-ctrl-c" class="headerlink" title="trap ctrl-c and call ctrl_c()"></a>trap ctrl-c and call ctrl_c()</h1><p>trap ctrl_c INT<br>function ctrl<em>c() {<br>  local DEST=query-kubeapiserver.$(date ‘+%Y%m%d</em>%H%M’).log<br>  mv $TEMPLOG $DEST<br>  echo “output at $DEST”<br>  exit 0<br>}</p>
+<p>set +x<br>while true; do<br>  echo “in while loop”<br>  seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS curl -s -X GET $APISERVER$K8S_ENDPOINT –header “Authorization: Bearer $TOKEN” –insecure 2&gt;&amp;1 &gt;&gt; $TEMPLOG</p>
+<h1 id="seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG"><a href="#seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG" class="headerlink" title="seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG"></a>seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG</h1><p>  echo “sleeping..”<br>  /bin/sleep $SLEEP_SECS<br>  echo “sleep done”<br>done</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/13/恢复系统记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/13/恢复系统记录/" itemprop="url">恢复系统记录</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
+                2020-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2017-02-09<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<p>今天系统又无故crash并无法启动了，折腾了一下午，记录一下。</p>
+<p>突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但是系统报”unknown filesystem”，接着就crash了。</p>
+<p>重启后出现了grub resue界面，试图通过下列命令恢复grub时仍然报”unknown filesystem”错误。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ls (hd1,msdos5)</span><br><span class="line">set root=(hd1,msdos5)</span><br><span class="line">set prefix=(hd1,5)/boot/grub</span><br><span class="line">lsmod normal</span><br><span class="line">normal</span><br><span class="line"></span><br><span class="line">sudo update-grub</span><br><span class="line">sudo grub-install /dev/sdb</span><br></pre></td></tr></table></figure></p>
+<p>通过usb启动盘启动后运行“sudo fsck.ext4 -y /dev/sda9”之后上面磁盘的问题是解决了，也出现了登录界面，但是却无法登录，原本想通过下列命令重置:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -fr ~/.cache/compizconfig-1</span><br><span class="line">sudo rm -fr ~/.Xauthority</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop unity compizconfig-settings-manager</span><br><span class="line">sudo dconf reset -f /org/compiz/</span><br><span class="line">setsid unity</span><br><span class="line">sudo rm -fr .cache/</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http://kuring.me/ref/x_window/X_client_server_example.svg.png</span><br><span class="line">linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)</span><br><span class="line">1, ctrl+alt+fn [n: 1-12]: used to switch virtual control console, 1-6 is used for linux (eg: echo $DISPLAY &amp;&amp; xclock -display :0 &amp;&amp; DISPLAY=:0 xclock)</span><br><span class="line">2, startx process (login -&gt; bash -&gt; startx -&gt; xinit -&gt; X -&gt; ck-xinit-session -&gt; gnome-session), xinit is used to start X Server software.</span><br><span class="line">3, &apos;init 5&apos; is used to restart X window</span><br></pre></td></tr></table></figure>
+<p>但是发现/var/lib/dpkg目录不存在了，另外也有其他很多程序出现少文件的问题，不是我删除的，应该是fsck命令没有全部正确恢复inode吧。这种情况只能重装操作系统了，将所有工作需要的应用都安装好后也做了一个备份（dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz）， 今后再出问题时希望通过命令（gunzip -c /images/working_os_bak.img.gz | dd of=/dev/sdb conv=sync,noerror bs=64K）能快速恢复操作系统和所需要的应用吧。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz</span><br><span class="line">1831575+1 records in</span><br><span class="line">1831576+0 records out</span><br><span class="line">120034164736 bytes (120 GB, 112 GiB) copied, 914.123 s, 131 MB/s</span><br><span class="line"></span><br><span class="line">$ ll /images/working_os_bak.img.gz -h</span><br><span class="line">-rw-r--r-- 1 root root 4.7G Feb  9 17:36 /images/working_os_bak.img.gz</span><br></pre></td></tr></table></figure>
+<p>硬盘损坏看起来像：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;- - -&quot; &gt; /sys/class/scsi_host/host0/scan</span><br><span class="line"></span><br><span class="line">#Unused HDD</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2697.930058] ata3: hard resetting link</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245478] ata3: SATA link down (SStatus 0 SControl 300)</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245490] ata3: EH complete</span><br><span class="line"></span><br><span class="line">#Good HDD</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2652.763243] ata1: hard resetting link</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.077298] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097249] ata1.00: configured for UDMA/133</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097251] ata1: EH complete</span><br><span class="line"></span><br><span class="line">#Bad HDD</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696088] ata2.00: exception Emask 0x0 SAct 0x80000 SErr 0x0 action 0x6 frozen</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696098] ata2.00: failed command: READ FPDMA QUEUED</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108] ata2.00: cmd 60/10:98:b0:bd:3c/00:00:a6:00:00/40 tag 19 ncq 8192 in</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696113] ata2.00: status: &#123; DRDY &#125;</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696119] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:36 node1 kernel: [  237.059963] ata2: link is slow to respond, please be patient (ready=0)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707975] ata2: COMRESET failed (errno=-16)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707980] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:46 node1 kernel: [  247.067970] ata2: link is slow to respond, please be patient (ready=0)</span><br></pre></td></tr></table></figure></p>
+<p>换硬盘不需要重装系统，将fstab文件修改一下即可:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LABEL=&quot;images&quot; /images         ext4    defaults        0       2</span><br><span class="line">LABEL=&quot;bak&quot; /bak         ext4    defaults        0       2</span><br><span class="line">192.168.99.122:/Public /nas nfs noauto,x-systemd.automount,x-systemd.device-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0</span><br></pre></td></tr></table></figure></p>
+<h2 id="201923更新-解决login-loop问题"><a href="#201923更新-解决login-loop问题" class="headerlink" title="201923更新 - 解决login loop问题"></a>201923更新 - 解决login loop问题</h2><p>反复出现登录界面, 根据下列流程, 似乎问题只可能出现在gnome这块出问题了才会回到lightdm的登录界面处.<br>linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)<br>搜索kern.log的Call strace确认问题与nvidia驱动相关:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"> 733 Nov 16 22:47:03 localhost kernel: [    1.896228] Could not determine valid watermarks for inherited state</span><br><span class="line"> 734 Nov 16 22:47:03 localhost kernel: [    1.896290] WARNING: CPU: 2 PID: 183 at /build/linux-O4X9pa/linux-4.15.0/drivers/gpu/d</span><br><span class="line"> 735 Nov 16 22:47:03 localhost kernel: [    1.896293] Modules linked in: nvidia_drm(POE) nvidia_modeset(POE) nvidia(POE) rtsx_pc</span><br><span class="line"> 736 Nov 16 22:47:03 localhost kernel: [    1.896309] CPU: 2 PID: 183 Comm: systemd-udevd Tainted: P           OE    4.15.0-68-g</span><br><span class="line"> 737 Nov 16 22:47:03 localhost kernel: [    1.896311] Hardware name: LENOVO 20AN002LCD/20AN002LCD, BIOS GLET64WW (2.18 ) 12/18/2</span><br><span class="line"> 738 Nov 16 22:47:03 localhost kernel: [    1.896342] RIP: 0010:intel_modeset_init+0xfcf/0x1010 [i915]</span><br><span class="line"></span><br><span class="line">748 Nov 16 22:47:03 localhost kernel: [    1.896362] Call Trace:</span><br><span class="line"> 749 Nov 16 22:47:03 localhost kernel: [    1.896389]  i915_driver_load+0xa73/0xe60 [i915]</span><br><span class="line"> 750 Nov 16 22:47:03 localhost kernel: [    1.896414]  i915_pci_probe+0x42/0x70 [i915]</span><br><span class="line"> 751 Nov 16 22:47:03 localhost kernel: [    1.896418]  local_pci_probe+0x47/0xa0</span><br><span class="line"> 752 Nov 16 22:47:03 localhost kernel: [    1.896421]  pci_device_probe+0x10e/0x1c0</span><br><span class="line"> 753 Nov 16 22:47:03 localhost kernel: [    1.896424]  driver_probe_device+0x30c/0x490</span><br><span class="line"> 754 Nov 16 22:47:03 localhost kernel: [    1.896426]  __driver_attach+0xcc/0xf0</span><br><span class="line"> 755 Nov 16 22:47:03 localhost kernel: [    1.896429]  ? driver_probe_device+0x490/0x490</span><br><span class="line"> 756 Nov 16 22:47:03 localhost kernel: [    1.896431]  bus_for_each_dev+0x70/0xc0</span><br><span class="line"> 757 Nov 16 22:47:03 localhost kernel: [    1.896433]  driver_attach+0x1e/0x20</span><br><span class="line"> 758 Nov 16 22:47:03 localhost kernel: [    1.896436]  bus_add_driver+0x1c7/0x270</span><br><span class="line"> 759 Nov 16 22:47:03 localhost kernel: [    1.896438]  ? 0xffffffffc041b000</span><br><span class="line"> 760 Nov 16 22:47:03 localhost kernel: [    1.896440]  driver_register+0x60/0xe0</span><br><span class="line"> 761 Nov 16 22:47:03 localhost kernel: [    1.896442]  ? 0xffffffffc041b000</span><br><span class="line"> 762 Nov 16 22:47:03 localhost kernel: [    1.896444]  __pci_register_driver+0x5a/0x60</span><br><span class="line"> 763 Nov 16 22:47:03 localhost kernel: [    1.896465]  i915_init+0x5c/0x5f [i915]</span><br></pre></td></tr></table></figure>
+<p>升级nvidia驱动从nvidia-driver-390到435看是否能解决问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">deb http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu bionic main</span><br><span class="line">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FCAE110B1118213C</span><br><span class="line">sudo apt purge nvidia-driver-390 &amp;&amp; sudo apt autoremove &amp;&amp; sudo apt install nvidia-driver-435</span><br></pre></td></tr></table></figure></p>
+<p>也可以试试:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa</span><br><span class="line">sudo apt upgrade-dist</span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">#can install the latest hwe kernel by using above ppa</span><br><span class="line">sudo apt install --install-recommends linux-generic-hwe-18.04 xserver-xorg-hwe-18.04</span><br></pre></td></tr></table></figure></p>
+<p>20200203更 , 还是不行, 用下列方法重装了desktop再观察:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /var/lib/apt/lists/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock-frontend</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt clean</span><br><span class="line">sudo apt update --fix-missing</span><br><span class="line">sudo apt install -f</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt upgrade</span><br><span class="line">sudo apt dist-upgrade</span><br><span class="line"></span><br><span class="line">sudo apt purge *unity*</span><br><span class="line">sudo apt purge *gnome*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop</span><br><span class="line">sudo update-grub</span><br><span class="line">sudo apt install gdm3</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line"></span><br><span class="line">#Install Gnome and set it as default</span><br><span class="line">sudo apt install gnome-session</span><br><span class="line">sudo update-alternatives --config gdm3.css</span><br><span class="line">sudo reboot</span><br><span class="line">#Switch to a Windows-like Taskbar - https://vitux.com/how-to-get-the-windows-look-feel-on-ubuntu/</span><br><span class="line">sudo apt install gnome-shell-extensions gnome-shell-extension-dash-to-panel gnome-tweaks adwaita-icon-theme-full</span><br><span class="line"></span><br><span class="line">#Install windows-style desktop Cinnamon, but it&apos;s bluetooth doesn&apos;t work</span><br><span class="line">sudo add-apt-repository ppa:embrosyn/cinnamon</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cinnamon</span><br><span class="line">#sudo apt remove --autoremove cinnamon cinnamon-desktop-data</span><br><span class="line">#sudo add-apt-repository --remove ppa:embrosyn/cinnamon</span><br></pre></td></tr></table></figure>
+<p>20201113更新，切换到使用wayland再试试:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ grep -r &apos;Wayland&apos; /etc/gdm3/custom.conf</span><br><span class="line">WaylandEnable=true</span><br><span class="line">sudo systemctl restart gdm3</span><br><span class="line">hua@t440p:~$ echo $XDG_SESSION_TYPE</span><br><span class="line">wayland</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/" itemprop="url">解决ssh server偶尔连不上或者发现网络连接初始很慢的状况</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<p>今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。</p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（<a href="http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。</a></p>
+<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>家里的tplink摄像头指定了固定IP 192.168.99.123，不知道为什么openwrt路由器将这个已占用的IP分配给了台式机。因为摄像头长期没用了，这个IP也ping不通，并且dnsmasq的/tmp/dhcp.leases配置文件中显示的这个IP都是和台式机的hostname在一起的，所以刚开始就没有想到这个重要的问题。</p>
+<p>1, 当在台式机上ping网关时，居然第一次要停顿11秒，但第二次之后就正常了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:~$ time ping -c 1 192.168.99.1</span><br><span class="line">PING 192.168.99.1 (192.168.99.1): 56 data bytes</span><br><span class="line">--- 192.168.99.1 ping statistics ---</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line">real	0m11.012s</span><br><span class="line">user	0m0.000s</span><br><span class="line">sys	0m0.000s</span><br></pre></td></tr></table></figure></p>
+<p>2, 台式机给网关发消息，台式机通过arp广播要网关的mac地址，网关向台式机返回arp响应，但这个响应被错误的发到摄像头的mac f0:7d:68:0c:90:40之上，所以当问题发生时，路由器抓包到了大量的下列消息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# tcpdump -i br-lan  -e -n &apos;icmp&apos; and src host 192.168.99.123</span><br><span class="line">14:10:30.449983 f8:32:e4:be:87:cd &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 98: 192.168.99.123 &gt; 192.168.99.1: ICMP echo request, id 9604, seq 0, length 64</span><br><span class="line">14:10:33.403550 f0:7d:68:0c:90:40 &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 118: 192.168.99.123 &gt; 85.199.214.101: ICMP 192.168.99.123 udp port 123 unreachable, length 84</span><br></pre></td></tr></table></figure></p>
+<p>3, 台式机因为等不到arp请求，从而停顿。</p>
+<p>使用“ip -s -s neigh flush all”命令清台式机与路由器arp cache均无效，在台式机上运行arp请求会很慢。</p>
+<p>后来给台式机更换其他IP就好了.</p>
+<p>我看到的这个问题的影响如下：<br>1, 当笔记本采用ssh连接到台式机上，也就会时不时发生停顿现象<br>2, 使用apt update时会第一次连接时像断了一样，但后面又好了</p>
+<h2 id="附录：Ubuntu下的远程桌面与X转发"><a href="#附录：Ubuntu下的远程桌面与X转发" class="headerlink" title="附录：Ubuntu下的远程桌面与X转发"></a>附录：Ubuntu下的远程桌面与X转发</h2><p>上面解决了ssh连接办公的问题，下面将远程桌面一并解决。</p>
+<p>Ubuntu下有一个默认的vino-server, 可在”Desktop Sharing”中开启，另外，需要运行dconf-editor将org-&gt;gnome-&gt;desktop-&gt;remote-access中的requre-encryption去掉，最后使用Remmina Remote Desktop Client选择vnc协议输入“IP :0”登录。不过，这种自带的Vino-Server方式有一个最显著的缺点：那就是当你重启机器之后，必须首先到远程服务器那边登录机器，进入系统（相当于创建了一个Session）之后，才能在本地使用远程桌面连接这个远程服务器。所以我们改使用vnc4server。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install vnc4server xvnc4viewer</span><br><span class="line">vncpasswd</span><br><span class="line"># First time to run it to generate ~/.vnc</span><br><span class="line">vncserver :2</span><br><span class="line">ll ~/.vnc/</span><br><span class="line">vncserver -kill :2</span><br><span class="line"># Second time to run it after modifying ~/.vnc</span><br><span class="line">sudo apt install mate-session-manager</span><br><span class="line">echo &apos;exec /usr/bin/mate-session &amp;&apos; &gt;&gt; ~/.vnc/xstartup</span><br><span class="line">vncserver :2 -geometry 1280x680 -alwaysshared</span><br><span class="line">Client Side: vncviewer node1:2</span><br></pre></td></tr></table></figure>
+<p>运行”ssh -vvv -X -o ForwardX11=yes node1“时报错”X11 forwarding request failed on channel 0“， 这是因为出于安全原因，OpenSSH默认将X11转发请求绑定到本地回环地址上，并且在DISPLAY环境变量中将主机名设置为“localhost”。在这样的设定下，一些 X11客户端不能正确处理X11转发，这会导致报告中的错误。要解决这个问题，在/etc/ssh/sshd配置文件中加入下面这几行，它可以将X11转发请求绑定到外网卡地址上。<br>X11Forwarding yes<br>X11UseLocalhost no<br>如果远程主机的SSH服务禁止了IPv6，那么X11转发失败的错误也有可能发生。故还需要添加： AddressFamily inet</p>
+<h2 id="20191220更新-另一个例子"><a href="#20191220更新-另一个例子" class="headerlink" title="20191220更新 - 另一个例子"></a>20191220更新 - 另一个例子</h2><p><img src="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">客户有两个external的dmz网络172.21.8.0/24与193.169.205.0/24</span><br><span class="line">两个neutron vrouter, dmzrouterinternal接172.21.8.0/24(qg-xxx=172.21.8.87), dmzroutereexternal接193.169.205.0/24</span><br><span class="line">dmzrouterinternal接一个subnet(192.168.4.1), 这样创建一个测试VM=192.168.4.199 FIP=172.21.8.85</span><br><span class="line">一个外部物理路由器有172.21.8.1与193.169.205.1, 外部路由器上接一个外部dns服务器(193.169.205.141)</span><br><span class="line">问题是VM无法ping 193.169.205.141, 抓包看到ARP reply到达了dmzrouterinternal却被drop掉了</span><br><span class="line">15:26:20.634541 ARP, Request who-has 193.169.205.141 tell 172.21.8.87, length 28</span><br><span class="line">15:26:20.634810 ARP, Reply 193.169.205.141 is-at 00:15:5d:2d:d9:2c (oui Unknown), length 46</span><br><span class="line"></span><br><span class="line">发现它有这些路由:</span><br><span class="line"># ip netns exec qrouter-ffd74122-45b4-4155-b585-fe62b2d3edd4 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-d84aed2a-34</span><br><span class="line">172.21.8.0/24 dev qg-d84aed2a-34 proto kernel scope link src 172.21.8.87</span><br><span class="line">192.168.4.0/24 dev qr-3c248a21-06 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-d84aed2a-34 scope link</span><br><span class="line"></span><br><span class="line">显然问题是这条路由&apos;193.169.205.0/24 dev qg-d84aed2a-34 scope link&apos;造成dmzrouterinternal与externaldns直连:</span><br><span class="line">ping之前, 看到193.169.205.141 at 00:00:0c:9f:f0:2c, 00:00:0c:9f:f0:2c是172.21.8.1的mac</span><br><span class="line"># arp -a</span><br><span class="line">? (192.168.4.42) at fa:16:3e:79:07:f0 [ether] on qr-3c248a21-06</span><br><span class="line">? (193.169.205.141) at 00:00:0c:9f:f0:2c [ether] on qg-d84aed2a-34</span><br><span class="line">当ping时, tcpdump收到ARP reply里的mac是00:15:5d:2d:d9:2c, 而不是00:00:0c:9f:f0:2c, 所以drop掉.</span><br><span class="line"></span><br><span class="line">如果临时运行下列命令, 也能ping通, 但一会儿这个arp就会过期, 问题就会再次重现, 所以解决的办法是删除这条路由(193.169.205.0/24 dev qg-d84aed2a-34 scope link)</span><br><span class="line">arp -d 193.169.205.141</span><br><span class="line">arp -i qg-d84aed2a-34 -s 193.169.205.141 02:00:5e:10:de:14</span><br><span class="line"></span><br><span class="line">下面做一个实验, 用一个neutron vrouter externalrouter来模拟外部物理路由器.</span><br><span class="line">./generate-bundle.sh -s bionic -r stein --num-compute 2</span><br><span class="line"></span><br><span class="line">openstack router create externalrouter</span><br><span class="line">openstack network create dmzexternalnet --external</span><br><span class="line">openstack network create dmzinternalnet --external</span><br><span class="line">openstack subnet create --subnet-range 172.21.8.0/24 --network dmzinternalnet --allocation-pool start=172.21.8.86,end=172.21.8.100 --gateway 172.21.8.1 dmzsubnetinternal</span><br><span class="line">openstack subnet create --subnet-range 193.169.205.0/24 --network dmzexternalnet --allocation-pool start=193.169.205.87,end=193.169.205.100 --gateway 193.169.205.1 dmzsubnetexternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetinternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetexternal</span><br><span class="line"></span><br><span class="line">#注:也可以不创建两个network, 只创建一个network, 然后将两个subnet都加到这个network, 在和router关联时特殊处理, 如:</span><br><span class="line">openstack router create --disable --centralized --ha dmzrouterinternal</span><br><span class="line">openstack router add subnet dmzrouterinternal dmztenantinternalsubnet</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetinternal,ip-address=172.21.8.87 dmzrouterinternal</span><br><span class="line">openstack router set --enable dmzrouterinternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterinternal</span><br><span class="line">openstack router set --external-gateway dmzinternalnet dmzrouterinternal</span><br><span class="line">openstack network create tenantnet</span><br><span class="line">openstack subnet create --subnet-range 192.168.4.0/24 --network tenantnet --allocation-pool start=192.168.4.87,end=192.168.4.100 --gateway 192.168.4.1 tenantsubnet</span><br><span class="line">openstack router add subnet dmzrouterinternal tenantsubnet</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterexternal</span><br><span class="line">openstack router set --external-gateway dmzexternalnet dmzrouterexternal</span><br><span class="line"></span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show dmzexternalnet -c id -f value) externaldns</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show tenantnet -c id -f value) i1</span><br><span class="line">dmzinternalnet=$(openstack network show dmzinternalnet -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $dmzinternalnet -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.4.100 --port $(openstack port list --fixed-ip ip-address=192.168.4.100 -c id -f value)</span><br><span class="line"></span><br><span class="line">$ openstack server list</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| ID                                   | Name        | Status | Networks                             | Image   | Flavor   |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| 3a1d1c70-6165-4060-ad78-9c67717e61e8 | externaldns | ACTIVE | dmzexternalnet=193.169.205.99        | cirros2 | m1.small |</span><br><span class="line">| 89b497c0-f236-4df4-8293-18f44547e239 | i1          | ACTIVE | tenantnet=192.168.4.100, 172.21.8.95 | cirros2 | m1.small |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~/stsstack-bundles/openstack$ openstack router list</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| ID                                   | Name              | Status | State | Project                          | Distributed | HA    |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| 09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 | dmzrouterinternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| 8320db06-5a9d-46fb-8af6-5c7b974ff7a9 | externalrouter    | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| ef19ea38-13e0-416a-9ce1-ac25c8aba9c0 | dmzrouterexternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route add 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -d 193.169.205.99</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -i qg-e6cd9397-b8 -s 193.169.205.99 fa:16:3e:7b:af:d6</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] PERM on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route del 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">PING 193.169.205.99 (193.169.205.99): 56 data bytes</span><br><span class="line">64 bytes from 193.169.205.99: seq=0 ttl=62 time=11.998 ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 arp -a</span><br><span class="line">? (172.21.8.92) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.87) at fa:16:3e:09:83:10 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.86) at fa:16:3e:89:ce:85 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.95) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qr-0912ab72-90</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 ip route</span><br><span class="line">172.21.8.0/24 dev qr-0912ab72-90 proto kernel scope link src 172.21.8.1</span><br><span class="line">193.169.205.0/24 dev qr-6fa183e9-a6 proto kernel scope link src 193.169.205.1</span><br></pre></td></tr></table></figure></p>
+<h2 id="20201112更新"><a href="#20201112更新" class="headerlink" title="20201112更新"></a>20201112更新</h2><p>ssh这次失去连接，是因为台式机上的虚机使用mavtap时不小心将bridge改成了passthough导致虚机启动时失去网络.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/SSH连接总是定期断掉的解决办法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1135,558 +1740,6 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/28/ssh总断/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/10/28/ssh总断/" itemprop="url">ssh总断</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-28T19:43:30+08:00">
-                2020-10-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-10-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>公司服务器今天升级了，结果遇到了一个问题，登录在该服务器上的bastion虚机在运行 一个名为configure的脚本的下列代码时总是中断．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">set_img_properties ()</span><br><span class="line">&#123;</span><br><span class="line">    img_name=$1</span><br><span class="line">    img_version=$2</span><br><span class="line">    img_file=$3</span><br><span class="line"></span><br><span class="line">    ts=`stat ~/images/$img_file| sed -rn &apos;s/Modify:\s+([[:digit:]-]+)\s+.+/\1/p&apos;| tr -d &apos;-&apos;`</span><br><span class="line">    declare -A props=( [architecture]=x86_64</span><br><span class="line">                       [os_distro]=&apos;ubuntu&apos;</span><br><span class="line">                       [os_version]=$img_version</span><br><span class="line">                       [version_name]=&quot;$ts&quot;</span><br><span class="line">                       [product_name]=&quot;com.ubuntu.cloud:server:$&#123;img_version&#125;:amd64&quot;</span><br><span class="line">    )</span><br><span class="line">    for p in $&#123;!props[@]&#125;; do</span><br><span class="line">      openstack image set --property $p=$&#123;props[$p]&#125; $img_name &amp;</span><br><span class="line">    done</span><br><span class="line">    wait</span><br><span class="line">&#125;</span><br><span class="line">set_img_properties bionic 18.04 bionic-server-cloudimg-amd64.img &amp;</span><br></pre></td></tr></table></figure></p>
-<p>ssh中断之后，只能重启bastion才能解决．<br>因为一直没有问题，只是今天服务器升级才遇到问题，所以没想别的，只是要求同事也测了一下，他没遇到问题．<br>接着，以为是mtu问题，将mtu从8930改为1450依旧有问题．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip netns exec qrouter-1c6f53cf-9b6d-4794-ae8e-61ad1b8e4042 ping -O -M do -s 8930 10.5.0.8</span><br><span class="line">ip netns exec qrouter-1c6f53cf-9b6d-4794-ae8e-61ad1b8e4042 nc -vz 10.5.0.8 22</span><br></pre></td></tr></table></figure></p>
-<p>所以就以为是底层openstack有问题，但我没有底层openstack的管理权限，所以只好找有权限的同事帮忙，最后确定没有这方面的问题．<br>最后，就是怀疑bastion这台虚机有问题了．发现里面什么时候安装了devstack，删除devstack后，正常了．<br>但为什么之前一又没问题呢？在有devstack的情况下，代码作下列更改问题也消失．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#set_img_properties bionic 18.04 bionic-server-cloudimg-amd64.img &amp;</span><br><span class="line">set_img_properties bionic 18.04 bionic-server-cloudimg-amd64.img</span><br></pre></td></tr></table></figure></p>
-<p>devstack这些东西不要乱在机器上装啊，习惯要好．上了一大课．</p>
-<p>另外，如果ssh连接慢的话，可以尝试在sshd.conf中添加：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UseDNS no</span><br><span class="line">GSSAPIAuthentication no</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/22/如何将国外的ftp气象大数据下载回来/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/10/22/如何将国外的ftp气象大数据下载回来/" itemprop="url">如何将国外的ftp气象大数据下载回来</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
-                2020-10-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-10-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>由于运营商对non-http流量限速，从国外ftp下载大数据将变得异常艰难．目前采用的方法如下：</p>
-<p>1, 国外虚机上安装curlftpfs将ftp站点镜像到/mnt/ftp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install curlftpfs -y</span><br><span class="line">#sudo fusermount -zu /mnt/ftp</span><br><span class="line">sudo mkdir -p /mnt/ftp &amp;&amp; sudo chown -R $USER /mnt/ftp</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt;/etc/fstab&apos; &lt;&lt;EOF</span><br><span class="line">curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data /mnt/ftp fuse defaults,rw,allow_other,uid=1000,gid=1000,_netdev 0 0</span><br><span class="line">EOF</span><br><span class="line">sudo mount -a</span><br></pre></td></tr></table></figure></p>
-<p>2, 安装nginx指向/mnt/ftp将ftp变http<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install nginx -y</span><br><span class="line">sudo vim /etc/nginx/sites-available/default</span><br><span class="line">        #root /var/www/html;</span><br><span class="line">        root /mnt/ftp;</span><br><span class="line">        location / &#123;</span><br><span class="line">                try_files $uri $uri/ =404;</span><br><span class="line">                autoindex on;</span><br><span class="line">                autoindex_exact_size off;</span><br><span class="line">                autoindex_localtime on;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></p>
-<p>3, 国内采用下列命令下载．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget -c -m http://3.18.xx.xx</span><br><span class="line">#rsync -avztur -e &quot;ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/xxx.pem&quot; --progress ubuntu@3.18.xx.xx:/mnt/ftp .</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/14/Lost-connection-to-MySQL-server-during-query/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/10/14/Lost-connection-to-MySQL-server-during-query/" itemprop="url">Lost connection to MySQL server during query</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-14T13:37:44+08:00">
-                2020-10-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-11-06)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>neutron designate日志中发现错误”Got lower serial for”, 并且创建zone时永远停留在PENDING状态.</p>
-<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>minidns中看到下列日志:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var/log/designate/designate-mdns.log.2.gz:2018-10-23 23:27:36.016 94713 INFO designate.mdns.handler [req-26d8910d-61d5-4fd6-bc6b-df7acaf36c12 - - - - -] NotFound, refusing. Question was xxx.openstack-au-east-2.oc.xxx.com. IN SOA</span><br><span class="line">var/log/designate/designate-mdns.log.2.gz:2018-10-23 23:27:36.024 94713 WARNING designate.mdns.handler [req-fa5518dd-9506-44f8-a2ee-ee7d79ffaa3c - - - - -] ZoneNotFound while handling axfr request. Question was xxx.openstack-au-east-2.oc.xxx.com. IN AXFR: ZoneNotFound: Could not find Zone</span><br></pre></td></tr></table></figure></p>
-<p>根据代码[1], 查询DB时报ZoneNotFound从而导致无法构建SOA无法构建axfr response, 从而导致minidns master与bind9 slave无法做zone transfer, 这样导致bind9 slave的serial number也无法更新, 最终在minidns notify时看到”Got lower serial for”</p>
-<p>在发生ZoneNotFound的附近有下列日志:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[req-b48612b0-ed3e-46d9-8510-6634282ef0a2 - - - - -] Database connection was found disconnected; reconnecting: DBConnectionError: (pymysql.err.OperationalError) (2013, &apos;Lost connection to MySQL server during query&apos;) [SQL: u&apos;SELECT 1&apos;]</span><br></pre></td></tr></table></figure>
-<p>于是, 用下列测试程序重现了上述DB error,</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import time</span><br><span class="line">from sqlalchemy.engine import create_engine</span><br><span class="line">url = &apos;mysql+pymysql://root@127.0.0.1:3306/mysql&apos;</span><br><span class="line">engine = create_engine(url, pool_recycle=4).connect()</span><br><span class="line">query = &apos;SELECT NOW();&apos;</span><br><span class="line">while True:</span><br><span class="line">    print(&apos;Q1&apos;, engine.execute(query).fetchall())</span><br><span class="line">    engine.execute(&apos;SET wait_timeout=2&apos;)</span><br><span class="line">    time.sleep(3)</span><br><span class="line">    print(&apos;Q2&apos;, engine.execute(query).fetchall())</span><br></pre></td></tr></table></figure>
-<p>或者使用oslo.db测试程序:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p -e &quot;SET GLOBAL wait_timeout=5, slow_query_log=on, long_query_time=0.0;&quot;</span><br><span class="line"></span><br><span class="line">$ cat test.py</span><br><span class="line">import sys</span><br><span class="line">import time</span><br><span class="line">from oslo_config import cfg</span><br><span class="line">from oslo_db import options as db_options</span><br><span class="line">from oslo_db.sqlalchemy import session as db_session</span><br><span class="line">from sqlalchemy.sql.expression import select</span><br><span class="line">_facade = db_session.EngineFacade(&quot;mysql://root@localhost/test&quot;)</span><br><span class="line">x = _facade.get_session()</span><br><span class="line">print(x.scalar(select([23])))</span><br><span class="line">time.sleep(5)</span><br><span class="line">print(x.scalar(select([23])))</span><br></pre></td></tr></table></figure></p>
-<p>连接线的过期时间(pool_recycle, 连接池里的连接空闲一段时间后自动释放, oslo中默认是3600)不能大于服务器端的wait_timeout时间(这里是2, 默认是8小时). 所以应该设置wait_timeout大于3600, 或者haproxy中的配置大于3600.<br>wait_timeout是mysql的一个设置，主要是用来断开不使用的数据库连接。当连接空闲的时间达到wait_timeout设置的最大值时，mysql会主动切断这个连接，以供别的客户端连接数据库。这个值一般是28800，也就是8小时。在mysql中可以通过： show variables like “%timeout%”;获取。<br>另外，当数据库主动切断连接的时候，mysql客户端并不知道这个连接已经被切断，所以程序并不知道其已经无效了，如果mysql客户端再不支持ReConnect，双重的问题叠加在一起就会导致连接池返回无效连接的可能.</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p> mysqldump –single-transaction -u root -p designate –skip-extended-insert &gt; /tmp/designate-$(date +%s).sql</p>
-<p>For the error ‘Lost connection to MySQL server during query’,</p>
-<p>wait_timeout is a setting of mysql, which is used for server side to disconnect unused client connections proactively. The default is 8 hours(28800), we can check it by ‘show variables like “%timeout%”;’ or ‘juju config mysql wait-timeout’</p>
-<p>All the rest of the timeout below should be less than wait_timeout, if they are greater than wait_timeout, the error ‘Lost connection to MySQL server during query’ will happen.<br>1, the default value of olso’s connection_recycle_time is 3600<br>2, the timeout in haproxy.cfg</p>
-<p>So we need to collect the following info for further analyses.</p>
-<p>1, juju config mysql wait-timeout<br>2, mysql -unova -p -h<mysql_ip> -e ‘show variables like “%timeout%”‘  #eg: run it in nova-cloud-controller/0<br>3, juju ssh neutron-api/0 – sudo grep -r ‘connection_recycle_time’ /etc/neutron/<br>4, juju ssh neutron-api/0 – sudo grep -r ‘timeout’ /etc/haproxy/</mysql_ip></p>
-<h2 id="一些命令"><a href="#一些命令" class="headerlink" title="一些命令"></a>一些命令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#This will show which openstack service is using the most mysql connections</span><br><span class="line">select user, count(*) from information_schema.processlist group by user;</span><br><span class="line"></span><br><span class="line">juju run --application mysql leader-get</span><br><span class="line">juju run --application mysql &quot;mysql -uroot -pChangeMe123 -e \&quot;SELECT IFNULL(usr,&apos;All Users&apos;) user,IFNULL(hst,&apos;All Hosts&apos;) host,COUNT(1) Connections FROM (SELECT user usr,LEFT(host,LOCATE(&apos;:&apos;,host) - 1) hst FROM information_schema.processlist WHERE user NOT IN (&apos;system user&apos;,&apos;root&apos;)) A GROUP BY usr,hst WITH ROLLUP;\&quot;&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="附件"><a href="#附件" class="headerlink" title="附件"></a>附件</h2><p>openstack的各服务都有大量的这种错误：<br>var/log/mysql/error.log:2019-08-29T16:07:45.335406Z 420821 [Note] Aborted connection 420821 to db: ‘keystone’ user: ‘keystone’ host: ‘10.191.5.49’ (Got timeout reading communication packets)</p>
-<p>要求客户增大了connect_timeout, net_read_timeout, net_write_timeout, interactive_timeout后使用‘show global status like ‘aborted%’;’看到Aborted_clients的数目仍在增大<br>show global variables like ‘max_conn%’;<br>show global variables like ‘%timeout%’;<br>show global status like ‘aborted%’;<br>show processlist;</p>
-<p>这时发现在21:55:48， 所有的designate serveres都收到了mysql错误， 通过mysql的查询日志找到21:04到21:16之间mysql收到了40个gnocchi查询，一个查询就要返回500MB的大小, 然后看到了警告：InnoDB: Warning: difficult to find free blocks in the buffer pool (338 search iterations)!”<br>所以看起来像是IO swamp的问题进而造成查询超时。解决方法：<br>1， 增加innodb_buffer_pool_size (juju中通过dataset-size控制）<br>2, 删除gnocchi中的相关数据<br>3, 调查designate中当遇到mysql超时时是不是会反复retry造成对DB的flood</p>
-<h2 id="20201014更新"><a href="#20201014更新" class="headerlink" title="20201014更新"></a>20201014更新</h2><p>amphora-agent writes heatbeat to udp, then octavia-health-manager gets heatbeat from udp and writes them to DB, finally health_manager gets heartbeat from DB via get_stale_amphora to decide if failover process will be started</p>
-<p>当health-manager线程的数目(pgrep -af /usr/bin/octavia-health-manager | wc -l, 160)大于mysql的连接数时(ss -tp | grep -c :mysql, 90)时上面的get_stale_amphora就会报”Lost connection to MySQL server during query”错误(排除wait-timeout!=3600这个因素之后),<br>sqlalchemy看到这个错误后就会reconnect, 从而产生下面提到的”QueuePool limit of size 10 overflow 20 reached, connection timed out, timeout 10”这个错误(<a href="http://sqlalche.me/e/3o7r" target="_blank" rel="external">http://sqlalche.me/e/3o7r</a>). sqlalchemy’s reconnect可能不是replace, 而是删除老连接然后建立新连接, 这次当达到max_pool_size+max_overflow=20个连接后永远无新连接供它reconnect(sqlalchemy使用max_pool_size=10, 当一次使用多于5时, 会用到默认的max_overflow=10这样可以达到15个连接, 但多于20个后不再允许溢出.), 这可能是一个bug - <a href="https://github.com/sqlalchemy/sqlalchemy/issues/5308" target="_blank" rel="external">https://github.com/sqlalchemy/sqlalchemy/issues/5308</a></p>
-<p>可能在mysql在做failover时会出现这种情况, 因为new VIP owner没有old TCP connections从而导致之后的old TCP connections to go stale从而导致reconnect.</p>
-<p>可能的解决方法:<br>1, 如果mysql不再failover的话可能这个问题也不再重启了, 这个可以等下列fix<br>2, as a base leve request a stable backport for the following patch<br>health-manager的eventlet/greenlet的数目由health_update_threads参数决定, 默认与CPU核数同, 大多数情况下都是短连接会多路复用还没问题, 但有时候也会各种因素让有的变成长连接. charm中一般对于worker threads有0.25x的乘数(LXD容器中最大是4), octavia-charm也应该用这个乘数来减小worker threads的数目 - <a href="https://bugs.launchpad.net/charm-octavia/+bug/1889731" target="_blank" rel="external">https://bugs.launchpad.net/charm-octavia/+bug/1889731</a><br>3, We could additionally reconfigure the oslo.db [database] section to include a pool overflow limit at least as large as the number of expected threads by worker-multiplier<br>4, We could additionally open a bug against sqlalchemy that it should allow for connection replacement even when the pool limit is reached</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://github.com/openstack/designate/blob/stable/queens/designate/mdns/handler.py#L233" target="_blank" rel="external">https://github.com/openstack/designate/blob/stable/queens/designate/mdns/handler.py#L233</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/29/UEFI-Secure-Boot学习草稿/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/29/UEFI-Secure-Boot学习草稿/" itemprop="url">UEFI Secure Boot学习草稿</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-29T19:17:27+08:00">
-                2020-09-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-29<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="什么是secure-boot"><a href="#什么是secure-boot" class="headerlink" title="什么是secure boot"></a>什么是secure boot</h2><p>secureboot is designed to present non-Windows OS from booting(Secure Boot works by placing the root of trust in firmware), you can still boot Grub2 with secureboot using shim and MOK manager. And from grub2, you can boot into other operating systems.也就是说:<br>secureboot将根证书放在固件firmware中, 然后可以验证signed bootloader, signed bootloader然后再验证signed kernel和signed 2nd stage boot loader.这样系统允许你修改secureboot keys.</p>
-<ul>
-<li>db, 允许bootloaders的公钥集合</li>
-<li>dbx, 不允许bootloaders的公钥集合</li>
-<li>KEK, 允许操作db的公钥集合</li>
-<li>PK, 允许操作KEK的私钥.</li>
-</ul>
-<p>默认地, 系统有硬件制造商的PK, microsoft和硬件制造商的公钥在db与KEK里. 这样就可以使用microsoft-certified bootloaders, 再通过它签名的shim来使用其他linuxers. 有的UEFI BIOS setup允许adding and delteing所有的secureboot keys, 而有些却允许你要么删除所有要么用默认(删除之前记得备份哦). 如果PK被删除的话, secure boot这时叫so-called setup mode. 你可能想有这个密钥:<br>the db set should contain:</p>
-<ul>
-<li>your own public key certificate, for booting things you’ve explicitly signed</li>
-<li>maybe your favorite Linux distribution’s kernel signing certificate, if you want to use pre-packaged kernels without manually re-signing them</li>
-<li>maybe hardware vendor’s certificate, to allow installing firmware updates if necessary maybe Microsoft’s third-party UEFI certificate, to allow the use of pre-packaged Linux bootloaders and live Linux boot media without explicitly re-signing them or disabling Secure Boot</li>
-<li>maybe Microsoft’s OS signing certificate, if you dual-boot with Windows</li>
-</ul>
-<p>the KEK set should contain:</p>
-<ul>
-<li>your own certificate, for updating db and dbx</li>
-<li>if your system includes UEFI-aware Microsoft OSs, you may want to include Microsoft’s KEK certificate, as Microsoft’s updates sometimes include updates to db and/or dbx and those updates won’t install successfully if access to Secure Boot is denied</li>
-<li>and finally, once all the rest is set up as you want, you should place your own certificate into PK to make Secure Boot effective again.</li>
-</ul>
-<h2 id="有无shim"><a href="#有无shim" class="headerlink" title="有无shim"></a>有无shim</h2><p>bootloader有两种, shim与grub2都叫bootloader, 所以理论上是可以不需要shim的, 但为什么需要shim呢? 这个网页(<a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only)说:grub</a> uses firmware API to validate binary signatures; you might prefer shim instead of signing the binaries with the “precious” key each time.</p>
-<p>非secureboot模式下, 没有shim组件, efi直接启动grub2.<br>在secureboot模式下, 有shim组件, 且shim需要使用efi中的证书签名(grub2和kernel的签名不一定非要用efi中的证书, 可以自己随意定制后再使用shim相关工具导入nvram中). 即使在secureboot模式下也可以有shim和无shim:</p>
-<ul>
-<li>无shim, 在centos中可以跳过shim, 直接让efi启动grub2也是没问题的, 但grub2与kernel都需要使用efi中的证书签名, 由efi进行grub2与kernel的校验.</li>
-<li>有shim, grub2中用户选择kernel后, grub2回调shim组件校验kernel(grub2, kernel使用相同的私钥签名)</li>
-</ul>
-<h2 id="可信问题"><a href="#可信问题" class="headerlink" title="可信问题"></a>可信问题</h2><ul>
-<li>initrd和intrd加载的模式都是不可信的, 这部分都没有经过签名;</li>
-<li>systemtap, kexec, kdump也都是没有签名的;</li>
-<li>第三方KO模式没有签名(正常情况下, 模块需要使用mok签名, shim来验证)</li>
-</ul>
-<h2 id="secureboot启动流程"><a href="#secureboot启动流程" class="headerlink" title="secureboot启动流程"></a>secureboot启动流程</h2><p>1, 打开电源, 先运行Secure Boot-capable UEFI firmware (对于qemu虚机, 这个secureboot capable UEFI OVMF firmware叫UEFI x86_64 : usr/share/OVMF/OVMF_CODE.fd,  (sudo apt install ovmf &amp;&amp; sudo systemctl restart libvirtd)</p>
-<p>2, firware验证bootloader的签名. UEFI firmware中预先在NVRAM系统中(或者compiled-in defaults)集成了一些公钥集合(secure boot key sets) , 它可以给bootloader验证签名(shim or grub2), 不使用shim的话, grub2得每次调用firware api去验证签名.</p>
-<p>UEFI firmware uses /boot/efi/EFI/BOOT/BOOTX64.EFI (从md5sum看它和/boot/efi/EFI/centos/shimx64.efi是同一个文件,  对于shim就是将shimx64.efi拷贝到BOOTX64.EFI, 对于grub2可能就是将grubx64.efi拷贝到BOOTX64.EFI了) to boot at the first stage.</p>
-<p>[root@test2 ~]# md5sum /boot/efi/EFI/BOOT/BOOTX64.EFI<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/BOOT/BOOTX64.EFI<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64.efi<br>25d9ccc49c419d76324a29615e8371c2  /boot/efi/EFI/centos/shimx64.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/shimx64-centos.efi<br>d435494a957479acac3aca09915c21d1  /boot/efi/EFI/centos/shimx64-centos.efi<br>[root@test2 ~]# md5sum /boot/efi/EFI/centos/grubx64.efi<br>031b972f3ab267f37e01ada73f4b480d  /boot/efi/EFI/centos/grubx64.efi</p>
-<p>3, bootloader再去验证kernel的签名.</p>
-<p>then shim will load grub2 (/boot/efi/EFI/centos/grubx64.efi) in the second stage</p>
-<p>4, kernel再去验证module的签名.</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot" target="_blank" rel="external">https://wiki.ubuntu.com/UEFI/SecureBoot/Testing?action=show&amp;redirect=SecurityTeam%2FSecureBoot</a><br>[2] <a href="https://www.aioboot.com/en/secure-boot/" target="_blank" rel="external">https://www.aioboot.com/en/secure-boot/</a><br>[3] <a href="https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html" target="_blank" rel="external">https://specs.openstack.org/openstack/nova-specs/specs/train/approved/allow-secure-boot-for-qemu-kvm-guests.html</a><br>[4] Grub 2：拯救你的 bootloader, <a href="https://linux.cn/article-6892-1.html?pr" target="_blank" rel="external">https://linux.cn/article-6892-1.html?pr</a><br>[5] <a href="https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only" target="_blank" rel="external">https://unix.stackexchange.com/questions/423666/secureboot-with-uefi-bootloader-and-grub2-only</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1737,7 +1790,7 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">85</span>
+                  <span class="site-state-item-count">89</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

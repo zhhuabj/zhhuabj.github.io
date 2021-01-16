@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2016-12-15版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 例子sriov在Xenial上不work, https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634 步骤 先测Xenial最新的Ubuntu K">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Perform a bisect test to identify the kernel problem">
+<meta property="og:url" content="http://yoursite.com/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2016-12-15版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 例子sriov在Xenial上不work, https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634 步骤 先测Xenial最新的Ubuntu K">
+<meta property="og:updated_time" content="2021-01-16T10:56:17.345Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Perform a bisect test to identify the kernel problem">
+<meta name="twitter:description" content="作者：张华 发表于：2016-12-15版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 例子sriov在Xenial上不work, https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634 步骤 先测Xenial最新的Ubuntu K">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/"/>
+
+
+
+
+
+  <title>Perform a bisect test to identify the kernel problem | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Perform a bisect test to identify the kernel problem</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:56:00+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><em>作者：张华 发表于：2016-12-15<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</em></p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>sriov在Xenial上不work, <a href="https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634</a></p>
+<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><ol>
+<li>先测Xenial最新的Ubuntu Kernel 4.4.0.57.60 (sudo apt-cache policy linux-image-generic-lts-xenial)。如果它没有问题，说明Upstream Kernel中的fixed patch已经被backport到了Ubuntu Xenial Kernel；如果它也有问题，一般需要在Upstream Kernel里bisect</li>
+<li><p>初略扫描代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</span><br><span class="line">git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git</span><br><span class="line">git log --tags --simplify-by-decoration --pretty=&quot;format:%ci %d&quot;</span><br><span class="line">#git log v3.13..v4.4 --oneline --no-merges |wc -l</span><br><span class="line">git log --since=&quot;2015-06-21 22:05:43&quot; --before=&quot;2015-07-05 11:01:52&quot; --oneline --no-merges |wc -l</span><br><span class="line">#filter by commit&apos;s author date rather than commit date, commit date may change when merging branch</span><br><span class="line">git log --since=&quot;2015-06-21 22:05:43&quot; --before=&quot;2015-07-05 11:01:52&quot; --format=&quot;%ad %h %s&quot; --date=iso --no-merges &gt; diff</span><br><span class="line">#Unfortunately, &apos;git log b953c0d..d770e55&apos; or &apos;git log tag1..tag2&apos; is not guaranteed to work</span><br><span class="line">#because those commits may be in different branches.</span><br><span class="line">#&apos;..&apos; means all of the commits that are in the v4.2-rc1 branch, but aren’t in the v4.1 branch</span><br><span class="line">#git log --no-merges --oneline v4.1..v4.2-rc1 &gt; diff</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在Upstream Kernel (<a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/)中继续bisect确定问题出在4.1和4.2-rc1之间" target="_blank" rel="external">http://kernel.ubuntu.com/~kernel-ppa/mainline/)中继续bisect确定问题出在4.1和4.2-rc1之间</a>. 参考：<a href="https://wiki.ubuntu.com/KernelTeam/GitKernelBuild" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/GitKernelBuild</a> (<strong>注：下列的命令只是针对Upstream Kernel</strong>, 对ubuntu Kernel的编译方法可见： <a href="https://blog.csdn.net/quqi99/article/details/50745614" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/50745614</a>) </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">git bisect start</span><br><span class="line">git bisect bad v4.2-rc1</span><br><span class="line">git bisect good v4.1</span><br><span class="line"></span><br><span class="line">git checkout bisect/bad</span><br><span class="line">#git bisect log &gt; bisectlog</span><br><span class="line">git bisect reset</span><br><span class="line">#git bisect replay bisectlog</span><br><span class="line"></span><br><span class="line">sudo apt-get install git build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache</span><br><span class="line">cp /boot/config-`uname -r` .config   #or make menuconfig </span><br><span class="line">make localmodconfig                  #speed compiling time for test by just using existing module config</span><br><span class="line">make clean</span><br><span class="line">yes &apos;&apos; | make oldconfig              #bring the config file up to date.</span><br><span class="line">make -j `getconf _NPROCESSORS_ONLN` deb-pkg LOCALVERSION=-custom</span><br><span class="line">#make drivers/usb/ehci.ko            #just build a module</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>(optional) sriov test method</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/cmdline </span><br><span class="line">BOOT_IMAGE=/boot/vmlinuz-4.1.36-040136-generic root=UUID=70f8e4d5-1773-4bb9-9dcc-f46ac966ebac ro pci-stub.ids=8086:10ca apparmor=0 intel_iommu=pt intel_iommu=on pci=assign-busses</span><br><span class="line"></span><br><span class="line">ln -s /etc/apparmor.d/usr.sbin.libvirtd  /etc/apparmor.d/disable/</span><br><span class="line">ln -s /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper  /etc/apparmor.d/disable/</span><br><span class="line">apparmor_parser -R  /etc/apparmor.d/usr.sbin.libvirtd</span><br><span class="line">apparmor_parser -R  /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper</span><br><span class="line"></span><br><span class="line">sudo dmesg |grep -e DMAR -e IOMMU</span><br><span class="line">sudo lspci |grep 82576</span><br><span class="line">sudo virsh nodedev-list --tree </span><br><span class="line">find /sys/kernel/iommu_groups/ -type l</span><br><span class="line"></span><br><span class="line">readlink -f /sys/bus/pci/devices/0000:07:10.2/iommu_group</span><br><span class="line">echo 0000:07:10.2 &gt; /sys/bus/pci/devices/0000:07:10.2/driver/unbind</span><br><span class="line">echo 0000:07:10.2 &gt; /sys/bus/pci/drivers/vfio-pci/bind</span><br><span class="line">echo &quot;8086 10ca&quot; &gt; /sys/bus/pci/drivers/vfio-pci/new_id</span><br><span class="line"></span><br><span class="line">sudo tailf /var/log/libvirt/qemu/openstack.log</span><br><span class="line">sudo virsh attach-device openstack /root/new-device.xml --live --config</span><br><span class="line">$ sudo cat /root/new-device.xml</span><br><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;pci&apos; managed=&apos;yes&apos;&gt;</span><br><span class="line"> &lt;source&gt;</span><br><span class="line">   &lt;address domain=&apos;0x0000&apos; bus=&apos;0x07&apos; slot=&apos;0x10&apos; function=&apos;0x3&apos;/&gt;</span><br><span class="line"> &lt;/source&gt;</span><br><span class="line">&lt;/hostdev&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Fixed patch找到了的SRU问题，Upstream Kernel有LTS(<a href="https://www.kernel.org/category/releases.html" target="_blank" rel="external">https://www.kernel.org/category/releases.html</a>), Ubuntu Kernel也有LTS(<a href="https://wiki.ubuntu.com/Kernel/LTSEnablementStack)。" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/LTSEnablementStack)。</a><br>a) 如对于Xenial, Ubuntu Kernel是v4.4, 而v4.4也是Upstream LTS Kernel，所以需要将Fixed patch先backport到Upstream Kernel v4.4，而Ubuntu LTS Kernel会定期从Upstream LTS Kernel里拉，所以就不需要backport到Ubuntu kernel了。<br>b) 如对于trusty, Ubuntu Kernel是3.13, 该版本不是Upstream LTS Kernel，故需直接backport到Ubuntu Kernel v3.13即可（<a href="https://wiki.ubuntu.com/KernelTeam/KernelUpdates）" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/KernelUpdates）</a></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>[1] <a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel</a><br>[2] <a href="https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide</a><br>[3] <a href="https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing" target="_blank" rel="external">https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing</a><br>[4] <a href="https://wiki.ubuntu.com/KernelTeam/KernelUpdates" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/KernelUpdates</a><br>[5] <a href="https://wiki.ubuntu.com/Kernel/Dev/StablePatchFormat" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/StablePatchFormat</a><br>[6] <a href="https://wiki.ubuntu.com/KernelTeam/GitKernelBuild" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/GitKernelBuild</a></p>
+</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/16/分析Ubuntu-Kernel-Kdump文件/" rel="next" title="分析Ubuntu Kernel Kdump文件">
+                <i class="fa fa-chevron-left"></i> 分析Ubuntu Kernel Kdump文件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/16/Compile-old-non-existing-UCA-packages/" rel="prev" title="Compile old non-existing UCA packages">
+                Compile old non-existing UCA packages <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">89</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">1.</span> <span class="nav-text">例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤"><span class="nav-number">2.</span> <span class="nav-text">步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
