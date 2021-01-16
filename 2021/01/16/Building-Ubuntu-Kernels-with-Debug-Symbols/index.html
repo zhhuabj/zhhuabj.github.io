@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2016-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )使用gdb或者crash时需要debug symbols, 可以从http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE: 此链接只是GA Kernel的debug sy">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Building Ubuntu Kernels with Debug Symbols">
+<meta property="og:url" content="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2016-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )使用gdb或者crash时需要debug symbols, 可以从http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE: 此链接只是GA Kernel的debug sy">
+<meta property="og:updated_time" content="2021-01-16T10:45:46.903Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Building Ubuntu Kernels with Debug Symbols">
+<meta name="twitter:description" content="作者：张华  发表于：2016-02-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 )使用gdb或者crash时需要debug symbols, 可以从http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE: 此链接只是GA Kernel的debug sy">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/"/>
+
+
+
+
+
+  <title>Building Ubuntu Kernels with Debug Symbols | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Building Ubuntu Kernels with Debug Symbols</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:45:24+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2016-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>使用gdb或者crash时需要debug symbols, 可以从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE</a>: 此链接只是GA Kernel的debug symbols, 如果是HWE Kernel的符号表一般通过google查找，见本文最下方说明）下载，如果这个网址没有，版本不一样crash就打不起来，所以得自己build一个(<a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel</a>,  <a href="https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide</a>, <a href="https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。" target="_blank" rel="external">https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。</a></p>
+<p>注意：即使自己build也不能保证每次compile的時候symbol address都一样, GCC的版本也有不同。实际上，如果从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA</a> Kernel的符号表，也找不着HWE Kernel的符号表的话。我们只能自己编译，但是自己编译也是没用的。自己编译的目的只是为了让crash运行起来，里面的symbols是无法相信的，只能用二进制知识直接看memory。</p>
+<p>但有时候里面没有需要自己生成，下需方法使用了debian/rules脚本来为Ubuntu Kernel生成debug symbols, 所以它不需要注释的那些make命令， 这个脚本会自动生成.config文件，如果要修改可以使用fakeroot debian/rules editconfigs命令。如果使用的是社区的Kernel, 默认的.config文件应该未包括了生成debug symbols的配置(CONFIG_KALLSYMS=y &amp; CONFIG_KALLSYMS_ALL=y, 路径为：Kernel hacking -&gt; Compile-time checks and compiler options -&gt; Compile the kernel with debug info )。</p>
+<p>注：在xenial中也可以可以build trusty的，kernel与上层应用不同，kernel依赖的包很少，这样只要在xenial将相应的依赖安装了就可以build trusty。所以编译kennel不需要像上层应用的编译那样搞什么pbuilder等。</p>
+<p><a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/" target="_blank" rel="external">http://kernel.ubuntu.com/~kernel-ppa/mainline/</a></p>
+<p>git config –add core.compression -1   #For the error ‘git index-pack failed’</p>
+<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git ubuntu-linux</p>
+<p>#git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git<br>git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git</p>
+<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git</p>
+<p>#git clone –reference linux git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic</p>
+<p>#git checkout -b sfxxxx origin/master</p>
+<p>#git cherry-pick -s -x commit_id</p>
+<p>#git remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</p>
+<p>#git remote -v</p>
+<p>#git fetch –tags linus</p>
+<p>#git remote add rotom_xenial zhhuabj@10.230.56.3:/home/zhhuabj/ubuntu-xenial</p>
+<p>#git push rotom_xenial sfxxxx<br>cd ubuntu-xenial<br>git tag -l Ubuntu-*<br>git checkout -b Ubuntu-4.4.0-0.10 Ubuntu-4.4.0-0.10</p>
+<p>sudo apt-get install libncurses5-dev qt4-dev-tools kernel-package fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge libelf-dev asciidoc binutils-dev</p>
+<p>sudo apt-get build-dep linux-image-$(uname -r)   #需要添加附录中的deb-src源</p>
+<p>sudo apt-get install pkg-config-dbgsym  #xenial</p>
+<p>#make xconfig             #or make menuconfig</p>
+<p>#make localmodconfig      #speed compliling time for test</p>
+<p>#make-kpkg                #a script which automates and replaces the sequence “make dep; make clean; make bzImage; make modules”</p>
+<p>#make mrproper</p>
+<p>#git reset –hard HEAD<br>fakeroot debian/rules clean</p>
+<p>#fakeroot debian/rules editconfigs</p>
+<p>#fakeroot debian/rules prepare-generic</p>
+<p>#debian/rules build-generic   #build kernel</p>
+<p>fakeroot debian/rules DEB_BUILD_OPTIONS=parallel=4 clean binary-generic binary-headers skipdbg=false</p>
+<p>自己调试机运行的什么版本的kernel和客户运行的没有关系，只需要使用–mod参数指定和客户运行的debug symbol的版本一致即可。</p>
+<p>wget <a href="http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</a> -O /home/zhhuabj/debs/4.13.0-37.42/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb<br>strings vmcore.201803282124 |less  #NOTE: vmcore may first need to unzip<br>dpkg -x linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb /home/zhhuabj/debs/4.13.0-37.42/<br>cat run_crash.sh</p>
+<p>exec crash –mod /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/lib/modules/4.13.0-37-generic /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/boot/vmlinux-4.13.0-37-generic vmcore.201803282124</p>
+<p>注意：上面的方法可能不成功，例如，4.13.0-37是artful的GA Kernel，但对于xenial来说是HWE Kernel。sosreport中的uname显示版本号（上面是通过strings命令查看的版本号，似乎不能显示更详细的版本号)是“4.13.0-37-generic #42~16.04.1”，这种版本号就是在xenial中使用4.13.0-37 hwe kernel。所以正确的debug symbol应该是：<a href="https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb" target="_blank" rel="external">https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb</a></p>
+<p>继续遇到此问题“crash: cannot resolve “init_level4_pgt” “ - <a href="https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb</a> <a href="http://archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://archive.ubuntu.com/ubuntu/</a> bionic main’升级crash后解决。</p>
+<p>附录：为UCA包编译近似的符号表</p>
+<p>UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”<br>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/15/OpenStack对NUMA的支持情况/" rel="next" title="OpenStack对NUMA的支持情况">
+                <i class="fa fa-chevron-left"></i> OpenStack对NUMA的支持情况
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">85</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
