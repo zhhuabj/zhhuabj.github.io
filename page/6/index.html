@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,207 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/14/OpenStack开发过程中常用Git操作场景/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/14/OpenStack开发过程中常用Git操作场景/" itemprop="url">OpenStack开发过程中常用Git操作场景</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
+                2019-10-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>  OpenStack开发过程中常用Git操作场景( by quqi99 )</p>
+<p>作者：张华  发表于：2013-07-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<pre><code>    Git是一个分布式的代码管理库，linux之父开发，用了三年多了，直观感受的优点如下：
+
+一是真正的分布式，既不用担心哪天服务器坏了代码丢失了，也不用担心像中美之间网速慢啊或断网什么的影响开发，因为本地就是一个代码库。
+二是体积小，对存储进行了优化。
+三是速度快，因为比较的是哈希。
+四是差异比较算法很智能，能到达行级，甚至一行中的列级。
+五是支持对二进制的差异比较，如一个Word文档什么的。
+六是其它。。。
+
+
+    虽然对原理也算熟，用得也算多，但一段时间不用还是容易忘，下面记下一些日常工作场景常用到的命令：
+</code></pre><p>场景一：如何往社区提交一个Bug<br>      安装git： sudo yum install git git-review<br>     下载代码：git clone <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a></p>
+<p>1    通过ssh-keygen命令创建密钥, 然后在“<a href="https://review.openstack.org/#/settings/ssh-keys" target="_blank" rel="external">https://review.openstack.org/#/settings/ssh-keys</a> 界面设置public key.<br>2    运行“git review -s”命令设置git-review, 这步会在.git/config文件中添加一个名为gerrit的远程分支ssh://zhhuabj@review.openstack.org:29418/openstack/neutron.git，并且可以通过ssh访问：ssh -p 29418 review.openstack.org)<br>      如果报“Permission denied (publickey)”这样的错的话，简单运行”ssh-add”命令将ssh key添加到ssh agent即可</p>
+<pre><code>还有一种可能是用户弄错了，ssh -i zhhuabj_lcy01.pem ubuntu@162.213.**  -vvv
+</code></pre><p>3   如果想要修改一个bug时，先创建一个本地分支,<br>      git checkout -b task/132002<br>4  写完代码之后，也得运行一下pep8测试吧<br>      pep8 –count –repeat –show-source .  或者     ./run_tests.sh -p -N<br>5  或者也运行一下单元测试吧<br>      nosetests -s -v test_backend_sql.py  &amp;&amp; nosetests -s -v test_db_plugin:TestNetworksV2.test_list_shared_networks_with_non_admin_user<br>      或者 python -m testtools.run neutron.tests.unit.test_security_groups_rpc<br>      或者 python setup.py testr –slowest –testr-args=’–subunit  neutron.tests.unit.test_security_groups_rpc’ |  subunit2pyunit<br>      或者 ./run_test.sh -N testtools.run neutron.tests.unit.test_security_groups_rpc<br>6  提交代码到本地库<br>      git add -u (修改的文件）， 若创建了新文件 git add -i<br>      git commit<br>      提交信息的格式一般如下，一般分三段，第一段是标准说清楚你要做什么，如果你在改hyper-v模块最好有hyper-v的字眼，这样大家在收到邮件时只看标题就知道你在做什么了，这很重要；第二段简短描述；第三段一般使用“Fixed bug #161317”，＃号很重要，这样会自动在gerrit上链接到bug上。<br>      Add documentation for upgrading hyperv OpenStack compute node</p>
+<pre><code>This guide covers how to upgrade and configure hyperv OpenStack
+compute node from Grizzly to Havana
+
+Fixed bug #161317
+如果是延用上次提交的信息使用命令：git commit --amend
+</code></pre><p>7  本来在git review通过后gerrit会自动rebase到master分支的，但是有冲突的话没人帮你改，所以自己在git review前最好在本地做一个rebase操作，有冲突及时改：<br>      git rebase master  有冲突再解决冲突之后继续执行：git rebase –continue<br>8  提交代码评审<br>      git review 或者 git review master</p>
+<pre><code>这时会在gerrit服务器上创建一个本地分支：refs/for/master/task/132002, 如果上面改bug时不建分支的话，这里就变成了: refs/for/master，下一个人提交直接就被冲掉了。
+</code></pre><p>9 如果社区上的jenkins出错，确定不是你自己的代码造成的，可以回复“recheck no bug” 触发重新检查，或者”recheck bug ###”</p>
+<p>10 说说依赖提交，例如如果一个patch在社区已经被很多人+1了，但这时候有人希望提交一个相关的其他patch, 你当然不想破坏这么多已经+1的成果，所以你会希望再提一个patch但它会依赖前一个patch。注意两点：生成一个新的gerrit评审页是由Change-Id决定的；而是否在一个评审页上产生一个新的change set去破坏+1是由commit id决定的。所以只要保证前一个patch的commit id不变就行了，然后在这个基础上再提交一个patch再git review即可。当然，在git review之前最好先git rebase一下，不然如果本地git rebase的话就会产生一个新的commit id这样同样会产生一个新的change set，不过gerrit还比较智能，那些+1会自动添加上（Automatically re-added by Gerrit trivial rebase detection script.），　一个例子见：<a href="https://review.openstack.org/#/c/51375/" target="_blank" rel="external">https://review.openstack.org/#/c/51375/</a></p>
+<p>场景二：如何rebase代码<br>git rebase用于在一个分支中合并另一分支，举个例子，一家公司想要用OpenStack做二次开发的话，<br>在公司内部的git库里创建了三个分支：my-master, my-grizzly, my-havana<br>OpenStack的git库里的分支叫：    github-master, github-grizzly, github-havana<br>现在大家把内部代码都提交在my-havana分支，那么也需要时不时将社区的github-havana的代码rebase合并到my-havana分支中<br>1，首先在.git/config里要有两个remote分支，一个指向内部的版本库，一个指向github的版本库，如.git/config的相应配置如下：<br>[core]<br>        repositoryformatversion = 0<br>        filemode = true<br>        bare = false<br>        logallrefupdates = true<br>[remote “my-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/my-origin/</em><br>        url = git://<your_ip>/neutron.git<br>[remote “github-origin”]<br>        fetch = +refs/heads/<em>:refs/remotes/github-origin/</em><br>        url = <a href="https://github.com/openstack/neutron.git" target="_blank" rel="external">https://github.com/openstack/neutron.git</a><br>[branch “master”]<br>        remote = my-origin<br>        merge = refs/heads/master<br>[branch “my-havana”]<br>        remote = my-origin<br>        merge = refs/heads/my-havana<br>[branch “my-grizzly”]<br>        remote = my-origin<br>        merge = refs/heads/my-grizzly<br>2, 更新上面所有的remote分支 git remote update<br>3, 因为是要将社区的havana分支的代码同步到自己havana分支，所以为两个远程分支创建对应的本地分支<br>   git checkout -b github-havana github/stable/havana<br>   git checkout -b my-havana origin/my-havana<br>4, 合并，成功后应该用git log -1能看到一个新的合并提交。如果有冲突的话就解决冲突再git merge next<br>   git checkout my-havana<br>   git merget github-havana<br>5, 运行单元测试<br>  tox –recreate -e py27,pep8<br>  ./run_tests.sh -V -f<br>6, 用-n参数(dry-run)测试提交, 提交到名为my-origin的远程分支的my-havana分支中：<br>   git push -n my-origin HEAD:refs/heads/my-havana<br>   若没有问题的话真正提交：<br>   git push  my-origin HEAD:refs/heads/my-havana</your_ip></p>
+<p>场景三：cherry pick代码<br>例如，一个社区bug 1161195被提交到master分支, 社区没有批准进stable-havana分支，或者来不及等它进，这时候公司内部要求进my-havana分支的话，可以将这个bug通过cherry pick合并过来。<br>1, 为这个任务创建一个bug.<br>   git checkout stable-havana<br>   git pull<br>   git checkout -b bug/1161195<br>2, 在社区找到bug 1161195的代码提交id, 如:5f3fa391ed499750ad68ad5b000b4e2e0a86978e<br>   可以通过 git log |grep -B 30 <commit-id>查看确认<br>3, 在bug/1161195分支上执行cherry pick命令：<br>   git cherry-pick -s  -x  <commit-id><br>4, 提交代码评审<br>   git commit or git commit –amend<br>   git review stable-havana</commit-id></commit-id></p>
+<p>另一个例子：</p>
+<p>git clone <a href="https://github.com/openstack/charm-ceilometer" target="_blank" rel="external">https://github.com/openstack/charm-ceilometer</a><br>git checkout stable/16.07 </p>
+<h1 id="come-from-lauchpad-page"><a href="#come-from-lauchpad-page" class="headerlink" title="come from lauchpad page"></a>come from lauchpad page</h1><p>git fetch git://git.openstack.org/openstack/charm-ceilometer refs/changes/00/375100/1 &amp;&amp; git cherry-pick FETCH_HEAD</p>
+<p>git review stable/18.07</p>
+<p>20201014更新, charm patch合并了, 要使用还得cherry-pick到stable branch, cherry-pick直接在review.opendev.org上就有一个’cherry-pick’按钮直接可以做不需要用这里的方法, 如果界面上失败那多半是因为这个fix已经在那个分支了. 在要做cherry-pick之后可以检查一下(<a href="https://docs.openstack.org/charm-guide/latest/release-schedule.html)下一个分支是不是马上要release了" target="_blank" rel="external">https://docs.openstack.org/charm-guide/latest/release-schedule.html)下一个分支是不是马上要release了</a>, 如果是也许就不需要做了.</p>
+<p>场景四：将git产生的patch变成和svn兼容</p>
+<p>#!/bin/sh<br>#</p>
+<h1 id="git-svn-diff"><a href="#git-svn-diff" class="headerlink" title="git-svn-diff"></a>git-svn-diff</h1><h1 id="Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch"><a href="#Generate-an-SVN-compatible-diff-against-the-tip-of-the-tracking-branch" class="headerlink" title="Generate an SVN-compatible diff against the tip of the tracking branch"></a>Generate an SVN-compatible diff against the tip of the tracking branch</h1><p>REV=<code>git svn find-rev $(git rev-list --date-order --max-count=1 master)</code><br>git diff –no-prefix $(git rev-list –date-order –max-count=1 master) $<em> |sed -e “s/^+++ .</em>/&amp; (working copy)/“ \<br>-e “s/^— .<em>/&amp; (revision $REV)/“ \<br>-e “s/^diff –git [^[:space:]]</em>/Index:/“ -e “s/^index.*/===================================================================/“</p>
+<p>在本机上创建一个共享的git库：</p>
+<p>sudo groupadd git<br>sudo useradd -d /home/git -m -g git git<br>sudo passwd git<br>su - git<br>mkdir /home/git/patent.git<br>cd patent.git/<br>git init –bare –shared</p>
+<h1 id="test-in-another-directory"><a href="#test-in-another-directory" class="headerlink" title="test in another directory"></a>test in another directory</h1><p>cd /bak/tmp<br>git clone git@9.123.136.122:/home/git/patent.git<br>cd patent<br>cp test.doc .<br>git add test.doc<br>git commit -m “init commit”<br>git push origin master</p>
+<p>这时候肯定是希望大家通过git用户可以访问git库，但又不希望他们通过ssh登录这台机器，所以修改/etc/passwd文件，</p>
+<p>将     “  git:x:502:503::/home/git:/bin/bash ”</p>
+<p>改成：git:x:502:503::/home/git:/usr/bin/git-shell</p>
+<p>这时候还需要将每个客户端的公钥加到/home/git/.ssh/authorized_keys文件里，公钥可以通过ssh-keygen -t rsa生成。</p>
+<p>场景五，使用git命令操作bzr与hg</p>
+<p>sudo apt-get install mercurial python-hglib<br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-hg/master/git-remote-hg</a><br>wget <a href="https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr" target="_blank" rel="external">https://raw.githubusercontent.com/felipec/git-remote-bzr/master/git-remote-bzr</a><br>sudo chmod 755 ./git-remote-<em><br>sudo mv git-remote-</em> /usr/bin</p>
+<p>examples:<br>git clone “bzr::lp:ubuntu/ifupdown”<br>git clone “bzr::lp:debian/ifupdown”<br>git clone “hg::<a href="http://anonscm.debian.org/hg/collab-maint/ifupdown/" target="_blank" rel="external">http://anonscm.debian.org/hg/collab-maint/ifupdown/</a>“</p>
+<p>场景六，依赖提交</p>
+<p>有一种情况，我向社区同时提交了两个有依赖的提交，在本地提交这两个提交之后直接git review即可。<br>现在前一个提交（假设提交id为：187f）要修改，怎么办呢？<br>a, git rebase 187f^ –interactive， 回到要修改的提交的前一个点上<br>b, 修改那个提交，最后git commit –amend<br>c, git rebase –continue, 继续变基并且返回到原来的HEAD处<br>如果中间出现“interactive rebase already started”， 用“git rebase -i –abort”命令重来。</p>
+<p>场景七, 在lp上创建私有git仓库, 并使用lp评审代码</p>
+<p>git clone <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a></p>
+<p>git remote set-url –push origin no_push</p>
+<h1 id="注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。"><a href="#注意，这里有一个坑，下面链接不应该有-git，并且layer-snap必须和lp里实际的工程名字相同。" class="headerlink" title="注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。"></a>注意，这里有一个坑，下面链接不应该有+git，并且layer-snap必须和lp里实际的工程名字相同。</h1><p>#如果有+git的话，提交PR时， 原本指定target是<a href="https://git.launchpad.net/layer-snap，" target="_blank" rel="external">https://git.launchpad.net/layer-snap，</a> 但它会自动变回~zhhuabj/+git/layer-snap:master</p>
+<p>#并且可能会报这种错误”’~zhhuabj/+git/layer-snap:lp1847574 is not mergeable into layer-snap:master’“</p>
+<h1 id="git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap"><a href="#git-remote-add-zhhuabj-git-ssh-zhhuabj-git-launchpad-net-zhhuabj-git-layer-snap" class="headerlink" title="git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap"></a>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/+git/layer-snap</h1><p>git remote add zhhuabj git+ssh://zhhuabj@git.launchpad.net/~zhhuabj/layer-snap<br>git push –set-upstream zhhuabj master  #then you will see the new repo in <a href="https://code.launchpad.net/~zhhuabj/+git" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git</a></p>
+<p>git remote -v<br>git branch -a<br>git fetch –all<br>git fetch –all –prune</p>
+<p>#git fetch origin</p>
+<p>#git checkout master</p>
+<p>#git rebase origin/master</p>
+<p>git checkout -b lp1847574<br>git commit -m ‘test’<br>git commit –amend -author=’Hua <xxx.mail.com>‘<br>git push –set-upstream zhhuabj lp1847574</xxx.mail.com></p>
+<p>#如果更新了代码再提交时如果rebase后可能需要添加-f参数, 这里pr将保持不变 - <a href="https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch" target="_blank" rel="external">https://stackoverflow.com/questions/37770467/why-do-i-have-to-git-push-set-upstream-origin-branch</a></p>
+<p>The -f is actually required because of the rebase. Whenever you do a rebase you would need to do a force push because the remote branch cannot be fast-forwarded to your commit. You’d always want to make sure that you do a pull before pushing, but if you don’t like to force push to master or dev for that matter, you can create a new branch to push to and then merge or make a PR.</p>
+<h1 id="git-push-f-–set-upstream-zhhuabj-lp1847574"><a href="#git-push-f-–set-upstream-zhhuabj-lp1847574" class="headerlink" title="git push -f –set-upstream zhhuabj lp1847574"></a>git push -f –set-upstream zhhuabj lp1847574</h1><h1 id="Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574"><a href="#Propose-for-merging-https-code-launchpad-net-zhhuabj-git-layer-snap-ref-lp1847574" class="headerlink" title="Propose for merging - https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574"></a>Propose for merging - <a href="https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/+git/layer-snap/+ref/lp1847574</a></h1><h1 id="zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master"><a href="#zhhuabj-git-layer-snap-lp1847574-gt-layer-snap-master" class="headerlink" title="~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master"></a>~zhhuabj/+git/layer-snap:lp1847574 -&gt; layer-snap:master</h1><p>#target repository -&gt; other: ~openstack-charm-testers/xxxstack-bundles/+git/xxxstack-bundles<br>target repository -&gt; other: <a href="https://git.launchpad.net/layer-snap" target="_blank" rel="external">https://git.launchpad.net/layer-snap</a><br>target branch: refs/heads/master</p>
+<p>场景八: 内核</p>
+<p>git remote add xenial git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git<br>git fetch xenial<br>git log –no-merges –oneline xenial/hwe…xenial/master drivers/net/ethernet/mellanox/mlx5/</p>
+<p>场景九：确认charm-ceilometer-278是否包括fix d398cd</p>
+<p><a href="https://api.jujucharms.com/charmstore/v5/ceilometer-278/archive/repo-info" target="_blank" rel="external">https://api.jujucharms.com/charmstore/v5/ceilometer-278/archive/repo-info</a></p>
+<p>$ git branch -r -v |grep e06571<br>  origin/stable/20.10 e06571c Updates for stable branch creation</p>
+<p>$ git branch -r –contains  d398cd |grep 20.10<br>  origin/stable/20.10</p>
+<p>其它命令：</p>
+<p>git reset HEAD~1                      撤销最后一次提交。<br>git reset –hard HEAD^             撤销最后一次提交并清除本地修改</p>
+<p>git reset –hard Merge_Head  和服务器保持一致</p>
+<p>git clean -dfx                               删除本地未在版本库的东西</p>
+<p>git stash  &amp; git stash list &amp; git stash pop  暂存代码</p>
+<p>git rebase -i –abort </p>
+<p>git tag –contains af055e37a91d215d7174d0b84c86795ca81086a7</p>
+<p>git branch -a –contains <sha1></sha1></p>
+<p>git tag –contains <sha1></sha1></p>
+<p>git grep smp_call_function_many</p>
+<h1 id="refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html"><a href="#refer-https-www-oreilly-com-library-view-git-pocket-guide-9781449327507-ch09-html" class="headerlink" title="refer https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html"></a>refer <a href="https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html" target="_blank" rel="external">https://www.oreilly.com/library/view/git-pocket-guide/9781449327507/ch09.html</a></h1><p>git log v4.13..master –oneline –no-merges kernel/smp.c</p>
+<p>git log v4.13..master –grep=smp –oneline –no-merges kernel/smp.c</p>
+<p>git log |grep Ibaf4385              一个patch只有一部分，另一部分肯定是被其他patch覆盖了， 可用’git log’查找   </p>
+<p>git revert 7b60534</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +461,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
                 2019-08-22
@@ -414,7 +615,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-24T20:24:20+08:00">
                 2019-04-24
@@ -559,7 +760,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-15T08:56:05+08:00">
                 2019-04-15
@@ -716,7 +917,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-18T13:44:20+08:00">
                 2019-01-18
@@ -883,7 +1084,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-02T11:08:22+08:00">
                 2019-01-02
@@ -1011,7 +1212,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-31T16:29:50+08:00">
                 2018-12-31
@@ -1206,7 +1407,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-29T17:37:02+08:00">
                 2018-10-29
@@ -1382,7 +1583,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-09T01:28:15+08:00">
                 2018-09-09
@@ -1539,7 +1740,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-03T12:02:42+08:00">
                 2018-09-03
@@ -1676,195 +1877,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/03/IPv6来啦/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/08/03/IPv6来啦/" itemprop="url">IPv6来啦</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-03T16:01:05+08:00">
-                2018-08-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-08-03)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里用的是中国移动的宽带, 一直挺稳定的, 而且昨天发现ISP下发了IPv6地址(不是子网, 形如: 2409:8a00:7805:xxxx:xxxx:xxxx:xxxx:xxxx/64, 打xxxx的部分是动态变化的). 好吧, 咱就用用.</p>
-<p><strong>20200814更新</strong><br>联通宽带在安装的时候要告诉师傅将光猫改桥接(后台改), 改桥接之后，会有公网IP及IPv6 (TL-WDR7660路由器需要在IPv6也设置为像IPv6一样宽带联网才能使用IPv6的）．<br>即使改桥接后得到的公网IP也是作了限制的，并且所有端口全是封的，给联通打电话时，他们会装作不慬公网，不懂端口，一问三不知．总之，最后他们还是偷偷地给改好了．<br>但是WDR7660下接的WNDR4300 openwrt路由器却无法获取IPv6地址，估计没有安装odhcpv6的原因吧，待确定．</p>
-<h2 id="路由器配置"><a href="#路由器配置" class="headerlink" title="路由器配置"></a>路由器配置</h2><ul>
-<li><p>配置/etc/config/network使用’option ip6assign ‘64’</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config interface &apos;lan&apos;                    </span><br><span class="line">        ...      </span><br><span class="line">        option ip6assign &apos;64&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>配置/etc/confignetwork删除config globals ‘globals’段中和 IPv6 ULA-Prefix相关的配置 (注: 使用IPv6 ULA-Prefix的话, LAN中机器就会得到一个以它打头的IPv6地址, 但如何从外网访问这个地址呢? 有三种方式: 一是使用我们现在使用的relay方式得到是ISP提供的全球可路由的IPv6地址；二是配置ULA-Prefix=2409:8a00:7805:1::/80之后再使用下列的neigh proxy的方法解决, 但这种一般是子网长度80比64大, 但ISP并没有给我们分配subnet, 只是分配了IPv6地址, 所以无法保证2409:8a00:7805:1::/80这个前缀与ISP分配的2409:8a00:7805:xxxx:xxxx:xxxx:xxxx:xxxx/64一致；三是ULA-Prefix配置一个与ISP分配的不同的路由然后通过配置路由的方式但前提是也得有全球可路由的IPv6 subnet啊. 所以这里我们选择了relay模式来实现外网访问内网的目的.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">config globals &apos;globals&apos;</span><br><span class="line">        option ula_prefix &apos;fd89:714c:1c30::/48&apos;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w net.ipv6.conf.all.proxy_ndp=1</span><br><span class="line">ip -6 neigh add proxy 2409:8a00:7805:1::430 dev pppoe-wan</span><br><span class="line">ip -6 neigh show proxy</span><br></pre></td></tr></table></figure>
-<ul>
-<li>配置/etc/config/dhcp使用relay模式, relay模式意味着openwrt通过默认的odhcpd作为中继自动为LAN的其他机器配置ISP的IPv6地址<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;wan&apos;                                                                                                                       </span><br><span class="line">        option interface &apos;wan&apos;                                                                                                          </span><br><span class="line">        option ignore &apos;1&apos;                                                                                                               </span><br><span class="line">        option dhcpv6 &apos;disabled&apos;                                                                                                        </span><br><span class="line">        option ndp &apos;relay&apos;                                                                                                              </span><br><span class="line">        option ra &apos;relay&apos;                                                                                                               </span><br><span class="line">        option master &apos;1&apos;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </span><br><span class="line">config dhcp &apos;lan&apos;                                                                                                                       </span><br><span class="line">        option interface &apos;lan&apos;                                                                                                          </span><br><span class="line">        option start &apos;100&apos;                                                                                                              </span><br><span class="line">        option limit &apos;150&apos;                                                                                                              </span><br><span class="line">        option leasetime &apos;12h&apos;                                                                                                          </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;                                                                                               </span><br><span class="line">        option ndp &apos;relay&apos;                                                                                                              </span><br><span class="line">        option ra &apos;relay&apos;                                                                                                               </span><br><span class="line">        option dhcpv6 &apos;relay&apos;</span><br><span class="line"></span><br><span class="line"># actually I use 60, not 64</span><br><span class="line">cat /etc/config/network</span><br><span class="line">config interface &apos;lan&apos;</span><br><span class="line">	...</span><br><span class="line">	option ip6assign &apos;60&apos;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>配置完之后就可以通过下列命令重启路由器服务就可以在br-lan与pppoe-wan上获得ISP分配的IPv6地址了.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/network restart</span><br><span class="line">/etc/init.d/odhcpd restart</span><br></pre></td></tr></table></figure></p>
-<p>内网机器直接通过’sudo /etc/init.d/network-manager restart’重启网络也会获取ISP分配的IPv6地址.</p>
-<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><ul>
-<li>内网机器访问br-lan内网网关, 能通是因为下列路由的功能:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ ip -6 route list |grep 2409:8a00:7805:b7df::/64</span><br><span class="line">2409:8a00:7805:b7df::/64 dev eth0  proto ra  metric 100  pref medium</span><br><span class="line"></span><br><span class="line">root@OpenWrt:~# route -A inet6 |grep ::/0</span><br><span class="line">::/0                                        fe80::200:5eff:fe00:134                 UG    1024   0        0</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>注: 后面我们会看到::/0的默认路由会造成很多问题.</p>
-<ul>
-<li><p>内网机器访问pppoe-wan外网网关<br>对于relay模式由于内网机器拿到的本来就是ISP分配的可路由的IP所以自然能通. 但对于nat模式由于内网机器分配的是和ISP不同网段的IP, 所以需要在路由器上做NAT6, 如:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#ip6tables -t nat -I POSTROUTING -o pppoe-wan -j MASQUERADE</span><br><span class="line">ip6tables -t nat -I POSTROUTING -s `uci get network.globals.ula_prefix` -j MASQUERADE &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>外网访问内网机器<br>如果使用relay由于内网机器使用的是全球可路由的IPv6地址, 外网直接就是可以访问内网机器的；但如果是不同子网需要做路由；如果只是前缀相同只是子网长度不同可以做neigh proxy</p>
-</li>
-<li>但是此时我们发现内网机器无法访问外网(如ping6 ipv6.baidu.com), 但此时在路由器上却是可以访问外网的. 原因就在于上面使用::/0的默认路由似乎有问题(报这个错: Destination unreachable: Unknown code 5), 改成了2000::/3就好了:<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;`</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ip -6 route add default from 2409:8a00:7805::48 dev pppoe-wan</span><br></pre></td></tr></table></figure></p>
-<p>但上面两种方法仍然遇到了不稳定的问题, 感觉是openwrt的odhcpd不稳定, 照下列方法更换为6relayd之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">wget https://www.shintaku.cc/files/6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">opkg install 6relayd_2013-10-21_ar71xx.ipk</span><br><span class="line">vi /etc/config/6relayd</span><br><span class="line">config relay</span><br><span class="line">        option master &apos;wan&apos;</span><br><span class="line">        option network &apos;lan&apos;</span><br><span class="line">        option rd &apos;relay&apos;</span><br><span class="line">        option dhcpv6 &apos;relay&apos;</span><br><span class="line">        option ndp &apos;relay&apos;</span><br><span class="line">/etc/init.d/odhcpd disable</span><br><span class="line">/etc/init.d/odhcpd stop</span><br><span class="line">/etc/init.d/6relayd enable</span><br><span class="line">/etc/init.d/6relayd start</span><br></pre></td></tr></table></figure></p>
-<p>接着使用tcpdump查看好像是DHCPv6 reply包从pppoe-wan过不来br-lan口:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">08:22:53.810272 IP6 2400:da00:2::29 &gt; 2409:8a00:7805:b7df:8d79:6c9:315a:9ca3: ICMP6, echo reply, seq 7, length 64</span><br></pre></td></tr></table></figure></p>
-<p>所以接着, 在/etc/config/firewall文件的 Allow-ICMPv6-Forward项中添加了下列行后确认已经有了129(129就是reply)相关的iptables rules之后仍然不好使.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        list icmp_type &apos;router-solicitation&apos;    </span><br><span class="line">        list icmp_type &apos;neighbour-solicitation&apos; </span><br><span class="line">        list icmp_type &apos;router-advertisement&apos;   </span><br><span class="line">        list icmp_type &apos;neighbour-advertisement&apos;</span><br><span class="line">        </span><br><span class="line">root@OpenWrt:~# ip6tables-save |grep Allow-ICMPv6-Forward |grep 129</span><br><span class="line">-A zone_wan_forward -p ipv6-icmp -m icmp6 --icmpv6-type 129 -m limit --limit 1000/sec -m comment --comment Allow-ICMPv6-Forward -j ACCEPT</span><br></pre></td></tr></table></figure></p>
-<p>google查到的和这个bug相同(<a href="https://github.com/openwrt/odhcpd/issues/37" target="_blank" rel="external">https://github.com/openwrt/odhcpd/issues/37</a>), 但里面的所有方法都试过了不成功.<br>似乎是ISP使用的是Statefull DHCPV6的方式, 6relayd可以把ra信息relay过来，但LAN端机器似乎无法跟DHCPV6服务器通信。</p>
-<h2 id="2018-0805更新"><a href="#2018-0805更新" class="headerlink" title="2018-0805更新"></a>2018-0805更新</h2><p>今天通过这个帖子(<a href="https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题" target="_blank" rel="external">https://bbs.pku.edu.cn/v2/post-read.php?bid=35&amp;threadid=15501646)解决了上面的问题</a>:<br>OpenWRT默认是在wan口使用DHCPv6 Client, 在LAN口使用odhcpd开启RA和DHCPv6. 这个默认配置适用于国外主流ISP, 因为他们DHCPv6-PD (prefix delegation)把一个至少/64地址段分配给客户使用(还有的使用小于64的地址段给客户分配静态IP).<br>不过中国移动给客户分配的是SLAAC地址, 没有使用DHCPv6, 也就没使用DHCPv6-PD, 这样拿不到前缀(ISP分配的2409:8a00:7805:xxx::/64地址的第4段总是变化的), 所以odhcpd也就无法根据这个前缀设置路由, 所以我们需要手工设置确保可以在OpenWrt上ping通内网机器, 这样才能保证reply消息到达br-lan之后能到达内网机器, 如:<br>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan<br>所以最终添加在/etc/firewall.user的内容如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># make ipv6 relay to work</span><br><span class="line">PREFIX=`ip -6 route list dev br-lan |grep 2409:8a00 |awk -F &apos;::/&apos; &apos;&#123;print $1&quot;::/64&quot;&#125;&apos; |uniq`</span><br><span class="line">ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line"># NOTE: too too important, we must add &apos;metric&apos; option, or this route will have expire time, or use &apos;ip&apos; to add route</span><br><span class="line">route -A inet6 add $PREFIX dev br-lan metric 1 &gt; /dev/null 2&gt;&amp;1                                </span><br><span class="line">                                                                                                               </span><br><span class="line"># make ipv6 nat to work                                                                                        </span><br><span class="line">#ip -6 route add default from $PREFIX dev pppoe-wan &gt; /dev/null 2&gt;&amp;1                                           </span><br><span class="line">#route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;` &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure></p>
-<p>再就是得配置replay消息能从pppoe-wan到达br-lan, 所以最终使用下列配置(也记得去掉IPv6 ULA-Prefix):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;wan&apos;                                </span><br><span class="line">        option interface &apos;wan&apos;                   </span><br><span class="line">        option ignore &apos;1&apos;                        </span><br><span class="line">        option ndp &apos;relay&apos;                       </span><br><span class="line">        option ra &apos;relay&apos;                        </span><br><span class="line">        option master &apos;1&apos;                                      </span><br><span class="line">config dhcp &apos;lan&apos;             </span><br><span class="line">        option interface &apos;lan&apos;</span><br><span class="line">        option start &apos;100&apos;    </span><br><span class="line">        option limit &apos;150&apos;    </span><br><span class="line">        option leasetime &apos;12h&apos;</span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;</span><br><span class="line">        option ndp &apos;relay&apos;               </span><br><span class="line">        option ra &apos;relay&apos;</span><br></pre></td></tr></table></figure></p>
-<p>可新问题又来了, 这条路由总是过期, 如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2409:8a00:7805:da41::/64 dev br-lan  proto kernel  metric 256  expires 259019sec</span><br></pre></td></tr></table></figure></p>
-<p>重新执行一下上面的命令又能恢复, 太不稳定了, 还是转回ipv6 NAT模式吧.</p>
-<h2 id="20180902更新"><a href="#20180902更新" class="headerlink" title="20180902更新"></a>20180902更新</h2><p>上述静态路由过期的问题原因找到, 原因是需要添加metric</p>
-<ul>
-<li>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan               # 会有过期时间 </li>
-<li>route -A inet6 add 2409:8a00:7805:d9b1::/64 dev br-lan metric 1 # 无过期时间<br>或者使用ip命令它添加的无过期时间 - ip -6 route del 2409:8a00:7805:d9b1::/64 dev br-lan</li>
-</ul>
-<h2 id="转试NAT6"><a href="#转试NAT6" class="headerlink" title="转试NAT6"></a>转试NAT6</h2><p>上面使用replay时的bug解不了, 无奈之下, 只好使用NAT6, 外面访问不了内网就访问不了吧, 起码可以内网访问外网啊. </p>
-<ul>
-<li><p>在/etc/config/network中配置了ula_prefix=2001:192:168:99::/64, 这时路由器上的br-lan除了ISP分配的IP之外, 也会多时我们这个自己配置的地址: 2001:192:168:99:0:0:0:1/64</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">config globals &apos;globals&apos;</span><br><span class="line">        option ula_prefix &apos;2001:192:168:99::/64&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修改/etc/config/dhcp将relay模式改到server模式即NAT模式</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;lan&apos;                                </span><br><span class="line">        option interface &apos;lan&apos;                   </span><br><span class="line">        option start &apos;100&apos;                       </span><br><span class="line">        option limit &apos;150&apos;                       </span><br><span class="line">        option leasetime &apos;12h&apos;                   </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;        </span><br><span class="line">        option dhcpv6 &apos;server&apos;                   </span><br><span class="line">        option ra_management &apos;2&apos;                 </span><br><span class="line">        option ra &apos;server&apos;                       </span><br><span class="line">        option ra_default &apos;1&apos;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在/etc/firewall.user中添加下列SNAT规则</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip6tables -t nat -I POSTROUTING -s `uci get network.globals.ula_prefix` -j MASQUERADE &gt; /dev/null 2&gt;&amp;1 </span><br><span class="line">route -A inet6 add 2000::/3 `route -A inet6 | grep ::/0 | awk &apos;NR==1&#123;print&quot;gw &quot;$2&quot; dev &quot;$7&#125;&apos;` &gt; /dev/null 2&gt;&amp;1</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>之后, 内网机器随便手动配置一个IP如2001:192:168:99:0:0:0:3/64并添加默认路由之后就可以访问外网了.<br>如果想外网访问2001:192:168:99::3/64, 是不能够使用下面的neigh proxy方式的, 因为网段和ISP分配的可路由网段根据就不一样嘛. 唯一的办法其实就是做DNAT<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w net.ipv6.conf.all.proxy_ndp=1</span><br><span class="line">ip -6 neigh add proxy 2001:192:168:99:0:0:0:3 dev pppoe-wan</span><br><span class="line">ip -6 neigh show proxy</span><br></pre></td></tr></table></figure></p>
-<h2 id="VPS不支持IPv6时如何使用IPv6"><a href="#VPS不支持IPv6时如何使用IPv6" class="headerlink" title="VPS不支持IPv6时如何使用IPv6"></a>VPS不支持IPv6时如何使用IPv6</h2><p>VPS若不支持IPv6, 可以通过tunnelbroker来配置6in4隧道支持IPv6, 但前提是VPS要能支持配置允许proto-41流量通过 (iptables -A INPUT -p 41 -j ACCEPT), 目前google cloud VPS是无法配置这个的.<br>若您的VPS支持这个, 可以继续. 先在<a href="https://www.tunnelbroker.net/" target="_blank" rel="external">https://www.tunnelbroker.net/</a> 登录后在’User Functions -&gt; Create Regular Tunnel’菜单创建 Create Regular Tunnel, 然后:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/network/interfaces</span><br><span class="line">auto he-ipv6</span><br><span class="line">iface he-ipv6 inet6 v4tunnel</span><br><span class="line">        address 2001:470:a:xx::2</span><br><span class="line">        netmask 64</span><br><span class="line">        endpoint 216.218.226.xx</span><br><span class="line">        local 162.xx.xx.xx</span><br><span class="line">        ttl 255</span><br><span class="line">        gateway 2001:470:a:4c4::1</span><br><span class="line">EOF</span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a /etc/sysctl.conf</span><br><span class="line">net.ipv6.conf.all.disable_ipv6 = 0</span><br><span class="line">net.ipv6.conf.default.disable_ipv6 = 0</span><br><span class="line">net.ipv6.conf.lo.disable_ipv6 = 0</span><br><span class="line">EOF</span><br><span class="line">sudo sysctl -p</span><br><span class="line">sudo apt install -y ifupdown</span><br><span class="line">sudo ifup he-ipv6</span><br><span class="line"># can&apos;t do tunnelbroker as 6in4 is unsupported (NAT/gateways won&apos;t pass proto-41)</span><br><span class="line">#sudo iptables -t nat -A PREROUTING -p 41 -d &lt;VPS-IP&gt; -j DNAT --to-destination &lt;tunnelbroker-ip&gt;</span><br><span class="line">#sudo iptables -t nat -A POSTROUTING -p 41 -d &lt;tunnelbroker-ip&gt; -j SNAT --to-source &lt;VPS-IP&gt;</span><br><span class="line">#sudo iptables -A INPUT -p 41 -j ACCEPT</span><br></pre></td></tr></table></figure>
-<p>使用tunnelbroker需要VPS有公网IPv4地址, 若没有, 可以使用miredo(sudo apt-get install miredo), 但前提也是要防火墙允许proto-41的流量</p>
-<h2 id="附件-OpenWRT自动恢复网络脚本"><a href="#附件-OpenWRT自动恢复网络脚本" class="headerlink" title="附件 - OpenWRT自动恢复网络脚本"></a>附件 - OpenWRT自动恢复网络脚本</h2><p>1, /etc/init.d/cron enable<br>2, crontab -e<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">*/4 * * * * /root/auto_restart.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br><span class="line">0 1 * * * /root/auto_restart_haproxy.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br></pre></td></tr></table></figure></p>
-<p>3, auto_restart.sh<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /root/auto_restart.sh </span><br><span class="line">#! /bin/sh</span><br><span class="line"># /etc/init.d/cron start</span><br><span class="line"># /etc/init.d/cron enable</span><br><span class="line"># crontab -e</span><br><span class="line"># */5 * * * * /root/auto_restart.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span><br><span class="line">EXIST=$(ip route list 0.0.0.0/0)</span><br><span class="line">if test -z &quot;$EXIST&quot;</span><br><span class="line">then</span><br><span class="line">   echo $(date) &apos;default route disappears, adding it now ...&apos;</span><br><span class="line">   route add default dev pppoe-wan</span><br><span class="line">   sleep 5</span><br><span class="line">   echo $(date) &apos;check network connection ...&apos;</span><br><span class="line">   #ping -c 1 114.114.114.114 &amp;&gt; /dev/null &amp;&amp; echo &apos;success&apos; || /etc/init.d/network restart;</span><br><span class="line">   if ping -c 1 114.114.114.114 &amp;&gt; /dev/null</span><br><span class="line">   then</span><br><span class="line">      echo &apos;ping success&apos;</span><br><span class="line">   else</span><br><span class="line">      echo &apos;ping failed&apos;</span><br><span class="line">      /etc/init.d/network restart</span><br><span class="line">      # for ipv6</span><br><span class="line">      /etc/init.d/odhcpd restart</span><br><span class="line">      sleep 5</span><br><span class="line">      PREFIX=`ip -6 route list dev br-lan |grep 2409:8a00 |awk -F &apos;::/&apos; &apos;&#123;print $1&quot;::/64&quot;&#125;&apos; |uniq`</span><br><span class="line">      ip -6 route del $PREFIX dev br-lan &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">      # NOTE: too too important, we must add &apos;metric&apos; option, or this route will have expire time, or use &apos;ip&apos; to add route</span><br><span class="line">      route -A inet6 add $PREFIX dev br-lan metric 1 &gt; /dev/null 2&gt;&amp;1</span><br><span class="line">   fi</span><br><span class="line">fi</span><br><span class="line">root@OpenWrt:~# cat /root/auto_restart_haproxy.sh </span><br><span class="line">#! /bin/sh</span><br><span class="line">echo $(date) &apos;restarting haproxy ...&apos;</span><br><span class="line">/etc/init.d/haproxy restart</span><br></pre></td></tr></table></figure></p>
-<h2 id="20190119更新-最终的设置"><a href="#20190119更新-最终的设置" class="headerlink" title="20190119更新 - 最终的设置"></a>20190119更新 - 最终的设置</h2><p>使用relay模式即使按上面说的加metric之后有缓解但还是容易时不是断线, 不清楚什么原因, 这里一个android关于忽略RA的帖子, 估计有关吧. - <a href="https://issuetracker.google.com/issues/36949115" target="_blank" rel="external">https://issuetracker.google.com/issues/36949115</a><br>换回stateful IPv6还需要继续在openwrt上配置DHCPv6  Server的, 并且android等某些系统并不支持stateful IPv6<br>换回stateless IPv6也有问题, 在ubuntu系统上可以通过命令”echo ‘precedence ::ffff:0:0/96 100’ &gt;&gt; /etc/gai.conf”配置IPv4优先, 但android系统下对4G网络可以配置是否使用IPv4/IPv6, 但对于wifi则没这个配置项. 而stateless IPv6会给android分配2001:192:168:99::1的DHCPv6, 而在openwrt上要pdnsd支持IPv6的话还得再编译, 也是麻烦.<br>所以最后退回为单纯的SLAAC配置, 仅是通过openwrt路由器拿RA, 并不配置DHCPv6. 所以最终的配置为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">config dhcp &apos;lan&apos;                                </span><br><span class="line">        option interface &apos;lan&apos;                   </span><br><span class="line">        option start &apos;100&apos;                       </span><br><span class="line">        option limit &apos;150&apos;                       </span><br><span class="line">        option leasetime &apos;12h&apos;                   </span><br><span class="line">        list dhcp_option &apos;6,192.168.99.1&apos;        </span><br><span class="line">        option ra &apos;server&apos;</span><br></pre></td></tr></table></figure></p>
-<p>并且禁用掉用于提供DHCPv6的odhcpd服务.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/odhcpd disable</span><br><span class="line">/etc/init.d/odhcpd stop</span><br></pre></td></tr></table></figure></p>
-<p>看来要想支持IPv6好, 需要全生态链的所有软件都能支持IPv6好并且方便啊, 目前看到的android, openwrt与pdnsd在这方面都就有所欠缺.<br>但上面改了之后, 是不再给client发dhcp信息了, 但同样网卡上也没有配置IPv6地址(静态指定的除外), 原因仍然是openwrt上的bug, /etc/init.d/radvd脚本没有根据/etc/config/radvd里的配置生成/var/etc/radvd.conf, 那我们人工生成一个配置文件:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /var/etc/radvd2.conf </span><br><span class="line">interface br-lan</span><br><span class="line">&#123;</span><br><span class="line">   AdvSendAdvert on;</span><br><span class="line">   prefix 2001:192:168:99::/64</span><br><span class="line">   &#123;</span><br><span class="line">       AdvOnLink on;</span><br><span class="line">       AdvAutonomous on;</span><br><span class="line">   &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>然后修改/etc/init.d/radvd中的下列三行即可:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#[ -z &quot;$RADVD_CONFIG_FILE&quot; ] &amp;&amp; return 1</span><br><span class="line">#service_start /usr/sbin/radvd -C &quot;$RADVD_CONFIG_FILE&quot; -m stderr_syslog -p /var/run/radvd.pid</span><br><span class="line">service_start /usr/sbin/radvd -C /var/etc/radvd2.conf -m stderr_syslog -p /var/run/radvd.pid</span><br></pre></td></tr></table></figure></p>
-<p>即使如此, 仍然有一些软件如和包之类的无法在IPv6与IPv4之间做fallback.<br>好吧, 看来IPv6的生态链太有问题了, 还是故意再把radvd恢复成不可用状态吧. 这样android手机就不会配置IPv6地址也不会配置DHCPv6从页可以正常使用和包之类的其他对IPv6支持不大好的软件, 同时ubuntu上想要使用IPv6的话就做静态配置指定IPv6地址吧.</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1915,8 +1927,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">89</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">90</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1966,7 +1978,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
