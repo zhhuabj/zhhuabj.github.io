@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2020/11/13/恢复系统记录/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华 发表于：2017-02-09版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 今天系统又无故crash并无法启动了，折腾了一下午，记录一下。 突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但">
-<meta property="og:updated_time" content="2020-11-13T01:26:23.786Z">
+<meta property="og:updated_time" content="2021-01-22T10:40:49.036Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="恢复系统记录">
 <meta name="twitter:description" content="作者：张华 发表于：2017-02-09版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 今天系统又无故crash并无法启动了，折腾了一下午，记录一下。 突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
                 2020-11-13
@@ -316,6 +316,14 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /var/lib/apt/lists/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock-frontend</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt clean</span><br><span class="line">sudo apt update --fix-missing</span><br><span class="line">sudo apt install -f</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt upgrade</span><br><span class="line">sudo apt dist-upgrade</span><br><span class="line"></span><br><span class="line">sudo apt purge *unity*</span><br><span class="line">sudo apt purge *gnome*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop</span><br><span class="line">sudo update-grub</span><br><span class="line">sudo apt install gdm3</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line"></span><br><span class="line">#Install Gnome and set it as default</span><br><span class="line">sudo apt install gnome-session</span><br><span class="line">sudo update-alternatives --config gdm3.css</span><br><span class="line">sudo reboot</span><br><span class="line">#Switch to a Windows-like Taskbar - https://vitux.com/how-to-get-the-windows-look-feel-on-ubuntu/</span><br><span class="line">sudo apt install gnome-shell-extensions gnome-shell-extension-dash-to-panel gnome-tweaks adwaita-icon-theme-full</span><br><span class="line"></span><br><span class="line">#Install windows-style desktop Cinnamon, but it&apos;s bluetooth doesn&apos;t work</span><br><span class="line">sudo add-apt-repository ppa:embrosyn/cinnamon</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cinnamon</span><br><span class="line">#sudo apt remove --autoremove cinnamon cinnamon-desktop-data</span><br><span class="line">#sudo add-apt-repository --remove ppa:embrosyn/cinnamon</span><br></pre></td></tr></table></figure>
 <p>20201113更新，切换到使用wayland再试试:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ grep -r &apos;Wayland&apos; /etc/gdm3/custom.conf</span><br><span class="line">WaylandEnable=true</span><br><span class="line">sudo systemctl restart gdm3</span><br><span class="line">hua@t440p:~$ echo $XDG_SESSION_TYPE</span><br><span class="line">wayland</span><br></pre></td></tr></table></figure>
+<p>但是gdm3是超级难用啊，刚装上就遇到chrome在gdm3上在复制粘贴时chrome就无响应的问题，只得再切回x11了，但我删除了lightdm遗留并且添加了下列配置，再难容一下吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/gdm3/PostSession/Default</span><br><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">killall -9 -u $USER</span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
+<p>20210118继续尝试，今天继续看到”systemd-logind got pause“错误,以及”PowerSaveMode, Timeout was reached”相关错误， 将尝试一下使用lightdm试试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install lightdm</span><br></pre></td></tr></table></figure></p>
+<p>另外，也将尝试下列命令是否能恢复</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reexec &amp;&amp; sudo systemctl start systemd-logind</span><br></pre></td></tr></table></figure>
+<h2 id="20210122更新-－-台式机死机的问题"><a href="#20210122更新-－-台式机死机的问题" class="headerlink" title="20210122更新　－　台式机死机的问题"></a>20210122更新　－　台式机死机的问题</h2><p>台式机经常莫名其秒就死了，尤其在开kvm虚机时，今天又死了，然后在/var/crash目录发现了_usr_lib_x86_64-linux-gnu_indicator-keyboard_indicator-keyboard-service.108.crash<br>也发现了如下日志：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/var/log/kern.log</span><br><span class="line">Jan 22 17:46:21 node1 kernel: [ 2163.654654] indicator-keybo[2918]: segfault at 20 ip 00007f259e9213d0 sp 00007ffde892f540 error 6 in libglib-2.0.so.0.6400.3[7f259e919000+84000]</span><br><span class="line"></span><br><span class="line">/var/log/syslog</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Main process exited, code=dumped, status=11/SEGV</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Failed with result &apos;core-dump&apos;.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Scheduled restart job, restart counter is at 1.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Stopped Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Started Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keyboard-service[18705]: Unable to init server: Could not connect: Connection refused</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keybo[18705]: gtk_icon_theme_get_for_screen: assertion &apos;GDK_IS_SCREEN (screen)&apos; failed</span><br></pre></td></tr></table></figure></p>
+<p>原本想运行”apt remove –purge indicator-keyboard“删除它，但使用ps -ef |grep indicator查看有lightdm的字眼，所以改用gdm3就好了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gdm3 -y</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br></pre></td></tr></table></figure>
+<p>但是笔记本上经常性登录crash，似乎是gdm3的问题，目前正在改成lightdm试。</p>
 
       
     </div>
@@ -406,10 +414,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -430,7 +438,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">90</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -466,7 +474,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#201923更新-解决login-loop问题"><span class="nav-number">1.</span> <span class="nav-text">201923更新 - 解决login loop问题</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#201923更新-解决login-loop问题"><span class="nav-number">1.</span> <span class="nav-text">201923更新 - 解决login loop问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20210122更新-－-台式机死机的问题"><span class="nav-number">2.</span> <span class="nav-text">20210122更新　－　台式机死机的问题</span></a></li></ol></div>
             
 
           </div>
@@ -496,7 +504,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

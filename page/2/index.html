@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:01:46+08:00">
                 2020-12-12
@@ -358,7 +358,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#97;&#105;&#x6c;&#x74;&#111;&#x3a;&#x3c;&#x22;&#x72;&#x61;&#98;&#x62;&#x69;&#x74;&#109;&#x71;&#x2d;&#115;&#x65;&#x72;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#98;&#100;&#x37;&#54;&#48;&#45;&#x6f;&#x63;&#x74;&#97;&#x76;&#x69;&#97;&#x2d;&#49;&#48;&#x22;">&#x3c;&#x22;&#x72;&#x61;&#98;&#x62;&#x69;&#x74;&#109;&#x71;&#x2d;&#115;&#x65;&#x72;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#98;&#100;&#x37;&#54;&#48;&#45;&#x6f;&#x63;&#x74;&#97;&#x76;&#x69;&#97;&#x2d;&#49;&#48;&#x22;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#60;&#x22;&#x72;&#97;&#98;&#98;&#105;&#116;&#x6d;&#113;&#x2d;&#x73;&#x65;&#114;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#106;&#x75;&#45;&#99;&#x62;&#x64;&#x37;&#54;&#48;&#x2d;&#111;&#99;&#x74;&#97;&#x76;&#x69;&#97;&#45;&#49;&#48;&#34;">&#60;&#x22;&#x72;&#97;&#98;&#98;&#105;&#116;&#x6d;&#113;&#x2d;&#x73;&#x65;&#114;&#x76;&#x65;&#114;&#x40;&#106;&#117;&#106;&#x75;&#45;&#99;&#x62;&#x64;&#x37;&#54;&#48;&#x2d;&#111;&#99;&#x74;&#97;&#x76;&#x69;&#97;&#45;&#49;&#48;&#34;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -371,7 +371,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#x3c;&#34;&#x72;&#x61;&#98;&#98;&#x69;&#116;&#109;&#x71;&#45;&#x73;&#101;&#114;&#118;&#x65;&#x72;&#64;&#106;&#117;&#x6a;&#117;&#x2d;&#99;&#x62;&#100;&#55;&#54;&#x30;&#x2d;&#111;&#99;&#116;&#97;&#x76;&#x69;&#97;&#45;&#x31;&#x30;&#x22;">&#x3c;&#34;&#x72;&#x61;&#98;&#98;&#x69;&#116;&#109;&#x71;&#45;&#x73;&#101;&#114;&#118;&#x65;&#x72;&#64;&#106;&#117;&#x6a;&#117;&#x2d;&#99;&#x62;&#100;&#55;&#54;&#x30;&#x2d;&#111;&#99;&#116;&#97;&#x76;&#x69;&#97;&#45;&#x31;&#x30;&#x22;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#97;&#105;&#108;&#116;&#x6f;&#58;&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#x69;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#x76;&#101;&#x72;&#x40;&#x6a;&#x75;&#106;&#x75;&#45;&#99;&#98;&#100;&#55;&#54;&#x30;&#x2d;&#x6f;&#x63;&#x74;&#97;&#x76;&#105;&#97;&#x2d;&#x31;&#48;&#34;">&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#x69;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#x76;&#101;&#x72;&#x40;&#x6a;&#x75;&#106;&#x75;&#45;&#99;&#98;&#100;&#55;&#54;&#x30;&#x2d;&#x6f;&#x63;&#x74;&#97;&#x76;&#105;&#97;&#x2d;&#x31;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -458,7 +458,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
                 2020-12-12
@@ -606,7 +606,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
                 2020-11-27
@@ -791,7 +791,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
                 2020-11-13
@@ -851,6 +851,14 @@ wget -c ${realurl}
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /var/lib/apt/lists/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock-frontend</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt clean</span><br><span class="line">sudo apt update --fix-missing</span><br><span class="line">sudo apt install -f</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt upgrade</span><br><span class="line">sudo apt dist-upgrade</span><br><span class="line"></span><br><span class="line">sudo apt purge *unity*</span><br><span class="line">sudo apt purge *gnome*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop</span><br><span class="line">sudo update-grub</span><br><span class="line">sudo apt install gdm3</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line"></span><br><span class="line">#Install Gnome and set it as default</span><br><span class="line">sudo apt install gnome-session</span><br><span class="line">sudo update-alternatives --config gdm3.css</span><br><span class="line">sudo reboot</span><br><span class="line">#Switch to a Windows-like Taskbar - https://vitux.com/how-to-get-the-windows-look-feel-on-ubuntu/</span><br><span class="line">sudo apt install gnome-shell-extensions gnome-shell-extension-dash-to-panel gnome-tweaks adwaita-icon-theme-full</span><br><span class="line"></span><br><span class="line">#Install windows-style desktop Cinnamon, but it&apos;s bluetooth doesn&apos;t work</span><br><span class="line">sudo add-apt-repository ppa:embrosyn/cinnamon</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cinnamon</span><br><span class="line">#sudo apt remove --autoremove cinnamon cinnamon-desktop-data</span><br><span class="line">#sudo add-apt-repository --remove ppa:embrosyn/cinnamon</span><br></pre></td></tr></table></figure>
 <p>20201113更新，切换到使用wayland再试试:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ grep -r &apos;Wayland&apos; /etc/gdm3/custom.conf</span><br><span class="line">WaylandEnable=true</span><br><span class="line">sudo systemctl restart gdm3</span><br><span class="line">hua@t440p:~$ echo $XDG_SESSION_TYPE</span><br><span class="line">wayland</span><br></pre></td></tr></table></figure>
+<p>但是gdm3是超级难用啊，刚装上就遇到chrome在gdm3上在复制粘贴时chrome就无响应的问题，只得再切回x11了，但我删除了lightdm遗留并且添加了下列配置，再难容一下吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/gdm3/PostSession/Default</span><br><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">killall -9 -u $USER</span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
+<p>20210118继续尝试，今天继续看到”systemd-logind got pause“错误,以及”PowerSaveMode, Timeout was reached”相关错误， 将尝试一下使用lightdm试试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install lightdm</span><br></pre></td></tr></table></figure></p>
+<p>另外，也将尝试下列命令是否能恢复</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reexec &amp;&amp; sudo systemctl start systemd-logind</span><br></pre></td></tr></table></figure>
+<h2 id="20210122更新-－-台式机死机的问题"><a href="#20210122更新-－-台式机死机的问题" class="headerlink" title="20210122更新　－　台式机死机的问题"></a>20210122更新　－　台式机死机的问题</h2><p>台式机经常莫名其秒就死了，尤其在开kvm虚机时，今天又死了，然后在/var/crash目录发现了_usr_lib_x86_64-linux-gnu_indicator-keyboard_indicator-keyboard-service.108.crash<br>也发现了如下日志：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/var/log/kern.log</span><br><span class="line">Jan 22 17:46:21 node1 kernel: [ 2163.654654] indicator-keybo[2918]: segfault at 20 ip 00007f259e9213d0 sp 00007ffde892f540 error 6 in libglib-2.0.so.0.6400.3[7f259e919000+84000]</span><br><span class="line"></span><br><span class="line">/var/log/syslog</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Main process exited, code=dumped, status=11/SEGV</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Failed with result &apos;core-dump&apos;.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Scheduled restart job, restart counter is at 1.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Stopped Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Started Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keyboard-service[18705]: Unable to init server: Could not connect: Connection refused</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keybo[18705]: gtk_icon_theme_get_for_screen: assertion &apos;GDK_IS_SCREEN (screen)&apos; failed</span><br></pre></td></tr></table></figure></p>
+<p>原本想运行”apt remove –purge indicator-keyboard“删除它，但使用ps -ef |grep indicator查看有lightdm的字眼，所以改用gdm3就好了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gdm3 -y</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br></pre></td></tr></table></figure>
+<p>但是笔记本上经常性登录crash，似乎是gdm3的问题，目前正在改成lightdm试。</p>
 
           
         
@@ -928,7 +936,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
                 2020-11-12
@@ -1063,7 +1071,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
                 2020-11-12
@@ -1211,7 +1219,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
                 2020-11-09
@@ -1356,7 +1364,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
                 2020-11-08
@@ -1555,7 +1563,7 @@ use sendfile = yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
                 2020-11-04
@@ -1722,7 +1730,7 @@ set_state done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T16:23:01+08:00">
                 2020-11-04
@@ -1859,7 +1867,7 @@ set_state done
                 <a href="/archives/">
               
                   <span class="site-state-item-count">90</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1909,7 +1917,7 @@ set_state done
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
