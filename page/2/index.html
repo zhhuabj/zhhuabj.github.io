@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,196 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/30/Testing-OpenStack-NUMA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/30/Testing-OpenStack-NUMA/" itemprop="url">Testing OpenStack NUMA</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-30T12:13:20+08:00">
+                2020-12-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-07-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>虚机模拟NUMA硬件<br>我们可能没有NUMA硬件，但可以采用VM模拟。</p>
+<p>1,  参考链接[1]打开KVM的嵌套虚拟化功能，Ubuntu KVM默认应该是开启的。</p>
+<p>2, [可选] host机的网络如下，将仅有一块网卡eth0插到了br-phy中。</p>
+<p>auto br-phy<br>allow-ovs br-phy<br>iface br-phy inet static<br>pre-up /usr/bin/ovs-vsctl – –may-exist add-br br-phy<br>pre-up /usr/bin/ovs-vsctl – –may-exist add-port br-phy eth0<br>  address 192.168.99.125<br>  gateway 192.168.99.1<br>  network 192.168.99.0<br>  netmask 255.255.255.0<br>  broadcast 192.168.99.255<br>ovs_type OVSBridge<br>ovs_ports eth0</p>
+<p>#sudo ip -6 addr add 2001:2:3:4500:fa32:e4ff:febe:87cd/64 dev br-phy<br>iface br-phy inet6 static<br>pre-up modprobe ipv6<br>address 2001:2:3:4500:fa32:e4ff:febe:87cd<br>netmask 64<br>gateway 2001:2:3:4500::1</p>
+<p>auto eth0<br>allow-br-phy eth0<br>iface eth0 inet manual<br>ovs_bridge br-phy<br>ovs_type OVSPort</p>
+<p>然后让KVM支持Openvswitch网桥：</p>
+<p>sudo ovs-vsctl add-br br-phy<br>sudo virsh net-destroy default<br>sudo virsh net-edit default</p>
+<p><network><br>  <name>default</name><br>  <forward mode="bridge"><br>  <bridge name="br-phy"><br>  <virtualport type="openvswitch"><br></virtualport></bridge></forward></network><br>sudo virsh net-undefine default<br>sudo virsh net-autostart br-phy<br>3, 结合virt-manger安装一VM.</p>
+<p>sudo apt-get install virt-viewer openvswitch-switch qemu-kvm libvirt-bin virt-manager virtinst virt-top  python-libvirt<br>sudo virt-install \<br>   –name openstack_demo \<br>   –ram 8096 \<br>   –vcpus 8 \<br>   –file /images/kvm/openstack_demo.img \<br>   –file-size 20 \<br>   –cdrom /images/iso/ubuntu-20.04-legacy-server-amd64.iso<br>4, 一定要在VM关闭的情况下修改VM的拓扑为NUMA拓扑。</p>
+<p>sudo virsh destroy openstack_demo<br>sudo virsh edit openstack_demo</p>
+<cpu mode="host-passthrough"><br>  <numa><br>    <cell id="0" cpus="0-3" memory="4096000"><br>    <cell id="1" cpus="4-5" memory="2048000"><br>    <cell id="2" cpus="6-7" memory="2048000"><br>  </cell></cell></cell></numa><br></cpu>
+
+<p>sudo virsh start openstack_demo<br>5, VM内打开大页支持，因为openstack numa需要大页支持。</p>
+<p>hua@demo:~$ cat  /etc/default/grub |grep GRUB_CMDLINE_LINUX<br>GRUB_CMDLINE_LINUX_DEFAULT=””<br>GRUB_CMDLINE_LINUX=”transparent_hugepage=never hugepagesz=2M hugepages=512 default_hugepagesz=2M”</p>
+<h1 id="add-also-add-isolcpus-0-1-2-3"><a href="#add-also-add-isolcpus-0-1-2-3" class="headerlink" title="add also add isolcpus=0,1,2,3"></a>add also add isolcpus=0,1,2,3</h1><p>cat &lt;&lt; EOF | sudo tee -a /etc/fstab<br>nodev /mnt/huge hugetlbfs pagesize=2MB 0 0<br>EOF</p>
+<p>sudo update-grub<br>sudo mkdir -p /mnt/huge<br>sudo reboot</p>
+<p>#hua@demo:~$ sudo sysctl -w vm.nr_hugepages=512</p>
+<p>#vm.nr_hugepages = 512<br>6, 这时我们看到：</p>
+<p>ubuntu@demo:~$ numactl –hardware<br>available: 3 nodes (0-2)<br>node 0 cpus: 0 1 2 3<br>node 0 size: 3846 MB<br>node 0 free: 3115 MB<br>node 1 cpus: 4 5<br>node 1 size: 1969 MB<br>node 1 free: 1542 MB<br>node 2 cpus: 6 7<br>node 2 size: 1966 MB<br>node 2 free: 1466 MB<br>node distances:<br>node   0   1   2<br>  0:  10  20  20<br>  1:  20  10  20<br>  2:  20  20  10<br>ubuntu@demo:~$ grep Hugepagesize /proc/meminfo<br>Hugepagesize:       2048 kB<br>ubuntu@demo:~$ cat /proc/meminfo | grep Huge<br>AnonHugePages:         0 kB<br>ShmemHugePages:        0 kB<br>FileHugePages:         0 kB<br>HugePages_Total:     512<br>HugePages_Free:      512<br>HugePages_Rsvd:        0<br>HugePages_Surp:        0<br>Hugepagesize:       2048 kB<br>Hugetlb:         1048576 kB<br>ubuntu@demo:~$ sudo cat /sys/devices/system/node/node*/meminfo | grep -i huge<br>Node 0 AnonHugePages:         0 kB<br>Node 0 ShmemHugePages:        0 kB<br>Node 0 FileHugePages:        0 kB<br>Node 0 HugePages_Total:   171<br>Node 0 HugePages_Free:    171<br>Node 0 HugePages_Surp:      0<br>Node 1 AnonHugePages:         0 kB<br>Node 1 ShmemHugePages:        0 kB<br>Node 1 FileHugePages:        0 kB<br>Node 1 HugePages_Total:   171<br>Node 1 HugePages_Free:    171<br>Node 1 HugePages_Surp:      0<br>Node 2 AnonHugePages:         0 kB<br>Node 2 ShmemHugePages:        0 kB<br>Node 2 FileHugePages:        0 kB<br>Node 2 HugePages_Total:   170<br>Node 2 HugePages_Free:    170<br>Node 2 HugePages_Surp:      0<br>安装OpenStack<br>还需要配置pypi，详见：<a href="https://blog.csdn.net/quqi99/article/details/97622336" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/97622336</a></p>
+<p>git clone git://github.com/openstack-dev/devstack.git<br>cd devstack<br>cat &lt;&lt; EOF | sudo tee local.conf<br>[[local|localrc]]</p>
+<p>#OFFLINE=True<br>GIT_BASE=<a href="http://git.trystack.cn" target="_blank" rel="external">http://git.trystack.cn</a><br>NOVNC_REPO=<a href="http://git.trystack.cn/kanaka/noVNC.git" target="_blank" rel="external">http://git.trystack.cn/kanaka/noVNC.git</a><br>SPICE_REPO=<a href="http://git.trystack.cn/git/spice/sice-html5.git" target="_blank" rel="external">http://git.trystack.cn/git/spice/sice-html5.git</a><br>DEST=/home/ubuntu/openstack<br>DATA_DIR=\$DEST/data<br>SERVICE_DIR=\$DEST/status</p>
+<p>DOWNLOAD_DEFAULT_IMAGES=False<br>IMAGE_URLS=”<a href="http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img" target="_blank" rel="external">http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img</a>“</p>
+<p>LOGFILE=\$DATA_DIR/logs/stack.log<br>VERBOSE=True</p>
+<p>disable_service n-net<br>enable_service neutron q-svc q-dhcp q-l3 q-meta q-agt</p>
+<p>MYSQL_PASSWORD=password<br>DATABASE_PASSWORD=password<br>SERVICE_TOKEN=password<br>SERVICE_PASSWORD=password<br>ADMIN_PASSWORD=password<br>RABBIT_PASSWORD=password</p>
+<p>[[post-config|$NOVA_CONF]]<br>[DEFAULT]<br>firewall_driver=nova.virt.firewall.NoopFirewallDriver</p>
+<p>[filter_scheduler]<br>enabled_filters=RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter<br>EOF</p>
+<p>FORCE=yes ./stack.sh</p>
+<p>sudo systemctl enable mysql.service<br>sudo systemctl enable rabbitmq-server.service<br>sudo systemctl enable apache2.service</p>
+<p>. openrc admin</p>
+<p>VM内安装配置OpenStack<br>1, VM内使用devstack安装OpenStack，略。但记得添加AggregateInstanceExtraSpecsFilter, NUMATopologyFilter到scheduler_default_filters （/etc/nova/nova.conf)中并重启nova-schedule进程。</p>
+<p>2, 配置aggregate</p>
+<p>nova aggregate-create hpgs-aggr<br>nova aggregate-set-metadata hpgs-aggr hpgs=true<br>nova aggregate-create normal-aggr<br>nova aggregate-set-metadata normal-aggr hpgs=false</p>
+<p>#Add one or more hosts to them:<br>nova aggregate-add-host hpgs-aggr demo<br>hua@demo:~$ nova aggregate-show hpgs-aggr<br>+—-+———–+——————-+——–+————-+<br>| Id | Name      | Availability Zone | Hosts  | Metadata    |<br>+—-+———–+——————-+——–+————-+<br>| 1  | hpgs-aggr | -                 | ‘demo’ | ‘hpgs=true’ |<br>+—-+———–+——————-+——–+————-+<br>3, 配置flavor</p>
+<p>nova flavor-create –ephemeral 0 –swap 0 –rxtx-factor 1.0 –is-public True m1.numa2nodes b8c065ce-90c2-41f9-8d50-1d47a040b494 256 1 2<br>nova flavor-key m1.numa2nodes set aggregate_instance_extra_specs:hpgs=true      #使用aggregate<br>nova flavor-key m1.numa2nodes set hw:mem_page_size=2048                         #配置大页支持</p>
+<p>#nova flavor-key m1.numa2nodes set hw:cpu_policy=’dedicated’ hw:cpu_thread_policy=’isolate’</p>
+<p>#nova flavor-key m1.numa2nodes set hw:emulator_threads_policy=’isolate’ hypervisor_type=’QEMU’</p>
+<p>nova flavor-key m1.numa2nodes set hw:numa_nodes=2                               #配置numa_nodes，若不配置下列两行就是自动模型，配置下面两行为手动模式<br>nova flavor-key m1.numa2nodes set hw:numa_mem.0=128 hw:numa_mem.1=128 hw:numa_mempolicy=strict<br>nova flavor-key m1.numa2nodes set hw:numa_cpus.0=0  hw:numa_cpus.1=1 hw:cpu_policy=dedicated</p>
+<p>hua@demo:/bak/openstack/nova$ nova flavor-show m1.numa2nodes |grep extra_specs<br>| extra_specs                | {“hw:cpu_policy”: “dedicated”, “hw:mem_page_size”: “2048”, “hw:numa_mempolicy”: “strict”, “hw:numa_mem.1”: “128”, “hw:numa_mem.0”: “128”, “hw:numa_nodes”: “2”, “aggregate_instance_extra_specs:hpgs”: “true”, “hw:numa_cpus.0”: “0”, “hw:numa_cpus.1”: “1”} |<br>4, 创建虚机</p>
+<p>NET_ID=$(neutron net-list |grep ‘private’ |awk ‘{print $2}’)<br>nova boot –image cirros-0.5.1-x86_64-disk –flavor m1.numa2nodes –nic net-id=$NET_ID i1<br>5, 创建虚机后的大页情况，可以看到在node0与node1上已经各用了171-107=64块大页</p>
+<p>hua@demo:/bak/openstack/nova$ sudo cat /sys/devices/system/node/node*/meminfo | grep -i huge<br>Node 0 AnonHugePages:         0 kB<br>Node 0 HugePages_Total:   171<br>Node 0 HugePages_Free:    107<br>Node 0 HugePages_Surp:      0<br>Node 1 AnonHugePages:         0 kB<br>Node 1 HugePages_Total:   171<br>Node 1 HugePages_Free:    107<br>Node 1 HugePages_Surp:      0<br>Node 2 AnonHugePages:         0 kB<br>Node 2 HugePages_Total:   170<br>Node 2 HugePages_Free:    170<br>Node 2 HugePages_Surp:      0<br>6, DB情况</p>
+<p>mysql&gt; select numa_topology from instance_extra;<br>{<br>  “nova_object.version”: “1.2”,<br>  “nova_object.changes”: [<br>    “cells”<br>  ],<br>  “nova_object.name”: “InstanceNUMATopology”,<br>  “nova_object.data”: {<br>    “cells”: [<br>      {<br>        “nova_object.version”: “1.3”,<br>        “nova_object.changes”: [<br>          “cpu_topology”,<br>          “pagesize”,<br>          “cpuset”,<br>          “cpu_policy”,<br>          “memory”,<br>          “cpu_pinning_raw”,<br>          “id”,<br>          “cpu_thread_policy”<br>        ],<br>        “nova_object.name”: “InstanceNUMACell”,<br>        “nova_object.data”: {<br>          “pagesize”: 2048,<br>          “cpu_topology”: {<br>            “nova_object.version”: “1.0”,<br>            “nova_object.changes”: [<br>              “cores”,<br>              “threads”,<br>              “sockets”<br>            ],<br>            “nova_object.name”: “VirtCPUTopology”,<br>            “nova_object.data”: {<br>              “cores”: 1,<br>              “threads”: 1,<br>              “sockets”: 1<br>            },<br>            “nova_object.namespace”: “nova”<br>          },<br>          “cpuset”: [<br>            0<br>          ],<br>          “cpu_policy”: “dedicated”,<br>          “memory”: 128,<br>          “cpu_pinning_raw”: {<br>            “0”: 0<br>          },<br>          “id”: 0,<br>          “cpu_thread_policy”: null<br>        },<br>        “nova_object.namespace”: “nova”<br>      },<br>      {<br>        “nova_object.version”: “1.3”,<br>        “nova_object.changes”: [<br>          “cpu_topology”,<br>          “pagesize”,<br>          “cpuset”,<br>          “cpu_policy”,<br>          “memory”,<br>          “cpu_pinning_raw”,<br>          “id”,<br>          “cpu_thread_policy”<br>        ],<br>        “nova_object.name”: “InstanceNUMACell”,<br>        “nova_object.data”: {<br>          “pagesize”: 2048,<br>          “cpu_topology”: {<br>            “nova_object.version”: “1.0”,<br>            “nova_object.changes”: [<br>              “cores”,<br>              “threads”,<br>              “sockets”<br>            ],<br>            “nova_object.name”: “VirtCPUTopology”,<br>            “nova_object.data”: {<br>              “cores”: 1,<br>              “threads”: 1,<br>              “sockets”: 1<br>            },<br>            “nova_object.namespace”: “nova”<br>          },<br>          “cpuset”: [<br>            1<br>          ],<br>          “cpu_policy”: “dedicated”,<br>          “memory”: 128,<br>          “cpu_pinning_raw”: {<br>            “1”: 4<br>          },<br>          “id”: 1,<br>          “cpu_thread_policy”: null<br>        },<br>        “nova_object.namespace”: “nova”<br>      }<br>    ]<br>  },<br>  “nova_object.namespace”: “nova”<br>}<br>其他有用信息：</p>
+<p>export MYSQL_PASSWORD=ChangeMe123<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select <em> from nova.instances where host=’juju-38b529-ovn-6.cloud.sts’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select </em> from nova.instance_extra where instance_uuid=’0761d1de-7acd-4781-ae8b-f5ba864ab6ec’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select <em> from nova.compute_nodes where hypervisor_hostname=’p2-bits-cloud-xxx.maas’ or hypervisor_hostname=’p2-bits-cloud-xxx.maas’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select </em> from nova_api.request_specs where instance_uuid=’0761d1de-7acd-4781-ae8b-f5ba864ab6ec’\G\””<br>生成的虚机配置文件</p>
+<p><domain type="kvm" id="1"><br>  <name>instance-00000001</name><br>  <uuid>3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</uuid><br>  <metadata><br>    <nova:instance xmlns:nova="http://openstack.org/xmlns/libvirt/nova/1.0"><br>      <nova:package version="14.0.0"><br>      <nova:name>i1</nova:name><br>      <nova:creationtime>2016-07-22 03:46:03</nova:creationtime><br>      <nova:flavor name="m1.numa2nodes"><br>        <nova:memory>256</nova:memory><br>        <nova:disk>1</nova:disk><br>        <nova:swap>0</nova:swap><br>        <nova:ephemeral>0</nova:ephemeral><br>        <nova:vcpus>2</nova:vcpus><br>      </nova:flavor><br>      <nova:owner><br>        <nova:user uuid="e6001bf33a174ffb9d3ad3e9ff47d059">admin</nova:user><br>        <nova:project uuid="f5a578104510494da0ecae0fb514a6f1">demo</nova:project><br>      </nova:owner><br>      <nova:root type="image" uuid="d8184047-f7b3-4622-83e1-fb9d7ede807f"><br>    </nova:root></nova:package></nova:instance><br>  </metadata><br>  <memory unit="KiB">262144</memory><br>  <currentmemory unit="KiB">262144</currentmemory><br>  <memorybacking><br>    <hugepages><br>      <page size="2048" unit="KiB" nodeset="0"><br>      <page size="2048" unit="KiB" nodeset="1"><br>    </page></page></hugepages><br>  </memorybacking><br>  <vcpu placement="static">2</vcpu><br>  <cputune><br>    <shares>2048</shares><br>    <vcpupin vcpu="0" cpuset="0"><br>    <vcpupin vcpu="1" cpuset="4"><br>    <emulatorpin cpuset="0,4"><br>  </emulatorpin></vcpupin></vcpupin></cputune><br>  <numatune><br>    <memory mode="strict" nodeset="0-1"><br>    <memnode cellid="0" mode="strict" nodeset="0"><br>    <memnode cellid="1" mode="strict" nodeset="1"><br>  </memnode></memnode></memory></numatune><br>  <resource><br>    <partition>/machine</partition><br>  </resource><br>  <sysinfo type="smbios"><br>    <system><br>      <entry name="manufacturer">OpenStack Foundation</entry><br>      <entry name="product">OpenStack Nova</entry><br>      <entry name="version">14.0.0</entry><br>      <entry name="serial">4d63962c-1942-0164-e7a7-fa97578f4e3a</entry><br>      <entry name="uuid">3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</entry><br>      <entry name="family">Virtual Machine</entry><br>    </system><br>  </sysinfo><br>  <os><br>    <type arch="x86_64" machine="pc-i440fx-wily">hvm</type><br>    <kernel>/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/kernel</kernel><br>    <initrd>/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/ramdisk</initrd><br>    <cmdline>root=/dev/vda console=tty0 console=ttyS0</cmdline><br>    <boot dev="hd"><br>    <smbios mode="sysinfo"><br>  </smbios></boot></os><br>  <features><br>    <acpi><br>    <apic><br>  </apic></acpi></features><br>  <cpu><br>    <topology sockets="2" cores="1" threads="1"><br>    <numa><br>      <cell id="0" cpus="0" memory="131072" unit="KiB" memaccess="shared"><br>      <cell id="1" cpus="1" memory="131072" unit="KiB" memaccess="shared"><br>    </cell></cell></numa><br>  </topology></cpu><br>  <clock offset="utc"><br>    <timer name="pit" tickpolicy="delay"><br>    <timer name="rtc" tickpolicy="catchup"><br>    <timer name="hpet" present="no"><br>  </timer></timer></timer></clock><br>  <on_poweroff>destroy</on_poweroff><br>  <on_reboot>restart</on_reboot><br>  <on_crash>destroy</on_crash><br>  <devices><br>    <emulator>/usr/bin/kvm-spice</emulator><br>    <disk type="file" device="disk"><br>      <driver name="qemu" type="qcow2" cache="none"><br>      <source file="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/disk"><br>      <backingstore type="file" index="1"><br>        <format type="raw"><br>        <source file="/opt/stack/data/nova/instances/_base/5b06ec6b6abd700935b24a454e8ce3461d050a9f"><br>        <backingstore><br>      </backingstore><br>      <target dev="vda" bus="virtio"><br>      <alias name="virtio-disk0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0"><br>    </address></alias></target></format></backingstore></driver></disk><br>    <disk type="file" device="cdrom"><br>      <driver name="qemu" type="raw" cache="none"><br>      <source file="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/disk.config"><br>      <backingstore><br>      <target dev="hdd" bus="ide"><br>      <readonly><br>      <alias name="ide0-1-1"><br>      <address type="drive" controller="0" bus="1" target="0" unit="1"><br>    </address></alias></readonly></target></backingstore></driver></disk><br>    <controller type="usb" index="0"><br>      <alias name="usb"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x2"><br>    </address></alias></controller><br>    <controller type="pci" index="0" model="pci-root"><br>      <alias name="pci.0"><br>    </alias></controller><br>    <controller type="ide" index="0"><br>      <alias name="ide"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"><br>    </address></alias></controller><br>    <interface type="bridge"><br>      <mac address="fa:16:3e:0b:52:0b"><br>      <source bridge="qbref7fef26-3e"><br>      <target dev="tapef7fef26-3e"><br>      <model type="virtio"><br>      <alias name="net0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0"><br>    </address></alias></model></target></mac></interface><br>    <serial type="file"><br>      <source path="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/console.log"><br>      <target port="0"><br>      <alias name="serial0"><br>    </alias></target></serial><br>    <serial type="pty"><br>      <source path="/dev/pts/20"><br>      <target port="1"><br>      <alias name="serial1"><br>    </alias></target></serial><br>    <console type="file"><br>      <source path="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/console.log"><br>      <target type="serial" port="0"><br>      <alias name="serial0"><br>    </alias></target></console><br>    <memballoon model="virtio"><br>      <stats period="10"><br>      <alias name="balloon0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0"><br>    </address></alias></stats></memballoon><br>  </devices><br>  <seclabel type="dynamic" model="apparmor" relabel="yes"><br>    <label>libvirt-3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</label><br>    <imagelabel>libvirt-3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</imagelabel><br>  </seclabel><br></domain><br>20201208更新<br>1, create a VM with 3 numa nodes according to the doc [1]</p>
+<cpu mode="host-passthrough"><br>  <numa><br>    <cell id="0" cpus="0-3" memory="4096000"><br>    <cell id="1" cpus="4-5" memory="2048000"><br>    <cell id="2" cpus="6-7" memory="2048000"><br>  </cell></cell></cell></numa><br></cpu>
+
+<p>2, enable huge page, and use ‘isolcpus=0,1,2,3’ to just use cpu in numa0<br>注意：grub里定义isolcpus并不会让nova不使用这些cpu, nova里专门有vcpu_pin_set来做这件事。</p>
+<p>$ cat /proc/cmdline |grep isolcpu<br>BOOT_IMAGE=/boot/vmlinuz-5.4.0-26-generic root=/dev/mapper/vgdemo-root ro transparent_hugepage=never hugepagesz=2M hugepages=512 default_hugepagesz=2M isolcpus=0,1,2,3</p>
+<p>3, set up openstack test env.</p>
+<p>4, create test aggreate and flavor and test vm</p>
+<p>nova aggregate-create hpgs-aggr<br>nova aggregate-set-metadata hpgs-aggr hpgs=true<br>nova aggregate-create normal-aggr<br>nova aggregate-set-metadata normal-aggr hpgs=false<br>nova aggregate-add-host hpgs-aggr demo<br>nova aggregate-show hpgs-aggr</p>
+<p>nova flavor-create –ephemeral 0 –swap 0 –rxtx-factor 1.0 –is-public True m1.numa2nodes b8c065ce-90c2-41f9-8d50-1d47a040b494 256 1 2<br>nova flavor-key m1.numa2nodes set aggregate_instance_extra_specs:hpgs=true<br>nova flavor-key m1.numa2nodes set hw:mem_page_size=2048<br>nova flavor-key m1.numa2nodes set hw:cpu_policy=’dedicated’ hw:cpu_thread_policy=’isolate’<br>nova flavor-key m1.numa2nodes set hw:emulator_threads_policy=’isolate’ hypervisor_type=’QEMU’</p>
+<p>nova boot –image cirros-0.5.1-x86_64-disk –flavor m1.numa2nodes –nic net-id=$NET_ID i1</p>
+<p>3, This instance i1 uses cpu 0 and 1, and use cpu 2 as emulatorpin</p>
+<p>$ ps -eLo psr,args |grep qemu- |grep -v ‘grep’ |awk ‘{print $1}’ |sort -n |uniq<br>0<br>1<br>2</p>
+<p>$ sudo virsh emulatorpin instance-00000001</p>
+<h2 id="emulator-CPU-Affinity"><a href="#emulator-CPU-Affinity" class="headerlink" title="emulator: CPU Affinity"></a>emulator: CPU Affinity</h2><pre><code>*: 2
+</code></pre><p>$ sudo virsh vcpuinfo instance-00000001<br>VCPU:           0<br>CPU:            0<br>State:          running<br>CPU time:       21.2s<br>CPU Affinity:   y——-</p>
+<p>VCPU:           1<br>CPU:            1<br>State:          running<br>CPU time:       14.9s<br>CPU Affinity:   -y——</p>
+<p>$ taskset -apc <code>pidof qemu-system-x86_64</code><br>pid 15014’s current affinity list: 2<br>pid 15016’s current affinity list: 2<br>pid 15022’s current affinity list: 2<br>pid 15023’s current affinity list: 0<br>pid 15025’s current affinity list: 1<br>pid 15039’s current affinity list: 2</p>
+<p>sudo virsh dumpxml instance-00000001<br>  …<br>  <vcpu placement="static">2</vcpu><br>  <cputune><br>    <shares>2048</shares><br>    <vcpupin vcpu="0" cpuset="0"><br>    <vcpupin vcpu="1" cpuset="1"><br>    <emulatorpin cpuset="2"><br>  </emulatorpin></vcpupin></vcpupin></cputune><br>  <cpu mode="custom" match="exact" check="full"><br>    <model fallback="forbid">qemu64</model><br>    <topology sockets="2" cores="1" threads="1"><br>    <feature policy="require" name="x2apic"><br>    <feature policy="require" name="hypervisor"><br>    <feature policy="require" name="lahf_lm"><br>    <feature policy="disable" name="svm"><br>    <numa><br>      <cell id="0" cpus="0-1" memory="262144" unit="KiB" memaccess="shared"><br>    </cell></numa><br>  </feature></feature></feature></feature></topology></cpu></p>
+<p>4, host’s numa_toplogy</p>
+<p>select numa_topology from nova_cell1.compute_nodes where host=’demo’ \G;</p>
+<p>see <a href="https://paste.ubuntu.com/p/MjmMHZxS6s/" target="_blank" rel="external">https://paste.ubuntu.com/p/MjmMHZxS6s/</a></p>
+<p>5, instance’s numa_toplogy</p>
+<p>select numa_topology from instance_extra where instance_uuid in (select uuid from instances where host=’demo’) \G;</p>
+<p>see <a href="https://paste.ubuntu.com/p/CP2t2ghCfH/" target="_blank" rel="external">https://paste.ubuntu.com/p/CP2t2ghCfH/</a></p>
+<p>参考<br>[1] <a href="http://docs.openstack.org/developer/devstack/guides/devstack-with-nested-kvm.html" target="_blank" rel="external">http://docs.openstack.org/developer/devstack/guides/devstack-with-nested-kvm.html</a></p>
+<p>[2] <a href="https://docs.openstack.org/nova/rocky/contributor/testing/libvirt-numa.html" target="_blank" rel="external">https://docs.openstack.org/nova/rocky/contributor/testing/libvirt-numa.html</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +450,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-28T10:06:02+08:00">
                 2020-12-28
@@ -418,7 +608,7 @@ c、gdb &lt;program&gt; &lt;PID&gt;
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:01:46+08:00">
                 2020-12-12
@@ -516,7 +706,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#x6d;&#97;&#105;&#x6c;&#116;&#111;&#58;&#60;&#x22;&#x72;&#97;&#x62;&#98;&#x69;&#116;&#x6d;&#113;&#x2d;&#x73;&#101;&#x72;&#118;&#101;&#x72;&#x40;&#106;&#x75;&#106;&#117;&#x2d;&#x63;&#98;&#x64;&#55;&#54;&#48;&#x2d;&#x6f;&#x63;&#116;&#x61;&#x76;&#105;&#x61;&#45;&#x31;&#48;&#x22;">&#60;&#x22;&#x72;&#97;&#x62;&#98;&#x69;&#116;&#x6d;&#113;&#x2d;&#x73;&#101;&#x72;&#118;&#101;&#x72;&#x40;&#106;&#x75;&#106;&#117;&#x2d;&#x63;&#98;&#x64;&#55;&#54;&#48;&#x2d;&#x6f;&#x63;&#116;&#x61;&#x76;&#105;&#x61;&#45;&#x31;&#48;&#x22;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#58;&#x3c;&#x22;&#x72;&#x61;&#98;&#x62;&#x69;&#x74;&#x6d;&#x71;&#x2d;&#115;&#x65;&#x72;&#118;&#101;&#114;&#x40;&#106;&#x75;&#x6a;&#x75;&#45;&#99;&#98;&#x64;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#116;&#x61;&#x76;&#105;&#97;&#45;&#x31;&#48;&#34;">&#x3c;&#x22;&#x72;&#x61;&#98;&#x62;&#x69;&#x74;&#x6d;&#x71;&#x2d;&#115;&#x65;&#x72;&#118;&#101;&#114;&#x40;&#106;&#x75;&#x6a;&#x75;&#45;&#99;&#98;&#x64;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#116;&#x61;&#x76;&#105;&#97;&#45;&#x31;&#48;&#34;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -529,7 +719,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#60;&#x22;&#x72;&#97;&#x62;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#114;&#118;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#45;&#99;&#x62;&#x64;&#55;&#x36;&#48;&#45;&#111;&#99;&#x74;&#97;&#118;&#x69;&#x61;&#45;&#x31;&#48;&#34;">&#60;&#x22;&#x72;&#97;&#x62;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#114;&#118;&#x65;&#114;&#x40;&#x6a;&#x75;&#x6a;&#117;&#45;&#99;&#x62;&#x64;&#55;&#x36;&#48;&#45;&#111;&#99;&#x74;&#97;&#118;&#x69;&#x61;&#45;&#x31;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#97;&#105;&#x6c;&#x74;&#x6f;&#58;&#x3c;&#x22;&#x72;&#97;&#98;&#x62;&#x69;&#x74;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#x76;&#101;&#x72;&#64;&#106;&#x75;&#106;&#117;&#x2d;&#x63;&#98;&#100;&#55;&#54;&#48;&#45;&#111;&#x63;&#x74;&#x61;&#118;&#x69;&#97;&#x2d;&#49;&#48;&#34;">&#x3c;&#x22;&#x72;&#97;&#98;&#x62;&#x69;&#x74;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#x76;&#101;&#x72;&#64;&#106;&#x75;&#106;&#117;&#x2d;&#x63;&#98;&#100;&#55;&#54;&#48;&#45;&#111;&#x63;&#x74;&#x61;&#118;&#x69;&#97;&#x2d;&#49;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -616,7 +806,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
                 2020-12-12
@@ -764,7 +954,7 @@ if relation_ids(&apos;ha&apos;):
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
                 2020-11-27
@@ -949,7 +1139,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
                 2020-11-13
@@ -1094,7 +1284,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
                 2020-11-12
@@ -1229,7 +1419,7 @@ wget -c ${realurl}
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
                 2020-11-12
@@ -1377,7 +1567,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
                 2020-11-09
@@ -1522,7 +1712,7 @@ Compression yes
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-08T15:16:38+08:00">
                 2020-11-08
@@ -1679,173 +1869,6 @@ use sendfile = yes
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/04/使用rsync同步数据/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/04/使用rsync同步数据/" itemprop="url">使用rsync同步数据</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
-                2020-11-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2015-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>急需使用rsync在家里的多台机器上同步相片。</p>
-<p>sudo apt-get  install  rsync<br>sudo update-rc.d -f rsync remove<br>sudo update-rc.d rsync start 20 2 3 4 5 . stop 20 0 1 6 .<br>sudo update-rc.d rsync enable<br>hua@node1:~$ sudo sysv-rc-conf –list rsync<br>rsync        0:off    1:off    2:on    3:on    4:on    5:on    6:off</p>
-<p>这时候就可以在一台机器上同步目录了(rsync server运行在qnap上，统一在qnap上修改，rsync client定时运行下列命令即可让客户端的文件夹与服务端同步，以服务端为准）:</p>
-<p>rsync -avzur –progress –delete /bak/tmp/qnap/ /qnap/<br>rsync -avzur –progress –delete –password-file=/etc/rsync.secret  /bak/tmp/qnap/ /qnap/</p>
-<p>在多台机器上同步目录：</p>
-<p>rsync -rave “ssh -p 22 -l hua” -avzur –progress –delete 192.168.99.124:/qnap/ /qnap/<br>等价于：rsync -avzur –progress –delete hua@192.168.99.124:/qnap/ /qnap/</p>
-<p>也可以配置使用::qnap使用下列配置文件/etc/rsyncd.conf中的[qnap]模块：</p>
-<p>sudo rsync -avrzP hua@192.168.99.124::qnap qnap</p>
-<p>hua@node1:~$ sudo rsync –list-only hua@192.168.99.124::<br>++++++++++++++++++++++++++++++++++++++++++++++<br>Welcome to use quqi rsync services!<br>++++++++++++++++++++++++++++++++++++++++++++++</p>
-<p>qnap               This is qnap backup data</p>
-<p>配置[qnap]模块的步骤如下：</p>
-<p>sudo touch /etc/rsyncd.conf<br>sudo touch /etc/rsyncd.motd<br>hua@node1:~$ sudo cat /etc/rsyncd.motd<br>++++++++++++++++++++++++++++++++++++++++++++++<br>Welcome to use quqi rsync services!<br>++++++++++++++++++++++++++++++++++++++++++++++<br>sudo touch /etc/rsyncd.secrets<br>hua@node1:~$ sudo cat /etc/rsyncd.secrets<br>hua:Passw0rd<br>sudo chmod 600 /etc/rsyncd.secrets<br>sudo chown root:root /etc/rsyncd.secrets<br>hua@node1:~$ sudo cat /etc/default/rsync |grep ‘RSYNC_ENABLE’<br>RSYNC_ENABLE=true</p>
-<p>sudo /etc/init.d/rsync restart<br>sudo iptables -A INPUT -p tcp -m state –state NEW  -m tcp –dport 873 -j ACCEPT<br>vi /etc/rsyncd.conf<br>pid file = /var/run/rsyncd.pid<br>port = 873<br>address = 192.168.99.124</p>
-<p>#usermod -g root hua<br>uid = hua<br>gid = root<br>use chroot = yes<br>read only = yes<br>hosts allow=192.168.99.0/255.255.255.0 10.0.1.0/255.255.255.0<br>hosts deny=*<br>max connections = 5<br>motd file = /etc/rsyncd.motd<br>log file = /var/log/rsync.log</p>
-<p>#transfer logging = yes<br>log format = %t %a %m %f %b<br>syslog facility = local3<br>timeout = 300</p>
-<p>[qnap]<br>path = /qnap<br>list=yes             # 可以使用rsync –list-only hua@192.168.99.124::命令列出目录<br>ignore errors<br>auth users = hua,root<br>secrets file = /etc/rsyncd.secrets<br>comment = This is qnap backup data<br>exclude = tmp/  test/</p>
-<p>最后，我实际上是这样处理的，我有一个qnap，一个台式机，一个笔记本，对于一些相片啥的想多存储几份别一个机器哪天坏了丢了。</p>
-<p>1, 由于iscsi上一个bug，一个client对qnap上的iscsi server写了之后，没法实时更新在另一个client上（必须先umount再mount一下才行）， 并且qnap的iscsi采用一个大的虚拟文件存储的，这都不是我想要的。所以最后只使用了qnap上的nfs将相片存储了一份。</p>
-<p>2, 台式机因为IP固定开机自动mount (sudo mount -t nfs -o vers=3 192.168.99.122:/Public /bak/qnap), 另外直接复制了一份到/bak/qnap_local目录防止rsync操作失误毁坏数据。</p>
-<p>3, 笔记本因为经常外出IP不固定，外出时使用/bak/qnap_local目录的内容，在家需要同步时手工同步：</p>
-<p>   sudo mount -t nfs -o vers=3 192.168.99.122:/Public /bak/qnap<br>   cd ~ &amp;&amp; rsync -avzurP –exclude ‘doc’ –exclude ‘photo’ –exclude ‘media’  –progress –delete /bak/qnap/ /bak/qnap_local</p>
-<p>4, 平时在家办公统一从台式机上写/bak/qnap目录将数据直接写到qnap上。手机等移动设备通过qnap ftp访问数据。</p>
-<p>20171031更新：</p>
-<p>最后的方案是：</p>
-<p>1， 使用autos先将nas上的nfs共享目录共享到台式机（注： nfs共离目录无法使用inotify)：</p>
-<p>hua@node1:~$ grep -r ‘auto.direct’ /etc/auto.master<br>/-      auto.direct        –timeout 60<br>hua@node1:~$ cat /etc/auto.direct<br>/nas    -fstype=nfs4,rsize=32768,wsize=32768     192.168.99.122:/Public</p>
-<p>2, 然后直接手动运行下列两个命令：</p>
-<p>rsync -avztur –progress –delete  /nas/doc/  /bak/doc<br>rsync -avztur –progress –delete  /nas/photo/  /bak/photo</p>
-<p>20201104更新 - nas往openwrt同步数据</p>
-<p>rsync can work in two different mode, rsync over rsync (873, rsyncd) and rsync over ssh, see <a href="https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas" target="_blank" rel="external">https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas</a><br>we use rsync over ssh mode here.</p>
-<h1 id="openwrt-192-168-2-47-192-168-99-1"><a href="#openwrt-192-168-2-47-192-168-99-1" class="headerlink" title="openwrt (192.168.2.47, 192.168.99.1)"></a>openwrt (192.168.2.47, 192.168.99.1)</h1><p>opkg install rsync</p>
-<h1 id="nas-192-168-2-103-push-data-into-openwrt-192-168-2-47"><a href="#nas-192-168-2-103-push-data-into-openwrt-192-168-2-47" class="headerlink" title="nas (192.168.2.103) push data into openwrt(192.168.2.47)"></a>nas (192.168.2.103) push data into openwrt(192.168.2.47)</h1><h1 id="don’t-use-rsync"><a href="#don’t-use-rsync" class="headerlink" title="don’t use rsync"></a>don’t use rsync</h1><p>cd /share/HDA_DATA/Public/test &amp;&amp; touch test1 &amp;&amp; touch test2 &amp;&amp; touch test3<br>ssh root@192.168.2.47 “tee -a /etc/dropbear/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>rsync -avztur –progress –delete –exclude ‘test/test1’ –exclude ‘test/test2’ /share/HDA_DATA/Public/test root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘test1’ –exclude ‘test2’ /share/HDA_DATA/Public/test/ root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/<br>contab -e<br>0 1 <em> </em> * /usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/</p>
-<p>或者在openwrt端做:</p>
-<p>mkdir ~/.ssh<br>dropbearkey -t rsa -f ~/.ssh/id_rsa<br>dropbearkey -y -f ~/.ssh/id_rsa |sed -n 2p &gt; ~/.ssh/id_rsa.pub</p>
-<h1 id="https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9"><a href="#https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9" class="headerlink" title="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9"></a><a href="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9" target="_blank" rel="external">https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9</a></h1><p>ln -s ~/.ssh/id_rsa ~/.ssh/id_dropbear<br>chmod 700 ~/.ssh<br>touch ~/.ssh/authorized_keys &amp;&amp; chmod 644 ~/.ssh/authorized_keys<br>ssh admin@192.168.2.103 “tee -a /root/.ssh/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ admin@192.168.2.103:/share/HDA_DATA/Public/ /mnt/sdb1/</p>
-<p>但这无论从nas还是从openwrt运行rsync都由于nas太慢大概只有4M左右，可能提升速度最好的办法是先将nas通过nfs映射到openwrt然后再拷．这样速度能达到30M</p>
-<p>opkg install nfs-utils<br>showmount -e 192.168.2.103<br>/usr/bin/mount -t nfs 192.168.2.103:Public /mnt/nas -o proto=tcp -o nolock -o vers=4<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /mnt/nas/ /mnt/sdc1/<br>但是我担心将mount放到fstab时当nas有问题时也影响openwrt的启动，所以我将上面命令放在rc.local中.<br>root@OpenWrt:~# cat /etc/init.d/done</p>
-<p>#!/bin/sh /etc/rc.common</p>
-<h1 id="Copyright-C-2006-OpenWrt-org"><a href="#Copyright-C-2006-OpenWrt-org" class="headerlink" title="Copyright (C) 2006 OpenWrt.org"></a>Copyright (C) 2006 OpenWrt.org</h1><p>START=95<br>boot() {<br>    mount_root done<br>    rm -f /sysupgrade.tgz &amp;&amp; sync</p>
-<pre><code># process user commands
-[ -f /etc/rc.local ] &amp;&amp; {
-    sh /etc/rc.local
-}
-
-# set leds to normal state
-. /etc/diag.sh
-set_state done
-</code></pre><p>}<br>并且crontab也在openwrt这边做．这样速度达到了30M</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1896,8 +1919,8 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">91</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">92</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1947,7 +1970,7 @@ set_state done
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

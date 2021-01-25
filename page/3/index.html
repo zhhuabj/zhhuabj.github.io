@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,173 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/04/使用rsync同步数据/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/04/使用rsync同步数据/" itemprop="url">使用rsync同步数据</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T21:15:27+08:00">
+                2020-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2015-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>急需使用rsync在家里的多台机器上同步相片。</p>
+<p>sudo apt-get  install  rsync<br>sudo update-rc.d -f rsync remove<br>sudo update-rc.d rsync start 20 2 3 4 5 . stop 20 0 1 6 .<br>sudo update-rc.d rsync enable<br>hua@node1:~$ sudo sysv-rc-conf –list rsync<br>rsync        0:off    1:off    2:on    3:on    4:on    5:on    6:off</p>
+<p>这时候就可以在一台机器上同步目录了(rsync server运行在qnap上，统一在qnap上修改，rsync client定时运行下列命令即可让客户端的文件夹与服务端同步，以服务端为准）:</p>
+<p>rsync -avzur –progress –delete /bak/tmp/qnap/ /qnap/<br>rsync -avzur –progress –delete –password-file=/etc/rsync.secret  /bak/tmp/qnap/ /qnap/</p>
+<p>在多台机器上同步目录：</p>
+<p>rsync -rave “ssh -p 22 -l hua” -avzur –progress –delete 192.168.99.124:/qnap/ /qnap/<br>等价于：rsync -avzur –progress –delete hua@192.168.99.124:/qnap/ /qnap/</p>
+<p>也可以配置使用::qnap使用下列配置文件/etc/rsyncd.conf中的[qnap]模块：</p>
+<p>sudo rsync -avrzP hua@192.168.99.124::qnap qnap</p>
+<p>hua@node1:~$ sudo rsync –list-only hua@192.168.99.124::<br>++++++++++++++++++++++++++++++++++++++++++++++<br>Welcome to use quqi rsync services!<br>++++++++++++++++++++++++++++++++++++++++++++++</p>
+<p>qnap               This is qnap backup data</p>
+<p>配置[qnap]模块的步骤如下：</p>
+<p>sudo touch /etc/rsyncd.conf<br>sudo touch /etc/rsyncd.motd<br>hua@node1:~$ sudo cat /etc/rsyncd.motd<br>++++++++++++++++++++++++++++++++++++++++++++++<br>Welcome to use quqi rsync services!<br>++++++++++++++++++++++++++++++++++++++++++++++<br>sudo touch /etc/rsyncd.secrets<br>hua@node1:~$ sudo cat /etc/rsyncd.secrets<br>hua:Passw0rd<br>sudo chmod 600 /etc/rsyncd.secrets<br>sudo chown root:root /etc/rsyncd.secrets<br>hua@node1:~$ sudo cat /etc/default/rsync |grep ‘RSYNC_ENABLE’<br>RSYNC_ENABLE=true</p>
+<p>sudo /etc/init.d/rsync restart<br>sudo iptables -A INPUT -p tcp -m state –state NEW  -m tcp –dport 873 -j ACCEPT<br>vi /etc/rsyncd.conf<br>pid file = /var/run/rsyncd.pid<br>port = 873<br>address = 192.168.99.124</p>
+<p>#usermod -g root hua<br>uid = hua<br>gid = root<br>use chroot = yes<br>read only = yes<br>hosts allow=192.168.99.0/255.255.255.0 10.0.1.0/255.255.255.0<br>hosts deny=*<br>max connections = 5<br>motd file = /etc/rsyncd.motd<br>log file = /var/log/rsync.log</p>
+<p>#transfer logging = yes<br>log format = %t %a %m %f %b<br>syslog facility = local3<br>timeout = 300</p>
+<p>[qnap]<br>path = /qnap<br>list=yes             # 可以使用rsync –list-only hua@192.168.99.124::命令列出目录<br>ignore errors<br>auth users = hua,root<br>secrets file = /etc/rsyncd.secrets<br>comment = This is qnap backup data<br>exclude = tmp/  test/</p>
+<p>最后，我实际上是这样处理的，我有一个qnap，一个台式机，一个笔记本，对于一些相片啥的想多存储几份别一个机器哪天坏了丢了。</p>
+<p>1, 由于iscsi上一个bug，一个client对qnap上的iscsi server写了之后，没法实时更新在另一个client上（必须先umount再mount一下才行）， 并且qnap的iscsi采用一个大的虚拟文件存储的，这都不是我想要的。所以最后只使用了qnap上的nfs将相片存储了一份。</p>
+<p>2, 台式机因为IP固定开机自动mount (sudo mount -t nfs -o vers=3 192.168.99.122:/Public /bak/qnap), 另外直接复制了一份到/bak/qnap_local目录防止rsync操作失误毁坏数据。</p>
+<p>3, 笔记本因为经常外出IP不固定，外出时使用/bak/qnap_local目录的内容，在家需要同步时手工同步：</p>
+<p>   sudo mount -t nfs -o vers=3 192.168.99.122:/Public /bak/qnap<br>   cd ~ &amp;&amp; rsync -avzurP –exclude ‘doc’ –exclude ‘photo’ –exclude ‘media’  –progress –delete /bak/qnap/ /bak/qnap_local</p>
+<p>4, 平时在家办公统一从台式机上写/bak/qnap目录将数据直接写到qnap上。手机等移动设备通过qnap ftp访问数据。</p>
+<p>20171031更新：</p>
+<p>最后的方案是：</p>
+<p>1， 使用autos先将nas上的nfs共享目录共享到台式机（注： nfs共离目录无法使用inotify)：</p>
+<p>hua@node1:~$ grep -r ‘auto.direct’ /etc/auto.master<br>/-      auto.direct        –timeout 60<br>hua@node1:~$ cat /etc/auto.direct<br>/nas    -fstype=nfs4,rsize=32768,wsize=32768     192.168.99.122:/Public</p>
+<p>2, 然后直接手动运行下列两个命令：</p>
+<p>rsync -avztur –progress –delete  /nas/doc/  /bak/doc<br>rsync -avztur –progress –delete  /nas/photo/  /bak/photo</p>
+<p>20201104更新 - nas往openwrt同步数据</p>
+<p>rsync can work in two different mode, rsync over rsync (873, rsyncd) and rsync over ssh, see <a href="https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas" target="_blank" rel="external">https://serverfault.com/questions/827633/confused-about-rsync-port-873-and-nas</a><br>we use rsync over ssh mode here.</p>
+<h1 id="openwrt-192-168-2-47-192-168-99-1"><a href="#openwrt-192-168-2-47-192-168-99-1" class="headerlink" title="openwrt (192.168.2.47, 192.168.99.1)"></a>openwrt (192.168.2.47, 192.168.99.1)</h1><p>opkg install rsync</p>
+<h1 id="nas-192-168-2-103-push-data-into-openwrt-192-168-2-47"><a href="#nas-192-168-2-103-push-data-into-openwrt-192-168-2-47" class="headerlink" title="nas (192.168.2.103) push data into openwrt(192.168.2.47)"></a>nas (192.168.2.103) push data into openwrt(192.168.2.47)</h1><h1 id="don’t-use-rsync"><a href="#don’t-use-rsync" class="headerlink" title="don’t use rsync"></a>don’t use rsync</h1><p>cd /share/HDA_DATA/Public/test &amp;&amp; touch test1 &amp;&amp; touch test2 &amp;&amp; touch test3<br>ssh root@192.168.2.47 “tee -a /etc/dropbear/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>rsync -avztur –progress –delete –exclude ‘test/test1’ –exclude ‘test/test2’ /share/HDA_DATA/Public/test root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘test1’ –exclude ‘test2’ /share/HDA_DATA/Public/test/ root@192.168.2.47:/mnt/sdb1/<br>rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/<br>contab -e<br>0 1 <em> </em> * /usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /share/HDA_DATA/Public/ root@192.168.2.47:/mnt/sdb1/</p>
+<p>或者在openwrt端做:</p>
+<p>mkdir ~/.ssh<br>dropbearkey -t rsa -f ~/.ssh/id_rsa<br>dropbearkey -y -f ~/.ssh/id_rsa |sed -n 2p &gt; ~/.ssh/id_rsa.pub</p>
+<h1 id="https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9"><a href="#https-community-onion-io-topic-2538-resolved-ssh-from-omega-to-linux-server-without-password-9" class="headerlink" title="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9"></a><a href="https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9" target="_blank" rel="external">https://community.onion.io/topic/2538/resolved-ssh-from-omega-to-linux-server-without-password/9</a></h1><p>ln -s ~/.ssh/id_rsa ~/.ssh/id_dropbear<br>chmod 700 ~/.ssh<br>touch ~/.ssh/authorized_keys &amp;&amp; chmod 644 ~/.ssh/authorized_keys<br>ssh admin@192.168.2.103 “tee -a /root/.ssh/authorized_keys” &lt; ~/.ssh/id_rsa.pub<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ admin@192.168.2.103:/share/HDA_DATA/Public/ /mnt/sdb1/</p>
+<p>但这无论从nas还是从openwrt运行rsync都由于nas太慢大概只有4M左右，可能提升速度最好的办法是先将nas通过nfs映射到openwrt然后再拷．这样速度能达到30M</p>
+<p>opkg install nfs-utils<br>showmount -e 192.168.2.103<br>/usr/bin/mount -t nfs 192.168.2.103:Public /mnt/nas -o proto=tcp -o nolock -o vers=4<br>/usr/bin/rsync -avztur –progress –delete –exclude ‘windisk’ –exclude ‘media’ /mnt/nas/ /mnt/sdc1/<br>但是我担心将mount放到fstab时当nas有问题时也影响openwrt的启动，所以我将上面命令放在rc.local中.<br>root@OpenWrt:~# cat /etc/init.d/done</p>
+<p>#!/bin/sh /etc/rc.common</p>
+<h1 id="Copyright-C-2006-OpenWrt-org"><a href="#Copyright-C-2006-OpenWrt-org" class="headerlink" title="Copyright (C) 2006 OpenWrt.org"></a>Copyright (C) 2006 OpenWrt.org</h1><p>START=95<br>boot() {<br>    mount_root done<br>    rm -f /sysupgrade.tgz &amp;&amp; sync</p>
+<pre><code># process user commands
+[ -f /etc/rc.local ] &amp;&amp; {
+    sh /etc/rc.local
+}
+
+# set leds to normal state
+. /etc/diag.sh
+set_state done
+</code></pre><p>}<br>并且crontab也在openwrt这边做．这样速度达到了30M</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +427,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-04T16:23:01+08:00">
                 2020-11-04
@@ -388,7 +555,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-30T16:06:55+08:00">
                 2020-10-30
@@ -518,7 +685,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-28T19:43:30+08:00">
                 2020-10-28
@@ -643,7 +810,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-22T20:49:19+08:00">
                 2020-10-22
@@ -767,7 +934,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-14T13:37:44+08:00">
                 2020-10-14
@@ -911,7 +1078,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-29T19:17:27+08:00">
                 2020-09-29
@@ -1070,7 +1237,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-18T15:33:22+08:00">
                 2020-09-18
@@ -1216,7 +1383,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-10T15:04:57+08:00">
                 2020-09-10
@@ -1368,7 +1535,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-19T23:24:29+08:00">
                 2020-08-19
@@ -1483,175 +1650,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/09/Play-with-MAAS/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/07/09/Play-with-MAAS/" itemprop="url">Play with MAAS</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-09T10:25:42+08:00">
-                2020-07-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>问题</strong><br>四年前写了一篇关于MAAS的博客 [1]，但好几年没用它了，今天发现GUI的操作流程变化还有点，记录一下。<br><strong>Host机</strong><br>配置了下面的网络：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">auto eth0</span><br><span class="line">iface eth0 inet manual</span><br><span class="line">auto br-eth0</span><br><span class="line">iface br-eth0 inet static</span><br><span class="line">    address 192.168.99.124/24</span><br><span class="line">    gateway 192.168.99.1</span><br><span class="line">    bridge_ports eth0</span><br><span class="line">    dns-nameservers 192.168.99.1</span><br></pre></td></tr></table></figure></p>
-<p>然后在virt-manger里创建了一个名为cloud的虚拟网络(192.168.100.0/24)，未使用DHCP。<br>最后，使用virt-manager创建了一个名为maas的虚机,给它分配了两个网卡(ens3=192.168.100.3用作MAAS的IP,另一个网卡ens8=192.168.99.1纯粹为了方便管理之用)<br><strong>maas虚机</strong><br>网络配置如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/resolvconf/resolv.conf.d/base</span><br><span class="line">search maas</span><br><span class="line">nameserver 192.168.100.3</span><br><span class="line"></span><br><span class="line">or modify /etc/systemd/resolved.conf to set DNS=192.168.100.3, then run:</span><br><span class="line">sudo systemctl restart systemd-resolved.service</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"># ifupdown has been replaced by netplan(5) on this system.  See</span><br><span class="line"># /etc/netplan for current configuration.</span><br><span class="line"># To re-enable ifupdown on this system, you can run:</span><br><span class="line">sudo apt install ifupdown</span><br><span class="line">cat /etc/network/interfaces</span><br><span class="line">auto ens3</span><br><span class="line">iface ens3 inet static</span><br><span class="line">address 192.168.100.3</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 192.168.100.1</span><br><span class="line"></span><br><span class="line">auto ens8</span><br><span class="line">iface ens8 inet static</span><br><span class="line">address 192.168.99.3</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 192.168.99.1</span><br></pre></td></tr></table></figure>
-<p>安装maas:<br>NOTE: 千万要注意，<strong>最好使用debian包安装</strong>，使用snap包安装里会造成snap container里没有设置REQUESTS_CA_BUNDLE环境变量由于python-requests的一个bug导致maas无法使用https服务，例如运行＂maas configauth –rbac-url <a href="https://node1.lan:5000/" target="_blank" rel="external">https://node1.lan:5000/</a> –rbac-service-name maastest＂就会抛错CERTIFICATE_VERIFY_FAILED, 具体见：　<a href="https://zhhuabj.blog.csdn.net/article/details/107182847" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/107182847</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#sudo snap install maas --channel=2.8</span><br><span class="line">#sudo snap install maas-test-db                              #enter shell - maas-test-db.psql</span><br><span class="line">sudo add-apt-repository ppa:maas/2.8   #https://launchpad.net/~maas</span><br><span class="line">sudo apt install maas</span><br></pre></td></tr></table></figure></p>
-<p>配置maas虚机可以无密码访问物理机上的libvirt:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo chsh maas -s /bin/bash</span><br><span class="line">sudo su - maas</span><br><span class="line">ssh-keygen</span><br><span class="line">ssh-copy-id -i ~/.ssh/id_rsa hua@192.168.100.1</span><br><span class="line">sudo -u maas virsh -c qemu+ssh://hua@192.168.100.1/system list --all</span><br></pre></td></tr></table></figure></p>
-<p>创建maas管理员用户之后就可以通过<a href="http://192.168.99.3:5240/MAAS登录GUI管理界面了" target="_blank" rel="external">http://192.168.99.3:5240/MAAS登录GUI管理界面了</a>.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo maas createadmin</span><br><span class="line">apikey=$(sudo maas apikey --username admin)</span><br><span class="line">maas login admin http://192.168.100.3:5240/MAAS $apikey</span><br><span class="line">maas login admin http://127.0.0.1:5240/MAAS $apikey</span><br><span class="line">maas admin boot-resources import</span><br></pre></td></tr></table></figure></p>
-<h2 id="enable-PXE"><a href="#enable-PXE" class="headerlink" title="enable PXE"></a>enable PXE</h2><p>在’Subnets’点击subnet 192.168.100.0/24对应的vlan(untagged)后’enable dhcp’才能enable PXE.<br><img src="https://img-blog.csdnimg.cn/20200925183035294.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
-<p><strong>注册maas节点</strong><br>创建一块空磁盘(truncate –size 10G /images/kvm/controller.raw)，然后在virt-manager里创建一个名为controller的新虚机(设置从PXE启动、使用truncate定义的空磁盘，同时<strong>从cloud network中定义四块网卡)</strong>, 我们能从virt-manager中看到pxe的启动过程，但最后却一闪而过了那是因为需要从maas里来启动它。好，从virt-manager中关闭该虚机，同时<strong>记得再将启动模式改回PXE</strong>。<br>NOTE: 如果此时还不行, 多半是上面一步没有enable pxe吧. 另外, 在commission时无法选择image, 只能使用默认的ubuntu image, 在deploy时可以设置使用其他如centos镜像.<br><img src="https://img-blog.csdn.net/20180724115011109?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
-<p>然后访问GUI的”Nodes -&gt; Add hardware -&gt; Machine”定义节点(注意：<strong>四块网卡的MAC地址一次性定义，如果后续此处添加网卡的话还得再执行commission操作</strong>）:<br><img src="https://img-blog.csdn.net/20180724131740628?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
-<p>commission过程可从下列几个方式调试：</p>
-<ul>
-<li>virt-manager vnc可以看到</li>
-<li>maas节点上的/var/log/maas/maas.log</li>
-<li>controller虚机(IP可从GUI里找到)里的cloud-init日志</li>
-</ul>
-<p>然后根据在virt-manager中定义的四块网卡的MAC地址在maas中也如下图定义一下：<br><img src="https://img-blog.csdn.net/20180724121359167?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
-<p>四块网卡定义好了之后得重新点击一下”Take action -&gt; Commision”，然后将看到如下界面：<br><img src="https://img-blog.csdn.net/20180724122506159?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
-<p>然后我们将看到”Add Interface”、”Create bond”、”Create Bridge”等按钮，先将ens8和ens9做成bond0，再在bond0上创建一些vlan（先建vlan再建bridge顺序不能变)，最后将bond0做成br-bond0，最后如下图：<br><img src="https://img-blog.csdn.net/20180724141419499?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="这里写图片描述"></p>
-<p>接着还要再点击”Take action -&gt; Deploy” (<strong>注意: 此处不是点commissioning</strong>) 重新部署，最后就可以从GUI界面中找到IP后通过ssh ubuntu@IP访问了</p>
-<h2 id="附录-CLI"><a href="#附录-CLI" class="headerlink" title="附录 - CLI"></a>附录 - CLI</h2><p><img src="https://img-blog.csdnimg.cn/20200923084601361.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">https://docs.maas.io/2.5/en/manage-cli-advanced</span><br><span class="line">https://maas.io/docs/concepts-and-terms</span><br><span class="line">region相当于一个datacenter或者一个single region, fabrics再去划分region, 每个rack controller都被attached到每一个fabric.</span><br><span class="line">rack下关联node, interfaces, fabric; interface关联subnets, subnets有vlan</span><br><span class="line">fabric下再关联vlan; vlan关联space</span><br><span class="line">interfaces下link到subnet, subnet有vlan</span><br><span class="line"></span><br><span class="line">maas login admin http://localhost/MAAS/api/2.0 $(sudo maas-region apikey --username admin)</span><br><span class="line"></span><br><span class="line">#machine_id=$(maas admin machines read | jq -r &apos;.[] | select(.hostname==&quot;controller&quot;).system_id&apos;)</span><br><span class="line">#maas admin interfaces read $machine_id &gt; interface.txt</span><br><span class="line"></span><br><span class="line">maas admin rack-controllers read</span><br><span class="line">system_id=$(maas admin rack-controllers read | jq -r .[].system_id)</span><br><span class="line"></span><br><span class="line">maas admin machines read</span><br><span class="line">machine_id=$(maas admin machines read | jq -r &apos;.[] | select(.hostname==&quot;controller&quot;).system_id&apos;)</span><br><span class="line">maas admin machines read |jq &quot;.[] | &#123;hostname:.hostname, system_id: .system_id, status:.status&#125;&quot; --compact-output</span><br><span class="line"></span><br><span class="line">maas admin interfaces read &quot;$system_id&quot;</span><br><span class="line">maas admin interfaces read $system_id | jq &quot;.[] |&#123;id:.id, name:.name, mac:.mac_address, vid:.vlan.vid, fabric:.vlan.fabric&#125;&quot; --compact-output</span><br><span class="line">maas admin interface update &quot;$system_id&quot; $interface vlan=5001</span><br><span class="line">#maas admin interface unlink-subnet &quot;$system_id&quot; &quot;$iface_id&quot; id=&quot;$link_id&quot;</span><br><span class="line">#maas admin interface delete &quot;$system_id&quot; &quot;$vlan_iface_id&quot;</span><br><span class="line">#maas admin interface link-subnet &quot;$system_id&quot; &quot;$iface_id&quot; mode=AUTO subnet=&quot;$iface_subnet_cidr&quot;</span><br><span class="line">interfaces=$(maas admin interfaces read &quot;$system_id&quot;)</span><br><span class="line">iface_name=&quot;ens3&quot;</span><br><span class="line">iface_id=$(echo &quot;$interfaces&quot; | jq -r &quot;.[] | select(.name==\&quot;$iface_name\&quot;) | .id&quot;)</span><br><span class="line">link_ids=$(maas admin interface read &quot;$system_id&quot; &quot;$iface_id&quot; | jq -r &apos;.links | .[].id&apos;)</span><br><span class="line">for link_id in $link_ids; do</span><br><span class="line">   maas admin interface unlink-subnet &quot;$system_id&quot; &quot;$iface_id&quot; id=&quot;$link_id&quot;</span><br><span class="line">done</span><br><span class="line">vlan_iface_ids=$(maas admin interfaces read &quot;$system_id&quot; | jq -r &apos;.[] | select(.type==&quot;vlan&quot;).id&apos;)</span><br><span class="line">for vlan_iface_id in $vlan_iface_ids; do</span><br><span class="line">   maas admin interface delete &quot;$system_id&quot; &quot;$vlan_iface_id&quot;</span><br><span class="line">done</span><br><span class="line">iface_subnet_cidr=$(maas admin subnets read | jq -r &quot;.[] | select(.name==\&quot;$iface_subnet_name\&quot;).cidr&quot;)</span><br><span class="line">maas admin interface link-subnet &quot;$system_id&quot; &quot;$iface_id&quot; mode=AUTO subnet=&quot;$iface_subnet_cidr&quot;</span><br><span class="line"></span><br><span class="line">maas admin fabrics read</span><br><span class="line">maas admin fabrics read | jq &quot;.[] |&#123;name:.name, vlans:.vlans[] | &#123;id:.id, vid:.vid&#125;&#125;&quot; --compact-output</span><br><span class="line">maas admin fabric update 0 name=maas-management</span><br><span class="line">fabric_name=&quot;maas-management&quot;</span><br><span class="line">mag_fabric_id=$(maas admin fabrics read| jq -r &quot;.[] | select(.name==\&quot;$fabric_name\&quot;).id&quot;)</span><br><span class="line"></span><br><span class="line">vid=$(maas admin subnets read | jq -M &apos;.[] | select(.cidr==&quot;10.12.1.0/24&quot;).vlan.vid&apos;)</span><br><span class="line">fabric=$(maas admin subnets read| jq -r &apos;.[] | select(.cidr==&quot;10.12.1.0/24&quot;).vlan.fabric&apos;)</span><br><span class="line">fabric_id=$(maas admin fabrics read | jq -M &apos;.[] | select(.name==&quot;`echo $fabric`&quot;).id&apos;)  #$fabric=fabric-1</span><br><span class="line">maas admin vlan read $fabric_id $vid</span><br><span class="line"></span><br><span class="line">maas admin spaces create name=os-floating</span><br><span class="line">os_floating_spaceid=$(maas admin spaces read | jq &apos;.[] | select(.name == &quot;&apos;os-floating&apos;&quot;)&apos;.id)</span><br><span class="line">maas admin vlan update $mag_fabric_id 5 space=$os_floating_spaceid mtu=1500</span><br><span class="line"></span><br><span class="line">maas admin subnets read</span><br><span class="line">maas admin subnet update $(maas admin subnets read| jq -r &quot;.[] | select(.cidr==\&quot;10.231.16.0/24\&quot;).id&quot;) cidr=10.231.16.0/21</span><br><span class="line">pxe_subnet_id=$(maas admin subnets read| jq -r &quot;.[] | select(.cidr==\&quot;10.231.16.0/21\&quot;).id&quot;)</span><br><span class="line">maas admin subnet update $pxe_subnet_id name=maas-management</span><br></pre></td></tr></table></figure>
-<h2 id="附录-MAAS-Region-HA"><a href="#附录-MAAS-Region-HA" class="headerlink" title="附录 - MAAS Region HA"></a>附录 - MAAS Region HA</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br></pre></td><td class="code"><pre><span class="line"># https://sites.google.com/site/openstackinthebasement3/maasha</span><br><span class="line"># https://cloud.google.com/community/tutorials/setting-up-postgres-hot-standby</span><br><span class="line">sudo apt remove --purge postgresql maas*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt install maas-region-controller</span><br><span class="line">#sudo dpkg-reconfigure maas-region-controller</span><br><span class="line">#sudo dpkg-reconfigure maas-rack-controller</span><br><span class="line"></span><br><span class="line"># on maas to create user</span><br><span class="line">sudo maas createadmin --username admin --password ubuntu --email root@example.com</span><br><span class="line"></span><br><span class="line"># on maas and maas2</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/postgresql/9.5/main/pg_hba.conf&apos; &lt;&lt; EOF</span><br><span class="line">host     replication     repuser         192.168.100.3/32        md5</span><br><span class="line">host     replication     repuser         192.168.100.4/32        md5</span><br><span class="line">host     all             all             192.168.100.3/32        md5</span><br><span class="line">host     all             all             192.168.100.4/32        md5</span><br><span class="line">host     replication     repuser         192.168.99.3/32        md5</span><br><span class="line">host     replication     repuser         192.168.99.4/32        md5</span><br><span class="line">host     all             all             192.168.99.3/32        md5</span><br><span class="line">host     all             all             192.168.99.4/32        md5</span><br><span class="line">host     all             all             192.168.0.0/16        md5</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># on both maas and maas2</span><br><span class="line">sudo -u postgres createuser -U postgres repuser -P -c 5 --replication</span><br><span class="line">#sudo mkdir -p /var/lib/postgresql/9.5/main/mnt/server/archivedir</span><br><span class="line">#sudo chown postgres:postgres /var/lib/postgresql/9.5/main/mnt/server/archivedir</span><br><span class="line"></span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/postgresql/9.5/main/postgresql.conf&apos; &lt;&lt; EOF</span><br><span class="line">listen_addresses = &apos;*&apos;</span><br><span class="line">max_connections = 300</span><br><span class="line">wal_level = hot_standby</span><br><span class="line">synchronous_commit = on</span><br><span class="line">archive_mode = off</span><br><span class="line">#archive_mode = on</span><br><span class="line">#archive_command = &apos;test ! -f /var/lib/postgresql/9.5/main/mnt/server/archivedir/%f &amp;&amp; cp %p /var/lib/postgresql/9.5/main/mnt/server/archivedir/%f&apos;</span><br><span class="line">max_wal_senders = 10</span><br><span class="line">wal_keep_segments = 256</span><br><span class="line">hot_standby = on</span><br><span class="line">restart_after_crash = off</span><br><span class="line">hot_standby_feedback = on</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"># on maas, restart postgresql</span><br><span class="line">sudo systemctl restart postgresql.service</span><br><span class="line"></span><br><span class="line"># on maas2 run the db backup</span><br><span class="line">sudo systemctl stop postgresql</span><br><span class="line">sudo mv /var/lib/postgresql/9.5/main /var/lib/postgresql/9.5/main.old</span><br><span class="line">sudo -u postgres pg_basebackup -h 192.168.100.3 -D /var/lib/postgresql/9.5/main -U repuser -v -P --xlog-method=stream</span><br><span class="line"></span><br><span class="line">sudo cp /usr/share/postgresql/9.5/recovery.conf.sample /var/lib/postgresql/9.5/main/recovery.conf</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /var/lib/postgresql/9.5/main/recovery.conf&apos; &lt;&lt; EOF</span><br><span class="line">standby_mode = on</span><br><span class="line">primary_conninfo = &apos;host=192.168.100.3 port=5432 user=repuser password=password&apos;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line"># on maas2 configure the region to point at the main database</span><br><span class="line">sudo systemctl stop maas-regiond</span><br><span class="line">sudo rm /var/lib/maas/&#123;maas_id,secret&#125;</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/maas/regiond.conf&apos; &lt;&lt; EOF</span><br><span class="line">database_host: 192.168.100.3</span><br><span class="line">database_name: maasdb</span><br><span class="line">database_pass: FiPQSKlBpAvs</span><br><span class="line">database_port: 5432</span><br><span class="line">database_user: maas</span><br><span class="line">maas_url: http://192.168.99.4:5240/MAAS</span><br><span class="line">EOF</span><br><span class="line">sudo chown root:maas /etc/maas/regiond.conf</span><br><span class="line">sudo chmod 640 /etc/maas/regiond.conf</span><br><span class="line">sudo systemctl restart maas-regiond</span><br><span class="line"></span><br><span class="line"># on maas2 start postgres, now you should see the second region controller in the maas gui</span><br><span class="line">sudo systemctl restart postgresql</span><br><span class="line">sudo tail -f /var/log/postgresql/postgresql-9.5-main.log</span><br><span class="line">#2019-06-11 12:38:26 JST [29904-4] LOG:  consistent recovery state reached at 0/230000F8</span><br><span class="line">#2019-06-11 12:38:26 JST [29903-1] LOG:  database system is ready to accept read only connections</span><br><span class="line">#2019-06-11 12:38:26 JST [29908-1] LOG:  started streaming WAL from primary at 0/24000000 on timeline 1</span><br><span class="line">sudo -u postgres psql maasdb -c &apos;SELECT hostname,status,power_state FROM maasserver_node&apos;</span><br><span class="line"></span><br><span class="line"># we don&apos;t enable maas-dns in this test, on both maas and maas2 servers, clean up the bind9 conflicts:</span><br><span class="line">sudo maas-region edit_named_options --migrate-conflicting-options</span><br><span class="line">sudo systemctl restart bind9</span><br><span class="line"># and also modifty /etc/resolv.conf to use maas dns</span><br><span class="line"></span><br><span class="line"># setup HAproxy for load balancing on both maas and maas2 servers</span><br><span class="line"># then refresh the gui you will see the region jump from one server to the other back and forth.</span><br><span class="line">sudo systemctl stop apache2</span><br><span class="line">sudo systemctl disable apache2</span><br><span class="line">sudo apt install haproxy -y</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/haproxy/haproxy.cfg&apos; &lt;&lt; EOF</span><br><span class="line">frontend maas</span><br><span class="line">    bind    *:80</span><br><span class="line">    retries 3</span><br><span class="line">    option  redispatch</span><br><span class="line">    option  http-server-close</span><br><span class="line">    default_backend maas</span><br><span class="line">backend maas</span><br><span class="line">    timeout server 30s</span><br><span class="line">    balance roundrobin</span><br><span class="line">    server localhost localhost:5240 check</span><br><span class="line">    server maas 192.168.99.3:5240 check</span><br><span class="line">    server maas2 192.168.99.4:5240 check</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart haproxy</span><br><span class="line"></span><br><span class="line"># setup keepalived (vip) on both maas and maas2, NOTE: fce use packemaker+corosync instead</span><br><span class="line">sudo apt install keepalived -y</span><br><span class="line">sudo modprobe ip_vs</span><br><span class="line">sudo sh -c &apos;echo modprobe ip_vs &gt;&gt; /etc/modules&apos;</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/sysctl.d/60-keepalived-nonlocal.conf&apos; &lt;&lt; EOF</span><br><span class="line">net.ipv4.ip_nonlocal_bind=1</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart procps</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/keepalived/keepalived.conf&apos; &lt;&lt; EOF</span><br><span class="line"># https://docs.maas.io/2.3/en/manage-ha</span><br><span class="line"># Un-comment next 4 lines if using haproxy</span><br><span class="line">vrrp_script chk_haproxy &#123;</span><br><span class="line">    script &quot;killall -0 haproxy&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line"># Un-comment next 4 lines if using apache2</span><br><span class="line">vrrp_script chk_apache2 &#123;</span><br><span class="line">    script &quot;killall -0 apache2&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line">vrrp_script chk_named &#123;</span><br><span class="line">    script &quot;killall -0 named&quot;</span><br><span class="line">    interval 2</span><br><span class="line">&#125;</span><br><span class="line">vrrp_instance maas_region &#123;</span><br><span class="line">    state MASTER</span><br><span class="line">    interface ens8</span><br><span class="line">    priority 150</span><br><span class="line">    virtual_router_id 51</span><br><span class="line">    authentication &#123;</span><br><span class="line">        auth_type PASS</span><br><span class="line">        auth_pass password</span><br><span class="line">    &#125;</span><br><span class="line">    track_script &#123;</span><br><span class="line">        ### Un-comment next line if using haproxy</span><br><span class="line">        chk_haproxy</span><br><span class="line">        ### Un-comment next line if using apache2</span><br><span class="line">        #chk_apache2</span><br><span class="line">        chk_named</span><br><span class="line">    &#125;</span><br><span class="line">    virtual_ipaddress &#123;</span><br><span class="line">        192.168.99.5</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart keepalived</span><br><span class="line"></span><br><span class="line"># adjust an API server to use VIP=192.168.99.5  (http://192.168.99.5/MAAS)</span><br><span class="line">sudo maas-region local_config_set --maas-url http://192.168.99.5/MAAS</span><br><span class="line">sudo systemctl restart maas-regiond</span><br><span class="line"></span><br><span class="line"># install rack on maas and maas2, and adjust api server to use VIP=192.168.99.5</span><br><span class="line">sudo apt install -y maas-rack-controller</span><br><span class="line">sudo maas-rack register --url http://192.168.99.5/MAAS --secret $(sudo cat /var/lib/maas/secret)</span><br><span class="line">#sudo maas-rack config --region-url http://192.168.99.5/MAAS</span><br><span class="line">#sudo systemctl restart maas-rackd.service</span><br><span class="line">maas login admin http://192.168.99.5/MAAS/api/2.0 $(sudo maas-region apikey --username admin)</span><br><span class="line">maas admin rack-controllers read | grep hostname | cut -d &apos;&quot;&apos; -f 4</span><br><span class="line"></span><br><span class="line"># actuall we didn&apos;t enable maas-dns service in this test</span><br><span class="line">sudo systemctl list-unit-files --type=service | grep maas-dhcp</span><br><span class="line">ubuntu@maas:~$ cat /etc/resolv.conf</span><br><span class="line">nameserver 192.168.99.1</span><br><span class="line">#nameserver 192.168.100.3</span><br><span class="line">#search maas</span><br><span class="line">ubuntu@maas2:~$ cat /etc/resolv.conf</span><br><span class="line">nameserver 192.168.99.1</span><br><span class="line">#nameserver 192.168.100.4</span><br><span class="line">#search maas</span><br><span class="line"></span><br><span class="line"># the following error is because I accidentally created recovery.conf on the master server instead of the standby.</span><br><span class="line">2019-06-11 15:25:05 JST [15474-1] maas@maasdb ERROR:  cannot execute INSERT in a read-only transaction</span><br><span class="line">2019-06-11 15:31:44 JST [18618-1] maas@maasdb ERROR:  cannot execute LISTEN during recovery</span><br><span class="line"></span><br><span class="line"># present problem</span><br><span class="line">1, can&apos;t add the second rack-controller</span><br><span class="line">2, there is maas-dns and maas-dns ha</span><br><span class="line">3, lots of errors - django.db.utils.InternalError: cannot execute UPDATE in a read-only transaction</span><br><span class="line"></span><br><span class="line">sudo maas-region dbshell --installed</span><br><span class="line">maasdb=# \x</span><br><span class="line">maasdb=# select system_id, hostname from maasserver_node;</span><br><span class="line">maasdb=# \?</span><br><span class="line">maasdb=# \l</span><br><span class="line">maasdb=# \c maasdb</span><br><span class="line">maasdb=# \dtq</span><br></pre></td></tr></table></figure>
-<h2 id="附录-Postgres-HA-replication-mode"><a href="#附录-Postgres-HA-replication-mode" class="headerlink" title="附录 - Postgres HA replication mode"></a>附录 - Postgres HA replication mode</h2><p>postgres HA的replication方式有3种:</p>
-<ol>
-<li><p>基于日志的复制, master完完WAL日志后再发给slave,<br>这样如果还没写完日志master就宕机的话未发的日志内的事务将全部丢失<br>2, 异步流模式,master库以stream的模式向slave发日志, 不需要等待整个日志填充完毕再发大大降低了丢失数据的风险.但在master提交事务之后standby等待流数据时发生宕机也会导致最后一个事务丢失. 同时备库可以配置成host standby模式向外提供查询服务供分担负载.<br>3, 流同步复制模式(synchronous replication),流复制的同步版本, 向master发生commit命令之后, 该命令会被阻塞,直到WAL日志流在所有被配置为同步节点(synchronous_standby_names)的数据库上提交后才会真正提交.因为只有master库和standby库同时宕机才会丢数据. 多层事务嵌套时，子事务不受此保护，只有最上层事务受此保护。纯读操作和回滚不受此影响。同时备库可以配置成HOT Standby，可以向外提供查询服务，供分担负载。采用这种模式的性能损耗依据网络情况和系统繁忙程度而定，网络越差越繁忙的系统性能损耗越严重。</p>
-<h2 id="Debug-MaaS"><a href="#Debug-MaaS" class="headerlink" title="Debug MaaS"></a>Debug MaaS</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#read maas db</span><br><span class="line">grep -r &apos;database&apos; /etc/maas/regiond.conf</span><br><span class="line">#sudo maas-region dbshell --installed</span><br><span class="line">sudo -iu postgres psql -d template1 -U postgres</span><br><span class="line"></span><br><span class="line"># debug maas - https://github.com/maas/maas/blob/master/HACKING.rst</span><br><span class="line">systemctl stop maas-regiond</span><br><span class="line"># disable any log as much as possible</span><br><span class="line">/usr/bin/python3 /usr/sbin/regiond --debug --workers 1</span><br><span class="line"></span><br><span class="line">systemctl stop maas-rackd</span><br><span class="line">setcap cap_net_bind_service=+eip /usr/sbin/rackd</span><br><span class="line">/bin/rm -f /var/lib/maas/dhcpd.sock &amp;&amp; /bin/rm -f /var/lib/maas/dhcpd.conf &amp;&amp; /bin/rm -f /var/lib/maas/dhcpd6.conf &amp;&amp; sleep 1 &amp;&amp; LOGFILE=/var/log/maas/rackd.log prometheus_multiproc_dir=/var/lib/maas/prometheus /usr/bin/python3 /usr/sbin/rackd --nodaemon</span><br><span class="line"></span><br><span class="line">enable debug log - https://discourse.maas.io/t/running-installed-maas-in-debug-logging-mode/168</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="20200907更新-maas-network-discovery"><a href="#20200907更新-maas-network-discovery" class="headerlink" title="20200907更新 - maas network_discovery"></a>20200907更新 - maas network_discovery</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:maas/2.7  #2.7 only worked on bionic</span><br><span class="line">sudo apt install -y maas</span><br><span class="line">sudo maas init --admin-username admin --admin-password password --admin-email admin@example.com --admin-ssh-import zhhuabj</span><br><span class="line">sudo maas-region apikey --username=admin &gt; ~/admin-api-key</span><br><span class="line">curl http://192.168.2.111:5240/MAAS</span><br><span class="line">apikey=$(cat ~/admin-api-key)</span><br><span class="line">maas login admin http://192.168.2.111:5240/MAAS $apikey</span><br><span class="line">maas login admin http://127.0.0.1:5240/MAAS $apikey</span><br><span class="line">maas admin boot-resources import</span><br><span class="line"></span><br><span class="line">$ maas admin discoveries read |jq &quot;.[] | &#123;ip:.ip, mac_address:.mac_address&#125;&quot; --compact-output</span><br><span class="line">&#123;&quot;ip&quot;:&quot;192.168.100.1&quot;,&quot;mac_address&quot;:&quot;52:54:00:14:3a:d4&quot;&#125;</span><br><span class="line">&#123;&quot;ip&quot;:&quot;192.168.100.77&quot;,&quot;mac_address&quot;:&quot;52:54:00:f8:9b:2b&quot;&#125;</span><br><span class="line">maas admin discoveries clear-by-mac-and-ip ip=&lt;IP&gt; mac=&lt;MAC&gt;</span><br><span class="line"></span><br><span class="line">#delete from maasserver_interface_ip_addresses where staticipaddress_id=64548 and id=64188;</span><br><span class="line">#delete from maasserver_staticipaddress where id=64548 and ip=&apos;192.168.128.15&apos;;</span><br><span class="line"></span><br><span class="line">#http://127.0.0.1:5240/MAAS/r/settings/network/network-discovery (Network discovery -&gt; Active subnet mapping interval)</span><br><span class="line">maas admin  maas get-config name=network_discovery</span><br><span class="line">maas admin discoveries clear all=True</span><br><span class="line">maas admin maas set-config name=network_discovery value=disabled</span><br><span class="line">maas admin maas get-config name=network_discovery</span><br><span class="line">maas admin discoveries read</span><br></pre></td></tr></table></figure>
-<h2 id="20200915更新-maas-2-8中使用centos-8"><a href="#20200915更新-maas-2-8中使用centos-8" class="headerlink" title="20200915更新 - maas 2.8中使用centos 8"></a>20200915更新 - maas 2.8中使用centos 8</h2><p>maas中使用centos的主要障碍是<a href="https://code.launchpad.net/~ltrager/curtin/+git/curtin/+merge/374335，但这个目前这个代码已经在UA了，只是maas" target="_blank" rel="external">https://code.launchpad.net/~ltrager/curtin/+git/curtin/+merge/374335，但这个目前这个代码已经在UA了，只是maas</a> 2.8的UI还没有允许让你使用centos 8而已，可以这样使用centos 8<br>但是限制是：</p>
-<ul>
-<li>maas UI不支持上传centos8镜像（原因是因为这个还没有-<a href="http://images.maas.io/ephemeral-v3/daily/streams/v1/com.ubuntu.maas:daily:centos-bases-download.json)，只是api可以(通过curtin" target="_blank" rel="external">http://images.maas.io/ephemeral-v3/daily/streams/v1/com.ubuntu.maas:daily:centos-bases-download.json)，只是api可以(通过curtin</a>)</li>
-<li>maas-image-builder不支持做centos8镜像，似乎packer-maas可以，或者自定义(<a href="https://medium.com/@kemnitz.stefan/centos-8-via-maas-9ffcc6c7a22d" target="_blank" rel="external">https://medium.com/@kemnitz.stefan/centos-8-via-maas-9ffcc6c7a22d</a>)</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:maas/2.8</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install maas -y</span><br><span class="line">sudo maas init --admin-username admin --admin-password password --admin-email admin@example.com --admin-ssh-import zhhuabj</span><br><span class="line">sudo maas-region apikey --username=admin &gt; ~/admin-api-key</span><br><span class="line">apikey=$(cat ~/admin-api-key)</span><br><span class="line">maas login admin http://127.0.0.1:5240/MAAS $apikey</span><br><span class="line"></span><br><span class="line"># Once Curtin has been upgraded the image can be uploaded to MAAS via the API</span><br><span class="line">#https://code.launchpad.net/~ltrager/curtin/+git/curtin/+merge/374335</span><br><span class="line">sudo apt install curtin=20.1-2-g42a9667f-0ubuntu1~18.04.1 -y</span><br><span class="line">sudo systemctl stop maas-rackd &amp;&amp; sudo systemctl restart maas-regiond &amp;&amp; sudo systemctl start maas-rackd</span><br><span class="line">axel https://people.canonical.com/~zhhuabj/centos8.tar.gz</span><br><span class="line">maas admin boot-resources create name=&apos;centos 8&apos; title=&apos;centos 8&apos; architecture=&apos;amd64/generic&apos; filetype=&apos;tgz&apos; content@=centos8-1.0.2-7-gac521bb.tar.gz</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">但似乎maas-image-builder还不支持做centos8的镜像，但可参考这篇文章做　－　https://medium.com/@kemnitz.stefan/centos-8-via-maas-9ffcc6c7a22d</span><br><span class="line">还有一个工具叫packer-maas似乎也能做，见- https://manintheit.org/bash/creating-a-image-for-maas-with-packer/</span><br><span class="line">$ sudo maas-image-builder -o centos8-amd64-root-tgz --arch amd64 centos --edition 8</span><br><span class="line">...</span><br><span class="line">mib.builders.BuildError: Unknown CentOS edition: 8.</span><br><span class="line"></span><br><span class="line">$ grep -r &apos;grub2&apos; /usr/lib/curtin/helpers/common |grep 8</span><br><span class="line">               7|8) grub_name=&quot;grub2-pc&quot;;;</span><br><span class="line">                        7|8) grubcmd=&quot;grub2-install&quot;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">使用packer-maas创建centos8镜像如下:</span><br><span class="line"># https://github.com/canonical/packer-maas/tree/master/centos8</span><br><span class="line">sudo apt install packer</span><br><span class="line"># fix bug - https://github.com/canonical/packer-maas/issues/2</span><br><span class="line">wget https://releases.hashicorp.com/packer/1.6.2/packer_1.6.2_linux_amd64.zip</span><br><span class="line">unzip packer_1.6.2_linux_amd64.zip &amp;&amp; sudo cp ./packer /usr/bin/ &amp;&amp; packer --version</span><br><span class="line">git clone https://github.com/canonical/packer-maas.git</span><br><span class="line">cd packer-maas/centos8  #must be in cetnos8 subdir</span><br><span class="line">#change url in centos8.json to http://mirrors.aliyun.com/centos/8.2.2004/isos/x86_64/CentOS-8.2.2004-x86_64-boot.iso</span><br><span class="line">sudo PACKER_LOG=1 packer build centos8.json  #but will hit this bug - https://github.com/canonical/packer-maas/issues/2</span><br><span class="line">maas admin boot-resources create name=&apos;centos/8-custom&apos; title=&apos;CentOS 8 Custom&apos; architecture=&apos;amd64/generic&apos; filetype=&apos;tgz&apos; content@=centos8.tar.gz  #default username is cloud-user</span><br></pre></td></tr></table></figure>
-<p>然后可以设置Deploy的默认镜像(commission时只能用ubuntu镜像), 也可以在Deploy时选择用centos镜像, 但commission似乎只能使用ubuntu镜像. deploy日志可见: /var/log/maas/rsyslog/test/2020-09-25/messages<br>最终可以通过: ‘ssh cloud-user@192.168.100.2’访问deploy后的centos8 机器. 如果不是deploy的而是救援模式进去的可以”ssh ubuntu@192.168.100.2 -v”, 注意: 救援模式只是commisstion不是deploy所以也是无法选择image的</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[cloud-user@test ~]$ uname -a</span><br><span class="line">Linux test.maas 4.18.0-193.14.2.el8_2.x86_64 #1 SMP Sun Jul 26 03:54:29 UTC 2020 x86_64 x86_64 x86_64 GNU/Linux</span><br></pre></td></tr></table></figure>
-<p><img src="https://img-blog.csdnimg.cn/20200925184437707.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>但这个镜像似乎在uefi虚机时不work, 创建测试uefi虚机的步骤如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ovmf -y  #should install ovmf in node1 rather than t440p</span><br><span class="line">sudo systemctl restart libvirtd</span><br><span class="line">virt-manager --debug      #run it in t440p, then connect to node1</span><br><span class="line">Start creating a new VM in virt-manager, but before finishing, click &quot;Customize configuration before install&quot;</span><br><span class="line">Change the Firmware Option from BIOS to EUFI in &apos;Overview&apos; tab. (If it&apos;s not available do a systemctl restart libvirtd)</span><br></pre></td></tr></table></figure></p>
-<h2 id="debug-curtin"><a href="#debug-curtin" class="headerlink" title="debug curtin"></a>debug curtin</h2><p><a href="https://gist.github.com/smoser/2610e9b78b8d7b54319675d9e3986a1b" target="_blank" rel="external">https://gist.github.com/smoser/2610e9b78b8d7b54319675d9e3986a1b</a><br>在maas中查看日志/var/log/maas/rsyslog/test2/2020-09-28/messages, 看到的错误如下:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curthooks -&gt; builtin_curthooks -&gt; setup_grub -&gt; install_grub(instdevs, target, uefi=uefi_bootable, grubcfg=grubcfg) -&gt;</span><br><span class="line"></span><br><span class="line">unshare --fork --pid -- chroot /tmp/tmp6yj0ryyc/target grub2-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=centos --recheck --no-nvram</span><br><span class="line"></span><br><span class="line">Stderr: grub2-install: error: /usr/lib/grub/x86_64-efi/modinfo.sh doesn&apos;t exist.</span><br></pre></td></tr></table></figure>
-<p>/usr/lib/grub/x86_64-efi/modinfo.sh 不存在, 这个网页<a href="https://bugzilla.redhat.com/show_bug.cgi?id=1101352" target="_blank" rel="external">https://bugzilla.redhat.com/show_bug.cgi?id=1101352</a> 说:<br>Looks like this is intentional to avoid the fallout of unsuspecting users running grub2-install. To regain ability to grub2-install on EFI, install package grub2-efi-modules.<br>所以是需要安装grub2-efi-modules模块. 下面方法检查image中检查确认确实没有这个包:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">#sudo guestmount -a /var/lib/libvirt/images/test2.qcow2  -i --rw ./root2</span><br><span class="line">sudo modprobe nbd</span><br><span class="line">sudo qemu-nbd --connect=/dev/nbd0 /var/lib/libvirt/images/test2.qcow2 -f qcow2</span><br><span class="line">sudo fdisk /dev/nbd0 -l</span><br><span class="line">sudo qemu-nbd --disconnect /dev/nbd0</span><br><span class="line">$ sudo fdisk /dev/nbd0 -l |grep dev</span><br><span class="line">Disk /dev/nbd0: 20 GiB, 21474836480 bytes, 41943040 sectors</span><br><span class="line">/dev/nbd0p1    2048  1050623  1048576  512M EFI System</span><br><span class="line">/dev/nbd0p2 1050624 41928703 40878080 19.5G Linux filesystem</span><br><span class="line"></span><br><span class="line">cd /tmp &amp;&amp; mkdir &#123;boot,root&#125;</span><br><span class="line">sudo mount /dev/nbd0p1 ./boot/</span><br><span class="line">sudo mount /dev/nbd0p2 ./root/</span><br><span class="line"></span><br><span class="line">$ ls ./root/usr/lib/grub/</span><br><span class="line">i386-pc</span><br><span class="line"></span><br><span class="line">$ sudo dpkg -L grub-efi-amd64-bin |grep modinfo.sh</span><br><span class="line">/usr/lib/grub/x86_64-efi/modinfo.sh</span><br><span class="line">$ sudo apt-file search modinfo.sh |grep amd64</span><br><span class="line">grub-efi-amd64-bin: /usr/lib/grub/x86_64-efi/modinfo.sh</span><br></pre></td></tr></table></figure></p>
-<p>先试了使用kickstart定制包, 但不好使: <a href="https://manintheit.org/bash/creating-a-image-for-maas-with-packer/" target="_blank" rel="external">https://manintheit.org/bash/creating-a-image-for-maas-with-packer/</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo PACKER_LOG=1 HTTPIP=127.0.0.1 HTTPPort=8000 packer build centos8.json</span><br></pre></td></tr></table></figure></p>
-<p>然后用下列方法重新打包, 在image中添加这个包:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mkdir /tmp/centos8 &amp;&amp; sudo tar -xf centos8.tar.gz -C /tmp/centos8/</span><br><span class="line">MOUNTDIR=/tmp/centos8</span><br><span class="line">for d in dev sys proc; do sudo mount --bind /$d $&#123;MOUNTDIR&#125;/$d; done</span><br><span class="line">sudo mv $&#123;MOUNTDIR&#125;/etc/resolv.conf $&#123;MOUNTDIR&#125;/etc/resolv.conf.bak &amp;&amp; sudo cp /etc/resolv.conf $&#123;MOUNTDIR&#125;/etc/</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#sudo chroot $MOUNTDIR bash</span><br><span class="line">sudo chroot $MOUNTDIR yum update</span><br><span class="line">#install grub2-efi-x64-modules instead of grub2-efi-modules to avoid grub2-efi-aa64-modules</span><br><span class="line">sudo chroot $MOUNTDIR yum install grub2-efi-x64-modules -y</span><br><span class="line">sudo chroot $MOUNTDIR ls /usr/lib/grub/x86_64-efi/modinfo.sh</span><br><span class="line">sudo chroot $MOUNTDIR yum list --installed |grep -E &apos;shim|efi&apos;</span><br><span class="line"></span><br><span class="line">sudo umount $MOUNTDIR/&#123;proc,dev,sys,&#125;</span><br><span class="line">sudo mv $MOUNTDIR/etc/resolv.conf.bak $MOUNTDIR/etc/resolv.conf</span><br><span class="line">sudo tar -czf centos8.tar.gz -C $MOUNTDIR .</span><br></pre></td></tr></table></figure>
-<p>现在之前的错误没了, 又出现下列新错误:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Command: [&apos;unshare&apos;, &apos;--fork&apos;, &apos;--pid&apos;, &apos;--&apos;, &apos;chroot&apos;, &apos;/tmp/tmphc1fr7hk/target&apos;, &apos;dracut&apos;, &apos;-f&apos;, &apos;/boot/initramfs-4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64.img&apos;, &apos;4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64&apos;]        Exit code: 1        Reason: -        Stdout: &apos;&apos;        Stderr: dracut: Cannot find module directory /lib/modules/4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64/                dracut: and --no-kernel was not specified</span><br></pre></td></tr></table></figure></p>
-<p>那是因为刚刚升级了centos(不应该升级)导致有两个内核了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">bash-4.4# rpm -q kernel</span><br><span class="line">kernel-4.18.0-193.14.2.el8_2.x86_64</span><br><span class="line">kernel-4.18.0-193.19.1.el8_2.x86_64</span><br><span class="line"></span><br><span class="line">bash-4.4# rpm -q --queryformat %&#123;VERSION&#125;-%&#123;RELEASE&#125;.%&#123;ARCH&#125; kernel</span><br><span class="line">4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64</span><br><span class="line"></span><br><span class="line">dracut -f /boot/initramfs-4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64.img 4.18.0-193.14.2.el8_2.x86_644.18.0-193.19.1.el8_2.x86_64</span><br></pre></td></tr></table></figure></p>
-<p>这个修改后, 又遇到image缓存了, 之后, 这些问题没有了, 但进系统时总是进入mergency mode, 原因是initrd-switch-root.service服务启动失败, 是因为找不到硬盘.<br>最后是这样解决的, 修改packer-maas/centos8/http/centos8.ks<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#grub2-efi-x64</span><br><span class="line">efibootmgr</span><br><span class="line">#shim-x64</span><br><span class="line">grub2-efi-x64-modules</span><br></pre></td></tr></table></figure></p>
-<p><strong>Reference</strong><br>[1] <a href="https://blog.csdn.net/quqi99/article/details/37990507" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/37990507</a><br>[2] <a href="https://www.cnblogs.com/aegis1019/p/8870251.html" target="_blank" rel="external">https://www.cnblogs.com/aegis1019/p/8870251.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1702,8 +1700,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">91</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">92</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1753,7 +1751,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

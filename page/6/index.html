@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,150 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/06/使用apt-mirror和simplestreams搭建本地源/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/06/使用apt-mirror和simplestreams搭建本地源/" itemprop="url">使用apt-mirror和simplestreams搭建本地源</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-06T17:49:49+08:00">
+                2019-11-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>你懂的，国内环境访问ubuntu-cloud.archive.canonical.com会非常慢(注： 其实下列方法可以同步UA, UCA, PPA)，本文将使用apt-mirror搭建一个本地apt服务器以提升办公效率。</p>
+<ul>
+<li>archive.ubuntu.com                   (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
+<li>security.ubuntu.com                  (UA, can use <a href="http://mirrors.cloud.tencent.com/ubuntu/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu/</a> instead)</li>
+<li>ubuntu-cloud.archive.canonical.com (UCA)</li>
+<li>images.maas.io                       (juju , lxd, maas)</li>
+<li>cloud-images.ubuntu.com              (juju , lxd, maas, <a href="http://mirrors.cloud.tencent.com/ubuntu-cloud-images/" target="_blank" rel="external">http://mirrors.cloud.tencent.com/ubuntu-cloud-images/</a> instead)</li>
+<li>streams.canonical.com                (juju , lxd, maas)<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">sudo ufw disable</span><br><span class="line">sudo apt -y install apache2 apt-mirror</span><br><span class="line">mkdir -p /images/xenial-repo</span><br><span class="line"></span><br><span class="line">$ cat /etc/apt/mirror.list</span><br><span class="line">############# config ##################</span><br><span class="line">#</span><br><span class="line">set base_path /images/xenial-repo</span><br><span class="line">#set defaultarch amd64</span><br><span class="line">#</span><br><span class="line"># set mirror_path  $base_path/mirror</span><br><span class="line"># set skel_path    $base_path/skel</span><br><span class="line"># set var_path     $base_path/var</span><br><span class="line"># set cleanscript $var_path/clean.sh</span><br><span class="line"># set defaultarch  &lt;running host architecture&gt;</span><br><span class="line"># set postmirror_script $var_path/postmirror.sh</span><br><span class="line"># set run_postmirror 0</span><br><span class="line">set nthreads     30</span><br><span class="line">set _tilde 0</span><br><span class="line">#</span><br><span class="line">############# end config ##############</span><br><span class="line"></span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb http://cn.archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-security main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-proposed main restricted universe multiverse</span><br><span class="line">#deb-src http://archive.ubuntu.com/ubuntu xenial-backports main restricted universe multiverse</span><br><span class="line"></span><br><span class="line">#see http://ubuntu-cloud.archive.canonical.com/ubuntu/dists/xenial-updates/</span><br><span class="line">deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/ocata main</span><br><span class="line">#deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/queens main</span><br><span class="line"></span><br><span class="line">#clean http://archive.ubuntu.com/ubuntu</span><br><span class="line">clean http://ubuntu-cloud.archive.canonical.com/ubuntu</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo touch /images/xenial-repo/var/postmirror.sh</span><br><span class="line">sudo apt-mirror</span><br></pre></td></tr></table></figure>
+<p>或者运行“sudo crontab -e”添加下列crob在每天四点半运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">30 4    * * *    root    /usr/bin/apt-mirror &gt;&gt; /var/log/apt-mirror.log</span><br></pre></td></tr></table></figure></p>
+<h2 id="配置Apache"><a href="#配置Apache" class="headerlink" title="配置Apache"></a>配置Apache</h2><p>Apache的已有配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sudo grep -r &apos;DocumentRoot&apos; /etc/apache2/sites-available/000-default.conf</span><br><span class="line">        DocumentRoot /var/www/html</span><br><span class="line"></span><br><span class="line">$ grep -r &apos;/var/www/&apos; /etc/apache2/apache2.conf -A 4</span><br><span class="line">&lt;Directory /var/www/&gt;</span><br><span class="line">	Options Indexes FollowSymLinks</span><br><span class="line">	AllowOverride All</span><br><span class="line">	Require all granted</span><br><span class="line">&lt;/Directory&gt;</span><br></pre></td></tr></table></figure>
+<p>创建软链及注意一个关键易犯问题</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo ln -s /images/xenial-repo  /var/www/html/apt-mirror</span><br><span class="line">sudo chown -R www-data:www-data /images</span><br><span class="line">sudo service apache2 reload</span><br></pre></td></tr></table></figure>
+<p>注：上面这一句”chown -R www-data:www-data /images”异常关键，网上几乎所有能搜寻的答案全部是关于添加’Options FollowSymLinks’的，其实如上/etc/apache2/apache2.conf文件中已经包含该设置。apache 2.4使用的目录的用户名和组必须全部是www-data，否则/var/log/apache2/error.log会报这个错误“Symbolic link not allowed or link target not accessible”（WEB页上看到的错误是‘You don’t have permission to access”）。可用该命令“sudo -u www-data ls /var/www/html/apt-mirror”验证它是否成功。之前我一直在这个地方犯错是因为我执行的是“chown -R www-data:www-data /images/xenial-repo”，这样导致仍然无法顺利执行““sudo -u www-data ls /var/www/html/apt-mirror”命令。<br>也可创建/etc/apache2/sites-available/ubuntu-mirror.conf使用VirtualHost同时支持对UA, UCA, PPT的同步：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-repo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/archive.ubuntu.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-archive.ubuntu.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-archive.ubuntu.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-cloudrepo.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-cloudarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-cloudarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:8080&gt;</span><br><span class="line">    ServerName your-ppa.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/apt-mirror/mirror/ppa.launchpad.net/</span><br><span class="line"></span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-ppaarchive.canonical.com-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-ppaarchive.canonical.com-access.log combined</span><br><span class="line"></span><br><span class="line">    &lt;Directory /var/spool/apt-mirror/&gt;</span><br><span class="line"></span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line"></span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure></p>
+<p>或要支持ssl，再添加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SSLCACertificatePath /etc/ssl/certs</span><br><span class="line">SSLCertificateFile /etc/pki/tls/certs/mirror.crt</span><br><span class="line">SSLEngine On</span><br><span class="line">SSLCertificateKeyFile /etc/pki/tls/private/mirror.key</span><br></pre></td></tr></table></figure>
+<p>之后执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a2enmod ssl</span><br><span class="line">a2ensite *</span><br><span class="line">systemctl restart apache2</span><br></pre></td></tr></table></figure></p>
+<h2 id="使用它"><a href="#使用它" class="headerlink" title="使用它"></a>使用它</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">touch /etc/apt/sources.list.d/mymirror.list</span><br><span class="line">cat &gt; /etc/apt/sources.list.d/mymirror.list &lt;&lt;EOF</span><br><span class="line">#deb http://node1/apt-mirror/mirror/cn.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://node1/apt-mirror/mirror/ubuntu-cloud.archive.canonical.com/ubuntu/ xenial-updates/ocata main</span><br><span class="line">EOF</span><br><span class="line">rm -rf /etc/apt/sources.list.d/cloudarchive-ocata.list*</span><br><span class="line">apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5EDB1B62EC4926EA</span><br><span class="line">apt update</span><br></pre></td></tr></table></figure>
+<h2 id="20171101更新"><a href="#20171101更新" class="headerlink" title="20171101更新"></a>20171101更新</h2><p>此次apt update慢的原因最后通过”Software &amp; Update -&gt; Ubuntu Software -&gt; Download from Other - Select Best Server”将之前的mirrors.aliyun.com改成mirrors.yun-idc.com就好了。之前各种源也都换过，为什么这次行了具体原因不明待下次遇到了待查。</p>
+<h2 id="20171115更新"><a href="#20171115更新" class="headerlink" title="20171115更新"></a>20171115更新</h2><p>今天在安装libvirt0时总是发生包依赖问题（libvirt0: Depends: libxen-4.6 (&gt;=4.6.5) but 4.6.0-1ubuntu4.3 is to be installed)，原来是mirrors.aliyun.com的问题，这个源更新不及时会造成众多问题。<br><strong>为了克服这种更新不及时造成的问题，看样子还是最好别搭私有源和使用国内源，所以换回官方源</strong>：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb-src http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse</span><br><span class="line">deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-security main restricted universe multiverse</span><br></pre></td></tr></table></figure></p>
+<h2 id="20191106更新-搭建simplestreams本地源"><a href="#20191106更新-搭建simplestreams本地源" class="headerlink" title="20191106更新 - 搭建simplestreams本地源"></a>20191106更新 - 搭建simplestreams本地源</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install simplestreams</span><br><span class="line">sudo mkdir -p /var/spool/sstreams/maas &amp;&amp; sudo chown -R $USER /var/spool/sstreams/maas</span><br><span class="line"></span><br><span class="line">#MAAS images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/maas</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos;</span><br><span class="line">sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1  https://images.maas.io/ephemeral-v3/daily/ $workdir &apos;os~(grub*|pxelinux)&apos;</span><br><span class="line"></span><br><span class="line">#Use MAAS images simplestreams</span><br><span class="line">maas root boot-source update 1 url=https://maas-images.yourdomain.com/ keyring_filename=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg</span><br><span class="line">maas root domains create name=&quot;yourdomain.com&quot;</span><br><span class="line">maas root dnsresources create fqdn=&quot;maas-images.yourdomain.com&quot; ip_addresses=&lt;your-mirror-ip&gt;  #orconfigure the mirror in infra.yaml</span><br><span class="line"></span><br><span class="line">#Juju agents simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/juju</span><br><span class="line">sstream-mirror --no-verify --progress --max=2 --path=streams/v1/index2.sjson https://streams.canonical.com/juju/tools/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;version~(2.6)&apos;</span><br><span class="line"></span><br><span class="line">#Use Juju agents simplestreams</span><br><span class="line">#let juju know where to get contrainers from, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config container-image-stream=released container-image-metadata-url=https://lxd-images.yourdomain.com/ image-metadata-url=https://lxd-images.yourdomain.com</span><br><span class="line">#let juju know where to fetach the agents, or defined it in juju-model-default.yaml</span><br><span class="line">juju model-config agent-metadata-url=https://juju-agents.yourdomain.com/ agent-stream=released</span><br><span class="line"></span><br><span class="line">#LXD and KVM images simplestreams</span><br><span class="line">workdir=/var/spool/sstreams/lxdkvm</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.json https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">sudo sstream-mirror --keyring=/usr/share/keyrings/ubuntu-cloudimage-keyring.gpg --progress --max=1 --path=streams/v1/index.sjson https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line">https://cloud-images.ubuntu.com/releases/ $workdir &apos;arch=amd64&apos; &apos;release~(bionic)&apos; &apos;ftype~(lxd.tar.xz|squashfs|root.tar.xz|root.tar.gz|disk1.img|.json|.sjson)&apos;</span><br><span class="line"></span><br><span class="line">sudo apt install apache2 -y</span><br><span class="line">cat &lt;&lt;EOF &gt; /etc/apache2/sites-available/sstreams-mirror.conf</span><br><span class="line">&lt;VirtualHost *:443&gt;</span><br><span class="line">    ServerName maas-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/maas</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-maas-images-error.log</span><br><span class="line">     CustomLog /var/log/apache2/mirror-maas-images-access.log combined</span><br><span class="line">     &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">     Options Indexes FollowSymLinks</span><br><span class="line">     AllowOverride None</span><br><span class="line">     Require all granted</span><br><span class="line">     &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName lxdkvm-images.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/lxdkvm</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-lxdkvm-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-lxdkvm-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line"></span><br><span class="line">&lt;VirtualHost *:80&gt;</span><br><span class="line">    ServerName juju-agents.yourdomain.com</span><br><span class="line">    DocumentRoot /var/spool/sstreams/juju</span><br><span class="line">    LogLevel info</span><br><span class="line">    ErrorLog /var/log/apache2/mirror-juju-error.log</span><br><span class="line">    CustomLog /var/log/apache2/mirror-juju-access.log combined</span><br><span class="line">    &lt;Directory /var/spool/sstreams/&gt;</span><br><span class="line">    Options Indexes FollowSymLinks</span><br><span class="line">    AllowOverride None</span><br><span class="line">    Require all granted</span><br><span class="line">    &lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +404,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-05T12:02:18+08:00">
                 2019-11-05
@@ -410,7 +554,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-14T17:06:30+08:00">
                 2019-10-14
@@ -611,7 +755,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-22T11:50:03+08:00">
                 2019-08-22
@@ -765,7 +909,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-24T20:24:20+08:00">
                 2019-04-24
@@ -910,7 +1054,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-15T08:56:05+08:00">
                 2019-04-15
@@ -1067,7 +1211,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-18T13:44:20+08:00">
                 2019-01-18
@@ -1234,7 +1378,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-01-02T11:08:22+08:00">
                 2019-01-02
@@ -1362,7 +1506,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-31T16:29:50+08:00">
                 2018-12-31
@@ -1557,7 +1701,7 @@ Fixed bug #161317
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-10-29T17:37:02+08:00">
                 2018-10-29
@@ -1691,163 +1835,6 @@ Fixed bug #161317
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/09/09/Win-10-UEFI-Ubuntu-18-04-UEFI-双系统/" itemprop="url">Win 10 UEFI + Ubuntu 18.04 UEFI 双系统</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-09T01:28:15+08:00">
-                2018-09-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本人昨天买了一块SSD, 结果后来发现原来这块SSD存在硬件质量问题, 造成了软件上的种种诡异问题, 如U盘时而识别时而不识别, 如触摸屏左键时而抽风, 如ghost安装win10时几乎到100%的进度时忽然来一个无响应, 重启系统后出现了”To interrupt normal start up, press the blue ThinkVantage button.”, 此时键盘无反应, 既进不了系统, 也进不了BIOS. 拨CMOS电源也无效. 最后发现是这块SSD有质量问题. 估计是SSD有控制器主要是软件吧, 控制器软件有bug导致运行ghost这种软件时也能导致硬件挂住.<br>也正是因为这个问题吧, 七搞八搞, 一不小心在重试的过程中将之前的一块linux分区误删了, 于是之前打算的迁移双系统的想法泡汤(当然, 那些通过分区助手或者ghost来迁移分区的网上文章照着做没一个是成功的).<br>这样, 有机会事隔多年再一次重装双系统的机会, 但是发现世道变了, 之前百试不爽的方法现在行不通了. 后经查证, 主要原因是ubuntu 18.04开始默认采用UEFI, 而win10默认仍然是MBR. 这样会导致一系列的问题, 如报错: grub-efi-amd64-signed failed to install 18.04, 统一采用UEFI安装.</p>
-<h2 id="BIOS设置"><a href="#BIOS设置" class="headerlink" title="BIOS设置"></a>BIOS设置</h2><p>在BIOS中将Boot Mode设置为UEFI Only, 如果有Secure Boot选项还要disable它(不做这一步可能会造成按F12键之后无法找到U盘)<br>注: 改成UEFI only之后, 运行双系统, 四系统都没问题, 但后来进不了U盘的livecd, 报: couldn’t get UEFI db list, 所以只得改回Both, 但UEFI优先.</p>
-<h2 id="安装win10"><a href="#安装win10" class="headerlink" title="安装win10"></a>安装win10</h2><ul>
-<li>下载大白菜UEFI专版 - <a href="http://www.bigbaicai.com/download.html?down2" target="_blank" rel="external">http://www.bigbaicai.com/download.html?down2</a></li>
-<li>下载win10 ghost - axel -n 10 <a href="http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar" target="_blank" rel="external">http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar</a></li>
-<li>制作大白菜启动U盘, 如果界面上有UEFI字眼就点上(不记得了, 有就点上), 还要注意一点, 记得点里面的格式转换, 将FAT32格式(HDD-FAT32)转换成NTFS(HDD-NTFS)转换, 否则HDD-FAT32格式不能拷贝大于4G的ghost文件哦,</li>
-<li>按F12选U盘启动进入大白菜后, 用DiskGenius工具重新分区, 必须将BIOS+MBR格式转UEFI+GPT格式. 分区表格式为GUID而不是MBR, window上管EFI分区叫ESP/MSR分区</li>
-<li><p>注意, 不要修改推荐的卷标, 这个卷就是指向的ESP/MSR分区.</p>
-<h2 id="安装win10后"><a href="#安装win10后" class="headerlink" title="安装win10后"></a>安装win10后</h2><p>安装win10后需要将禁用掉快速启动, 否则会造成按F12无法选择U盘启动. 菜单路径为: “设置 -&gt; 系统 -&gt; 电源与睡眠 -&gt; 其他电源设置 -&gt; 选择电源按钮的功能 -&gt; 更改当前不可用的设置 -&gt; 启动快速启动”</p>
-<h2 id="安装ubuntu-18-04"><a href="#安装ubuntu-18-04" class="headerlink" title="安装ubuntu 18.04"></a>安装ubuntu 18.04</h2><p>像安装win10一样, 一样要注意重要一点, 需创建大概300M左右的UEF分区, 另外, 还可以创建一个根分区和一个备份文件用的bak分区.<br>注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</p>
-<h2 id="安装win7"><a href="#安装win7" class="headerlink" title="安装win7"></a>安装win7</h2><p>win7若没有sata的驱动, 所以得先改回IDE, 装完win7之后再改回AHCI, 否则也容易挂在启动界面不动了.<br>注: 我未遇到以上问题, 可能因为我装的win7并不是原版的, 已经带了sata驱动</p>
-<h2 id="加装SSD"><a href="#加装SSD" class="headerlink" title="加装SSD"></a>加装SSD</h2><p>如果加装了SSD之后呢? 那得注意:</p>
-</li>
-<li><p>装win10时同样需要进大白菜或老毛桃后用DiskGenius在SSD上划分ESP/MSR分区</p>
-</li>
-<li>装ubuntu时, 分区处也要创建EFI分区, 同时grub设置安装在SSD上, 相当于: grub-install /dev/sdX.</li>
-<li>bios里选择哪块硬盘启动. 其实在SSD上安装grub后, 这个grub会连HDD上原先的win10与ubuntu一起放在启动列表里. 注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</li>
-<li><p>有时候需要对ssd优化, 例如不要将swap分区放在ssd以延长寿命, 如更改i/o调度策略为noop, 如使用bcache</p>
-<h2 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h2><p>装完之后进入win10发现thinkpad小红点左键失灵, 再切换进ubuntu发现小红点左键正常(实际上, 5次大概有一次有问题, 只是登录界面左键与右键似乎混乱了, 登录之后就正常了. 再换PE进系统发现小红点左键依然有问题. 所以基本断定和硬件没有关系, 应该是win10上的小红点驱动有问题.<br>但搜索了很多帖子, 没一个能解决问题的, 联想的小红点win10驱动做得太烂了. 所以决定回到win7, 回到win7之后该问题解决. 另外, PE回到win7的过程中不会伤害之前SSD上安装的ubuntu系统, 也不会伤害原HDD里的双系统.</p>
-<h2 id="数据迁移"><a href="#数据迁移" class="headerlink" title="数据迁移"></a>数据迁移</h2><p>现在在笔记本x220t上装了win10, 也装了ubuntu 18.04, 但是如何将工作机t440p的根分区迁移到x220t的根分区呢? 因为我们已经在x220t上安装了ubuntu 18.04, 这样省去了采用命令划分EFI分区, 以及最后填充EFI分区的步骤. 现在将精力集中在如何快速迁移根分区上.</p>
-</li>
-<li><p>目的机x220t因为有写操作, 故要以livecd启动, 启动ssh server, 并将根分区加载到/mnt</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">apt install openssh-server</span><br><span class="line">passwd</span><br><span class="line">echo &apos;PermitRootLogin yes&apos; &gt;&gt; /etc/ssh/sshd_config</span><br><span class="line">service ssh restart</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sdb8 /mnt</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>源机t440p最好也以livecd启动, 注意: 例如源机上有一个软链指向了/bak分区, 但因为此时没有挂载/bak分区, 所以在rsync命令迁移时会报错退出. 人工删除该软链重新运行即可.  且需要注意 rsync命令中的/mnt/后应该有/, 否则会将mnt目录迁移到根分区的mnt目录下.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sda9 /mnt</span><br><span class="line"></span><br><span class="line"># rsync will now copy all files, directories, permissions and owners over to the destination machine.</span><br><span class="line"># It also skips all files and directories that are not on the root filesystem, like /dev/, /sys/, /proc/.</span><br><span class="line"># If there are filesystems that are mounted separately on the source machine and your want those copied too, use rsync again on those mountpoints too.</span><br><span class="line">rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; /mnt root@192.168.99.128:/</span><br><span class="line">#rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; --exclude=&apos;/nas&apos; /mnt/ root@192.168.99.128:/mnt/</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>更新grub, 此时会报”canot find EFI directory”, 这样会导致这时生成grub时无法找到原HDD中的双系统, 不要紧, 只要找到目前SSD中的双系统即可. 呆会下一步再运行一下grub命令即可解决</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdb8 /mnts</span><br><span class="line">for d in dev sys proc; do mount --bind /$d /mnt/$d; done</span><br><span class="line">chroot /mnt/ grub-install /dev/sdb   # canot find EFI directory</span><br><span class="line">chroot /mnt/ update-grub</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修复fstab, 之前运行上述迁移命令前忘了备份x220t上的fstab系统, 导致它被覆盖, OK, 我们修复它.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">blkid</span><br><span class="line">e2label /dev/sdb8 &quot;ROOT_SSD&quot;</span><br><span class="line">tee &quot;/mnt/etc/fstab&quot; &lt;&lt;EOF</span><br><span class="line">#UUID can be found via blkid command</span><br><span class="line">#LABEL=boot /boot ext2 sync 0 2</span><br><span class="line">#UUID=735b3be3-779c-4d21-a944-b033225f3ab4 none   swap    sw      0       0</span><br><span class="line">#LABEL=SWAP none swap sw 0 0</span><br><span class="line">UUID=9401-D2EA /boot/efi vfat defaults 0 2</span><br><span class="line">LABEL=ROOT_SSD / ext4 errors=remount-ro 0 1</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>这时重启系统, 就可以以grub选择启动SSD上的双系统了, 如果还想把HDD的原有的双系统也加到grub的话, 那进ubuntu系统后再执行一次update-grub命令即可.</p>
-</li>
-<li>这种迁移方式效果非常好, 各种工作软件不需要再重装了. 呵呵<h2 id="调整分区"><a href="#调整分区" class="headerlink" title="调整分区"></a>调整分区</h2>一个分区不够用时, 可以使用gpartd合并相邻的空闲分区.注意一点, 要合并的分区必须是umount状态时才能合并.<h2 id="SSD优化"><a href="#SSD优化" class="headerlink" title="SSD优化"></a>SSD优化</h2></li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"># disable scanning for btrfs filesystems when boot</span><br><span class="line">sudo apt-get purge btrfs-tools</span><br><span class="line">sudo update-initramfs -ukall</span><br><span class="line"></span><br><span class="line"># enable TRIM feature by adding discard option</span><br><span class="line"># what&apos;s TRIM - https://blog.csdn.net/quqi99/article/details/50963308</span><br><span class="line"># the option noatime is used to disable access time for a file</span><br><span class="line">sudo hdparm -I /dev/sdb |grep TRIM</span><br><span class="line">vi /etc/fstab</span><br><span class="line">LABEL=ROOT_SSD /               ext4    noatime,discard,errors=remount-ro 0       1</span><br><span class="line">sudo mount -o remount /dev/sdb8</span><br><span class="line">sudo mount |grep sdb8 |grep discard</span><br><span class="line"></span><br><span class="line"># Try not to use swap space unless it&apos;s running out of memory.</span><br><span class="line">echo 1 &gt; /proc/sys/vm/swappiness</span><br><span class="line"></span><br><span class="line"># avoid visiting ssd by using ramdisk for /tmp instead of tmpfs</span><br><span class="line">vim /etc/fstab</span><br><span class="line">tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">sudo mount -o remount /</span><br><span class="line"></span><br><span class="line"># Set chrome to use ramdisk cache</span><br><span class="line">cd ~/.cache/google-chrome/Default</span><br><span class="line">rm -rf Cache</span><br><span class="line">sudo ln -s /tmp Cache</span><br><span class="line">rm -rf Media\ Cache/</span><br><span class="line">sudo ln -s /tmp Media\ Cache</span><br><span class="line"></span><br><span class="line"># Use noop for I/O elevator</span><br><span class="line">cat /sys/block/sda/queue/scheduler</span><br><span class="line">sudo vi /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;elevator=noop&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line"></span><br><span class="line"># Test SSD speed</span><br><span class="line">$ sudo hdparm -Tt /dev/sdb</span><br><span class="line">/dev/sdb:</span><br><span class="line"> Timing cached reads:   9128 MB in  2.00 seconds = 4569.28 MB/sec</span><br><span class="line"> Timing buffered disk reads: 818 MB in  3.01 seconds = 272.07 MB/sec</span><br><span class="line"></span><br><span class="line"># Make sure 4K align</span><br><span class="line">$ sudo fdisk -lu |grep sdb |grep sectors</span><br><span class="line">Disk /dev/sdb: 232.9 GiB, 250059350016 bytes, 488397168 sectors</span><br><span class="line"></span><br><span class="line"># Health check</span><br><span class="line">$ sudo smartctl -s on -a /dev/sdb |grep PASSED</span><br><span class="line">SMART overall-health self-assessment test result: PASSED</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1898,8 +1885,8 @@ Fixed bug #161317
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">91</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">92</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1949,7 +1936,7 @@ Fixed bug #161317
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

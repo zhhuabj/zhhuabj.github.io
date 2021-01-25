@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2021-01-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Canal是Flannel和Calico的组合，因此它的优点也在于这两种技术的交叉。网络层用的是Flannel提供的简单overlay，可以在许多不同的部署环境中运行且无需额外的配置。在网络策略方面，Calico强大的网络规则评估，为基础网络提供了更多补充，从而提供了更多">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s Canal">
+<meta property="og:url" content="http://yoursite.com/2021/01/25/k8s-Canal/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2021-01-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Canal是Flannel和Calico的组合，因此它的优点也在于这两种技术的交叉。网络层用的是Flannel提供的简单overlay，可以在许多不同的部署环境中运行且无需额外的配置。在网络策略方面，Calico强大的网络规则评估，为基础网络提供了更多补充，从而提供了更多">
+<meta property="og:updated_time" content="2021-01-25T08:51:25.176Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="k8s Canal">
+<meta name="twitter:description" content="作者：张华 发表于：2021-01-25版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 Canal是Flannel和Calico的组合，因此它的优点也在于这两种技术的交叉。网络层用的是Flannel提供的简单overlay，可以在许多不同的部署环境中运行且无需额外的配置。在网络策略方面，Calico强大的网络规则评估，为基础网络提供了更多补充，从而提供了更多">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/25/k8s-Canal/"/>
+
+
+
+
+
+  <title>k8s Canal | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/25/k8s-Canal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">k8s Canal</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-25T16:51:16+08:00">
+                2021-01-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2021-01-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>Canal是Flannel和Calico的组合，因此它的优点也在于这两种技术的交叉。网络层用的是Flannel提供的简单overlay，可以在许多不同的部署环境中运行且无需额外的配置。在网络策略方面，Calico强大的网络规则评估，为基础网络提供了更多补充，从而提供了更多的安全性和控制。<br>所以检查Canal的网络连通性方面，主要看Flannel. 网页（<a href="https://blog.neuvector.com/article/advanced-kubernetes-networking）说：" target="_blank" rel="external">https://blog.neuvector.com/article/advanced-kubernetes-networking）说：</a><br>Canal is is based on Flannel but with some Calico components such as felix, the host agent, which allows you to utilize network security policies. These are normally missing in Flannel. So it basically extends Flannel with the addition of security policies.</p>
+<h2 id="测试环境信息"><a href="#测试环境信息" class="headerlink" title="测试环境信息"></a>测试环境信息</h2><p>kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1的IP如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">kubernetes-master/0*      active    idle   3        10.5.2.205      6443/tcp        Kubernetes master running.</span><br><span class="line">  canal/2*                active    idle            10.5.2.205                      Flannel subnet 10.1.49.1/24</span><br><span class="line">  containerd/2*           active    idle            10.5.2.205                      Container runtime available</span><br><span class="line">kubernetes-worker/0*      active    idle   4        10.5.3.197      80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/0                 active    idle            10.5.3.197                      Flannel subnet 10.1.94.1/24</span><br><span class="line">  containerd/0            active    idle            10.5.3.197                      Container runtime available</span><br><span class="line">kubernetes-worker/1       active    idle   5        10.5.4.4        80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/1                 active    idle            10.5.4.4                        Flannel subnet 10.1.3.1/24</span><br><span class="line">  containerd/1            active    idle            10.5.4.4                        Container runtime available</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -o wide</span><br><span class="line">NAME                            READY   STATUS    RESTARTS   AGE    IP          NODE                NOMINATED NODE   READINESS GATES</span><br><span class="line">ubuntu-debug-794979f648-4dj8w   1/1     Running   1          118m   10.1.3.14   juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">ubuntu-debug-794979f648-fwdmv   1/1     Running   1          118m   10.1.94.7   juju-11ff05-k8s-4   &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="canal中的flannel提供pod-to-pod通信"><a href="#canal中的flannel提供pod-to-pod通信" class="headerlink" title="canal中的flannel提供pod-to-pod通信"></a>canal中的flannel提供pod-to-pod通信</h2><p>flannel内的tunnel网段是10.1.0.0/16，vxlan类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 get /coreos.com/network/config</span><br><span class="line">&#123;&quot;Network&quot;: &quot;10.1.0.0/16&quot;, &quot;Backend&quot;: &#123;&quot;Type&quot;: &quot;vxlan&quot;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>flannel为kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1分配的subnet分别是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 ls /coreos.com/network/subnets/</span><br><span class="line">/coreos.com/network/subnets/10.1.94.0-24 (kubernetes-worker/0)</span><br><span class="line">/coreos.com/network/subnets/10.1.3.0-24  (kubernetes-worker/1)</span><br><span class="line">/coreos.com/network/subnets/10.1.49.0-24 (kubernetes-master/0)</span><br></pre></td></tr></table></figure></p>
+<p>flannel是根据subnet.env分配的，kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1均应有下列配置，下面只是粘出了kubernetes-worker/0上的例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# cat /run/flannel/subnet.env</span><br><span class="line">FLANNEL_NETWORK=10.1.0.0/16</span><br><span class="line">FLANNEL_SUBNET=10.1.94.1/24</span><br><span class="line">FLANNEL_MTU=8908</span><br><span class="line">FLANNEL_IPMASQ=true</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip addr show flannel.1 |grep global</span><br><span class="line">    inet 10.1.94.0/32 scope global flannel.1</span><br></pre></td></tr></table></figure></p>
+<p>防火墙应该允许该子网的流量进入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#on kubernetes-worker/0, it should ALLOW 10.1.94.0/24</span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep 10.1.94 |grep POST</span><br><span class="line">-A POSTROUTING ! -s 10.1.0.0/16 -d 10.1.94.0/24 -j RETURN</span><br><span class="line"># iptables -t nat -nvL |grep &apos;Chain POSTROUTING&apos; -A9</span><br><span class="line">Chain POSTROUTING (policy ACCEPT 1447 packets, 89820 bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line"> 1885  119K KUBE-POSTROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes postrouting rules */</span><br><span class="line">    8   460 fan-egress  all  --  *      *       252.0.0.0/8          0.0.0.0/0</span><br><span class="line">  183 11249 RETURN     all  --  *      *       10.1.0.0/16          10.1.0.0/16</span><br><span class="line">    6   360 MASQUERADE  all  --  *      *       10.1.0.0/16         !224.0.0.0/4</span><br><span class="line">    0     0 RETURN     all  --  *      *      !10.1.0.0/16          10.1.94.0/24</span><br><span class="line">    0     0 MASQUERADE  all  --  *      *      !10.1.0.0/16          10.1.0.0/16</span><br></pre></td></tr></table></figure></p>
+<h2 id="canal中的Calico提供网络策略"><a href="#canal中的Calico提供网络策略" class="headerlink" title="canal中的Calico提供网络策略"></a>canal中的Calico提供网络策略</h2><p>在使用Canal时，pod之间的流量还走flannel，不是Calico (Calico只是管网络策略）</p>
+<ul>
+<li>如果使用docker, 容器内的流量会先到docker0, 然后根据下列路由到flannel.1</li>
+<li>如果使用containerd，是通过下列的/etc/cni/net.d/10-canal.conflist文件将subnet设置进flannel的。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# route -n |grep flannel</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>接着流量会被封装成vxlan tunnel送到对方endpoint.<br>Calico如何管网络策略的还没研究清楚(我估计上节中的充许防火墙规则就是这块设置的，当然只是猜测)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# ip addr show |grep cali -A1</span><br><span class="line">6: cali8215eb6fd4a@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-262d6f97-ad60-b48b-85e1-ee180b620c30</span><br><span class="line">--</span><br><span class="line">7: cali105686d7bac@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-09304b68-97b3-c72b-2bd6-b47d9f626890</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         10.5.0.1        0.0.0.0         UG    100    0        0 ens3</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.94.6       0.0.0.0         255.255.255.255 UH    0      0        0 cali105686d7bac</span><br><span class="line">10.1.94.7       0.0.0.0         255.255.255.255 UH    0      0        0 cali8215eb6fd4a</span><br><span class="line">10.5.0.0        0.0.0.0         255.255.0.0     U     0      0        0 ens3</span><br><span class="line">169.254.169.254 10.5.0.1        255.255.255.255 UGH   100    0        0 ens3</span><br><span class="line">252.0.0.0       0.0.0.0         255.0.0.0       U     0      0        0 fan-252</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# cat /etc/cni/net.d/10-canal.conflist</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;cdk-canal&quot;,</span><br><span class="line">  &quot;cniVersion&quot;: &quot;0.3.0&quot;,</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;calico&quot;,</span><br><span class="line">      &quot;etcd_endpoints&quot;: &quot;https://10.5.1.44:2379&quot;,</span><br><span class="line">      &quot;etcd_key_file&quot;: &quot;/opt/calicoctl/etcd-key&quot;,</span><br><span class="line">      &quot;etcd_cert_file&quot;: &quot;/opt/calicoctl/etcd-cert&quot;,</span><br><span class="line">      &quot;etcd_ca_cert_file&quot;: &quot;/opt/calicoctl/etcd-ca&quot;,</span><br><span class="line">      &quot;log_level&quot;: &quot;info&quot;,</span><br><span class="line">      &quot;ipam&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;host-local&quot;,</span><br><span class="line">        &quot;subnet&quot;: &quot;10.1.94.1/24&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;policy&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;k8s&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;kubernetes&quot;: &#123;</span><br><span class="line">        &quot;kubeconfig&quot;: &quot;/root/cdk/kubeconfig&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;portmap&quot;,</span><br><span class="line">      &quot;capabilities&quot;: &#123;&quot;portMappings&quot;: true&#125;,</span><br><span class="line">      &quot;snat&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="iptables提供Service-to-Pod通信"><a href="#iptables提供Service-to-Pod通信" class="headerlink" title="iptables提供Service-to-Pod通信"></a>iptables提供Service-to-Pod通信</h2><p>以dashboard为例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get services -A |grep kubernetes-dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper                ClusterIP   10.152.183.92    &lt;none&gt;        8000/TCP                 3d22h</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard                     ClusterIP   10.152.183.89    &lt;none&gt;        443/TCP                  3d22h</span><br><span class="line">$ kubectl describe --namespace kubernetes-dashboard service kubernetes-dashboard |grep -E &apos;IPs|Endpoints|Port&apos;</span><br><span class="line">IPs:               10.152.183.89</span><br><span class="line">Port:              &lt;unset&gt;  443/TCP</span><br><span class="line">TargetPort:        8443/TCP</span><br><span class="line">Endpoints:         10.1.3.16:8443</span><br><span class="line">$ kubectl get pods -A -o wide |grep dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper-74757fb5b7-9rqxd                1/1     Running   1          3d22h   10.1.3.17    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard-64f87676d4-s26bs                     1/1     Running   1          3d22h   10.1.3.16    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep kubernetes-dashboard</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -s 10.1.3.17/32 -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -m tcp -j DNAT --to-destination 10.1.3.17:8000</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -s 10.1.3.16/32 -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -m tcp -j DNAT --to-destination 10.1.3.16:8443</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-SVC-Z6GDYMWE5TV2NNJN</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-SVC-CEZPIJSAUFW5MYPQ</span><br><span class="line">-A KUBE-SVC-CEZPIJSAUFW5MYPQ -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-SEP-RMJCCMAWKQ3DCGZP</span><br><span class="line">-A KUBE-SVC-Z6GDYMWE5TV2NNJN -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-SEP-LGG4MZT3C2GWQFZG</span><br></pre></td></tr></table></figure></p>
+<h2 id="相关服务"><a href="#相关服务" class="headerlink" title="相关服务"></a>相关服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status flannel</span><br><span class="line">systemctl status calico-node.service</span><br><span class="line">systemctl status snap.kubelet.daemon.service</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/23/ebpf-study/" rel="next" title="ebpf study">
+                <i class="fa fa-chevron-left"></i> ebpf study
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">92</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#测试环境信息"><span class="nav-number">1.</span> <span class="nav-text">测试环境信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#canal中的flannel提供pod-to-pod通信"><span class="nav-number">2.</span> <span class="nav-text">canal中的flannel提供pod-to-pod通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#canal中的Calico提供网络策略"><span class="nav-number">3.</span> <span class="nav-text">canal中的Calico提供网络策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iptables提供Service-to-Pod通信"><span class="nav-number">4.</span> <span class="nav-text">iptables提供Service-to-Pod通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关服务"><span class="nav-number">5.</span> <span class="nav-text">相关服务</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
