@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/02/07/OpenStack-SSL/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07) OpenStack Charm如何支持SSLOpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoi">
-<meta property="og:updated_time" content="2020-08-31T04:08:40.444Z">
+<meta property="og:updated_time" content="2021-01-27T03:57:26.180Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="OpenStack SSL">
 <meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-02-07) OpenStack Charm如何支持SSLOpenStack Charm需为每个OpenStack服务配置证书（/var/lib/keystone/juju_ssl/, /usr/local/share/ca-certificates/)与https endpoi">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-02-07T13:25:04+08:00">
                 2018-02-07
@@ -331,6 +331,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export OS_CACERT=/home/xxx/openstack/ssl/openstack-ssl/results/cacert.pem</span><br></pre></td></tr></table></figure>
 <p>但依然有点问题，唯独horizon没有添加ssl支持，继续：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">juju config openstack-dashboard enforce-ssl=true</span><br><span class="line">ssl_results=/home/ubuntu/stsstack-bundles/openstack/ssl/openstack-ssl/results</span><br><span class="line">juju config openstack-dashboard ssl_ca=`base64 $&#123;ssl_results&#125;/cacert.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config openstack-dashboard ssl_cert=`base64 $&#123;ssl_results&#125;/servercert.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config openstack-dashboard ssl_key=`base64 $&#123;ssl_results&#125;/serverkey.pem| tr -d &apos;\n&apos;`</span><br></pre></td></tr></table></figure></p>
 <p>最后开内网v皮恩之后，访问：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo sshuttle --python=/usr/bin/python2.7 -r ubuntu@bastion 10.5.0.0/16 -D</span><br><span class="line">https://10.5.2.147  #make sure not use proxy, admin_domain/admin/openstack</span><br></pre></td></tr></table></figure></p>
+<h2 id="20210127更新-ssl-amp-vault"><a href="#20210127更新-ssl-amp-vault" class="headerlink" title="20210127更新 - ssl &amp; vault"></a>20210127更新 - ssl &amp; vault</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh -s xenial -r queens --create-model --name ssl:stsstack --num-compute 1 --openstack-dashboard --nova-console --vault</span><br><span class="line">./generate-bundle.sh --name ssl:stsstack --replay --run</span><br><span class="line">./tools/vault-unseal-and-authorise.sh</span><br><span class="line">juju config openstack-dashboard enforce-ssl=true</span><br><span class="line">juju add-relation openstack-dashboard:certificates vault:certificates</span><br><span class="line">juju config nova-cloud-controller console-access-protocol=novnc</span><br><span class="line">./configure</span><br><span class="line">source novarc</span><br><span class="line">openstack --insecure endpoint list</span><br><span class="line">openstack endpoint list</span><br><span class="line">./tools/instance_launch.sh 1 bionic</span><br><span class="line">#add &apos;socks-proxy 127.0.0.1 7078&apos; into openxxx.conf then start it by &apos;openxxx --config xxx.conf --daemon&apos;</span><br><span class="line">#sudo sshuttle --python=/usr/bin/python2.7 -r ubuntu@bastion 10.5.0.0/16 10.0.0.0/16 -l 0.0.0.0:0 -D</span><br><span class="line">#access horizon (NOTE: don&apos;t proxy it in SwitchOmega), and don&apos;t run sshuttle in bastion as well</span><br><span class="line">#https://10.5.2.248  admin_domain/admin/openstack</span><br><span class="line">nova get-vnc-console bionic-032738 novnc</span><br><span class="line">nmap --script ssl-enum-ciphers -p 6080 10.5.1.161</span><br><span class="line"></span><br><span class="line">nova-cloud-controller/0</span><br><span class="line">#https://bugs.launchpad.net/ubuntu/+source/python-eventlet/+bug/1904988</span><br><span class="line">echo &apos;deb http://archive.ubuntu.com/ubuntu/ xenial-proposed restricted main multiverse universe&apos; |sudo tee -a /etc/apt/sources.list</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt-cache policy python-eventlet</span><br><span class="line">sudo apt-get install python-eventlet/xenial-proposed</span><br><span class="line">sudo systemctl restart nova-novncproxy</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~/stsstack-bundles/openstack$ nmap --script ssl-enum-ciphers -p 6080 10.5.1.161 |grep -i tlsv</span><br><span class="line">|   TLSv1.0:</span><br><span class="line">|   TLSv1.1:</span><br><span class="line">|   TLSv1.2:</span><br></pre></td></tr></table></figure>
 <h2 id="备份网址"><a href="#备份网址" class="headerlink" title="备份网址"></a>备份网址</h2><p><a href="https://zhhuabj.github.io/2018/02/07/OpenStack-SSL/" target="_blank" rel="external">https://zhhuabj.github.io/2018/02/07/OpenStack-SSL/</a></p>
 
       
@@ -422,10 +423,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -446,7 +447,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">92</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -482,7 +483,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-Charm如何支持SSL"><span class="nav-number">1.</span> <span class="nav-text">OpenStack Charm如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-HA-Charm如何支持SSL"><span class="nav-number">2.</span> <span class="nav-text">OpenStack HA Charm如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-Horizon和Apache代理之间如何支持SSL"><span class="nav-number">3.</span> <span class="nav-text">OpenStack Horizon和Apache代理之间如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack其他工程和Apache代理之间如何支持SSL"><span class="nav-number">4.</span> <span class="nav-text">OpenStack其他工程和Apache代理之间如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-原生OpenStack配置SSL的方法"><span class="nav-number">5.</span> <span class="nav-text">附录 - 原生OpenStack配置SSL的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20200831更新"><span class="nav-number">6.</span> <span class="nav-text">20200831更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#备份网址"><span class="nav-number">7.</span> <span class="nav-text">备份网址</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-Charm如何支持SSL"><span class="nav-number">1.</span> <span class="nav-text">OpenStack Charm如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-HA-Charm如何支持SSL"><span class="nav-number">2.</span> <span class="nav-text">OpenStack HA Charm如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack-Horizon和Apache代理之间如何支持SSL"><span class="nav-number">3.</span> <span class="nav-text">OpenStack Horizon和Apache代理之间如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenStack其他工程和Apache代理之间如何支持SSL"><span class="nav-number">4.</span> <span class="nav-text">OpenStack其他工程和Apache代理之间如何支持SSL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-原生OpenStack配置SSL的方法"><span class="nav-number">5.</span> <span class="nav-text">附录 - 原生OpenStack配置SSL的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20200831更新"><span class="nav-number">6.</span> <span class="nav-text">20200831更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20210127更新-ssl-amp-vault"><span class="nav-number">7.</span> <span class="nav-text">20210127更新 - ssl & vault</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#备份网址"><span class="nav-number">8.</span> <span class="nav-text">备份网址</span></a></li></ol></div>
             
 
           </div>
@@ -512,7 +513,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
