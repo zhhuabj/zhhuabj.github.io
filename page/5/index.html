@@ -231,6 +231,295 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/18/用ubuntu的使用习惯使用windows/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/04/18/用ubuntu的使用习惯使用windows/" itemprop="url">用ubuntu的使用习惯使用windows</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-18T16:25:23+08:00">
+                2020-04-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-04-18<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>新入手了一台笔记本电脑，默认安装了win10，用了十几年linux了，也一大堆linux的vps维护的太麻烦，还是就只使用单系统的win10吧。那样，问题来了，如何像平时使用ubuntu的习惯一样使用linux呢？</p>
+<h2 id="CLI工具的选择"><a href="#CLI工具的选择" class="headerlink" title="CLI工具的选择"></a>CLI工具的选择</h2><p>国内网络太慢，所以从来不在国内的机器上跑程序，都是ssh到国外vps上来办公的， 这样主要是使用CLI命令，很少或几乎没有使用GUI工具的习惯。所以选择一个好的CLI工具是决定能否继续使用windows的关键。</p>
+<ul>
+<li>能用wsl吗？wsl将linux系统调用翻译成windows调用, 决定了它仅支持CLI， 当然也可以通过windows上安装xming之类的x server来运行某一些GUI（wsl内运行:export DISPLAY=:0.0)，但很多GUI是不支持的如chrome与firefox; 另外，wsl也不支持访问底层硬件所以无法运行python pyaudio之类的程序。wsl的优点它可以通过运行’wsl’快速切换到ubuntu bash；也可以通过’wsl ls’之类的命令实现在windows上直接运行bash命令， 这对我这种只熟悉unix命令不熟悉windows命令的人来说吸引力是很大的。所以wsl要结合着用，但主要就是用它的’wsl ls’之类的方便（后面会讲如何通过alias来使用它）。</li>
+<li>能用powershell吗？要运行访问硬件之类的python pyaudio程序只能通过powershell, 不能使用ubuntu wsl shell或者cgwin shell. 使用powershell不支持自定义快捷键让我像使用bash的快捷键习惯一样使用它，这个缺点是对我来说是致命的，所以我不能用它。</li>
+<li>能用mabaxterm吗？mabaxterm同时集成了wsl shell, cgwin shell, powershell， 但这些全如上面说的不合我的需求。所以只能将它作为备用，偶尔用用它好用的x server, scp等功能。我很少用GUI，所以这对我来说也属于低概率事件，备用着吧。</li>
+<li>cmder是我最终选用的工具，它的cmder shell支持使用python pyaudio程序，和bash一样的快捷键使用习惯。也集成了git, ssh这些常用的功能，也能通过定义alias别名方便使用wsl bash命令， 也支持tabs。很好，就是它了，现在需要设置它让它更符合我平时使用linux的习惯。<h2 id="设置cmder的home-dir"><a href="#设置cmder的home-dir" class="headerlink" title="设置cmder的home dir"></a>设置cmder的home dir</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">D:\&gt;wsl</span><br><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# grep -r &apos;home pat&apos; /mnt/d/soft/cmder/vendor/init.bat -A 3</span><br><span class="line">:: Set home path</span><br><span class="line">if not defined HOME set &quot;HOME=%USERPROFILE%&quot;</span><br><span class="line">%lib_console% debug_output init.bat &quot;Env Var - HOME=%HOME%&quot;</span><br><span class="line">@cd /d &quot;D:/&quot;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="定义-bak软链与ubuntu的路径使用习惯相同"><a href="#定义-bak软链与ubuntu的路径使用习惯相同" class="headerlink" title="定义/bak软链与ubuntu的路径使用习惯相同"></a>定义/bak软链与ubuntu的路径使用习惯相同</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# ln -s /mnt/d /bak</span><br><span class="line">root@DESKTOP-ENUSKP0:/mnt/d# ls /bak/soft/cmder/vendor/init.bat</span><br><span class="line">/bak/soft/cmder/vendor/init.bat</span><br></pre></td></tr></table></figure>
+<p><strong>定义alias别名在cmder shell更方便直接使用wsl bash命令</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">D:\&gt;cat soft/cmder/config/user_aliases.cmd |tail -n 20</span><br><span class="line">sshxxx=ssh ubuntu@xxx -b 192.168.8.101</span><br><span class="line">ifconfig=wsl ifconfig</span><br><span class="line">awk=wsl awk</span><br><span class="line">head=wsl head</span><br><span class="line">less=wsl less</span><br><span class="line">ls=wsl ls</span><br><span class="line">man=wsl man</span><br><span class="line">sed=wsl sed</span><br><span class="line">tail=wsl tail</span><br><span class="line">route=wsl route</span><br><span class="line">ping=wsl ping</span><br><span class="line">nslookup=wsl nslookup</span><br><span class="line">dig=wsl dig</span><br><span class="line">tar=wsl tar</span><br><span class="line">cat=wsl cat</span><br><span class="line">tee=wsl tee</span><br></pre></td></tr></table></figure></p>
+<h2 id="设置默认使用cmder-shell"><a href="#设置默认使用cmder-shell" class="headerlink" title="设置默认使用cmder shell"></a>设置默认使用cmder shell</h2><p>注： win+shift+s可以快速截屏<br><img src="https://img-blog.csdnimg.cn/20200418153925206.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="标题在General-gt-Confirm中去掉警告"><a href="#标题在General-gt-Confirm中去掉警告" class="headerlink" title="标题在General -&gt; Confirm中去掉警告"></a>标题在General -&gt; Confirm中去掉警告</h2><h2 id="设置tab相关的快捷键与chrome-vimum"><a href="#设置tab相关的快捷键与chrome-vimum" class="headerlink" title="设置tab相关的快捷键与chrome vimum"></a>设置tab相关的快捷键与chrome vimum</h2><p><img src="https://img-blog.csdnimg.cn/2020041815444182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="其他-让windows支持内录"><a href="#其他-让windows支持内录" class="headerlink" title="其他 - 让windows支持内录"></a>其他 - 让windows支持内录</h2><p>thinkpad x1 yoga只有一个音频口，喇叭在放音的时候就单工了麦克风不能录音了，能让声音内部从喇叭路由到pyaudio程序处理了再内部路由到麦克风吗？答案是需要安装虚拟路由，同时得支持路由在虚拟设备和物理设备间路由。有款叫voicemeeter的软件就是做这件事的。路由设置如下图：</p>
+<ul>
+<li>在1处选内装麦克风，同时将A去掉，A代表可以从麦克风处输入声音</li>
+<li>2处不选 ，因为只有一个音频物理设备</li>
+<li>3处是选虚拟设备的，A,B两处默认都选<br>最右侧输出到扬声器<br><img src="https://img-blog.csdnimg.cn/20200418155154203.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>需要将声音的输入和输出默认都走虚拟设备<br><img src="https://img-blog.csdnimg.cn/20200418155253484.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>注意：这样，声音就被内部路由到python pyaudio了， 如果外部也能从物理设备录音的话，必须一直开着voicemeeter, 所以按win+r键输入 shell:startup 进入 C:\Users\ThinkPad\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup 目录， 将voicemeeter的链接加到这个目录开机就自动启动了. 不过， 我不是这样做的，voicemeeter菜单中有如下的两项开机自动启动并放入拖盘的设置，如下图。<br><img src="https://img-blog.csdnimg.cn/20200418155839452.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><h2 id="粘贴到vim全变成一行的问题"><a href="#粘贴到vim全变成一行的问题" class="headerlink" title="粘贴到vim全变成一行的问题"></a>粘贴到vim全变成一行的问题</h2>如从记事本复制多行内容，然后粘贴到vim却变成了多行，将下图中Ctrl+Shift+V的快捷键设置成Multi lines模式即可。<br><img src="https://img-blog.csdnimg.cn/20200418161126265.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<h2 id="另一个开机自启的方法"><a href="#另一个开机自启的方法" class="headerlink" title="另一个开机自启的方法"></a>另一个开机自启的方法</h2><p>上面介绍了一种开机自启的方法，但对于cmd命令的自启还要写脚本打开shell，再后台运行程序，再关shell。但我的windows shell不熟悉啊。有一种简单的将自己的应用放入服务的方法， 以开机自启frpc为例：</p>
+<ul>
+<li>将nssm.exe下载放到和frpc同一级目录</li>
+<li>运行：nssm install frpc 会弹出配置服务界面，照着配置就行了</li>
+<li><p>到服务目录设置自动启动它。</p>
+<h2 id="安装clink增强cmder的像bash-completion一样的命令提示"><a href="#安装clink增强cmder的像bash-completion一样的命令提示" class="headerlink" title="安装clink增强cmder的像bash completion一样的命令提示"></a>安装clink增强cmder的像bash completion一样的命令提示</h2><h2 id="安装类似于proxychain的proxycap"><a href="#安装类似于proxychain的proxycap" class="headerlink" title="安装类似于proxychain的proxycap"></a>安装类似于proxychain的proxycap</h2><h2 id="安装winaera-tweaker设置系统代替设置注册表"><a href="#安装winaera-tweaker设置系统代替设置注册表" class="headerlink" title="安装winaera tweaker设置系统代替设置注册表"></a>安装winaera tweaker设置系统代替设置注册表</h2><h2 id="使用qnap-nas"><a href="#使用qnap-nas" class="headerlink" title="使用qnap nas"></a>使用qnap nas</h2><p>qnap nas设置了nfs server, wsl中由于没nfs内核模块，无法通过autofs设置nfs.<br>所以直接在浏览器上通过\<nas-ip>就可以访问nas了, 或者安装qfinder pro</nas-ip></p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/14/猫盘安装群晖synology/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/04/14/猫盘安装群晖synology/" itemprop="url">猫盘安装群晖synology</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-14T11:42:48+08:00">
+                2020-04-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-04-14<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>家里有两个nas, 一个威联通的，一个猫盘，猫盘长期没怎么用，今天一看开机后找不着IP，后来多重启几次后，发现偶尔路由器上能看到IP, 它每次IP都变，并且也容易掉IP．而且还无法打开ssh，所以这个猫盘不是我心目中理想的样子，它很烂．但想着里面还有一块硬盘也不能就这么丢了啊．于是想着把它刷成群晖synology.<br>网上一堆通过什么ttl刷机的方法，那个太麻烦了，还得买线，还得拆机，还得搭线，我们还是寻找软个的方法．其实问题的关键是猫盘打开ssh太麻烦了，如果有了ssh直接刷synology很简单．x3p默认支持ssh，所以我们先通过网络的方式刷x3p，然后再刷synology.</p>
+<h2 id="通过猫盘一键刷机v2-0刷x3p"><a href="#通过猫盘一键刷机v2-0刷x3p" class="headerlink" title="通过猫盘一键刷机v2.0刷x3p"></a>通过猫盘一键刷机v2.0刷x3p</h2><p>我也忘了哪里下载的猫盘一键刷机v2.0工具，大家自行在网上搜索，有名字应该很容易找到该工具的下载地址，或者去百度网盘搜搜．下载安装好后，通过网络刷x3p要知道几个信息：</p>
+<ul>
+<li>猫盘的IP，从路由器里找</li>
+<li>猫盘的mac，从猫盘背后找．但注意一点是，要想每次启动IP不变的话，mac地址前面几位应该固定成78C2C0，后面六位从猫盘背后找．</li>
+<li><p>猫盘的SN, 从猫盘背后找．<br>有了这些信息后，按下列步骤刷x3p</p>
+</li>
+<li><p>打开猫盘一键刷机工具，把上面的信息粘贴进去，点击开始刷机 (注意注意：刷机前一定要关闭win10上的防火墙）</p>
+</li>
+<li>刷好后有提示，这时候需要拔下电源，按住reset！等待10秒以上，按着他不要停！同时连上电源，等网线的灯亮起在松手。</li>
+<li>这时候猫盘应该顶灯不停闪烁，等待15分钟左右，路由器能够看到你的猫盘就算刷好了</li>
+<li>打开网页，地址栏输入猫盘的新ip，进入X3P登录页面. 它有两个帐号，一个admin，密码：123456, 一个root, 密码为Etech12 (呆会ssh时需要使用root用户）</li>
+<li>做到这一步如果想使用x3p就继续升级，如果想使用synology的话做到这一步就算完了．<h2 id="ssh一键刷synology"><a href="#ssh一键刷synology" class="headerlink" title="ssh一键刷synology"></a>ssh一键刷synology</h2>使用root (Etech12)用户ssh登录到系统，一键运行下列命令即可：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget -N --no-check-certificate https://raw.githubusercontent.com/Squaregentleman/catdrive-syno/master/install.sh</span><br><span class="line">chmod +x install.sh</span><br><span class="line">./install.sh</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>但是由于你知道的糟糕的网络环境，可能install.sh里面要下载的<a href="https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．" target="_blank" rel="external">https://github.com/Squaregentleman/catdrive-syno/raw/master/full.bin永远无法下载下来．所以可以手工把它先下载下来，再把它上传到x3p(无权限），然后再将install.sh里换成这个链接．</a></p>
+<h2 id="配置synology"><a href="#配置synology" class="headerlink" title="配置synology"></a>配置synology</h2><p>上步安装好synology之后，接着就要配置synology, 本来也没什么好说的，看着文字说明一步一步做就行了．也是因为你知道的糟糕的网络环境，需要先手工下载下列文件，然后做到这一步时看文字选手工安装安装它：<br><a href="https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922" target="_blank" rel="external">https://cndl.synology.cn/download/DSM/release/6.2.2/24922/DSM_DS119j_24922.pat?model=DS119j&amp;bays=1&amp;dsm_version=6.2.2&amp;build_number=24922</a>　</p>
+<h2 id="配置nfs"><a href="#配置nfs" class="headerlink" title="配置nfs"></a>配置nfs</h2><p>控制面板定义一个共享文件夹如bak, 关联用户admin, 然后要定义NFS权限，如下图，在squash处选择＂映射所有用户为admin. 不然的话，你若通过（sudo mount -t nfs 192.168.99.169:/volume1/bak /cat）mount了的话，然后使用添加sudo如＂sudo ls /cat”才能访问．<br><img src="https://img-blog.csdnimg.cn/20200414113138418.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="autofs配置"><a href="#autofs配置" class="headerlink" title="autofs配置"></a>autofs配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/auto.direct |tail -n 1</span><br><span class="line">/cat    -fstype=nfs,rw,rsize=32768,wsize=32768,vers=3,username=admin,password=nanting413     192.168.99.169:/volume1/bak</span><br><span class="line">$ cat /etc/auto.master |tail -n 1</span><br><span class="line">/-	auto.direct</span><br><span class="line"></span><br><span class="line">sudo systemctl restart autofs</span><br></pre></td></tr></table></figure>
+<h2 id="一个大坑"><a href="#一个大坑" class="headerlink" title="一个大坑"></a>一个大坑</h2><p>通过IP访问控制台时，在套件中心要安装软件时，总是会报连接网络失败，问题是我们的网络肯定是好的．找了好久，终于发现仍然是我们特殊的网络环境造成的．<br>需要打开ntp，如下图，但默认使用的ntp服务器是time.google.com，所以被那个了，ntp也就不好使了从而造成无法访问应用软件库．<br><img src="https://img-blog.csdnimg.cn/20200414113835409.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>注：还可以添加这个软件仓库　－　<a href="https://synocommunity.com/#easy-install" target="_blank" rel="external">https://synocommunity.com/#easy-install</a></p>
+<h2 id="rsync同步"><a href="#rsync同步" class="headerlink" title="rsync同步"></a>rsync同步</h2><p> 可通过rsync命令同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -avztur --progress --delete --exclude &apos;me/xx&apos; /nas/  /cat</span><br></pre></td></tr></table></figure></p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://post.smzdm.com/p/a4wm2rll/" target="_blank" rel="external">https://post.smzdm.com/p/a4wm2rll/</a><br>[2] <a href="https://post.smzdm.com/p/a6l8zglg/" target="_blank" rel="external">https://post.smzdm.com/p/a6l8zglg/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/17/How-to-use-private-registry-in-docker-and-containerd-and-k8s/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1365,403 +1654,6 @@ or apt-get install software-properties-common python-software-properties  &amp;&
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/11/09/How-to-test-Neutron-VRRP-HA-rapidly/" itemprop="url">How to test Neutron VRRP HA rapidly</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-09T13:03:23+08:00">
-                2019-11-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2015-12-09<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
-<p>(<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>neutron vrrp ha still do not support conntrack feature now.</p>
-<p>1, Setting up test environment</p>
-<p>juju add-model queens-vrrp<br>juju deploy ./b/openstack.yaml</p>
-<p>juju add-unit neutron-gateway<br>juju ssh neutron-gateway/1 – hostname<br>source ~/novarc &amp;&amp; nova interface-attach $(openstack server list -f value |awk ‘/juju-4262ae-queens-vrrp-10/ {print $1}’) –net-id=$(openstack network list -f value |awk ‘/ zhhuabj_admin_net / {print $1}’)<br>juju ssh neutron-gateway/1 – sudo ovs-vsctl add-port br-data ens7<br>juju ssh neutron-gateway/1 – sudo ifconfig ens7 up<br>juju config neutron-api overlay-network-type=vxlan<br>juju config neutron-api enable-l3ha=true</p>
-<p>./configure<br>source ~/stsstack-bundles/novarc<br>./tools/instance_launch.sh 1 xenial<br>./tools/sec_groups.sh</p>
-<p>fix_ip=$(openstack server list -f value |awk ‘/xenial/ {print $4}’ |awk -F ‘=’ ‘{print $2}’)<br>public_network=$(openstack network show ext_net -f value -c id)<br>fip=$(openstack floating ip create $public_network -f value -c floating_ip_address)<br>openstack floating ip set $fip –fixed-ip-address $fix_ip –port $(openstack port list –fixed-ip ip-address=$fix_ip -c id -f value)</p>
-<h1 id="update-the-existing-router-as-ha-router"><a href="#update-the-existing-router-as-ha-router" class="headerlink" title="update the existing router as ha router"></a>update the existing router as ha router</h1><p>#ROUTER_ID=$(neutron router-show provider-router -c id -f value)</p>
-<p>#neutron router-update $ROUTER_ID –admin_state_up=false ; neutron router-update $ROUTER_ID –ha=true; neutron router-update $ROUTER_ID –admin_state_up=true</p>
-<p>#AGENT_ID=$(neutron l3-agent-list-hosting-router $ROUTER_ID |grep active |awk -F ‘|’ ‘{print $2}’)</p>
-<p>#neutron l3-agent-router-remove $AGENT_ID $ROUTER_ID</p>
-<p>#neutron l3-agent-router-add $AGENT_ID $ROUTER_ID</p>
-<h1 id="enable-dvr"><a href="#enable-dvr" class="headerlink" title="enable dvr"></a>enable dvr</h1><p>#juju config neutron-api l2-population=false enable-l3ha=true</p>
-<p>#neutron router-update –admin-state-up False provider-router</p>
-<p>#neutron router-update provider-router –distributed True –ha=True</p>
-<p>#neutron router-update –admin-state-up True provider-router</p>
-<h1 id="test-patch-https-review-opendev-org-c-601533"><a href="#test-patch-https-review-opendev-org-c-601533" class="headerlink" title="test patch - https://review.opendev.org/#/c/601533/"></a>test patch - <a href="https://review.opendev.org/#/c/601533/" target="_blank" rel="external">https://review.opendev.org/#/c/601533/</a></h1><p>git clone <a href="https://github.com/openstack/charm-neutron-gateway.git" target="_blank" rel="external">https://github.com/openstack/charm-neutron-gateway.git</a> neutron-gateway<br>cd neutron-gateway/<br>git fetch <a href="https://review.opendev.org/openstack/charm-neutron-gateway" target="_blank" rel="external">https://review.opendev.org/openstack/charm-neutron-gateway</a> refs/changes/33/601533/1 &amp;&amp; git format-patch -1 –stdout FETCH_HEAD &gt; lp1732154.patch<br>git checkout master<br>patch -p1 &lt; lp1732154.patch<br>juju upgrade-charm neutron-gateway –path $PWD</p>
-<p>wget <a href="https://gist.githubusercontent.com/dosaboy/cf8422f16605a76affa69a8db47f0897/raw/8e045160440ecf0f9dc580c8927b2bff9e9139f6/check_router_vrrp_transitions.sh" target="_blank" rel="external">https://gist.githubusercontent.com/dosaboy/cf8422f16605a76affa69a8db47f0897/raw/8e045160440ecf0f9dc580c8927b2bff9e9139f6/check_router_vrrp_transitions.sh</a><br>chmod +x check_router_vrrp_transitions.sh<br>./check_router_vrrp_transitions.sh</p>
-<p>ubuntu@juju-4262ae-queens-vrrp-5:~$ bash check_router_vrrp_transitions.sh<br>Analysing keepalived vrrp transitions…1 active vrouters found (total 1):<br>router=b8d4435b-bd83-46fd-a828-6d8a0b52d23a (current=false, vrid=VR_1, pid=16716, first=Apr-23-01:48:20, last=Apr-23-01:57:05) had 2 transition(s)<br>router=b8d4435b-bd83-46fd-a828-6d8a0b52d23a (current=true, vrid=VR_1, pid=24269, first=Apr-23-02:22:16, last=Apr-23-02:22:28) had 2 transition(s) (state=MASTER)</p>
-<p>Done.</p>
-<p>ubuntu@zhhuabj-bastion:~$ juju ssh neutron-gateway/0 – sudo cat /var/lib/neutron/ha_confs/b8d4435b-bd83-46fd-a828-6d8a0b52d23a/ha_check_script_1.sh</p>
-<p>#!/bin/bash -eu<br>ip a | grep fe80::f816:3eff:fe2d:db49 || exit 0<br>ping -c 1 -w 1 10.5.0.1 1&gt;/dev/null || exit 1</p>
-<p>ubuntu@zhhuabj-bastion:~$ juju ssh neutron-gateway/0 – cat /var/lib/neutron/ha_confs/b8d4435b-bd83-46fd-a828-6d8a0b52d23a/keepalived.conf<br>global_defs {<br>    notification_email_from neutron@openstack.local<br>    router_id neutron<br>}</p>
-<p>vrrp_script ha_health_check_1 {<br>    script “/var/lib/neutron/ha_confs/b8d4435b-bd83-46fd-a828-6d8a0b52d23a/ha_check_script_1.sh”<br>    interval 30<br>    fall 2<br>    rise 2<br>}</p>
-<p>vrrp_instance VR_1 {<br>    state BACKUP<br>    interface ha-c172aff0-67<br>    virtual_router_id 1<br>    priority 50<br>    garp_master_delay 60<br>    nopreempt<br>    advert_int 2<br>    track_interface {<br>        ha-c172aff0-67<br>    }<br>    virtual_ipaddress {<br>        169.254.0.1/24 dev ha-c172aff0-67<br>    }<br>    virtual_ipaddress_excluded {<br>        10.5.150.0/16 dev qg-aa1ed68a-d0<br>        10.5.150.2/32 dev qg-aa1ed68a-d0<br>        192.168.21.1/24 dev qr-00aa8199-1d<br>        fe80::f816:3eff:fe2d:db49/64 dev qr-00aa8199-1d scope link<br>        fe80::f816:3eff:feeb:a6de/64 dev qg-aa1ed68a-d0 scope link<br>    }<br>    virtual_routes {<br>        0.0.0.0/0 via 10.5.0.1 dev qg-aa1ed68a-d0<br>    }<br>    track_script {<br>        ha_health_check_1<br>    }<br>}</p>
-<p>Some important configurations in neutron.conf are as below:<br>l3_ha = True<br>max_l3_agents_per_router = 2<br>min_l3_agents_per_router = 2<br>allow_automatic_l3agent_failover = False</p>
-<p>2, Future Work &amp; Limitations<br><a href="http://assafmuller.com/2014/08/16/layer-3-high-availability/" target="_blank" rel="external">http://assafmuller.com/2014/08/16/layer-3-high-availability/</a><br><a href="http://blog.aaronorosen.com/implementing-high-availability-instances-with-neutron-using-vrrp/" target="_blank" rel="external">http://blog.aaronorosen.com/implementing-high-availability-instances-with-neutron-using-vrrp/</a></p>
-<p>TCP connection tracking – With the current implementation, TCP sessions are broken on failover. The idea is to use conntrackd in order to replicate the session states across HA routers, so that when the failover finishes, TCP sessions will continue where they left off.<br>Where is the master instance hosted? As it is now it is impossible for the admin to know which network node is hosting the master instance of a HA router. The plan is for the agents to report this information and for the server to expose it via the API.<br>Evacuating an agent – Ideally bringing down a node for maintenance should cause all of the HA router instances on said node to relinquish their master states, speeding up the failover process.<br>Notifying L2pop of VIP movements – Consider the IP/MAC of the router on a tenant network. Only the master instance will actually have the IP configured, but the same Neutron port and same MAC will show up on all participating network nodes. This might have adverse effects on the L2pop mechanism driver, as it expects a MAC address in a single location in the network. The plan to solve this deficiency is to send an RPC message from the agent whenever it detects a VRRP state change, so that when a router becomes the master, the controller is notified, which can then update the L2pop state.<br>FW, VPN and LB as a service integration. Both DVR and L3 HA have issues integrating with the advanced services, and a more serious look will be taken during the Kilo cycle.<br>One HA network per tenant. This implies a limit of 255 HA routers per tenant, as each router takes up a VRID, and the VRRP protocol allows 255 distinct VRID values in a single broadcast domain.</p>
-<p>3, Test steps and data</p>
-<p>ubuntu@zhhuabj-bastion:~/openstack-charm-testing$ neutron net-list<br>+————————————–+—————————————————-+——————————————————-+<br>| id                                   | name                                               | subnets                                               |<br>+————————————–+—————————————————-+——————————————————-+<br>| 70773c83-08fe-4efe-b601-4f04522d867f | ext_net                                            | 6aed68fb-be4a-4a33-b53e-c2b742ac9985 10.5.0.0/16      |<br>| 98e10e32-13eb-48ee-b265-4ae0e449b6e5 | private                                            | b6afcd08-f3b6-4224-a125-3befa4b34a63 192.168.21.0/24  |<br>| bc699825-19e1-4bf6-a0cf-fe90251ad391 | HA network tenant b31bb0f325fd4ec291a5a65d3dc11a63 | 20173269-0eb4-4f3f-9557-807c69f6e258 169.254.192.0/18 |<br>+————————————–+—————————————————-+——————————————————-+</p>
-<p>ubuntu@zhhuabj-bastion:~/openstack-charm-testing$ neutron router-list<br>+————————————–+—————–+—————————————————————————————————————————————————————————————-+<br>| id                                   | name            | external_gateway_info                                                                                                                                                                  |<br>+————————————–+—————–+—————————————————————————————————————————————————————————————-+<br>| dd74a4c6-8320-40d6-b3b1-232e578cb6c7 | provider-router | {“network_id”: “70773c83-08fe-4efe-b601-4f04522d867f”, “enable_snat”: true, “external_fixed_ips”: [{“subnet_id”: “6aed68fb-be4a-4a33-b53e-c2b742ac9985”, “ip_address”: “10.5.150.0”}]} |<br>+————————————–+—————–+—————————————————————————————————————————————————————————————-+<br>ubuntu@zhhuabj-bastion:~/neutron-gateway-ha$ neutron l3-agent-list-hosting-router provider-router<br>+————————————–+————————-+—————-+——-+<br>| id                                   | host                    | admin_state_up | alive |<br>+————————————–+————————-+—————-+——-+<br>| 99ca5ee5-33b6-43da-86e2-df1f16fbd7cb | juju-zhhuabj-machine-23 | True           | :-)   |<br>| c95e33d5-b080-458c-8adb-d15bafc16bfb | juju-zhhuabj-machine-12 | True           | :-)   |<br>+————————————–+————————-+—————-+——-+</p>
-<p>ubuntu@zhhuabj-bastion:~/openstack-charm-testing$ nova list<br>+————————————–+——+——–+————+————-+———————————-+<br>| ID                                   | Name | Status | Task State | Power State | Networks                         |<br>+————————————–+——+——–+————+————-+———————————-+<br>| ebfe6140-580c-43dd-b582-5e708eba58d8 | i1   | ACTIVE | -          | Running     | private=192.168.21.5, 10.5.150.1 |<br>+————————————–+——+——–+————+————-+———————————-+</p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 ip addr show<br>2: ha-786d2e2f-a8: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:f5:c4:16 brd ff:ff:ff:ff:ff:ff<br>    inet 169.254.192.2/18 brd 169.254.255.255 scope global ha-786d2e2f-a8<br>       valid_lft forever preferred_lft forever<br>    inet 169.254.0.1/24 scope global ha-786d2e2f-a8<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fef5:c416/64 scope link<br>       valid_lft forever preferred_lft forever<br>3: qr-de8b99fa-7c: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:9f:a3:1b brd ff:ff:ff:ff:ff:ff<br>    inet 192.168.21.1/24 scope global qr-de8b99fa-7c<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe9f:a31b/64 scope link<br>       valid_lft forever preferred_lft forever<br>4: qg-aeb51a1d-32: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:13:a9:24 brd ff:ff:ff:ff:ff:ff<br>    inet 10.5.150.0/16 scope global qg-aeb51a1d-32<br>       valid_lft forever preferred_lft forever<br>    inet 10.5.150.1/32 scope global qg-aeb51a1d-32<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe13:a924/64 scope link<br>       valid_lft forever preferred_lft forever</broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 ip addr show<br>2: ha-37f7144e-02: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:04:b4:ce brd ff:ff:ff:ff:ff:ff<br>    inet 169.254.192.1/18 brd 169.254.255.255 scope global ha-37f7144e-02<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe04:b4ce/64 scope link<br>       valid_lft forever preferred_lft forever<br>3: qr-de8b99fa-7c: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:9f:a3:1b brd ff:ff:ff:ff:ff:ff<br>4: qg-aeb51a1d-32: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:13:a9:24 brd ff:ff:ff:ff:ff:ff</broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 route -n<br>Kernel IP routing table<br>Destination     Gateway         Genmask         Flags Metric Ref    Use Iface<br>0.0.0.0         10.5.0.1        0.0.0.0         UG    0      0        0 qg-aeb51a1d-32<br>10.5.0.0        0.0.0.0         255.255.0.0     U     0      0        0 qg-aeb51a1d-32<br>169.254.0.0     0.0.0.0         255.255.255.0   U     0      0        0 ha-786d2e2f-a8<br>169.254.192.0   0.0.0.0         255.255.192.0   U     0      0        0 ha-786d2e2f-a8<br>192.168.21.0    0.0.0.0         255.255.255.0   U     0      0        0 qr-de8b99fa-7c</p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 route -n<br>Kernel IP routing table<br>Destination     Gateway         Genmask         Flags Metric Ref    Use Iface<br>169.254.192.0   0.0.0.0         255.255.192.0   U     0      0        0 ha-37f7144e-02</p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ ps -ef|grep ha<br>root        71     2  0 06:55 ?        00:00:00 [charger_manager]<br>neutron   5597     1  0 08:14 ?        00:00:00 /usr/bin/python /usr/bin/neutron-keepalived-state-change –router_id=dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –namespace=qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –conf_dir=/var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –monitor_interface=ha-786d2e2f-a8 –monitor_cidr=169.254.0.1/24 –pid_file=/var/lib/neutron/external/pids/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.monitor.pid –state_path=/var/lib/neutron –user=108 –group=112<br>root      5649     1  0 08:14 ?        00:00:00 keepalived -P -f /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf -p /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid -r /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid-vrrp<br>root     11780  5649  0 09:02 ?        00:00:00 keepalived -P -f /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf -p /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid -r /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid-vrrp</p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ ps -ef |grep ha<br>root        71     2  0 07:09 ?        00:00:00 [charger_manager]<br>root      6060 32207  0 09:02 ?        00:00:00 keepalived -P -f /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf -p /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid -r /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid-vrrp<br>neutron  32142     1  0 08:14 ?        00:00:00 /usr/bin/python /usr/bin/neutron-keepalived-state-change –router_id=dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –namespace=qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –conf_dir=/var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7 –monitor_interface=ha-37f7144e-02 –monitor_cidr=169.254.0.1/24 –pid_file=/var/lib/neutron/external/pids/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.monitor.pid –state_path=/var/lib/neutron –user=108 –group=112<br>root     32207     1  0 08:14 ?        00:00:00 keepalived -P -f /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf -p /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid -r /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7.pid-vrrp</p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ sudo cat /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/state<br>master<br>ubuntu@juju-zhhuabj-machine-12:~$ sudo cat /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf<br>vrrp_instance VR_1 {<br>    state BACKUP<br>    interface ha-786d2e2f-a8<br>    virtual_router_id 1<br>    priority 50<br>    garp_master_repeat 5<br>    garp_master_refresh 10<br>    nopreempt<br>    advert_int 2<br>    track_interface {<br>        ha-786d2e2f-a8<br>    }<br>    virtual_ipaddress {<br>        169.254.0.1/24 dev ha-786d2e2f-a8<br>    }<br>    virtual_ipaddress_excluded {<br>        10.5.150.0/16 dev qg-aeb51a1d-32<br>        10.5.150.1/32 dev qg-aeb51a1d-32<br>        192.168.21.1/24 dev qr-de8b99fa-7c<br>        fe80::f816:3eff:fe13:a924/64 dev qg-aeb51a1d-32 scope link<br>        fe80::f816:3eff:fe9f:a31b/64 dev qr-de8b99fa-7c scope link<br>    }<br>    virtual_routes {<br>        0.0.0.0/0 via 10.5.0.1 dev qg-aeb51a1d-32<br>    }<br>}</p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ sudo cat /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/state<br>backup<br>ubuntu@juju-zhhuabj-machine-23:~$ sudo cat /var/lib/neutron/ha_confs/dd74a4c6-8320-40d6-b3b1-232e578cb6c7/keepalived.conf<br>vrrp_instance VR_1 {<br>    state BACKUP<br>    interface ha-37f7144e-02<br>    virtual_router_id 1<br>    priority 50<br>    garp_master_repeat 5<br>    garp_master_refresh 10<br>    nopreempt<br>    advert_int 2<br>    track_interface {<br>        ha-37f7144e-02<br>    }<br>    virtual_ipaddress {<br>        169.254.0.1/24 dev ha-37f7144e-02<br>    }<br>    virtual_ipaddress_excluded {<br>        10.5.150.0/16 dev qg-aeb51a1d-32<br>        10.5.150.1/32 dev qg-aeb51a1d-32<br>        192.168.21.1/24 dev qr-de8b99fa-7c<br>        fe80::f816:3eff:fe13:a924/64 dev qg-aeb51a1d-32 scope link<br>        fe80::f816:3eff:fe9f:a31b/64 dev qr-de8b99fa-7c scope link<br>    }<br>    virtual_routes {<br>        0.0.0.0/0 via 10.5.0.1 dev qg-aeb51a1d-32<br>    }<br>}</p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 ifconfig ha-786d2e2f-a8 down</p>
-<p>ubuntu@juju-zhhuabj-machine-12:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 ip addr show<br>1: lo: <loopback,up,lower_up> mtu 65536 qdisc noqueue state UNKNOWN group default<br>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>    inet6 ::1/128 scope host<br>       valid_lft forever preferred_lft forever<br>2: ha-786d2e2f-a8: <broadcast,multicast> mtu 1500 qdisc pfifo_fast state DOWN group default qlen 1000<br>    link/ether fa:16:3e:f5:c4:16 brd ff:ff:ff:ff:ff:ff<br>    inet 169.254.192.2/18 brd 169.254.255.255 scope global ha-786d2e2f-a8<br>       valid_lft forever preferred_lft forever<br>3: qr-de8b99fa-7c: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:9f:a3:1b brd ff:ff:ff:ff:ff:ff<br>4: qg-aeb51a1d-32: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:13:a9:24 brd ff:ff:ff:ff:ff:ff</broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></broadcast,multicast></loopback,up,lower_up></p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 ip addr show<br>1: lo: <loopback,up,lower_up> mtu 65536 qdisc noqueue state UNKNOWN group default<br>    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00<br>    inet 127.0.0.1/8 scope host lo<br>       valid_lft forever preferred_lft forever<br>    inet6 ::1/128 scope host<br>       valid_lft forever preferred_lft forever<br>2: ha-37f7144e-02: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:04:b4:ce brd ff:ff:ff:ff:ff:ff<br>    inet 169.254.192.1/18 brd 169.254.255.255 scope global ha-37f7144e-02<br>       valid_lft forever preferred_lft forever<br>    inet 169.254.0.1/24 scope global ha-37f7144e-02<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe04:b4ce/64 scope link<br>       valid_lft forever preferred_lft forever<br>3: qr-de8b99fa-7c: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:9f:a3:1b brd ff:ff:ff:ff:ff:ff<br>    inet 192.168.21.1/24 scope global qr-de8b99fa-7c<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe9f:a31b/64 scope link<br>       valid_lft forever preferred_lft forever<br>4: qg-aeb51a1d-32: <broadcast,multicast,up,lower_up> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000<br>    link/ether fa:16:3e:13:a9:24 brd ff:ff:ff:ff:ff:ff<br>    inet 10.5.150.0/16 scope global qg-aeb51a1d-32<br>       valid_lft forever preferred_lft forever<br>    inet 10.5.150.1/32 scope global qg-aeb51a1d-32<br>       valid_lft forever preferred_lft forever<br>    inet6 fe80::f816:3eff:fe13:a924/64 scope link<br>       valid_lft forever preferred_lft forever</broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></broadcast,multicast,up,lower_up></loopback,up,lower_up></p>
-<p>ubuntu@zhhuabj-bastion:~/neutron-gateway-ha$ ping 10.5.150.1<br>PING 10.5.150.1 (10.5.150.1) 56(84) bytes of data.<br>64 bytes from 10.5.150.1: icmp_seq=1 ttl=63 time=5.00 ms<br>64 bytes from 10.5.150.1: icmp_seq=2 ttl=63 time=1.69 ms</p>
-<p>ubuntu@juju-zhhuabj-machine-23:~$ sudo ip netns exec qrouter-dd74a4c6-8320-40d6-b3b1-232e578cb6c7 tcpdump -n -i ha-37f7144e-02<br>tcpdump: verbose output suppressed, use -v or -vv for full protocol decode<br>listening on ha-37f7144e-02, link-type EN10MB (Ethernet), capture size 65535 bytes<br>03:59:45.723931 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:47.724833 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:49.727033 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:51.726947 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:53.728466 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:55.730700 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:57.731620 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>03:59:59.733136 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:01.734053 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:03.734711 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:05.737778 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:07.737146 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:09.739794 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:11.739332 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:13.740744 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:15.742741 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:17.744151 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:19.745413 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:21.746639 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:23.748244 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:25.750017 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:27.751713 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:29.752460 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:31.753797 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:33.755248 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:35.757904 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:37.759372 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:39.760449 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:41.761482 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:43.762326 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:45.764282 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:47.763669 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:49.764741 IP 169.254.192.2 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:56.570867 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:00:58.572437 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:00:58.572504 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:00:58.572542 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:00:58.572581 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:00:58.572609 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:00:58.572665 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:00.573412 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:02.574520 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:03.573747 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:01:03.573850 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:01:03.573898 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:01:03.573948 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:01:03.573993 ARP, Request who-has 169.254.0.1 (ff:ff:ff:ff:ff:ff) tell 169.254.0.1, length 28<br>04:01:04.575330 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:06.576547 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:08.577765 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:10.578863 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:12.579946 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:14.581031 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:16.582120 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:18.583161 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:20.584254 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:22.585400 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:24.586493 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:26.587590 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:28.588677 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:30.589448 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:32.590557 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:34.591728 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:36.592887 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:38.594052 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:40.595402 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:42.596719 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:44.597883 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:46.599080 IP 169.254.192.1 &gt; 224.0.0.18: VRRPv2, Advertisement, vrid 1, prio 50, authtype none, intvl 2s, length 20<br>04:01:48.600390 IP 169.2</p>
-<p>20160304更新</p>
-<p>Keepalived有一个bug，在配置改变时会做一个不必要的dns查询操作(可使用命令ip netns exec qrouter-xxx  tcpdump -vvv -s 0 -l -n port 53查看），如果qrouter-名空间无法访问dns服务器的话会造成master节点在做dns查询时block一分钟左右，这个时间backup结点会变成master节点。见Bug:</p>
-<p> <a href="https://bugzilla.redhat.com/show_bug.cgi?id=1181592" target="_blank" rel="external">https://bugzilla.redhat.com/show_bug.cgi?id=1181592</a> </p>
-<p><a href="https://bugs.launchpad.net/neutron/+bug/1511722" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1511722</a></p>
-<p>Workaround是添加hostname:</p>
-<p>dig A $(hostname) | grep -A1 “ANSWER SEC” | tail -n 1 | awk ‘{print $NF “ “ $1}’ | sed -e ‘s/.$//g’  &gt;&gt;/etc/hosts ;   grep $(hostname) /etc/hosts || echo “Failure setting up the hostname entry”</p>
-<p>另一些bug (ha接口已经变成active之后再加keepalived, 这样neutron-keepalived-state-change进程的’ip netns exec xxx ip -o monitor address’感知到ha-xxx口的变化后通知neutron-server将router变成master): </p>
-<p>20171215更新</p>
-<p>一个实际的case，遇到了multi-active或者全部是standby的问题，问题最后查出来包括：</p>
-<p>1, l3-agent上的router过多时在syslog中会看到如下错误，除了按下列的步骤增大ulimit，也可能需要设置ovs_vsctl_timeout=60 (20111108更新, of_inactivity_probe也是一个参数, 见- <a href="https://review.opendev.org/#/c/660074/" target="_blank" rel="external">https://review.opendev.org/#/c/660074/</a>) (20111109更新, 另一个参数是mac-table-size, <a href="https://bugs.launchpad.net/neutron/+bug/1775797)，另外将ovs将cpu核绑定" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1775797)，另外将ovs将cpu核绑定</a><br>“hostname ovs-vswitchd: ovs|1762125|netlink_socket|ERR|fcntl: Too many open files”<br>sudo lsof -p 2279  #the file num opened by a process<br>sudo prlimit -p 2279 –nofile=131070  #If need to persistence it, pls modify /etc/security/limits.d/ovs.conf</p>
-<p>cat /etc/security/limits.d/ovs.conf</p>
-<p>root soft nofile 131070<br>root hard nofile 1048576 </p>
-<p>2, rabbitmq cluster有性能问题，暂时改一non-cluster rabbitmq</p>
-<p>3, 修改后，router的状态并不会自己同时，因为如果之前是rabbitmq的问题，neutron-keepalived-state-change通过ip monitor监控到vrrp vip变化的event丢失，rabbitmq恢复后，这个event可能不会再发一遍（<a href="https://github.com/openstack/neutron/blob/stable/ocata/neutron/agent/l3/keepalived_state_change.py#L71）所以也需要重启l3-agent" target="_blank" rel="external">https://github.com/openstack/neutron/blob/stable/ocata/neutron/agent/l3/keepalived_state_change.py#L71）所以也需要重启l3-agent</a></p>
-<p>4， 下面这些fixed patches也都是必须的</p>
-<p><a href="https://review.openstack.org/#/c/470905/" target="_blank" rel="external">https://review.openstack.org/#/c/470905/</a><br><a href="https://review.openstack.org/#/c/357458/" target="_blank" rel="external">https://review.openstack.org/#/c/357458/</a><br><a href="https://review.openstack.org/#/c/454657/" target="_blank" rel="external">https://review.openstack.org/#/c/454657/</a><br><a href="https://review.openstack.org/522792" target="_blank" rel="external">https://review.openstack.org/522792</a>       (ocata)</p>
-<p><a href="https://review.openstack.org/#/c/522641" target="_blank" rel="external">https://review.openstack.org/#/c/522641</a></p>
-<p>节点down了，其他节点升级成master， 但是old master节点的ha port在DB里可能仍然是active状态，l3-agent重启后就会仍然spawn keepalived进程从而导致同时出现两个master节点。可以在l3-agent重启时将all ha ports的状态重置成DOWN解决。<br>见：<a href="https://review.openstack.org/#/c/470905/" target="_blank" rel="external">https://review.openstack.org/#/c/470905/</a> ， 它在fetch_and_sync_all_routers(状态为AGENT_REVIVED才运行, agent周期性失去心跳时才为此状态) -&gt; get_router_ids()中将所有ha ports设置成DOWN，<br>但有时候l3-agent无法及时报告心跳信息时，其agent的状态会被设置成AGENT_REVIVED，然后触发上面的将ha ports设置成DOWN, 然后l3-agent需要反复的处理同一个router发现它是ha_ports并且是active状态就enable_keepalived，这样l3-agent与l2-agent的负担都重反过来更加加重AGENT_REVIVED状态。所以需要将设置成DOWN的状态在重启l3-agent时才做一次（<strong>init</strong> -&gt; get_service_plugin_list -&gt; _update_ha_network_port_status)，见： <a href="https://review.openstack.org/#/c/522792/" target="_blank" rel="external">https://review.openstack.org/#/c/522792/</a><br>另一个原因： 如果先重启l3-agent再重启l2-agent, 在ovs-l2-agent还没将ha port准备好变成active状态之前，l3-agent就不应该处理ha_port并生成了keepalived实例。见：<a href="https://review.openstack.org/#/c/357458/" target="_blank" rel="external">https://review.openstack.org/#/c/357458/</a><br>ha_vrrp_health_check_interval选项支持ping GW然后实现主备切换。见：<a href="https://review.openstack.org/#/c/454657" target="_blank" rel="external">https://review.openstack.org/#/c/454657</a></p>
-<p>当router很多时，可能也需要增大ha_vrrp_advert_int (lp: 1749425), 也需要设置mhash_entries=16000000 mphash_entries=16000000 (lp: 1376958)</p>
-<p>Neutron-vrrp itself bug</p>
-<p>keepalived instances should not be handled if ha ports are NOT ready (like first restart l3-agent then restart l2-agent) - <a href="https://review.openstack.org/#/c/357458/" target="_blank" rel="external">https://review.openstack.org/#/c/357458/</a></p>
-<p>Master restart so slave will switch to new master, but old master doesn’t switch to slave because it’s initial DB status is active, so initial DB status should be set into standby, this patch do so when agent’s status is  AGENT_REVIVED - <a href="https://review.openstack.org/#/c/470905/" target="_blank" rel="external">https://review.openstack.org/#/c/470905/</a></p>
-<p>Lots of VRRP problem is comprehensive problem, not caused by neutron-vrrp itself:</p>
-<p>Keepalived’s bug</p>
-<p>Dns problem causes slave be unable to switch to master - <a href="https://bugs.launchpad.net/neutron/+bug/1511722" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1511722</a></p>
-<p>Neutron’s inappropriate settings</p>
-<p>Performance problem caused by the small ovs_vsctl_timeout</p>
-<p>Any performance problems can lead to vrrp problem as well. For example:</p>
-<p>rabbitmq’s performance problem can cause l3-agent’s heartbeat not to be sent to neutron-api, then neutron-api will think agent has been dead (AGENT_REVIVED) so it will set the initial status into standby by using above fix (<a href="https://review.openstack.org/#/c/470905/" target="_blank" rel="external">https://review.openstack.org/#/c/470905/</a>). So this patch just set initial status into standby when restarting l3-agent instead of  AGENT_REVIVED - <a href="https://review.openstack.org/#/c/522792/" target="_blank" rel="external">https://review.openstack.org/#/c/522792/</a></p>
-<p>Performance problem lead to vrrp can not be sent out in a short ha_vrrp_health_check_interval - <a href="https://review.openstack.org/#/c/454657" target="_blank" rel="external">https://review.openstack.org/#/c/454657</a></p>
-<p>Performance problem caused by small mhash_entries - <a href="https://bugs.launchpad.net/charms/+source/neutron-gateway/+bug/1376958" target="_blank" rel="external">https://bugs.launchpad.net/charms/+source/neutron-gateway/+bug/1376958</a></p>
-<p>Performance problem caused by ulimit and Others …</p>
-<p>20180815更新</p>
-<p>采用上面种种方法后仍然可能出现multiple master的问题，我们来分析一下原因：</p>
-<p>openstack vrrp相关的进程有两个， 一个是neutron-keepalived-state-change is spawned由ha_router#initialize()初始化， 一个是keepalived由ha_router#process()初始化。</p>
-<p>并且_process_added_router会调用neutron-keepalived-state-change, _process_updated_router会调用keepalived<br>l3_agent#_process_routers_loop -&gt; _process_router_update -&gt; _process_router_if_compatible -&gt; _process_added_router -&gt; ha_router#initialize()<br>l3_agent#_process_routers_loop -&gt; _process_router_update -&gt; _process_router_if_compatible -&gt; _process_updated_router -&gt; ha_router#process()</p>
-<p>这种正常情况会保证neutron-keepalived-state-change先于keepalived进程启动 ( 20190320更新, 这个问题, 可以这样解决, 在neutron-keepalived-state-change启动之后根据节点上若有keepalived设置的vip就设置初始状态为master, 否则为slave - <a href="https://github.com/openstack/neutron/commit/5bcca13f4a58ee5541ae81a45b89f783194f1279" target="_blank" rel="external">https://github.com/openstack/neutron/commit/5bcca13f4a58ee5541ae81a45b89f783194f1279</a> )(<a href="https://bugs.launchpad.net/neutron/+bug/1818614)，并且这两个进程都被process_monitor.register方法注册进了external_process.py，" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1818614)，并且这两个进程都被process_monitor.register方法注册进了external_process.py，</a> 一旦这两个进程挂掉的后它会通过external_process.py#_respawn_action保证重启，但重启是没顺序的。比如，keepalived进程刚死， neutron-keepalived-state-change进程还没来得及通过MQ更新DB之前它也挂掉的话， 这时其他节点已经变成master了， 在这台节点上的这些进程再重启的时候也由因为认为它是master（根本原因在于keepalived没有提供一个查询当时谁是master的api，这样可以在每个节点上的keepalived启动时都先调用这个api检查一下有没有master，有master的话说明状态不一致就将自己变成backup啊。如用在master上运行下列命令很容易重现问题:</p>
-<p>r=909c6b55-9bc6-476f-9d28-c32d031c41d7<br>pkill -f “/usr/bin/neutron-keepalived-state-change –router_id=$r”<br>sudo pkill -f “/var/lib/neutron/ha_confs/$r/keepalived.conf”</p>
-<p>但这种问题只是在DB中看到multiple masters (neutron l3-agent-list-hosting-router provider-router), 在keepalived层面是正常的(sudo ip netns exec qdhcp-ab1a14d8-3b97-4e5e-9150-081c4afa5729 ping 192.168.21.1)</p>
-<p><a href="https://review.openstack.org/#/c/273546" target="_blank" rel="external">https://review.openstack.org/#/c/273546</a> 这个patch通过ha_vrrp_health_check_interval提供了另外一种解决multiple master的办法，每个节点都定期ping网节，ping不通的话就说明出现multiple master了， 并且keepalived会根据ha_vrrp_health_check_interval重新选举直至选出新master为止。但是它依然有几个问题:</p>
-<p>1, 它是ping外网网关10.5.0.1, 而不是tenant网关192.168.21.1, 所以它对解决上面问题依然无效.</p>
-<p>2, 它本身有问题, 会造成VRRP状态反复的切换 - <a href="https://bugs.launchpad.net/neutron/+bug/1793102" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1793102</a></p>
-<p>这个问题包括两个层面, 第一个是neutron db层面, 这是neutron的设计缺陷造成的, neutron没有调用keepalived获得状态, 而是通过ip monitor去维护状态, 这样必然有可能失去同步从而造成neutron这边看到多个master(如同时kill掉keepalived与neutron-keepalived-state-change进程), 但这点如果keepalived层面没有问题不会造成网络不通的问题, 顶多视觉上看到多个master但这点在下一次vrrp transition后也会回归正常； 另一个层面是keepalived的问题 - 应该是和这个相关 - <a href="https://github.com/acassen/keepalived/commit/e90a633c34fbe6ebbb891aa98bf29ce579b8b45c" target="_blank" rel="external">https://github.com/acassen/keepalived/commit/e90a633c34fbe6ebbb891aa98bf29ce579b8b45c</a></p>
-<p>另一个问题, 下列脚本因为未在外层for循环中添加sleep会造成这个bug (<a href="https://bugs.launchpad.net/neutron/+bug/1823314)描述的问题" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1823314)描述的问题</a>, 同一个tenant下的所有HA routers的vr_id相同, 这样一台host上就只可能启动这些HA routers中的某一个, 其余的就都启动不了.</p>
-<p>#!/bin/bash</p>
-<p>routers=$@</p>
-<p>routers_scrubbed=$(echo $routers | sed -e ‘s/,/ /g’)</p>
-<p>#routers=”87d2302b-77cb-44dc-80cd-7de61edb8482</p>
-<p>#9bbb7f94-955e-4f52-be5b-53e502e421be</p>
-<p>#b4465e79-2346-46c2-ab32-95f586578ce1</p>
-<p>#c51db509-3edb-415f-90c7-1eae0af67bd2</p>
-<p>#c6fb1d6f-9ee8-4f8f-b9fe-81b6422c63a5</p>
-<p>#cad767e8-c003-49e0-8c7a-d5bcb5c86251”</p>
-<p>all_l3_agents=$(neutron agent-list -f value | awk ‘/l3-agent/ {print $1}’)</p>
-<p>for router in ${routers_scrubbed}<br>do<br>   agents=$(neutron l3-agent-list-hosting-router -f value ${router})<br>   agent_count=$(echo “${agents}”| wc -l)<br>   active_agents=$(echo “${agents}” | awk ‘/active/ {print $1}’)<br>   standby_agents=$(echo “${agents}” | awk ‘/standby/ {print $1}’)<br>   active_agents_count=$(echo “${agents}” | grep active | wc -l)<br>   echo “Agents: ${agent_count}, ${active_agents_count} active”<br>   if [ “${active_agents_count}” -gt “1” ]<br>   then<br>       echo “Bad router found, fixing”<br>       for bump_agent in $active_agents<br>       do<br>           echo “Bumping l3 agent ${bump_agent} for router ${router}”<br>           neutron l3-agent-router-remove “${bump_agent}” “${router}”<br>           neutron l3-agent-router-add “${bump_agent}” “${router}”<br>           echo “Waiting 3 seconds between router bumping”<br>           sleep 3<br>       done<br>   elif [ “${active_agents_count}” -lt “1” ]<br>   then<br>       echo “Dead router found, fixing”</p>
-<pre><code># drop all agents, then add all agents
-for bump_agent in $all_l3_agents
-do
-    echo &quot;Bumping l3 agent ${bump_agent} for router ${router}&quot;
-    neutron l3-agent-router-remove &quot;${bump_agent}&quot; &quot;${router}&quot;
-    neutron l3-agent-router-add &quot;${bump_agent}&quot; &quot;${router}&quot;
-done
-</code></pre><p>   fi<br>done<br>20190609更新</p>
-<p>遇到新问题, 客户反应, 如两个ha gateway (gw1, gw2), 如果gw1是master, gw2是slave, 没问题. 但换过来就出问题, 后来通过抓包:</p>
-<p>sudo ip netns exec qrouter-8126dc65-4fbe-4f22-ae77-1e3b7916b085 tcpdump -i any -w out.pcap arp or icmp<br>sudo ip netns exec qrouter-8126dc65-4fbe-4f22-ae77-1e3b7916b085 ip n<br>sudo ovs-tcpdump -i br-int “(arp or icmp) and net 192.168.100.0/24 and ether host fa:16:3e:51:a6:8a” -p ovs_tcpdump_capture.pcap<br>tshark -r attachments/ovs_tcpdump_port_br-int_00189699.pcap | grep duplicate<br>sudo ovs-tcpdump -e -i br-int “(arp or icmp)” -w ovs_tcpdump_port_br-int.pcap<br>sudo ovs-tcpdump -e -i tapebd2a710-3a “arp or icmp” -w ovs_tcpdump_port_ebd2a710-3a.pcap<br>watch -n 1 ‘sudo ovs-ofctl dump-flows br-tun| grep <mac addr="" of="" vm="" with="" ip="" 192.168.100.6="">‘<br>sudo ip netns exec qrouter-8126dc65-4fbe-4f22-ae77-1e3b7916b085 arping -I qr-ebd2a710-3a 192.168.100.6</mac></p>
-<p>发现计算节点上有下列两条流表:</p>
-<p>cookie=0xc47b830f360f3102, duration=262107.239s, table=20, n_packets=166506, n_bytes=8374732, idle_age=3, hard_age=65534, priority=2,dl_vlan=4,dl_dst=fa:16:3e:51:a6:8a actions=strip_vlan,load:0x1-&gt;NXM_NX_TUN_ID[],output:46<br>cookie=0xc47b830f360f3102, duration=2138996.306s, table=20, n_packets=3039, n_bytes=331269, hard_timeout=300, idle_age=65534, hard_age=0, priority=1,vlan_tci=0x0004/0x0fff,dl_dst=fa:16:3e:51:a6:8a actions=load:0-&gt;NXM_OF_VLAN_TCI[],load:0x1-&gt;NXM_NX_TUN_ID[],output:48 </p>
-<p>显然删去第一条就好了:</p>
-<p>ovs-ofctl del-flows br-tun “table=20,priority=2,dl_vlan=4,dl_dst=fa:16:3e:51:a6:8a”</p>
-<p>可为什么会这样呢? 这条流表是l2pop里的, 这行被加的, 明明是在non-ha时才加啊 - <a href="https://github.com/openstack/neutron/blob/stable/queens/neutron/plugins/ml2/drivers/l2pop/mech_driver.py#L323" target="_blank" rel="external">https://github.com/openstack/neutron/blob/stable/queens/neutron/plugins/ml2/drivers/l2pop/mech_driver.py#L323</a></p>
-<p>原因是数据库, 下列记录的device_owner不是network:ha_router_replicated_interface</p>
-<p>select device_owner,id,name,network_id,mac_address,device_id from ports where mac_address=”fa:16:3e:51:a6:8a”<br>select device_owner,id,name,network_id,mac_address,device_id from ports where device_owner=”network:ha_router_replicated_interface”</p>
-<p>device_owner    id    name    network_id    mac_address    device_id<br>network:router_interface    ebd2a710-3a94-466c-98e8-4b436fbb4b43        591b004e-d640-4df6-bee1-01fc2c38f166    fa:16:3e:51:a6:8a    8126dc65-4fbe-4f22-ae77-1e3b7916b085<br>解决办法:</p>
-<p>openstack router set –disable 8126dc65-4fbe-4f22-ae77-1e3b7916b085<br>openstack router set –no-ha 8126dc65-4fbe-4f22-ae77-1e3b7916b085<br>openstack router set –ha 8126dc65-4fbe-4f22-ae77-1e3b7916b085<br>openstack router set –enable 8126dc65-4fbe-4f22-ae77-1e3b7916b085<br>20191105更新</p>
-<p>又一个相关bug - <a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1839592" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/openvswitch/+bug/1839592</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/08/Perf火焰图/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/11/08/Perf火焰图/" itemprop="url">Perf火焰图</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-08T15:17:52+08:00">
-                2019-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="Install-perf"><a href="#Install-perf" class="headerlink" title="Install perf"></a>Install perf</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: 如果编译ovs时指定了libunwind/libdwarf，则可以不用安装openvswitch-dbg</span><br><span class="line"># 另外，perf指定dwarf时会也像core dump一样收集call strace，另外5秒已经能产生很大的数据量。</span><br><span class="line">#sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">sudo apt install linux-tools-`uname -r`</span><br><span class="line">sudo apt install linux-tools-common</span><br><span class="line">sudo apt install openvswitch-dbg -y</span><br><span class="line">git clone https://github.com/bboymimi/easy-flamegraph.git</span><br><span class="line">cd easy-flamegraph</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/blocked 1000 ms waiting for main to quiesce/ &#123;system(&quot;sudo /usr/bin/perf record -p `pidof ovs-vswitchd` -g --call-graph dwarf sleep 5&quot;)&#125;&apos;</span><br><span class="line">sudo ./gen-flamegraph.sh -i ./perf.data</span><br><span class="line">sudo tar -czvf perf-output.tar.gz perf-output/</span><br><span class="line"></span><br><span class="line">perf不会造成ovs服务中断，而下面的core dump则会造成服务中断，因为是ovs deadlock而不是crash, 如果只是crash则直接去/var/crash目录去找core dump即可也就不存在服务中断的问题了。</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/blocked 1000 ms waiting for main to quiesce/ &#123;system(&quot;sudo /usr/bin/killall -SIGSEGV ovs-vswitchd&quot;)&#125;&apos;</span><br></pre></td></tr></table></figure>
-<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
-<li>火焰图看最宽的那条, 最宽的显示最耗时的, 上下最高则表示调用深度最长</li>
-<li>如若抓应用态的(如ovs)则应添加” –call-graph dwarf “ 参数, ovs最好也安装符号表</li>
-<li>如ovs隔六七秒就死, 可以使用它来抓这六七秒内的调用栈 - sudo perf record -a –call-graph dwarf – sleep 12</li>
-<li>ideal的占一成的话, 那cpu占用率就是9成左右. 如果所有进程耗时都比较平均, 那只能说明整体性能不够</li>
-<li>使用Ctrl + F可以搜索</li>
-<li>offcpuflamegraphs.html 可以用来分析cpu为什么会睡那么久soft-lock相关的问题</li>
-<li>之前使用systemtap, 但这东西需要脚本, 同时也不方便online debug session时安装. 现在主要使用perf, 另外也可以学习ebpf</li>
-</ul>
-<h2 id="Perf-Flame-Graph"><a href="#Perf-Flame-Graph" class="headerlink" title="Perf Flame Graph"></a>Perf Flame Graph</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">sudo perf record --call-graph dwarf -p $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf script | FlameGraph/stackcollapse-perf.pl | FlameGraph/flamegraph.pl &gt; process.svg</span><br></pre></td></tr></table></figure>
-<h2 id="分解"><a href="#分解" class="headerlink" title="分解"></a>分解</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo perf record -F 99 -g -- sleep 30 $(pidof qemu-system-x86_64)</span><br><span class="line">sudo perf report -n --stdio</span><br><span class="line">sudo perf script | gzip &gt; out.perf01.gz</span><br><span class="line">git clone https://github.com/cobblau/FlameGraph</span><br><span class="line">; http://svgshare.com can be used to share svg</span><br><span class="line">sudo perf script | ./FlameGraph/stackcollapse-perf.pl | sed &apos;/cpu_idle/d;s/\[unknown\];//g&apos; | ./FlameGraph/flamegraph.pl --width 1000 &gt; perf.svg</span><br><span class="line">google-chrome-stable ./perf.svg</span><br></pre></td></tr></table></figure>
-<h2 id="其他一"><a href="#其他一" class="headerlink" title="其他一"></a>其他一</h2><p>参考： <a href="https://github.com/bboymimi/perf-utils" target="_blank" rel="external">https://github.com/bboymimi/perf-utils</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># To get the all CPUs profiling callstack from user space to kernel space (both kernel and user space)</span><br><span class="line">sudo perf record -a --call-graph dwarf</span><br><span class="line"># To get the all CPUs profiling of kernel space callstack (just kernel space)</span><br><span class="line">sudo perf record -a -g</span><br><span class="line">git clone https://github.com/bboymimi/perf-utils.git</span><br><span class="line">sudo ./perf-utils/easy-flamegraph.sh -i perf.data</span><br><span class="line">google-chrome-stable ./perf-output/2018-01-04_14:18:15.perf.data.svg</span><br></pre></td></tr></table></figure></p>
-<h2 id="其他二"><a href="#其他二" class="headerlink" title="其他二"></a>其他二</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># Enable the sysrq </span><br><span class="line">sudo sysctl -w kernel.sysrq=1 </span><br><span class="line"># Dump all active tasks stack - https://www.kernel.org/doc/html/latest/admin-guide/sysrq.html</span><br><span class="line">echo l | sudo tee /proc/sysrq-trigger </span><br><span class="line"># Dumps tasks that are in uninterruptable (blocked) state. </span><br><span class="line">echo p | sudo tee /proc/sysrq-trigger </span><br><span class="line"># Performance profiling and get the flame-graph to see if there is </span><br><span class="line">any performance bottleneck when the problem happened</span><br><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git </span><br><span class="line">sudo perf record -a -g sleep 5 </span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure>
-<p><strong>Profile Java with Perf</strong><br>默认的perf只能分析c与c++程序, 其他用户态的perf-java, perf-python, perf-go应当分别学习, 这里说的是perf-java<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Profile Java with Perf</span><br><span class="line"># https://cloud.tencent.com/developer/article/1416234</span><br><span class="line"># https://my.oschina.net/u/150599/blog/3023394</span><br><span class="line">sudo apt install -y linux-tools-common linux-tools-generic bindfs</span><br><span class="line">mkdir /tmp/containerrootfs</span><br><span class="line">PID=$(docker inspect --format &#123;&#123;.State.Pid&#125;&#125; cas1)</span><br><span class="line">sudo perf record -g -p $PID</span><br><span class="line">sudo perf report</span><br><span class="line">#fix symbols in container</span><br><span class="line">cp perf.data /tmp/containerrootfs/</span><br><span class="line">bindfs /proc/$PID/root /tmp/containerrootfs</span><br><span class="line">perf report --symfs /tmp/containerrootfs</span><br><span class="line">umount /tmp/containerrootfs</span><br><span class="line"></span><br><span class="line"># install java</span><br><span class="line">sudo apt install -y openjdk-8-jdk</span><br><span class="line">dpkg-query -L openjdk-8-jdk</span><br><span class="line">export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64</span><br><span class="line"># install perf-map-agent to help generate symbols with FlameGraph</span><br><span class="line">sudo apt install -y cmake pkg-config libfuse-dev libfuse2 autoconf</span><br><span class="line">git clone https://github.com/brendangregg/FlameGraph.git</span><br><span class="line">export FLAMEGRAPH_DIR=/home/ubuntu/FlameGraph</span><br><span class="line">git clone https://github.com/jvm-profiling-tools/perf-map-agent.git</span><br><span class="line">cd perf-map-agent/</span><br><span class="line">cmake .</span><br><span class="line">make</span><br><span class="line">sudo bin/create-links-in /usr/local/bin</span><br><span class="line"></span><br><span class="line"># Use perf-java-flames (</span><br><span class="line"># Need to add one jvm option in java process: -XX:+PreserveFramePointer</span><br><span class="line">perf-java-flames $PID -g</span><br><span class="line">#perf-java-record-stack $PID -g</span><br><span class="line">chromium-browser /bak/work/perf-map-agent/flamegraph-10286.svg</span><br></pre></td></tr></table></figure></p>
-<p><strong>上下文切换高</strong><br>启用sar，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install sysstat</span><br><span class="line">sudo sed -i &apos;s/^ENABLED=&quot;false&quot;/ENABLED=&quot;true&quot;/&apos; /etc/default/sysstat</span><br><span class="line">sudo sed -i &apos;s/^5-55\/10/*\/2/&apos; /etc/cron.d/sysstat</span><br><span class="line">sudo systemctl restart sysstat</span><br></pre></td></tr></table></figure></p>
-<p>后可以观测如上文文切换过高<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">00:00:01       proc/s   cswch/s</span><br><span class="line">Average:       143.82  59339.01</span><br></pre></td></tr></table></figure></p>
-<p>可以搜索火焰图（用户态内核态一起收集)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone git://kernel.ubuntu.com/gavinguo/perf-production.git</span><br><span class="line">cd perf-production</span><br><span class="line">sudo perf record -a --call-graph dwarf sleep 5</span><br><span class="line">sudo ./easy-flamegraph.sh -i ./perf.data -t</span><br></pre></td></tr></table></figure></p>
-<p>也可以使用pidstat -w 1来确定哪个进程的上下文切换高， 或者:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># https://serverfault.com/questions/190049/find-out-which-task-is-generating-a-lot-of-context-switches-on-linux</span><br><span class="line">sudo perf record -e context-switches -a -g</span><br><span class="line"># then ctrl+c</span><br><span class="line">sudo perf report # inspect the result</span><br></pre></td></tr></table></figure></p>
-<p><strong>Appendix - error - ERROR: No stack counts found </strong><br>遇到下面error是需要: sudo chown -R root:root perf.data, 必须使用root用户, 而非它说的普通用户.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:/bak/work/perf-utils$ sudo ./easy-flamegraph.sh perf.data  -f</span><br><span class="line">Use the /bak/work/perf-utils/perf.data as the source of the FlameGraph.</span><br><span class="line">File /bak/work/perf-utils/perf.data not owned by current user or root (use -f to override)</span><br><span class="line">ERROR: No stack counts found</span><br></pre></td></tr></table></figure></p>
-<h2 id="tool-poormansprofiler"><a href="#tool-poormansprofiler" class="headerlink" title="tool - poormansprofiler"></a>tool - poormansprofiler</h2><p>#see what [multithreaded] programs are blocking on - <a href="https://poormansprofiler.org/" target="_blank" rel="external">https://poormansprofiler.org/</a><br>sudo gdb -ex “set pagination 0” -ex “thread apply all bt”   –batch -p $(pidof ovs-vswitchd)</p>
-<p>mkdir gdb_ovs; cd gdb_ovs; for i in $(seq 1 600); do gdb -ex “set pagination 0” -ex “thread apply all bt” -batch -p $pid &amp;&gt; gdb.ovs-vswitchd.$(date -Is) ; sleep 0.1; done</p>
-<h2 id="tool-tmate"><a href="#tool-tmate" class="headerlink" title="tool - tmate"></a>tool - tmate</h2><p>tmate is used to share ssh with others</p>
-<h2 id="收集符号表"><a href="#收集符号表" class="headerlink" title="收集符号表"></a>收集符号表</h2><ul>
-<li>内核符号表可以通过’sudo cat /proc/kallsyms | tee $(uname -r).kallsyms’命令收集,然后使用’per script –kallsyms’命令使用它. </li>
-<li>用户态符号表在gavin的工具中已得到处理, 非要人工安装的话可以安装到/usr/lib/debug目录, 这也是ddeb包安装的目录</li>
-<li>libunwind是一种符号表新标准.在build包时指定它生成的包体积小, 同时也能找到符号表<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/torvalds/linux/master/tools/perf/perf-archive.sh -O perf-archive.sh </span><br><span class="line">chmod +x perf-archive.sh </span><br><span class="line">./perf-archive.sh # this can take a while, a few minutes</span><br><span class="line"></span><br><span class="line">#sudo cat /proc/kallsyms | tee $(uname -r).kallsyms</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="新工具"><a href="#新工具" class="headerlink" title="新工具"></a>新工具</h2><ul>
-<li>hostspot,   把perf数据用时间轴的方式图像化, 细致到时间点, 能以”Bottom Up” “top Down” Flame Graph”, “Caller/Callee”的方式看, 且能放大 hotspot –kallsyms ../xx-kallsyms</li>
-<li>flamescope, 把perf数据用时间轴时间用热点的方式表示</li>
-<li>speedscope, 把perf数据用<h2 id="perf-debian"><a href="#perf-debian" class="headerlink" title="perf debian"></a>perf debian</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#分文件存放, cpu_50p(cpu &gt; 50%), mem_5G(mem &gt; 5G)</span><br><span class="line">sudo add-apt-repository ppa:mimi0213kimo/easyflamegraph</span><br><span class="line">sudo apt-get update</span><br><span class="line">ls /var/log/easy-flamegraph/mem/</span><br><span class="line">grep -r &apos;USE_EASY_FLAMEGRAPH&apos; /etc/default/easy-flamegraph</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="其他-收集call-trace"><a href="#其他-收集call-trace" class="headerlink" title="其他 - 收集call trace"></a>其他 - 收集call trace</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">pidstat -u -t -p `pidof ovs-vswitchd`,`pidof ovsdb-server` 5 12 &gt; ovs_pidstat.txt &amp;</span><br><span class="line"></span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa &amp;&amp; sudo apt install linux-tools-$(uname -r) -y</span><br><span class="line">sudo perf record -p `pidof ovs-vswitchd` -g --call-graph dwarf sleep 60</span><br><span class="line"></span><br><span class="line">sudo apt install gdb openvswitch-dbg -y</span><br><span class="line">sudo /usr/bin/gdb --batch -p $(pidof ovs-vswitchd) --ex bt --ex quit</span><br><span class="line">sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk &apos;/Unreasonably/ &#123;system(&quot;sudo /usr/bin/gdb --batch -p $(pidof ovs-vswitchd) --ex bt --ex quit&quot;)&#125;&apos;</span><br><span class="line"></span><br><span class="line">#it will restart ovs, but core dump can be found in the dir /var/crash directly if it&apos;s crash rather than deadlock</span><br><span class="line">sudo killall -SIGSEGV ovs-vswitchd</span><br></pre></td></tr></table></figure>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a><br>[2] <a href="http://www.brendangregg.com/flamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/flamegraphs.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1812,7 +1704,7 @@ done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">92</span>
+                  <span class="site-state-item-count">94</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

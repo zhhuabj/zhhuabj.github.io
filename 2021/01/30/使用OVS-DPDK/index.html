@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2016-04-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 硬件要求网卡得支持DPDK，见：http://dpdk.org/doc/nics CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb 不一定非要支持DPDK硬件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用OVS DPDK">
+<meta property="og:url" content="http://yoursite.com/2021/01/30/使用OVS-DPDK/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2016-04-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 硬件要求网卡得支持DPDK，见：http://dpdk.org/doc/nics CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb 不一定非要支持DPDK硬件">
+<meta property="og:updated_time" content="2021-01-30T02:17:32.234Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用OVS DPDK">
+<meta name="twitter:description" content="作者：张华  发表于：2016-04-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 硬件要求网卡得支持DPDK，见：http://dpdk.org/doc/nics CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb 不一定非要支持DPDK硬件">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/01/30/使用OVS-DPDK/"/>
+
+
+
+
+
+  <title>使用OVS DPDK | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/30/使用OVS-DPDK/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用OVS DPDK</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-30T10:17:17+08:00">
+                2021-01-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2016-04-07<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>硬件要求<br>网卡得支持DPDK，见：<a href="http://dpdk.org/doc/nics" target="_blank" rel="external">http://dpdk.org/doc/nics</a></p>
+<p>CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb</p>
+<p>不一定非要支持DPDK硬件的网卡才能做实验，因为DPDK也支持virtio dpdk driver.</p>
+<p>打开大页支持<br>hua@node1:~$ cat  /etc/default/grub |grep GRUB_CMDLINE_LINUX<br>GRUB_CMDLINE_LINUX_DEFAULT=”quiet splash intel_iommu=on pci=assign-busses”<br>GRUB_CMDLINE_LINUX=”transparent_hugepage=never hugepagesz=2M hugepages=64 default_hugepagesz=2M”</p>
+<p>vi /etc/fstab<br>nodev /mnt/huge hugetlbfs pagesize=2MB 0 0</p>
+<p>sudo update-grub<br>sudo mkdir -p /mnt/huge<br>sudo reboot<br>hua@node1:~$ cat /proc/meminfo |grep HugePages_<br>HugePages_Total:       64<br>HugePages_Free:        64<br>HugePages_Rsvd:        0</p>
+<p>HugePages_Surp:        0</p>
+<p>hua@node1:~$ grep Hugepagesize /proc/meminfo<br>Hugepagesize:       2048 kB</p>
+<p>配置网卡使用uio_pci_generic驱动,  #注意：实验发现，对于sr-iov网卡，此处必须是PF，PF试验成功，VF试验不成功。所以虚机可以使用PF去做DPDK port，也可以直接直通方式使用VF。</p>
+<p>至于PF的驱动，可以使用ixgbe，也可以使用DPDK PF driver；对于VF的驱动，可以使用ixgbefv，也可以使用DPDK VF driver. 如果要使用DPDK PF driver需在grub中加上iommu=pt.</p>
+<p>它们之间也可以通信：</p>
+<p>hua@node1:~$  sudo modprobe uio_pci_generic</p>
+<p>hua@node1:~$ sudo dpdk_nic_bind –status</p>
+<h1 id="Network-devices-using-DPDK-compatible-driver"><a href="#Network-devices-using-DPDK-compatible-driver" class="headerlink" title="Network devices using DPDK-compatible driver"></a>Network devices using DPDK-compatible driver</h1><none>
+
+<h1 id="Network-devices-using-kernel-driver"><a href="#Network-devices-using-kernel-driver" class="headerlink" title="Network devices using kernel driver"></a>Network devices using kernel driver</h1><p>0000:00:19.0 ‘Ethernet Connection I217-V’ if=eth0 drv=e1000e unused=uio_pci_generic <em>Active</em><br>0000:05:00.0 ‘82576 Gigabit Network Connection’ if=eth1 drv=igb unused=uio_pci_generic <em>Active</em><br>0000:05:00.1 ‘82576 Gigabit Network Connection’ if=eth2 drv=igb unused=uio_pci_generic <em>Active</em></p>
+<h1 id="Other-network-devices"><a href="#Other-network-devices" class="headerlink" title="Other network devices"></a>Other network devices</h1><p>0000:06:10.0 ‘82576 Virtual Function’ unused=uio_pci_generic<br>0000:06:10.1 ‘82576 Virtual Function’ unused=uio_pci_generic<br>0000:06:10.2 ‘82576 Virtual Function’ unused=uio_pci_generic<br>0000:06:10.3 ‘82576 Virtual Function’ unused=uio_pci_generic</p>
+<p>hua@node1:~$ sudo dpdk_nic_bind -b uio_pci_generic 0000:05:00.0<br>Routing table indicates that interface 0000:05:00.0 is active. Not modifying</p>
+<p>hua@node1:~$ sudo ifconfig eth1 down<br>hua@node1:~$ sudo dpdk_nic_bind -b uio_pci_generic 0000:05:00.0</p>
+<p>hua@node1:~$ sudo dpdk_nic_bind –status</p>
+<h1 id="Network-devices-using-DPDK-compatible-driver-1"><a href="#Network-devices-using-DPDK-compatible-driver-1" class="headerlink" title="Network devices using DPDK-compatible driver"></a>Network devices using DPDK-compatible driver</h1><p>0000:05:00.0 ‘82576 Gigabit Network Connection’ drv=uio_pci_generic unused=</p>
+<h1 id="Network-devices-using-kernel-driver-1"><a href="#Network-devices-using-kernel-driver-1" class="headerlink" title="Network devices using kernel driver"></a>Network devices using kernel driver</h1><p>0000:00:19.0 ‘Ethernet Connection I217-V’ if=eth0 drv=e1000e unused=uio_pci_generic <em>Active</em><br>0000:05:00.1 ‘82576 Gigabit Network Connection’ if=eth2 drv=igb unused=uio_pci_generic <em>Active</em></p>
+<h1 id="Other-network-devices-1"><a href="#Other-network-devices-1" class="headerlink" title="Other network devices"></a>Other network devices</h1><p>0000:06:10.1 ‘82576 Virtual Function’ unused=uio_pci_generic<br>0000:06:10.3 ‘82576 Virtual Function’ unused=uio_pci_generic</p>
+<p>配置OVS使用DPDK<br>hua@node1:~$ cat /etc/default/openvswitch-switch |grep DPDK<br>DPDK_OPTS=’–dpdk -c 0x1 -n 2’</p>
+<p>hua@node1:~$ sudo update-alternatives –set ovs-vswitchd /usr/lib/openvswitch-switch-dpdk/ovs-vswitchd-dpdk<br>update-alternatives: using /usr/lib/openvswitch-switch-dpdk/ovs-vswitchd-dpdk to provide /usr/sbin/ovs-vswitchd (ovs-vswitchd) in manual mode</p>
+<p>hua@node1:~$ sudo stop openvswitch-switch; sudo start openvswitch-switch</p>
+<p>hua@node1:~$ cat /var/log/openvswitch/ovs-ctl.log |grep dpdk</p>
+<p>有一个bug设置了DPDK_OPTS不生效，见：<a href="https://bugs.launchpad.net/ubuntu/+source/openvswitch-dpdk/+bug/1547463，" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/openvswitch-dpdk/+bug/1547463，</a> 做了这些改动：</p>
+<p>vi /etc/default/openvswitch-switch<br>DPDK_OPTS=’–dpdk -c 0x1 -n 4’</p>
+<p>vi /etc/init/openvswitch-switch.conf</p>
+<h1 id="To-enable-openvswitch-dpdk"><a href="#To-enable-openvswitch-dpdk" class="headerlink" title="To enable openvswitch-dpdk"></a>To enable openvswitch-dpdk</h1><p>  if test X”$DPDK_OPTS” != X; then<br>    set “$@” DPDK_OPTS=”$DPDK_OPTS”<br>  fi</p>
+<p>vi /usr/share/openvswitch/scripts/ovs-ctl<br>            set ovs-vswitchd<br>                if test X”$DPDK_OPTS” != X; then<br>                        set “$@” $DPDK_OPTS –<br>                fi<br>                set “$@” unix:”$DB_SOCK”</p>
+<p>但在/var/log/openvswitch/ovs-ctl.log中仍然发现了下列错误，估计是ovs-vswitchd (Open vSwitch) 2.4.0版本（dpkg -l openvswitch-switch-dpdk）不支持–dpdk-opts参数吧。 </p>
+<p>/usr/share/openvswitch/scripts/ovs-ctl: unknown option “–dpdk-opts=-c 0x1 -n 4” (use –help for help)</p>
+<p>为避免上述ovs的bug，我们改用下列三个命令启动：</p>
+<p>sudo restart openvswitch-switch</p>
+<p>sudo killall ovs-vswitchd</p>
+<p>sudo ovs-vswitchd –dpdk -c 0x1 -n 2 – unix:/var/run/openvswitch/db.sock –pidfile –detach</p>
+<p>or</p>
+<p>sudo ovs-vswitchd –dpdk -c 0x1 -n 2 –socket-mem 128,0 – unix:/var/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info –mlockall –no-chdir –log-file=/var/log/openvswitch/ovs-vswitchd.log –pidfile=/var/run/openvswitch/ovs-vswitchd.pid –detach –monitor</p>
+<p>但仍然有下列错误。估计是保留的大页数目太少所致，后来将GRUB_CMDLINE_LINUX=”transparent_hugepage=never hugepagesz=2M hugepages=64 default_hugepagesz=2M”中的hugepages从4改成64这个错误就翻过去了。</p>
+<p>hua@node1:~$ sudo ovs-vswitchd –dpdk -c 0x1 -n 2 – unix:/var/run/openvswitch/db.sock –pidfile –detach<br>2016-04-07T11:48:03Z|00001|dpdk|INFO|No -cuse_dev_name provided - defaulting to vhost-net<br>EAL: Detected lcore 0 as core 0 on socket 0<br>EAL: Detected lcore 1 as core 1 on socket 0<br>EAL: Detected lcore 2 as core 2 on socket 0<br>EAL: Detected lcore 3 as core 3 on socket 0<br>EAL: Support maximum 128 logical core(s) by configuration.<br>EAL: Detected 4 lcore(s)<br>EAL: No free hugepages reported in hugepages-1048576kB<br>EAL: Setting up memory…<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f8609a00000 (size = 0x200000)<br>EAL: Ask a virtual area of 0x400000 bytes<br>EAL: Virtual area found at 0x7f8609400000 (size = 0x400000)<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f8609000000 (size = 0x200000)<br>EAL: Requesting 4 pages of size 2MB from socket 0<br>EAL: rte_eal_common_log_init(): cannot create log_history mempool<br>PANIC in rte_eal_init():<br>Cannot init logs<br>7: [ovs-vswitchd() [0x40b053]]<br>6: [/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf5) [0x7f860acc9ec5]]<br>5: [ovs-vswitchd() [0x40a059]]<br>4: [ovs-vswitchd() [0x639db1]]<br>3: [ovs-vswitchd() [0x43f7ad]]<br>2: [ovs-vswitchd() [0x407bad]]<br>1: [ovs-vswitchd() [0x444e58]]</p>
+<p>hua@node1:~$ sudo ovs-vswitchd –dpdk -c 0x1 -n 2 – unix:/var/run/openvswitch/db.sock –pidfile –detach<br>2016-04-07T13:57:08Z|00001|dpdk|INFO|No -cuse_dev_name provided - defaulting to vhost-net<br>EAL: Detected lcore 0 as core 0 on socket 0<br>EAL: Detected lcore 1 as core 1 on socket 0<br>EAL: Detected lcore 2 as core 2 on socket 0<br>EAL: Detected lcore 3 as core 3 on socket 0<br>EAL: Support maximum 128 logical core(s) by configuration.<br>EAL: Detected 4 lcore(s)<br>EAL: No free hugepages reported in hugepages-1048576kB<br>EAL: VFIO modules not all loaded, skip VFIO support…<br>EAL: Setting up memory…<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f2f72a00000 (size = 0x200000)<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f2f72600000 (size = 0x200000)<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f2f72200000 (size = 0x200000)<br>EAL: Ask a virtual area of 0x1a00000 bytes<br>EAL: Virtual area found at 0x7f2f70600000 (size = 0x1a00000)<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f2f70200000 (size = 0x200000)<br>EAL: Ask a virtual area of 0x5c00000 bytes<br>EAL: Virtual area found at 0x7f2f6a400000 (size = 0x5c00000)<br>EAL: Ask a virtual area of 0x200000 bytes<br>EAL: Virtual area found at 0x7f2f6a000000 (size = 0x200000)<br>EAL: Requesting 64 pages of size 2MB from socket 0<br>EAL: TSC frequency is ~3292375 KHz<br>EAL: Master lcore 0 is ready (tid=74e2bb40;cpuset=[0])<br>PMD: ENICPMD trace: rte_enic_pmd_init<br>EAL: PCI device 0000:05:00.0 on NUMA socket -1<br>EAL:   probe driver: 8086:10c9 rte_igb_pmd<br>EAL:   PCI memory mapped at 0x7f2f72c00000<br>EAL:   PCI memory mapped at 0x7f2f72c20000<br>EAL:   PCI memory mapped at 0x7f2f72c60000<br>PMD: eth_igb_dev_init(): port_id 0 vendorID=0x8086 deviceID=0x10c9<br>EAL: PCI device 0000:05:00.1 on NUMA socket -1<br>EAL:   probe driver: 8086:10c9 rte_igb_pmd<br>EAL:   Not managed by a supported kernel driver, skipped<br>EAL: PCI device 0000:06:10.1 on NUMA socket -1<br>EAL:   probe driver: 8086:10ca rte_igbvf_pmd<br>EAL:   Not managed by a supported kernel driver, skipped<br>EAL: PCI device 0000:06:10.3 on NUMA socket -1<br>EAL:   probe driver: 8086:10ca rte_igbvf_pmd<br>EAL:   Not managed by a supported kernel driver, skipped<br>Zone 0: name:<malloc_s0_heap_0>, phys:0xd6c00000, len:0xb00000, virt:0x7f2f70600000, socket_id:0, flags:0<br>Zone 1: name:<rg_mp_log_history>, phys:0x2200000, len:0x2080, virt:0x7f2f72a00000, socket_id:0, flags:0<br>Zone 2: name:<mp_log_history>, phys:0xd7700000, len:0x28a0c0, virt:0x7f2f71100000, socket_id:0, flags:0<br>Zone 3: name:<rte_eth_dev_data>, phys:0x2202080, len:0x1f400, virt:0x7f2f72a02080, socket_id:0, flags:0<br>2016-04-07T13:57:09Z|00002|ovs_numa|INFO|Discovered 4 CPU cores on NUMA node 0<br>2016-04-07T13:57:09Z|00003|ovs_numa|INFO|Discovered 1 NUMA nodes and 4 CPU cores<br>2016-04-07T13:57:09Z|00004|reconnect|INFO|unix:/var/run/openvswitch/db.sock: connecting…<br>VHOST_CONFIG: socket created, fd:17<br>VHOST_CONFIG: bind to vhost-net<br>2016-04-07T13:57:09Z|00005|reconnect|INFO|unix:/var/run/openvswitch/db.sock: connected<br>2016-04-07T13:57:09Z|00006|ofproto_dpif|INFO|system@ovs-system: Datapath supports recirculation<br>2016-04-07T13:57:09Z|00007|ofproto_dpif|INFO|system@ovs-system: MPLS label stack length probed as 1<br>2016-04-07T13:57:09Z|00008|ofproto_dpif|INFO|system@ovs-system: Datapath supports unique flow ids<br>2016-04-07T13:57:09Z|00009|bridge|INFO|bridge br-ex: added interface br-ex on port 65534<br>2016-04-07T13:57:09Z|00010|bridge|INFO|bridge br-ex: added interface qg-5786befb-c3 on port 1<br>2016-04-07T13:57:09Z|00011|bridge|INFO|bridge br-tun: added interface patch-int on port 1<br>2016-04-07T13:57:09Z|00012|bridge|INFO|bridge br-tun: added interface br-tun on port 65534<br>2016-04-07T13:57:09Z|00013|bridge|INFO|bridge br-int: added interface tap140d04f3-58 on port 22<br>2016-04-07T13:57:09Z|00014|bridge|INFO|bridge br-int: added interface tap6a12dfe3-40 on port 20<br>2016-04-07T13:57:09Z|00015|bridge|INFO|bridge br-int: added interface tap1ea7e391-73 on port 21<br>2016-04-07T13:57:09Z|00016|bridge|INFO|bridge br-int: added interface tapdc1b7683-4e on port 14<br>2016-04-07T13:57:09Z|00017|bridge|INFO|bridge br-int: added interface patch-tun on port 182<br>2016-04-07T13:57:09Z|00018|bridge|INFO|bridge br-int: added interface tap23e3a388-68 on port 11<br>2016-04-07T13:57:09Z|00019|bridge|INFO|bridge br-int: added interface int-br-phy on port 1<br>2016-04-07T13:57:09Z|00020|bridge|INFO|bridge br-int: added interface tap935ec68a-1a on port 12<br>2016-04-07T13:57:09Z|00021|bridge|INFO|bridge br-int: added interface tap2ca9e4a0-67 on port 7<br>2016-04-07T13:57:09Z|00022|bridge|INFO|bridge br-int: added interface tapcc6c6a9e-f2 on port 13<br>2016-04-07T13:57:09Z|00023|bridge|INFO|bridge br-int: added interface tap4751f42a-65 on port 10<br>2016-04-07T13:57:09Z|00024|bridge|INFO|bridge br-int: added interface br-int on port 65534<br>2016-04-07T13:57:09Z|00025|bridge|INFO|bridge br-int: added interface tapdde9820f-58 on port 9<br>2016-04-07T13:57:09Z|00026|bridge|WARN|could not open network device br100 (No such device)<br>2016-04-07T13:57:09Z|00027|bridge|INFO|bridge br-phy: added interface phy-br-phy on port 3<br>2016-04-07T13:57:09Z|00028|bridge|INFO|bridge br-phy: added interface br-phy on port 65534<br>2016-04-07T13:57:09Z|00029|bridge|INFO|bridge br-ex: using datapath ID 0000de7e48588f4c<br>2016-04-07T13:57:09Z|00030|connmgr|INFO|br-ex: added service controller “punix:/var/run/openvswitch/br-ex.mgmt”<br>2016-04-07T13:57:09Z|00031|bridge|INFO|bridge br-tun: using datapath ID 00007a84c20ae149<br>2016-04-07T13:57:09Z|00032|connmgr|INFO|br-tun: added service controller “punix:/var/run/openvswitch/br-tun.mgmt”<br>2016-04-07T13:57:09Z|00033|bridge|INFO|bridge br-int: using datapath ID 00008e56b225c748<br>2016-04-07T13:57:09Z|00034|connmgr|INFO|br-int: added service controller “punix:/var/run/openvswitch/br-int.mgmt”<br>2016-04-07T13:57:09Z|00035|bridge|INFO|bridge br-phy: using datapath ID 00000255fc61864b<br>2016-04-07T13:57:09Z|00036|connmgr|INFO|br-phy: added service controller “punix:/var/run/openvswitch/br-phy.mgmt”<br>2016-04-07T13:57:09Z|00001|ofproto_dpif_upcall(handler15)|INFO|received packet on unassociated datapath port 0</rte_eth_dev_data></mp_log_history></rg_mp_log_history></malloc_s0_heap_0></p>
+<p>测试<br>sudo ovs-vsctl ovsbr0 br-int<br>sudo ovs-vsctl set bridge ovsbr0 datapath_type=netdev</p>
+<p>sudo ovs-vsctl add-port ovsbr0 dpdk0 – set Interface dpdk0 type=dpdk  #Port name shoud begin with dpdk</p>
+<p>给虚机创建普通ovs port:</p>
+<p>sudo ovs-vsctl add-port ovsbr0 intP1 – set Interface intP1 type=internal<br>sudo ip addr add 192.168.10.129/24 dev intP1<br>sudo ip link set dev intP1 up<br>sudo tcpdump -i intP1​</p>
+<p>或给虚机创建vhost-user port:</p>
+<p>sudo ovs-vsctl add-port ovsbr0 vhost-user2 – set Interface vhost-user2 type=dpdkvhostuser</p>
+<p>虚机使用vhost-user port</p>
+<p>sudo qemu-system-x86_64 -enable-kvm -m 128 -smp 2 \<br>    -chardev socket,id=char0,path=/var/run/openvswitch/vhost-user1 \<br>    -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \<br>    -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:01 \<br>    -object memory-backend-file,id=mem,size=128M,mem-path=/mnt/huge,share=on \<br>    -numa node,memdev=mem -mem-prealloc \<br>    -net user,hostfwd=tcp::10021-:22 -net nic \<br>    /bak/images/openstack_demo.img</p>
+<p>Inside VM: sudo ifconfig eth0 192.168.9.108/24</p>
+<p>使用vhost-user方式可如下图所示：</p>
+<p>dpdk-virtio-net</p>
+<p>与Neutron的集成</p>
+<p>​</p>
+<p>nova已经支持vhost-user与hugepages特性，显然在nova.conf应该打开。</p>
+<p>[DEFAULT]<br>ovs_use_usvhost = True<br>[libvirt]<br>use_hugepages = True</p>
+<p>另外，应该手工创建上述的ovsbr0，然后在/etc/neutron/plugins/ml2/ml2_conf.ini指定使用ovsbr0作为provider network.</p>
+<p>[ovs]<br>bridge_mappings = default:ovsbr0</p>
+<p>dpdk与neutron集成的工程叫networking-ovs-dpdk，在devstack加下列一行可使用devstack创建ovs dpdk环境。</p>
+<p>enable_plugin networking-ovs-dpdk <a href="https://github.com/openstack/networking-ovs-dpdk" target="_blank" rel="external">https://github.com/openstack/networking-ovs-dpdk</a> master</p>
+<p>整个运行命令</p>
+<p>sudo add-apt-repository cloud-archive:mitaka</p>
+<p>sudo apt-get install openvswitch-switch-dpdk</p>
+<p>sudo modprobe vfio-pci<br>sudo chmod a+x /dev/vfio<br>sudo chmod 0666 /dev/vfio/*<br>sudo ifconfig eth1 down<br>sudo dpdk_nic_bind -b vfio-pci eth1  #注意：实验发现，对于sr-iov网卡，此处必须是PF，PF试验成功，VF试验不成功。</p>
+<p>find /sys/kernel/iommu_groups/ -type l<br>sudo sysctl -w vm.nr<em>hugepages=256<br>cat /proc/meminfo |grep HugePages</em></p>
+<p>sudo restart openvswitch-switch<br>sudo update-alternatives –set ovs-vswitchd /usr/lib/openvswitch-switch-dpdk/ovs-vswitchd-dpdk<br>sudo killall ovs-vswitchd<br>sudo ovs-vswitchd –dpdk -c 0x1 -n 2 –socket-mem 128,0 – unix:/var/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info –mlockall –no-chdir –log-file=/var/log/openvswitch/ovs-vswitchd.log –pidfile=/var/run/openvswitch/ovs-vswitchd.pid –detach –monitor<br>ps -ef|grep dpdk</p>
+<p>sudo qemu-system-x86_64 -enable-kvm -m 128 -smp 2 \<br>    -chardev socket,id=char0,path=/var/run/openvswitch/vhost-user1 \<br>    -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \<br>    -device virtio-net-pci,netdev=mynet1,mac=52:54:00:02:d9:01 \<br>    -object memory-backend-file,id=mem,size=128M,mem-path=/mnt/huge,share=on \<br>    -numa node,memdev=mem -mem-prealloc \<br>    -net user,hostfwd=tcp::10021-:22 -net nic \<br>    /bak/images/openstack_demo.img</p>
+<p>Inside VM: sudo ifconfig eth0 192.168.9.108/24</p>
+<p>附录1,编译DPDK源码并运行单个应用<br>git clone git://dpdk.org/dpdk<br>export DPDK_DIR=/bak/linux/dpdk<br>export DPDK_BUILD=$DPDK_DIR/x86_64-ivshmem-linuxapp-gcc/<br>export RTE_TARGET=x86_64-ivshmem-linuxapp-gcc<br>export EXTRA_CFLAGS=”-ggdb -ffunction-sections -O0”                                       #设置调试选项<br>echo ‘CONFIG_RTE_BUILD_COMBINE_LIBS=y’ &gt;&gt; ./config/common_linuxapp   #编译成单个文件</p>
+<p>echo ‘CONFIG_RTE_LIBRTE_VHOST=y’ &gt;&gt; ./config/common_linuxapp   </p>
+<p>sudo make config T=x86_64-ivshmem-linuxapp-gcc </p>
+<p>sudo make install T=x86_64-ivshmem-linuxapp-gcc                                                #使用共享内存ivshmem模式</p>
+<p>cd x86_64-ivshmem-linuxapp-gcc/<br>EXTRA_CFLAGS=”-g -O0” make -j4</p>
+<p>sudo modprobe uio<br>sudo insmod x86_64-ivshmem-linuxapp-gcc/kmod/igb_uio.ko                                #DPDK只能使用igb_uio和vfio-pci两种驱动</p>
+<p>cd lib/librte_vhost/eventfd_link/<br>make<br>sudo insmod eventfd_link.ko<br>sudo python tools/dpdk_nic_bind.py –status<br>sudo python tools/dpdk_nic_bind.py -b igb_uio 0000:05:00.0</p>
+<p>#sudo python tools/dpdk_nic_bind.py -b uio_pci_generic 0000:05:00.0</p>
+<p>cd examples/helloworld/<br>make<br>sudo ./build/helloworld -c 0xf -n 4 –socket-mem=32</p>
+<p>gdb ./build/helloworld<br>(gdb) run -c 0xf -n 4 –socket-mem=32</p>
+<p>#integrate ovs with dpdk</p>
+<p>git clone <a href="https://github.com/openvswitch/ovs.git" target="_blank" rel="external">https://github.com/openvswitch/ovs.git</a><br>cd /bak/linux/ovs<br>export OVS_DIR=<code>pwd</code><br>./boot.sh<br>./configure –with-dpdk=”$DPDK_DIR/x86_64-ivshmem-linuxapp-gcc/“ –enable-ssl CFLAGS=”-g -O0”<br>make ‘CFLAGS=-g -O0 -march=native’ -j4</p>
+<p>参考<br>[1] <a href="https://software.intel.com/en-us/blogs/2015/06/09/building-vhost-user-for-ovs-today-using-dpdk-200" target="_blank" rel="external">https://software.intel.com/en-us/blogs/2015/06/09/building-vhost-user-for-ovs-today-using-dpdk-200</a></p>
+<p>[2] <a href="http://dpdk.readthedocs.org/en/v2.2.0/linux_gsg/index.html" target="_blank" rel="external">http://dpdk.readthedocs.org/en/v2.2.0/linux_gsg/index.html</a></p>
+<p>[3] <a href="http://blog.csdn.net/xy010902100449/article/details/47282937" target="_blank" rel="external">http://blog.csdn.net/xy010902100449/article/details/47282937</a></p>
+<p>[4] <a href="http://openvswitch.org/support/dist-docs/INSTALL.DPDK.md.txt" target="_blank" rel="external">http://openvswitch.org/support/dist-docs/INSTALL.DPDK.md.txt</a></p>
+<p>[5] <a href="https://software.intel.com/en-us/articles/using-open-vswitch-with-dpdk-for-inter-vm-nfv-applications" target="_blank" rel="external">https://software.intel.com/en-us/articles/using-open-vswitch-with-dpdk-for-inter-vm-nfv-applications</a></p>
+<p>[6] <a href="https://raw.githubusercontent.com/xsited/ssg/master/scripts/build_ovs_dpdk.sh" target="_blank" rel="external">https://raw.githubusercontent.com/xsited/ssg/master/scripts/build_ovs_dpdk.sh</a></p>
+<p>[7] <a href="http://www.ran-lifshitz.com/2015/06/17/open-vswitch-netdev-dpdk-with-vhost-user-support/" target="_blank" rel="external">http://www.ran-lifshitz.com/2015/06/17/open-vswitch-netdev-dpdk-with-vhost-user-support/</a></p>
+<p>[8] DPDK编程指南</p>
+</none>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/28/OpenStack中的防火墙/" rel="next" title="OpenStack中的防火墙">
+                <i class="fa fa-chevron-left"></i> OpenStack中的防火墙
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver"><span class="nav-number">1.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver"><span class="nav-number">2.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices"><span class="nav-number">3.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver-1"><span class="nav-number">4.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver-1"><span class="nav-number">5.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices-1"><span class="nav-number">6.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#To-enable-openvswitch-dpdk"><span class="nav-number">7.</span> <span class="nav-text">To enable openvswitch-dpdk</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
