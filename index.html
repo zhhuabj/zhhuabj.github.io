@@ -231,6 +231,169 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/30/OpenStack-MTU/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/30/OpenStack-MTU/" itemprop="url">OpenStack MTU</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-30T10:31:56+08:00">
+                2021-01-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="需要设置mtu的设备类型"><a href="#需要设置mtu的设备类型" class="headerlink" title="需要设置mtu的设备类型"></a>需要设置mtu的设备类型</h2><p>openstack中总共有6种网络设备需要设置mtu:</p>
+<ul>
+<li>物理交换机和路由, eg: 5000， 手工设置</li>
+<li>物理网卡, eg: 5000， nova vif根据network.mtu设置（见最后一节）</li>
+<li>隧道接口, eg: 4958, nova vif根据network.mtu设置（见最后一节）</li>
+<li>虚机接口, eg: 4958, nova vif根据network.mtu设置（见最后一节）</li>
+<li>虚机与br-int之间的peer口由l2-agent中的ovs_use_veth, use_veth_interconnection, veth_mtu三个参数控制。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if self.use_veth_interconnection:</span><br><span class="line">    # enable veth to pass traffic</span><br><span class="line">    int_veth.link.set_up()</span><br><span class="line">    phys_veth.link.set_up()</span><br><span class="line">    if self.veth_mtu:</span><br><span class="line">        # set up mtu size for veth interfaces</span><br><span class="line">        int_veth.link.set_mtu(self.veth_mtu)</span><br><span class="line">        phys_veth.link.set_mtu(self.veth_mtu)</span><br><span class="line">else:</span><br><span class="line">    # associate patch ports to pass traffic</span><br><span class="line">    self.int_br.set_db_attribute(&apos;Interface&apos;, int_if_name,</span><br><span class="line">                                 &apos;options&apos;, &#123;&apos;peer&apos;: phys_if_name&#125;)</span><br><span class="line">    br.set_db_attribute(&apos;Interface&apos;, phys_if_name,</span><br><span class="line">                        &apos;options&apos;, &#123;&apos;peer&apos;: int_if_name&#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>虚机里面的虚机网卡, eg: 4958， 如果network中有mtu值，则用于设置dnsmasq。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mtu = getattr(self.network, &apos;mtu&apos;, 0)</span><br><span class="line">if mtu &gt; 0:</span><br><span class="line">    cmd.append(&apos;--dhcp-option-force=option:mtu,%d&apos; % mtu)</span><br></pre></td></tr></table></figure>
+<h2 id="四个和mtu相关的配置"><a href="#四个和mtu相关的配置" class="headerlink" title="四个和mtu相关的配置"></a>四个和mtu相关的配置</h2><ol>
+<li>Flat/VLAN：Minimum of (global_physnet_mtu or physical_network_mtus)</li>
+<li>GRE: Minimum of (global_physnet_mtu, path_mtu) subtract 42</li>
+<li>VXLAN: Minimum of (global_physnet_mtu, path_mtu) subtract 50</li>
+</ol>
+<p>一个例子(neutron.conf)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">In the neutron.conf file:</span><br><span class="line">[DEFAULT]</span><br><span class="line">global_physnet_mtu = 9000</span><br><span class="line"></span><br><span class="line">In the openvswitch_agent.ini file:</span><br><span class="line">[ovs]</span><br><span class="line">bridge_mappings = provider1:eth1,provider2:eth2,provider3:eth3</span><br><span class="line"></span><br><span class="line">In the ml2_conf.ini file:</span><br><span class="line">[ml2]</span><br><span class="line">physical_network_mtus = provider2:4000,provider3:1500</span><br><span class="line">path_mtu = 9000</span><br></pre></td></tr></table></figure>
+<ol>
+<li>physical_network_mtus，仅用于flat与vlan，用于设置物理网络</li>
+<li>path_mtu, tenant网络最大可能的mtu，下段代码位于type_tunnel中</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">def get_mtu(self, physical_network=None):</span><br><span class="line">    seg_mtu = super(_TunnelTypeDriverBase, self).get_mtu()</span><br><span class="line">    mtu = []</span><br><span class="line">    if seg_mtu &gt; 0:</span><br><span class="line">        mtu.append(seg_mtu)</span><br><span class="line">    if cfg.CONF.ml2.path_mtu &gt; 0:</span><br><span class="line">        mtu.append(cfg.CONF.ml2.path_mtu)</span><br><span class="line">    version = cfg.CONF.ml2.overlay_ip_version</span><br><span class="line">    ip_header_length = p_const.IP_HEADER_LENGTH[version]</span><br><span class="line">    return min(mtu) - ip_header_length if mtu else 0</span><br></pre></td></tr></table></figure>
+<ol>
+<li>global_physnet_mtu, tenant网络默认的mtu，下列代码中的mtus是来自min(physical_network_mtus, min(path_mtu) - ip_header_length）， get_deployment_physnet_mtu来自global_physnet_mtu，如果没定义physical_network_mtus，则使用默认值global_physnet_mtu，然后用它设置network对象的mtu字段。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">max_mtu = min(mtus) if mtus else p_utils.get_deployment_physnet_mtu()</span><br><span class="line">net_mtu = network_db.get(&apos;mtu&apos;)</span><br><span class="line"># if mtu is not set in database, use the maximum possible</span><br><span class="line">return net_mtu or max_mtu</span><br></pre></td></tr></table></figure>
+<ol>
+<li>network_device_mtu, 位于os-vif包中，network中没有mtu值时（neutron net-show <net> |grep mtu），用它来决定虚机接口</net></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">def _get_mtu(self, vif):</span><br><span class="line">    if vif.network and vif.network.mtu:</span><br><span class="line">        return vif.network.mtu</span><br><span class="line">    return self.config.network_device_mtu</span><br></pre></td></tr></table></figure>
+<h2 id="nova-vif"><a href="#nova-vif" class="headerlink" title="nova vif"></a>nova vif</h2><p>上面的参数最终算出了network.mtu, nova vif (LibvirtGenericVIFDriver)需要根据这个值去设置上述的物理网卡，隧道接口，虚机接口的mtu值。但是最新代码似乎没有为ovs类型的虚拟接口设置mtu，这应该是一个bug。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ol>
+<li>手动给ovs port设置mtu的命令如下</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ovs-vsctl --columns=mtu_request list interface</span><br><span class="line">ovs-vsctl set Interface tapddcb4e7e-88 mtu_request=1501</span><br></pre></td></tr></table></figure>
+<ol>
+<li>检查mtu命令</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping -M do -i 1 -c 2 -s 5000 10.230.56.18</span><br></pre></td></tr></table></figure>
+<h2 id="metadata中的mtu问题"><a href="#metadata中的mtu问题" class="headerlink" title="metadata中的mtu问题"></a>metadata中的mtu问题</h2><p>有时候　iptables -t mangle -A PREROUTING -i ns-+ -p tcp –dport 80 -j CHECKSUM –checksum-fill<br>有时候　<a href="https://review.opendev.org/c/openstack/neutron/+/656359" target="_blank" rel="external">https://review.opendev.org/c/openstack/neutron/+/656359</a><br>有时候用了dpdk口，有时候用的却是bridge口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ tshark -r ns-43cbdb54-9b &apos;ip.addr==169.254.169.254&apos;</span><br><span class="line">237 86.852258 10.243.164.13 → 169.254.169.254 TCP 74 37500 → 80 [SYN] Seq=0 Win=26880 Len=0 MSS=8960 SACK_PERM=1 TSval=1999115463 TSecr=0 WS=128</span><br><span class="line">242 87.868631 10.243.164.13 → 169.254.169.254 TCP 74 [TCP Retransmission] 37500 → 80 [SYN] Seq=0 Win=26880 Len=0 MSS=8960 SACK_PERM=1 TSval=1999116479 TSecr=0 WS=128</span><br><span class="line">248 89.884108 10.243.164.13 → 169.254.169.254 TCP 74 [TCP Retransmission] 37500 → 80 [SYN] Seq=0 Win=26880 Len=0 MSS=8960 SACK_PERM=1 TSval=1999118495 TSecr=0 WS=128</span><br><span class="line">263 94.012172 10.243.164.13 → 169.254.169.254 TCP 74 [TCP Retransmission] 37500 → 80 [SYN] Seq=0 Win=26880 Len=0 MSS=8960 SACK_PERM=1 TSval=1999122623 TSecr=0 WS=128</span><br><span class="line">$ tshark -r ns-4ae73fdc-5f &apos;ip.addr==169.254.169.254&apos;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://blog.csdn.net/quqi99/article/details/15029501" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/15029501</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/30/使用OVS-DPDK/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1839,161 +2002,6 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/" itemprop="url">Building Ubuntu Kernels with Debug Symbols</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:45:24+08:00">
-                2021-01-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2016-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>使用gdb或者crash时需要debug symbols, 可以从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE</a>: 此链接只是GA Kernel的debug symbols, 如果是HWE Kernel的符号表一般通过google查找，见本文最下方说明）下载，如果这个网址没有，版本不一样crash就打不起来，所以得自己build一个(<a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel</a>,  <a href="https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide</a>, <a href="https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。" target="_blank" rel="external">https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。</a></p>
-<p>注意：即使自己build也不能保证每次compile的時候symbol address都一样, GCC的版本也有不同。实际上，如果从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA</a> Kernel的符号表，也找不着HWE Kernel的符号表的话。我们只能自己编译，但是自己编译也是没用的。自己编译的目的只是为了让crash运行起来，里面的symbols是无法相信的，只能用二进制知识直接看memory。</p>
-<p>但有时候里面没有需要自己生成，下需方法使用了debian/rules脚本来为Ubuntu Kernel生成debug symbols, 所以它不需要注释的那些make命令， 这个脚本会自动生成.config文件，如果要修改可以使用fakeroot debian/rules editconfigs命令。如果使用的是社区的Kernel, 默认的.config文件应该未包括了生成debug symbols的配置(CONFIG_KALLSYMS=y &amp; CONFIG_KALLSYMS_ALL=y, 路径为：Kernel hacking -&gt; Compile-time checks and compiler options -&gt; Compile the kernel with debug info )。</p>
-<p>注：在xenial中也可以可以build trusty的，kernel与上层应用不同，kernel依赖的包很少，这样只要在xenial将相应的依赖安装了就可以build trusty。所以编译kennel不需要像上层应用的编译那样搞什么pbuilder等。</p>
-<p><a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/" target="_blank" rel="external">http://kernel.ubuntu.com/~kernel-ppa/mainline/</a></p>
-<p>git config –add core.compression -1   #For the error ‘git index-pack failed’</p>
-<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git ubuntu-linux</p>
-<p>#git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git<br>git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git</p>
-<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git</p>
-<p>#git clone –reference linux git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic</p>
-<p>#git checkout -b sfxxxx origin/master</p>
-<p>#git cherry-pick -s -x commit_id</p>
-<p>#git remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</p>
-<p>#git remote -v</p>
-<p>#git fetch –tags linus</p>
-<p>#git remote add rotom_xenial zhhuabj@10.230.56.3:/home/zhhuabj/ubuntu-xenial</p>
-<p>#git push rotom_xenial sfxxxx<br>cd ubuntu-xenial<br>git tag -l Ubuntu-*<br>git checkout -b Ubuntu-4.4.0-0.10 Ubuntu-4.4.0-0.10</p>
-<p>sudo apt-get install libncurses5-dev qt4-dev-tools kernel-package fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge libelf-dev asciidoc binutils-dev</p>
-<p>sudo apt-get build-dep linux-image-$(uname -r)   #需要添加附录中的deb-src源</p>
-<p>sudo apt-get install pkg-config-dbgsym  #xenial</p>
-<p>#make xconfig             #or make menuconfig</p>
-<p>#make localmodconfig      #speed compliling time for test</p>
-<p>#make-kpkg                #a script which automates and replaces the sequence “make dep; make clean; make bzImage; make modules”</p>
-<p>#make mrproper</p>
-<p>#git reset –hard HEAD<br>fakeroot debian/rules clean</p>
-<p>#fakeroot debian/rules editconfigs</p>
-<p>#fakeroot debian/rules prepare-generic</p>
-<p>#debian/rules build-generic   #build kernel</p>
-<p>fakeroot debian/rules DEB_BUILD_OPTIONS=parallel=4 clean binary-generic binary-headers skipdbg=false</p>
-<p>自己调试机运行的什么版本的kernel和客户运行的没有关系，只需要使用–mod参数指定和客户运行的debug symbol的版本一致即可。</p>
-<p>wget <a href="http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</a> -O /home/zhhuabj/debs/4.13.0-37.42/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb<br>strings vmcore.201803282124 |less  #NOTE: vmcore may first need to unzip<br>dpkg -x linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb /home/zhhuabj/debs/4.13.0-37.42/<br>cat run_crash.sh</p>
-<p>exec crash –mod /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/lib/modules/4.13.0-37-generic /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/boot/vmlinux-4.13.0-37-generic vmcore.201803282124</p>
-<p>注意：上面的方法可能不成功，例如，4.13.0-37是artful的GA Kernel，但对于xenial来说是HWE Kernel。sosreport中的uname显示版本号（上面是通过strings命令查看的版本号，似乎不能显示更详细的版本号)是“4.13.0-37-generic #42~16.04.1”，这种版本号就是在xenial中使用4.13.0-37 hwe kernel。所以正确的debug symbol应该是：<a href="https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb" target="_blank" rel="external">https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb</a></p>
-<p>继续遇到此问题“crash: cannot resolve “init_level4_pgt” “ - <a href="https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb</a> <a href="http://archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://archive.ubuntu.com/ubuntu/</a> bionic main’升级crash后解决。</p>
-<p>附录：为UCA包编译近似的符号表</p>
-<p>UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”<br>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2044,7 +2052,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-count">95</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

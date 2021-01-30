@@ -231,6 +231,154 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/SSH连接总是定期断掉的解决办法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/12/SSH连接总是定期断掉的解决办法/" itemprop="url">SSH连接总是定期断掉的解决办法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-05-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
+<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>SSH连接总是隔一段时间没有输入时就断开，解决办法如下：</p>
+<p>服务端配置<br>sudo vi /etc/ssh/sshd_config<br>ClientAliveInterval 60     #服务端主动向客户端请求响应的间隔<br>ClientAliveCountMax 10    #服务器发出请求后客户端没有响应的次数达到一定值就自动断开<br>sudo restart ssh</p>
+<p>客户端配置<br>sudo vi /etc/ssh/ssh_config  #或~/.ssh/config</p>
+<pre><code>TCPKeepAlive yes
+ServerAliveInterval 15
+ServerAliveCountMax 6
+StrictHostKeyChecking no
+ForwardAgent yes
+Compression yes
+
+ IPQoS throughput
+</code></pre><p>或</p>
+<p>ssh -i <key-file> IPQoS=throughput -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=30 ubuntu@<ip></ip></key-file></p>
+<p>上面方式任选一种，我选客户端配置方式。</p>
+<p>20200316更新, 如果ssh总是断时也得考虑使用白名单模式时是否将某些IP排除了.</p>
+<p>20200902更新, 如果使用Compression yes会被墙看上, 会时不时ssh断掉, 去掉Compression即可.</p>
+<p>20201016更新, 到国外的ssh连接总断, 除了ISP QoS外, 还试试在sshd.conf中添加:</p>
+<p>UseDNS no</p>
+<p>GSSAPIAuthentication no</p>
+<p>20201028更新，</p>
+<p>这次应该是找到了ssh总断的根源，因为bastion上安装了devstack所以在并行运行’opestack image set”时ssh会中断．所以习惯很重要，不能乱安装东西．</p>
+<p>#openstack image set –property $p=${props[$p]} $img_name</p>
+<p>openstack image set –property $p=${props[$p]} $img_name &amp;</p>
+<p>另外，使用压缩传输数据：</p>
+<p>#strings /usr/sbin/sshd |egrep “chacha|aes”<br>scp -p -C -o ‘IPQoS throughput’  -c chacha20-poly1305@openssh.com win10.img hua@node1:/images/</p>
+<p>20201112更新</p>
+<p>ssh总断的原因是因为机器上为反复重启virtualbox导致chrome会通过fast.com测速变得只有十几K, virutalbox改成了kvm现在观察了几天似乎这个问题消失了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1539,152 +1687,6 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/18/引入nova-placement之后对调度的影响/" itemprop="url">引入nova placement之后对调度的影响</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-18T15:33:22+08:00">
-                2020-09-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="nova-cell-v2"><a href="#nova-cell-v2" class="headerlink" title="nova cell v2"></a>nova cell v2</h2><p>nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappings, nova_api.instance_mappings, nova_api.cell_mappings可以直接从instance找到cell_id进而找到DB与MQ的信息，这样nova-api直接就可以操作该cell之类的DB与MQ从而可以让nova-compute可以水平扩展到更多的物理节点，另一方面，nova-api节点也不再需要nova-cell服务，要有nova-api与nova-scheduler两个服务即可．</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; pager less -S</span><br><span class="line">PAGER set to &apos;less -S&apos;</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">mysql&gt; select instance_uuid,cell_id from instance_mappings;</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| instance_uuid                        | cell_id |</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| 4039ed4e-d0a1-46ba-99a5-68bc84421b42 |       2 |</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from host_mappings;</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| created_at          | updated_at | id | cell_id | host                                |</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| 2020-09-16 06:18:26 | NULL       |  1 |       2 | juju-3ba760-ceilometer-15.cloud.sts |</span><br><span class="line"></span><br><span class="line">mysql&gt; select transport_url,name,database_connection from cell_mappings;</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| transport_url                                                                                            | name  | database_connection                                                         |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| none:///                                                                                                 | cell0 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova_cell0 |</span><br><span class="line">| rabbit://nova:wSz5LjscfBqKnhVWKBZnrXdwS5Kz6TByz9jKfm2xKHbCRYPPSbcnqFwPTnCp8VpP@10.5.0.199:5672/openstack | cell1 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova       |</span><br></pre></td></tr></table></figure>
-<p>所以当遇到这种错误时:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br><span class="line">No server with a name or ID of 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo nova-manage cell_v2 list_cells</span><br><span class="line">sudo nova-manage cell_v2 map_instances --cell_uuid &lt;cell-id-from-above&gt;</span><br><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure>
-<h2 id="nova-placement-API"><a href="#nova-placement-API" class="headerlink" title="nova placement API"></a>nova placement API</h2><p>nova placement API在Newton被引入, nova-scheduler调用placement-api用于调度. 主要用于跟踪记录Resource Provider(compute-node, external storage-pool, external ip-allocation-pool etc)的Inventory和Usage.自Pike版本, 必须启用Placement API来辅助nova-scheduler service进行compute node调度，并以此替代之前的RAMFilter、CoreFilter和DiskFilter。概念对象如下:</p>
-<ul>
-<li>Resource Class, 资源种类, placement api默认实现了DISK_GB, MEMORY_MB,VCPU三种标准resource classes, 也提供了custom resource classes的接口.</li>
-<li>Resource Providers：资源提供者，实际提供资源的对象，例如：compute node、storage pool</li>
-<li>Inventory：资源清单，资源提供者所拥有的资源清单，例如：compute node 拥有的vCPU、Disk、RAM 等 inventories</li>
-<li>Resource Allocations：资源分配状况，包含了Resource Class、Resource Provider以及Consumer 的映射关系。记录消费者使用了多少该类型的资源数量</li>
-<li>Provider Aggregate：资源聚合，类似 HostAggregate 的概念</li>
-<li>Traits：资源特征，不同资源提供者可能会具有不同的资源特征。Traits 作为资源提供者特征的描述，它不能够被消费，但在某些Workflow 或者会需要这些信息。例如：标识可用的Disk是一个SSD，可以帮助Scheduler更好的匹配 instance boot请求。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from resource_providers;</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| created_at          | updated_at          | id | uuid                                 | name                                | generation | can_host | root_provider_id | parent_provider_id |</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | 2020-09-16 10:19:33 |  1 | a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |     NULL |                1 |               NULL |</span><br><span class="line"></span><br><span class="line"># for the field resource_class_id, 0 means VCPU, 1 means MEMORY_MB, 2 means DISK_GB</span><br><span class="line">mysql&gt; select * from inventories;</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | resource_class_id | total | reserved | min_unit | max_unit | step_size | allocation_ratio |</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  1 |                    1 |                 0 |     2 |        0 |        1 |        2 |         1 |               16 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  2 |                    1 |                 1 |  3944 |      512 |        1 |     3944 |         1 |              1.5 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  3 |                    1 |                 2 |    38 |        0 |        1 |       38 |         1 |                1 |</span><br><span class="line">mysql&gt; select * from allocations;</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | consumer_id                          | resource_class_id | used |</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 16 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 2 |    1 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 17 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 1 |   64 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 18 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 0 |    1 |</span><br></pre></td></tr></table></figure>
-<h2 id="Placement-CLI"><a href="#Placement-CLI" class="headerlink" title="Placement CLI"></a>Placement CLI</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python3-osc-placement -y</span><br><span class="line"></span><br><span class="line">$ openstack resource provider list</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| uuid                                 | name                                | generation |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line"></span><br><span class="line">$  openstack resource provider inventory list a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| resource_class | allocation_ratio | min_unit | max_unit | reserved | step_size | total |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| VCPU           |             16.0 |        1 |        2 |        0 |         1 |     2 |</span><br><span class="line">| MEMORY_MB      |              1.5 |        1 |     3944 |      512 |         1 |  3944 |</span><br><span class="line">| DISK_GB        |              1.0 |        1 |       38 |        0 |         1 |    38 |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line"></span><br><span class="line">$ openstack resource provider usage show a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+-------+</span><br><span class="line">| resource_class | usage |</span><br><span class="line">+----------------+-------+</span><br><span class="line">| VCPU           |     3 |</span><br><span class="line">| MEMORY_MB      |   192 |</span><br><span class="line">| DISK_GB        |     3 |</span><br><span class="line">+----------------+-------+</span><br></pre></td></tr></table></figure>
-<h2 id="one-bug"><a href="#one-bug" class="headerlink" title="one bug"></a>one bug</h2><p>例如, 如<a href="https://bugs.launchpad.net/nova/+bug/1679750描述的场景" target="_blank" rel="external">https://bugs.launchpad.net/nova/+bug/1679750描述的场景</a>, 在hostA上创建一虚机,hostA死掉了, 这时删除虚机时无法删除实例(因为nova-compute这时死掉了啊), 这样会导致allocations表中的记录没有被删除. 如果hostA又起来了, nova-compute的init_host-&gt;_complete_partial_deletion<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; nova/compute/manager.py#update_available_resource_for_node -&gt; update_available_resource -&gt; _update_available_resource -&gt; _remove_deleted_instances_allocations</span><br></pre></td></tr></table></figure></p>
-<p>当把一个nova-compute删除时，删了service和compute_node表记录后,却没有删除placement resource provider和host mapping records.<br>nova-compute自己都死了它是没法自己删自己的,所以改由nova-api在启动时在删除instances时也删除allocations表中的记录 -<br><a href="https://review.opendev.org/#/c/580498/" target="_blank" rel="external">https://review.opendev.org/#/c/580498/</a></p>
-<h2 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">select * nova_api.from host_mappings;</span><br><span class="line">select * from nova_api.cell_mappings;</span><br><span class="line">select * from nova_api.resource_providers where name like &apos;%xxx%&apos;;   xx.bos01.xxx (9)</span><br><span class="line">select * from nova.compute_nodes where host like &apos;%bagon%&apos; or hypervisor_hostname like &apos;%xxx%&apos;;</span><br><span class="line">select * from nova_api.inventories where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;);</span><br><span class="line">select * from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;) order by consumer_id,resource_provider_id,resource_class_id;</span><br><span class="line">select uuid, host, node, vcpus, memory_mb, vm_state, power_state, task_state, root_gb, ephemeral_gb, cell_name,deleted from nova.instances where uuid in (select consumer_id from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;)) order by uuid;</span><br></pre></td></tr></table></figure>
-<h2 id="20201230更新-another-bug"><a href="#20201230更新-another-bug" class="headerlink" title="20201230更新 - another bug"></a>20201230更新 - another bug</h2><p>“select numa_topology from nova.compute_nodes where hypervisor_hostname=’cloud3.xxx.com’\G”显示cell0上的pinned_cpus将所有CPU全用完了导致nova-schedule无法继续调度报“Filter NUMATopologyFilter returned 0 hosts”这种错。<br>下面代码分析显示周期性的update_available_resource本来是可以自动修改数据库记录的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; _update_available_resource -&gt; _update_usage_from_instances -&gt; _update_usage_from_instance -&gt; _update_usage -&gt; numa_usage_from_instance_numa</span><br></pre></td></tr></table></figure></p>
-<p>从数据库拿出host_cell.pinned_cpus作为pinned_cpus的初始值，特别要注意：host_cell.pinned_cpus并不是直接从数据库取的，它通过运行下列的self._copy_resources(cn, resources)方法实际上让host_cell.pinned_cpus永远为empty<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">693 def _init_compute_node(self, context, resources):</span><br><span class="line">...</span><br><span class="line">713 if nodename in self.compute_nodes:</span><br><span class="line">714 cn = self.compute_nodes[nodename]</span><br><span class="line">715 self._copy_resources(cn, resources)</span><br><span class="line">716 self._setup_pci_tracker(context, cn, resources)</span><br><span class="line">717 return False</span><br></pre></td></tr></table></figure></p>
-<p>它根据free变量来决定是往pinned_cpus上加还是减。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">./nova/virt/hardware.py#numa_usage_from_instance_numa</span><br><span class="line">def numa_usage_from_instance_numa(host_topology, instance_topology,free=False):</span><br><span class="line">...</span><br><span class="line">for host_cell in host_topology.cells:</span><br><span class="line">new_cell = objects.NUMACell(</span><br><span class="line">id=host_cell.id,</span><br><span class="line">cpuset=shared_cpus,</span><br><span class="line">pcpuset=dedicated_cpus,</span><br><span class="line">memory=host_cell.memory,</span><br><span class="line">cpu_usage=0,</span><br><span class="line">memory_usage=0,</span><br><span class="line">mempages=host_cell.mempages,</span><br><span class="line">pinned_cpus=host_cell.pinned_cpus,</span><br><span class="line">siblings=host_cell.siblings)</span><br><span class="line">...</span><br><span class="line">if free:</span><br><span class="line">if (instance_cell.cpu_thread_policy ==</span><br><span class="line">fields.CPUThreadAllocationPolicy.ISOLATE):</span><br><span class="line">new_cell.unpin_cpus_with_siblings(pinned_cpus)</span><br><span class="line">else:</span><br><span class="line">new_cell.unpin_cpus(pinned_cpus)</span><br></pre></td></tr></table></figure></p>
-<p>free是由”free = sign == -1“决定的（看仔细，右边的是两个等号，左边的是一个等号）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">def _update_usage(self, usage, nodename, sign=1):</span><br><span class="line">...</span><br><span class="line">free = sign == -1</span><br><span class="line">cn.numa_topology = hardware.numa_usage_from_instance_numa(</span><br><span class="line">host_numa_topology, instance_numa_topology, free)._to_json()</span><br><span class="line"></span><br><span class="line">def _update_usage_from_instance():</span><br><span class="line">is_new_instance = uuid not in self.tracked_instances</span><br><span class="line">is_removed_instance = not is_new_instance and (is_removed or</span><br><span class="line">instance[&apos;vm_state&apos;] in vm_states.ALLOW_RESOURCE_REMOVAL)</span><br><span class="line">if is_new_instance:</span><br><span class="line">self.tracked_instances.add(uuid)</span><br><span class="line">sign = 1</span><br><span class="line">if is_removed_instance:</span><br><span class="line">self.tracked_instances.remove(uuid)</span><br><span class="line">sign = -1</span><br><span class="line">...</span><br><span class="line">self._update_usage(self._get_usage_dict(instance, instance),nodename, sign=sign)</span><br></pre></td></tr></table></figure></p>
-<p>所以只要update_available_resource运行那脏记录必须得到修改，那现在没修改说明update_available_resource一直没运行，日志里发现这种错误placement正在使用http而非https打头的endpoint从而导致placement api不可用，这样导致update_available_resource在调用update_placement时出错，从而导致update_available_resource自2020-10-26后再未运行。详见－<a href="https://bugs.launchpad.net/charm-nova-compute/+bug/1826382" target="_blank" rel="external">https://bugs.launchpad.net/charm-nova-compute/+bug/1826382</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020-10-26 15:43:34.459 1393 WARNING keystoneauth.discover [req-5dcdc394-2784-40d2-984c-54fe261f36f0 - - - - -] Failed to contact the endpoint at http://placement-int.xxx.com:8778 for discovery. Fallback to using that endpoint as the base url.</span><br><span class="line">2020-10-26 15:43:34.463 1393 ERROR nova.compute.manager [req-5dcdc394-2784-40d2-984c-54fe261f36f0 - - - - -] Could not retrieve compute node resource provider 8bd4062b-84c7-4aab-ade7-31dc01695878 and therefore unable to error out any instances stuck in BUILDING state. Error: Failed to retrieve allocations for resource provider 8bd4062b-84c7-4aab-ade7-31dc01695878:</span><br></pre></td></tr></table></figure>
-<p>关于numa测试环境的搭建可以见－<a href="https://blog.csdn.net/quqi99/article/details/51993512" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/51993512</a>, 注意一点，grub里定义isolcpus并不会让nova不使用这些cpu, nova里专门有vcpu_pin_set来做这件事。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://blog.csdn.net/jmilk/article/details/81264240" target="_blank" rel="external">https://blog.csdn.net/jmilk/article/details/81264240</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1735,7 +1737,7 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-count">95</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

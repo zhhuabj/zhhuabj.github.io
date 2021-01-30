@@ -231,6 +231,161 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/" itemprop="url">Building Ubuntu Kernels with Debug Symbols</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:45:24+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-02-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>使用gdb或者crash时需要debug symbols, 可以从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/（NOTE</a>: 此链接只是GA Kernel的debug symbols, 如果是HWE Kernel的符号表一般通过google查找，见本文最下方说明）下载，如果这个网址没有，版本不一样crash就打不起来，所以得自己build一个(<a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel</a>,  <a href="https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide</a>, <a href="https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。" target="_blank" rel="external">https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing)。</a></p>
+<p>注意：即使自己build也不能保证每次compile的時候symbol address都一样, GCC的版本也有不同。实际上，如果从<a href="http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/找不着对应的GA</a> Kernel的符号表，也找不着HWE Kernel的符号表的话。我们只能自己编译，但是自己编译也是没用的。自己编译的目的只是为了让crash运行起来，里面的symbols是无法相信的，只能用二进制知识直接看memory。</p>
+<p>但有时候里面没有需要自己生成，下需方法使用了debian/rules脚本来为Ubuntu Kernel生成debug symbols, 所以它不需要注释的那些make命令， 这个脚本会自动生成.config文件，如果要修改可以使用fakeroot debian/rules editconfigs命令。如果使用的是社区的Kernel, 默认的.config文件应该未包括了生成debug symbols的配置(CONFIG_KALLSYMS=y &amp; CONFIG_KALLSYMS_ALL=y, 路径为：Kernel hacking -&gt; Compile-time checks and compiler options -&gt; Compile the kernel with debug info )。</p>
+<p>注：在xenial中也可以可以build trusty的，kernel与上层应用不同，kernel依赖的包很少，这样只要在xenial将相应的依赖安装了就可以build trusty。所以编译kennel不需要像上层应用的编译那样搞什么pbuilder等。</p>
+<p><a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/" target="_blank" rel="external">http://kernel.ubuntu.com/~kernel-ppa/mainline/</a></p>
+<p>git config –add core.compression -1   #For the error ‘git index-pack failed’</p>
+<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git ubuntu-linux</p>
+<p>#git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-vivid.git<br>git clone –reference ubuntu-linux git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git</p>
+<p>git clone git://kernel.ubuntu.com/ubuntu/linux.git</p>
+<p>#git clone –reference linux git://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/bionic</p>
+<p>#git checkout -b sfxxxx origin/master</p>
+<p>#git cherry-pick -s -x commit_id</p>
+<p>#git remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</p>
+<p>#git remote -v</p>
+<p>#git fetch –tags linus</p>
+<p>#git remote add rotom_xenial zhhuabj@10.230.56.3:/home/zhhuabj/ubuntu-xenial</p>
+<p>#git push rotom_xenial sfxxxx<br>cd ubuntu-xenial<br>git tag -l Ubuntu-*<br>git checkout -b Ubuntu-4.4.0-0.10 Ubuntu-4.4.0-0.10</p>
+<p>sudo apt-get install libncurses5-dev qt4-dev-tools kernel-package fakeroot build-essential crash kexec-tools makedumpfile kernel-wedge libelf-dev asciidoc binutils-dev</p>
+<p>sudo apt-get build-dep linux-image-$(uname -r)   #需要添加附录中的deb-src源</p>
+<p>sudo apt-get install pkg-config-dbgsym  #xenial</p>
+<p>#make xconfig             #or make menuconfig</p>
+<p>#make localmodconfig      #speed compliling time for test</p>
+<p>#make-kpkg                #a script which automates and replaces the sequence “make dep; make clean; make bzImage; make modules”</p>
+<p>#make mrproper</p>
+<p>#git reset –hard HEAD<br>fakeroot debian/rules clean</p>
+<p>#fakeroot debian/rules editconfigs</p>
+<p>#fakeroot debian/rules prepare-generic</p>
+<p>#debian/rules build-generic   #build kernel</p>
+<p>fakeroot debian/rules DEB_BUILD_OPTIONS=parallel=4 clean binary-generic binary-headers skipdbg=false</p>
+<p>自己调试机运行的什么版本的kernel和客户运行的没有关系，只需要使用–mod参数指定和客户运行的debug symbol的版本一致即可。</p>
+<p>wget <a href="http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</a> -O /home/zhhuabj/debs/4.13.0-37.42/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb<br>strings vmcore.201803282124 |less  #NOTE: vmcore may first need to unzip<br>dpkg -x linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb /home/zhhuabj/debs/4.13.0-37.42/<br>cat run_crash.sh</p>
+<p>exec crash –mod /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/lib/modules/4.13.0-37-generic /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/boot/vmlinux-4.13.0-37-generic vmcore.201803282124</p>
+<p>注意：上面的方法可能不成功，例如，4.13.0-37是artful的GA Kernel，但对于xenial来说是HWE Kernel。sosreport中的uname显示版本号（上面是通过strings命令查看的版本号，似乎不能显示更详细的版本号)是“4.13.0-37-generic #42~16.04.1”，这种版本号就是在xenial中使用4.13.0-37 hwe kernel。所以正确的debug symbol应该是：<a href="https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb" target="_blank" rel="external">https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb</a></p>
+<p>继续遇到此问题“crash: cannot resolve “init_level4_pgt” “ - <a href="https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/crash/+bug/1736425，在xenial中添加&#39;deb</a> <a href="http://archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://archive.ubuntu.com/ubuntu/</a> bionic main’升级crash后解决。</p>
+<p>附录：为UCA包编译近似的符号表</p>
+<p>UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”<br>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/15/OpenStack对NUMA的支持情况/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1004,7 +1159,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#97;&#105;&#x6c;&#x74;&#x6f;&#58;&#60;&#34;&#x72;&#x61;&#x62;&#98;&#x69;&#116;&#109;&#x71;&#45;&#115;&#101;&#114;&#x76;&#x65;&#x72;&#64;&#x6a;&#117;&#x6a;&#117;&#x2d;&#99;&#98;&#100;&#x37;&#54;&#48;&#x2d;&#111;&#99;&#x74;&#97;&#118;&#x69;&#x61;&#45;&#x31;&#48;&#34;">&#60;&#34;&#x72;&#x61;&#x62;&#98;&#x69;&#116;&#109;&#x71;&#45;&#115;&#101;&#114;&#x76;&#x65;&#x72;&#64;&#x6a;&#117;&#x6a;&#117;&#x2d;&#99;&#98;&#100;&#x37;&#54;&#48;&#x2d;&#111;&#99;&#x74;&#97;&#118;&#x69;&#x61;&#45;&#x31;&#48;&#34;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x3c;&#34;&#114;&#97;&#98;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#x62;&#100;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;">&#x3c;&#34;&#114;&#97;&#98;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#x62;&#100;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -1017,7 +1172,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#58;&#60;&#34;&#114;&#x61;&#x62;&#x62;&#105;&#x74;&#x6d;&#113;&#45;&#115;&#101;&#x72;&#x76;&#101;&#x72;&#x40;&#x6a;&#x75;&#106;&#x75;&#45;&#99;&#98;&#x64;&#x37;&#x36;&#48;&#x2d;&#x6f;&#99;&#x74;&#x61;&#118;&#105;&#x61;&#x2d;&#x31;&#x30;&#x22;">&#60;&#34;&#114;&#x61;&#x62;&#x62;&#105;&#x74;&#x6d;&#113;&#45;&#115;&#101;&#x72;&#x76;&#101;&#x72;&#x40;&#x6a;&#x75;&#106;&#x75;&#45;&#99;&#98;&#x64;&#x37;&#x36;&#48;&#x2d;&#x6f;&#99;&#x74;&#x61;&#118;&#105;&#x61;&#x2d;&#x31;&#x30;&#x22;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#118;&#101;&#114;&#x40;&#x6a;&#x75;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#x30;&#45;&#111;&#99;&#116;&#97;&#118;&#105;&#97;&#45;&#x31;&#48;&#34;">&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#118;&#101;&#114;&#x40;&#x6a;&#x75;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#x30;&#45;&#111;&#99;&#116;&#97;&#118;&#105;&#97;&#45;&#x31;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -1675,154 +1830,6 @@ wget -c ${realurl}
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/SSH连接总是定期断掉的解决办法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/12/SSH连接总是定期断掉的解决办法/" itemprop="url">SSH连接总是定期断掉的解决办法</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
-                2020-11-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2016-05-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
-<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>SSH连接总是隔一段时间没有输入时就断开，解决办法如下：</p>
-<p>服务端配置<br>sudo vi /etc/ssh/sshd_config<br>ClientAliveInterval 60     #服务端主动向客户端请求响应的间隔<br>ClientAliveCountMax 10    #服务器发出请求后客户端没有响应的次数达到一定值就自动断开<br>sudo restart ssh</p>
-<p>客户端配置<br>sudo vi /etc/ssh/ssh_config  #或~/.ssh/config</p>
-<pre><code>TCPKeepAlive yes
-ServerAliveInterval 15
-ServerAliveCountMax 6
-StrictHostKeyChecking no
-ForwardAgent yes
-Compression yes
-
- IPQoS throughput
-</code></pre><p>或</p>
-<p>ssh -i <key-file> IPQoS=throughput -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=30 ubuntu@<ip></ip></key-file></p>
-<p>上面方式任选一种，我选客户端配置方式。</p>
-<p>20200316更新, 如果ssh总是断时也得考虑使用白名单模式时是否将某些IP排除了.</p>
-<p>20200902更新, 如果使用Compression yes会被墙看上, 会时不时ssh断掉, 去掉Compression即可.</p>
-<p>20201016更新, 到国外的ssh连接总断, 除了ISP QoS外, 还试试在sshd.conf中添加:</p>
-<p>UseDNS no</p>
-<p>GSSAPIAuthentication no</p>
-<p>20201028更新，</p>
-<p>这次应该是找到了ssh总断的根源，因为bastion上安装了devstack所以在并行运行’opestack image set”时ssh会中断．所以习惯很重要，不能乱安装东西．</p>
-<p>#openstack image set –property $p=${props[$p]} $img_name</p>
-<p>openstack image set –property $p=${props[$p]} $img_name &amp;</p>
-<p>另外，使用压缩传输数据：</p>
-<p>#strings /usr/sbin/sshd |egrep “chacha|aes”<br>scp -p -C -o ‘IPQoS throughput’  -c chacha20-poly1305@openssh.com win10.img hua@node1:/images/</p>
-<p>20201112更新</p>
-<p>ssh总断的原因是因为机器上为反复重启virtualbox导致chrome会通过fast.com测速变得只有十几K, virutalbox改成了kvm现在观察了几天似乎这个问题消失了。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1873,7 +1880,7 @@ Compression yes
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">94</span>
+                  <span class="site-state-item-count">95</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
