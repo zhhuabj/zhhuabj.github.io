@@ -231,6 +231,186 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/分析Ubuntu-Kernel-Kdump文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/16/分析Ubuntu-Kernel-Kdump文件/" itemprop="url">分析Ubuntu Kernel Kdump文件</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:54:49+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2014-07-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>(<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>      Linux内核在发生kernel panic时会打印出Oops信息，把目前的寄存器状态、堆栈内容、以及完整的Call trace都使用内核转储工具kdump dump到一个文件里，之后我们再用gdb来分析.<br>      kexec是一个快速启动的机制，允许通过已经运行的内核的上下文不经过BIOS启动一个linux内核，它是实现kdump的关键。首先用户空间的工具kexec-tools将捕获内核的地址传递给生产内核，从而在系统崩溃时能找到捕获内核的地址并运行。</p>
+<p>1, 安装linux-crashdump (sudo apt-get install linux-crashdump)将安装crash, kexec-tools, makedumpfile三个工具，安装后会产生如下grub2选项。</p>
+<p>hua@node1:~$ cat /etc/default/grub.d/kexec-tools.cfg<br>GRUB_CMDLINE_LINUX_DEFAULT=”$GRUB_CMDLINE_LINUX_DEFAULT crashkernel=384M-:128M”</p>
+<p>2,  修改kdump配置文件(/etc/default/kdump-tools): USE_KDUMP=1</p>
+<p>3, 启动kdump, sudo /etc/init.d/kdump-tools start ，或重启机器会看到如下信息代表成功。</p>
+<p>hua@node1:~$ cat /var/crash/kexec_cmd   #捕获镜像与生产镜像用的是同一个<br>/sbin/kexec -p –command-line=”BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses vt.handoff=7 irqpoll maxcpus=1 nousb” –initrd=/boot/initrd.img-4.4.0-9-generic /boot/vmlinuz-4.4.0-9-generic</p>
+<p>hua@node1:~$ cat /proc/cmdline<br>BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses crashkernel=384M-:128M vt.handoff=7</p>
+<p>hua@node1:~$ sudo dmesg | grep crash<br>[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-4.4.0-9-generic root=UUID=e9127b13-568c-4a69-9bbd-0b00e44f0ad9 ro quiet splash intel_iommu=on pci=assign-busses crashkernel=384M-:128M vt.handoff=7<br>[    0.000000] Reserving 128MB of memory at 704MB for crashkernel (System RAM: 32640MB)</p>
+<p>cat /etc/sysctl.conf</p>
+<h1 id="VMCORE-setup"><a href="#VMCORE-setup" class="headerlink" title="VMCORE setup"></a>VMCORE setup</h1><p>kernel.hung_task_panic = 0<br>kernel.panic = 0<br>kernel.panic_on_io_nmi = 0<br>kernel.panic_on_oops = 0<br>kernel.panic_on_unrecovered_nmi = 0<br>kernel.softlockup_panic = 0<br>kernel.unknown_nmi_panic = 0</p>
+<p> kernel.sysrq=1</p>
+<p>kernel.hung_task_timeout_secs = 0</p>
+<p>sysctl -w vm.dirty_ratio=5                  #写缓存频率</p>
+<p>fs.pipe-user-pages-soft = 16384<br>fs.xfs.panic_mask = 0<br>kernel.hardlockup_panic = 0<br>kernel.hung_task_check_count = 4194304<br>kernel.hung_task_panic = 0<br>kernel.hung_task_timeout_secs = 120<br>kernel.hung_task_warnings = 8<br>kernel.panic = 0<br>kernel.panic_on_io_nmi = 0<br>kernel.panic_on_oops = 0<br>kernel.panic_on_unrecovered_nmi = 0<br>kernel.panic_on_warn = 0<br>kernel.soft_watchdog = 1<br>kernel.softlockup_all_cpu_backtrace = 0<br>kernel.softlockup_panic = 0<br>kernel.unknown_nmi_panic = 0</p>
+<p>4,  按组合键Alt+SysRq+c就可以产生一个panic（或 echo c &gt; /proc/sysrq-trigger）, 然后在/var/crash/目录可以找到crash日志</p>
+<pre><code>ubuntu里也有一个命令如sudo apport-cli -f -P `pidof firefox`用于收集panic时的kernel日志的
+</code></pre><p>5, 一般拿过来的crash log是通过base64加密过，可解密:apport-unpack 00069866-linux-image-3.2.0-23-generic.0.txt ./tmp/</p>
+<p>6, crash工具需要内核调试信息dbgsym才可以工作，先看看有没有/user/lib/debug/boot这个目录，没有的话从这里下载<a href="http://ddebs.ubuntu.com/pool/main/l/linux/，" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/，</a> 或者：<br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs) main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/ddebs.list</p>
+<p>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty main restricted universe multiverse<br>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty-updates main restricted universe multiverse<br>deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> trusty-proposed main restricted universe multiverse</p>
+<p>   sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys ECDCAD72428D7C01<br>   sudo apt-get update<br>   sudo apt-get install systemtap<br>   sudo apt-get install linux-image-$(uname -r)-dbgsym</p>
+<p>   sudo apt-get source linux-image-$(uname -r)</p>
+<p>或者使用“axel -n 64”命令高速下载后安装‘sudo dpkg -i *.ddeb’</p>
+<p>没有时再：</p>
+<p><a href="https://wiki.ubuntu.com/Kernel/Systemtap" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Systemtap</a><br><a href="http://chrisarges.net/2015/10/02/building-ubuntu-kernels-with-debug-symbols.html" target="_blank" rel="external">http://chrisarges.net/2015/10/02/building-ubuntu-kernels-with-debug-symbols.html</a></p>
+<p>6, crash /usr/lib/debug/boot/vmlinux-3.5.0-17-generic VmDump</p>
+<p>注意：使用4.4内核调试实时内核时（ sudo crash /usr/lib/debug/boot/vmlinux-4.4.0-9-generic）报错“invalid structure member offset: module_core_size”， 见这个bug (<a href="https://www.redhat.com/archives/crash-utility/2016-January/msg00030.html" target="_blank" rel="external">https://www.redhat.com/archives/crash-utility/2016-January/msg00030.html</a> ), 我采用(sudo crash –no_modules /usr/lib/debug/boot/vmlinux-4.4.0-9-generic)避免模块的初始化错误中断crash</p>
+<p>自己调试机运行的什么版本的kernel和客户运行的没有关系，只需要使用–mod参数指定和客户运行的debug symbol的版本一致即可。</p>
+<p>wget <a href="http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb" target="_blank" rel="external">http://ddebs.ubuntu.com/pool/main/l/linux/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</a> -O /home/zhhuabj/debs/4.13.0-37.42/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb</p>
+<p>strings vmcore.201803282124 |less  #NOTE: vmcore may first need to unzip<br>dpkg -x linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42_amd64.ddeb /home/zhhuabj/debs/4.13.0-37.42/<br>cat run_crash.sh</p>
+<p>exec crash –mod /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/lib/modules/4.13.0-37-generic /home/zhhuabj/debs/4.13.0-37.42/usr/lib/debug/boot/vmlinux-4.13.0-37-generic vmcore.201803282124</p>
+<p>NOTE: 上面的方法可能不成功，例如，4.13.0-37是artful的GA Kernel，但对于xenial来说是HWE Kernel。sosreport中的uname显示版本号（上面是通过strings命令查看的版本号，似乎不能显示更详细的版本号)是“4.13.0-37-generic #42~16.04.1”，这种版本号就是在xenial中使用4.13.0-37 hwe kernel。所以正确的debug symbol应该是：<a href="https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb" target="_blank" rel="external">https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa/+build/14432003/+files/linux-image-4.13.0-37-generic-dbgsym_4.13.0-37.42~16.04.1_amd64.ddeb</a></p>
+<p>附录一， 如何利用dump文件找到源码中出错误的地方</p>
+<p>因为编译优化会产生代码行号不一致，所以一般是理解汇编，再看源码作为参考：</p>
+<p>1, 查看backtrace列表，exception RIP是kmem_cache_alloc_trace+0x7c (或者查看RIP寄存器)</p>
+<p>crash&gt; bt -l<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br> …</p>
+<p> #5 [ffff881f136edb30] general_protection at ffffffff817650c8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 1514<br>    [exception RIP: kmem_cache_alloc_trace+0x7c]</p>
+<p>2, 将标识符 kmem_cache_alloc_trace+0x7c 转换为其所对应的物理地址 0xffffffff811af2fc<br>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
+<p>查看汇编也可以使用x/100gi命令：</p>
+<p>故对于动态链接库采用gdb查看CoreDump时可以采用x/100gi $rip代替</p>
+<p>(gdb) p $rip<br>$2 = (void (*)()) 0x7fa84c275470 <malloc_consolidate+336><br>(gdb) x/2gi $rip<br>=&gt; 0x7fa84c275470 <malloc_consolidate+336>: mov    0x8(%rbx),%rax<br>   0x7fa84c275474 <malloc_consolidate+340>: and    $0xfffffffffffffff8,%rax</malloc_consolidate+340></malloc_consolidate+336></malloc_consolidate+336></p>
+<p>readelf命令也可以查看物理地址:<br>readelf -wL vmlinux<br>Decoded dump of debug contents of section .debug_line:<br>[… search for %rip value …]<br>skbuff.c                                    2918  0xffffffff81614495<br>skbuff.c                                    2911  0xffffffff816144b8<br>skbuff.c                                    2904  0xffffffff816144ba<br>skbuff.c                                    2825  0xffffffff816144bc</p>
+<p>3, 用addr2line命令来找出其对应的源代码<br>   -e, 标明需要对其进行地址转换的程序的名称。<br>   -f, 显示函数名称，以及它们的所在文件和行数信息。<br>   -i, 如果要转换的地址属于一个内联函数, 那么，所有作用域内从第一个非内联函数起的信息都会被列出。<br>addr2line 0xffffffff811af2fc -e /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic -f -i<br>get_freepointer<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:260<br>get_freepointer_safe<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:275<br>slab_alloc_node<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2416<br>slab_alloc<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2455<br>kmem_cache_alloc_trace<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2472</p>
+<p>或者如果已经安装了源码的话可以直接使用crash的list命令查看相关代码。<br>crash&gt; list *0xffffffff816144ba<br>0xffffffff816144ba is in skb_segment (/build/buildd/linux-3.13.0/net/core/skbuff.c:2904).<br>2899                    skb_shinfo(nskb)-&gt;tx_flags = skb_shinfo(head_skb)-&gt;tx_flags &amp;<br>2900                            SKBTX_SHARED_FRAG;<br>2901<br>2902                    while (pos &lt; offset + len) {<br>2903                            if (i &gt;= nfrags) {<br>2904                                    BUG_ON(skb_headlen(list_skb));<br>[…]</p>
+<p>注意，对应用态的动态链接库使用addr2line却显示了下列的问号（因为动态链接库要重定位），对动态链接库如何使用addr2line待查。<br>$ addr2line 0x7fa84c275470 -f -i -e /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6<br>??<br>??:0</p>
+<p>4, 确认源代码, 直接看源码，或者若是结构体直接采用下列命令显示行号后和汇编里的代码对行号。</p>
+<p>crash&gt; struct -o transction_s.t_locaked_list</p>
+<p>附录二，从soft lookup的例子熟悉kernel开发流程</p>
+<p>1, 使用’crash&gt; log &gt; log.txt’可以看到很多有用的信息</p>
+<p>2, 说明systemd进程是在等锁(_raw_spin_lock_irq)，其他类似很多日志表明其他一些进程也是类似在等锁，所以systemd等进程不会是凶手<br>[ 1043.679592] NMI watchdog: Watchdog detected hard LOCKUP on cpu 17<br>…<br>[ 1043.679646] CPU: 17 PID: 86236 Comm: systemd Not tainted 4.13.0-37-generic #42~16.04.1-Ubuntu<br>…<br>[ 1043.679664] Call Trace:<br>[ 1043.679671]  _raw_spin_lock_irq+0x28/0x30<br>…</p>
+<p>3, 真正造成死锁的是40号CPU的sgdisk（sgdisk -&gt; block_ioctl -&gt; blkdev_ioctl -&gt; blkdev_reread_part -&gt; <strong>blkdev_reread_part -&gt; rescan_partitions -&gt; drop_partitions -&gt; invalidate_partition -&gt; </strong>invalidate_device -&gt; invalidate_bdev -&gt; invalidate_bh_lrus -&gt; on_each_cpu_cond -&gt; on_each_cpu_mask -&gt; smp_call_function_many）</p>
+<p>其smp_call_function_many用于要求其他CPU执行相关函数， 所以原因可能是：</p>
+<p>1) 其他CPU也stuck了，这需要一个个检查其他CPU的情况。但crash显示其他CPU都在等待spin lock而无法访问状态.</p>
+<p>PID: 384217 TASK: ffff8fa582ed9e40 CPU: 47 COMMAND: “ceph-osd”<br>bt: read error: kernel virtual address: fffffe000081b000 type: “stack contents”</p>
+<p>bt: read of stack at fffffe000081b000 failed</p>
+<p>需禁用KASLR后(nokaslr)并设置一旦watchdog捕获到panic后立即抓crash(nmi_watchdog=panic)后重新生成fresh crash</p>
+<p>2）40号CPU自己在执行长任务。</p>
+<p>[ 1062.041799] Kernel panic - not syncing: softlockup: hung tasks<br>[ 1062.042657] CPU: 40 PID: 383965 Comm: sgdisk Tainted: G             L  4.13.0-37-generic #42~16.04.1-Ubuntu<br>[ 1062.043524] Hardware name: Lenovo ThinkSystem SR650 -[7X06CTO1WW]-/-[7X06CTO1WW]-, BIOS -[IVE116S-1.20]- 02/08/2018<br>[ 1062.044396] Call Trace:<br>[ 1062.045251]  <irq><br>[ 1062.046093]  dump_stack+0x63/0x8b<br>[ 1062.046931]  panic+0xe4/0x24d<br>[ 1062.047752]  watchdog_timer_fn+0x219/0x220<br>[ 1062.048557]  ? watchdog_park_threads+0x70/0x70<br>[ 1062.049358]  <strong>hrtimer_run_queues+0xe7/0x230<br>[ 1062.050149]  hrtimer_interrupt+0xb1/0x200<br>[ 1062.050941]  smp_trace_apic_timer_interrupt+0x6f/0xa0<br>[ 1062.051720]  ? </strong>brelse+0x30/0x30<br>[ 1062.052486]  smp_apic_timer_interrupt+0xe/0x10<br>[ 1062.053244]  apic_timer_interrupt+0x1af/0x1c0<br>[ 1062.053984]  </irq><br>[ 1062.054707] RIP: 0010:smp_call_function_many+0x20b/0x270<br>[ 1062.055433] RSP: 0018:ffffbaae766efc40 EFLAGS: 00000202 ORIG_RAX: ffffffffffffff10<br>[ 1062.056159] RAX: 0000000000000003 RBX: 0000000000000130 RCX: 000000000000000b<br>[ 1062.056877] RDX: ffff8f487dee7b18 RSI: 0000000000000130 RDI: ffff8f486e974280<br>[ 1062.057588] RBP: ffffbaae766efc78 R08: 0000000000000000 R09: c4ff7effffddea38<br>[ 1062.058295] R10: fffff1c6f324aac0 R11: ffff8f486e974280 R12: ffffffffb88915b0<br>[ 1062.058998] R13: 0000000000000000 R14: ffff8f487e123a00 R15: 0000000000000130<br>[ 1062.059696]  ? <strong>brelse+0x30/0x30<br>[ 1062.060387]  ? </strong>brelse+0x30/0x30<br>[ 1062.061067]  on_each_cpu_mask+0x28/0x70<br>[ 1062.061733]  ? mark_buffer_async_write+0x20/0x20<br>[ 1062.062398]  on_each_cpu_cond+0xb6/0x160<br>[ 1062.063053]  ? <strong>brelse+0x30/0x30<br>[ 1062.063686]  invalidate_bh_lrus+0x29/0x30<br>[ 1062.064303]  invalidate_bdev+0x3a/0x60<br>[ 1062.064906]  </strong>invalidate_device+0x4d/0x60<br>[ 1062.065489]  invalidate_partition+0x31/0x50<br>[ 1062.066054]  rescan_partitions+0x50/0x330<br>[ 1062.066602]  ? security_capable+0x4e/0x70<br>[ 1062.067130]  __blkdev_reread_part+0x65/0x70<br>[ 1062.067659]  blkdev_reread_part+0x23/0x40<br>[ 1062.068168]  blkdev_ioctl+0x38f/0x930<br>[ 1062.068657]  ? mempool_free_slab+0x17/0x20<br>[ 1062.069130]  ? mempool_free+0x2f/0x90<br>[ 1062.069579]  block_ioctl+0x3d/0x50<br>[ 1062.070012]  do_vfs_ioctl+0xa4/0x600<br>[ 1062.070430]  ? blkdev_fsync+0x35/0x50<br>[ 1062.070854]  ? vfs_fsync_range+0x4e/0xb0<br>[ 1062.071281]  SyS_ioctl+0x79/0x90<br>[ 1062.071712]  entry_SYSCALL_64_fastpath+0x24/0xab<br>[ 1062.072150] RIP: 0033:0x7f3b43fe0f47<br>[ 1062.072579] RSP: 002b:00007ffe7affbc58 EFLAGS: 00000246 ORIG_RAX: 0000000000000010<br>[ 1062.073021] RAX: ffffffffffffffda RBX: 00007ffe7afffaa8 RCX: 00007f3b43fe0f47<br>[ 1062.073455] RDX: 00007ffe7affbb90 RSI: 000000000000125f RDI: 0000000000000004<br>[ 1062.073876] RBP: 00007ffe7affba20 R08: 0000555ea8d45a80 R09: 0000000000000001<br>[ 1062.074281] R10: 0000555ea8d45a80 R11: 0000000000000246 R12: 0000000000000001<br>[ 1062.074691] R13: 00007ffe7afffaa8 R14: 0000000000000000 R15: 00007ffe7affe8d2</p>
+<p>4, upstream kernel中搜索invalidate_bh_lrus，及使用google搜索相应的信息<br>git log –grep=invalidate_bh_lrus<br>git grep invalidate_bh_lrus<br>git blame fs/block_dev.c</p>
+<p>5, 向Ubuntu贡献patch, 订阅邮件列表(<a href="https://lists.ubuntu.com/mailman/listinfo/kernel-team" target="_blank" rel="external">https://lists.ubuntu.com/mailman/listinfo/kernel-team</a>), 该页面上有”kernel-team Archives”的链接,里面对SRU的相关的内容类似如下(<a href="https://lists.ubuntu.com/archives/kernel-team/2018-March/thread.html" target="_blank" rel="external">https://lists.ubuntu.com/archives/kernel-team/2018-March/thread.html</a>), PATCH0是patch的说明，之后有PATH1等，被接受是ACK，已经合并到branch是APPLIED。机器人会解析这些邮件标题然后自动往lp bug中更新。所以SRU时并不在lp bug提交的并不是debdiff，而是在邮件里提交的patch，patch是由git-send-email生成的(最初先发到自己邮箱测试)，测试通过后发到邮件列表kernel-team@lists.ubuntu.com：<br>[SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Kai-Heng Feng<br>[SRU] [A/B] [PATCH 1/2] ACPI / battery: Add quirk for Asus GL502VSK and UX305LA   Kai-Heng Feng<br>[SRU] [A/B] [PATCH 2/2] ACPI / battery: Add quirk for Asus UX360UA and UX410UAK   Kai-Heng Feng<br>ACK / APPLIED[B]: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Seth Forshee<br>ACK: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Colin Ian King<br>APPLIED[Artful/backlog]: [SRU] [A/B] [PATCH 0/2] Fix wrong battery status on Asus laptops   Kleber Souza</p>
+<p>Reference<br>1, <a href="http://my.oschina.net/guol/blog/128030" target="_blank" rel="external">http://my.oschina.net/guol/blog/128030</a></p>
+<p>2, <a href="http://www.inaddy.org/mini-howtos/dumps/using-ubuntu-crash-dump-with-kdum" target="_blank" rel="external">http://www.inaddy.org/mini-howtos/dumps/using-ubuntu-crash-dump-with-kdum</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Building-Ubuntu-Kernels-with-Debug-Symbols/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1159,7 +1339,7 @@ conn.close()
 <p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
 <p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
 <p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#58;&#x3c;&#34;&#114;&#97;&#98;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#x62;&#100;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;">&#x3c;&#34;&#114;&#97;&#98;&#x62;&#105;&#116;&#109;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#x6a;&#x75;&#45;&#x63;&#x62;&#100;&#55;&#x36;&#x30;&#x2d;&#111;&#x63;&#x74;&#x61;&#x76;&#x69;&#97;&#x2d;&#x31;&#x30;&#34;</a>&gt;},</p>
+<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#x3c;&#x22;&#114;&#97;&#98;&#98;&#x69;&#116;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#118;&#101;&#x72;&#64;&#106;&#117;&#106;&#x75;&#45;&#99;&#98;&#x64;&#x37;&#x36;&#48;&#x2d;&#111;&#x63;&#x74;&#x61;&#118;&#105;&#97;&#45;&#x31;&#48;&#x22;">&#x3c;&#x22;&#114;&#97;&#98;&#98;&#x69;&#116;&#x6d;&#113;&#45;&#115;&#x65;&#114;&#118;&#101;&#x72;&#64;&#106;&#117;&#106;&#x75;&#45;&#99;&#98;&#x64;&#x37;&#x36;&#48;&#x2d;&#111;&#x63;&#x74;&#x61;&#118;&#105;&#97;&#45;&#x31;&#48;&#x22;</a>&gt;},</p>
 <p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
 <p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
 <pre><code># TODO: this is legacy HA and should be removed since it is now
@@ -1172,7 +1352,7 @@ if relation_ids(&apos;ha&apos;):
             &apos;{}@localhost&apos;.format(service_name())
 </code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
 <p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#105;&#108;&#x74;&#x6f;&#58;&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#118;&#101;&#114;&#x40;&#x6a;&#x75;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#x30;&#45;&#111;&#99;&#116;&#97;&#118;&#105;&#97;&#45;&#x31;&#48;&#34;">&#x3c;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#109;&#x71;&#x2d;&#115;&#101;&#114;&#118;&#101;&#114;&#x40;&#x6a;&#x75;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#x30;&#45;&#111;&#99;&#116;&#97;&#118;&#105;&#97;&#45;&#x31;&#48;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
+<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#x3a;&#60;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#x6d;&#113;&#45;&#115;&#101;&#114;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#106;&#x75;&#x2d;&#99;&#x62;&#x64;&#55;&#54;&#48;&#45;&#x6f;&#99;&#116;&#x61;&#x76;&#105;&#x61;&#x2d;&#x31;&#x30;&#34;">&#60;&#34;&#x72;&#x61;&#x62;&#98;&#105;&#116;&#x6d;&#113;&#45;&#115;&#101;&#114;&#x76;&#101;&#x72;&#x40;&#106;&#117;&#106;&#x75;&#x2d;&#99;&#x62;&#x64;&#55;&#54;&#48;&#45;&#x6f;&#99;&#116;&#x61;&#x76;&#105;&#x61;&#x2d;&#x31;&#x30;&#34;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
 <p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
 <p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
 <p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
@@ -1695,141 +1875,6 @@ wget -c ${realurl}
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/" itemprop="url">解决ssh server偶尔连不上或者发现网络连接初始很慢的状况</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T11:35:06+08:00">
-                2020-11-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<p>今天花了近一天时间解决了一个恶心的问题，回过头看来当然很简单了，但要记录一下。</p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>我将办公用的台式机搬到了客厅，今后打算每天在笔记本上通过ssh连接到台式机办公。但是发生ssh连接老断，刚开始以为是ssh keepalive的问题，照着这个博客（<a href="http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/51434248）配置后仍然无效。ssh连接断了之后，到台式机上查看发现网络是好的，重启台式机上的网络和ssh服务仍然无效，但重启笔记本上的网络服务就好了。大概五六分钟发生一次吧。</a></p>
-<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>家里的tplink摄像头指定了固定IP 192.168.99.123，不知道为什么openwrt路由器将这个已占用的IP分配给了台式机。因为摄像头长期没用了，这个IP也ping不通，并且dnsmasq的/tmp/dhcp.leases配置文件中显示的这个IP都是和台式机的hostname在一起的，所以刚开始就没有想到这个重要的问题。</p>
-<p>1, 当在台式机上ping网关时，居然第一次要停顿11秒，但第二次之后就正常了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hua@node1:~$ time ping -c 1 192.168.99.1</span><br><span class="line">PING 192.168.99.1 (192.168.99.1): 56 data bytes</span><br><span class="line">--- 192.168.99.1 ping statistics ---</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line">real	0m11.012s</span><br><span class="line">user	0m0.000s</span><br><span class="line">sys	0m0.000s</span><br></pre></td></tr></table></figure></p>
-<p>2, 台式机给网关发消息，台式机通过arp广播要网关的mac地址，网关向台式机返回arp响应，但这个响应被错误的发到摄像头的mac f0:7d:68:0c:90:40之上，所以当问题发生时，路由器抓包到了大量的下列消息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# tcpdump -i br-lan  -e -n &apos;icmp&apos; and src host 192.168.99.123</span><br><span class="line">14:10:30.449983 f8:32:e4:be:87:cd &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 98: 192.168.99.123 &gt; 192.168.99.1: ICMP echo request, id 9604, seq 0, length 64</span><br><span class="line">14:10:33.403550 f0:7d:68:0c:90:40 &gt; 04:a1:51:8a:2c:a7, ethertype IPv4 (0x0800), length 118: 192.168.99.123 &gt; 85.199.214.101: ICMP 192.168.99.123 udp port 123 unreachable, length 84</span><br></pre></td></tr></table></figure></p>
-<p>3, 台式机因为等不到arp请求，从而停顿。</p>
-<p>使用“ip -s -s neigh flush all”命令清台式机与路由器arp cache均无效，在台式机上运行arp请求会很慢。</p>
-<p>后来给台式机更换其他IP就好了.</p>
-<p>我看到的这个问题的影响如下：<br>1, 当笔记本采用ssh连接到台式机上，也就会时不时发生停顿现象<br>2, 使用apt update时会第一次连接时像断了一样，但后面又好了</p>
-<h2 id="附录：Ubuntu下的远程桌面与X转发"><a href="#附录：Ubuntu下的远程桌面与X转发" class="headerlink" title="附录：Ubuntu下的远程桌面与X转发"></a>附录：Ubuntu下的远程桌面与X转发</h2><p>上面解决了ssh连接办公的问题，下面将远程桌面一并解决。</p>
-<p>Ubuntu下有一个默认的vino-server, 可在”Desktop Sharing”中开启，另外，需要运行dconf-editor将org-&gt;gnome-&gt;desktop-&gt;remote-access中的requre-encryption去掉，最后使用Remmina Remote Desktop Client选择vnc协议输入“IP :0”登录。不过，这种自带的Vino-Server方式有一个最显著的缺点：那就是当你重启机器之后，必须首先到远程服务器那边登录机器，进入系统（相当于创建了一个Session）之后，才能在本地使用远程桌面连接这个远程服务器。所以我们改使用vnc4server。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt -y install vnc4server xvnc4viewer</span><br><span class="line">vncpasswd</span><br><span class="line"># First time to run it to generate ~/.vnc</span><br><span class="line">vncserver :2</span><br><span class="line">ll ~/.vnc/</span><br><span class="line">vncserver -kill :2</span><br><span class="line"># Second time to run it after modifying ~/.vnc</span><br><span class="line">sudo apt install mate-session-manager</span><br><span class="line">echo &apos;exec /usr/bin/mate-session &amp;&apos; &gt;&gt; ~/.vnc/xstartup</span><br><span class="line">vncserver :2 -geometry 1280x680 -alwaysshared</span><br><span class="line">Client Side: vncviewer node1:2</span><br></pre></td></tr></table></figure>
-<p>运行”ssh -vvv -X -o ForwardX11=yes node1“时报错”X11 forwarding request failed on channel 0“， 这是因为出于安全原因，OpenSSH默认将X11转发请求绑定到本地回环地址上，并且在DISPLAY环境变量中将主机名设置为“localhost”。在这样的设定下，一些 X11客户端不能正确处理X11转发，这会导致报告中的错误。要解决这个问题，在/etc/ssh/sshd配置文件中加入下面这几行，它可以将X11转发请求绑定到外网卡地址上。<br>X11Forwarding yes<br>X11UseLocalhost no<br>如果远程主机的SSH服务禁止了IPv6，那么X11转发失败的错误也有可能发生。故还需要添加： AddressFamily inet</p>
-<h2 id="20191220更新-另一个例子"><a href="#20191220更新-另一个例子" class="headerlink" title="20191220更新 - 另一个例子"></a>20191220更新 - 另一个例子</h2><p><img src="https://img-blog.csdnimg.cn/20191220175958218.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly96aGh1YWJqLmJsb2cuY3Nkbi5uZXQ=,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line">客户有两个external的dmz网络172.21.8.0/24与193.169.205.0/24</span><br><span class="line">两个neutron vrouter, dmzrouterinternal接172.21.8.0/24(qg-xxx=172.21.8.87), dmzroutereexternal接193.169.205.0/24</span><br><span class="line">dmzrouterinternal接一个subnet(192.168.4.1), 这样创建一个测试VM=192.168.4.199 FIP=172.21.8.85</span><br><span class="line">一个外部物理路由器有172.21.8.1与193.169.205.1, 外部路由器上接一个外部dns服务器(193.169.205.141)</span><br><span class="line">问题是VM无法ping 193.169.205.141, 抓包看到ARP reply到达了dmzrouterinternal却被drop掉了</span><br><span class="line">15:26:20.634541 ARP, Request who-has 193.169.205.141 tell 172.21.8.87, length 28</span><br><span class="line">15:26:20.634810 ARP, Reply 193.169.205.141 is-at 00:15:5d:2d:d9:2c (oui Unknown), length 46</span><br><span class="line"></span><br><span class="line">发现它有这些路由:</span><br><span class="line"># ip netns exec qrouter-ffd74122-45b4-4155-b585-fe62b2d3edd4 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-d84aed2a-34</span><br><span class="line">172.21.8.0/24 dev qg-d84aed2a-34 proto kernel scope link src 172.21.8.87</span><br><span class="line">192.168.4.0/24 dev qr-3c248a21-06 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-d84aed2a-34 scope link</span><br><span class="line"></span><br><span class="line">显然问题是这条路由&apos;193.169.205.0/24 dev qg-d84aed2a-34 scope link&apos;造成dmzrouterinternal与externaldns直连:</span><br><span class="line">ping之前, 看到193.169.205.141 at 00:00:0c:9f:f0:2c, 00:00:0c:9f:f0:2c是172.21.8.1的mac</span><br><span class="line"># arp -a</span><br><span class="line">? (192.168.4.42) at fa:16:3e:79:07:f0 [ether] on qr-3c248a21-06</span><br><span class="line">? (193.169.205.141) at 00:00:0c:9f:f0:2c [ether] on qg-d84aed2a-34</span><br><span class="line">当ping时, tcpdump收到ARP reply里的mac是00:15:5d:2d:d9:2c, 而不是00:00:0c:9f:f0:2c, 所以drop掉.</span><br><span class="line"></span><br><span class="line">如果临时运行下列命令, 也能ping通, 但一会儿这个arp就会过期, 问题就会再次重现, 所以解决的办法是删除这条路由(193.169.205.0/24 dev qg-d84aed2a-34 scope link)</span><br><span class="line">arp -d 193.169.205.141</span><br><span class="line">arp -i qg-d84aed2a-34 -s 193.169.205.141 02:00:5e:10:de:14</span><br><span class="line"></span><br><span class="line">下面做一个实验, 用一个neutron vrouter externalrouter来模拟外部物理路由器.</span><br><span class="line">./generate-bundle.sh -s bionic -r stein --num-compute 2</span><br><span class="line"></span><br><span class="line">openstack router create externalrouter</span><br><span class="line">openstack network create dmzexternalnet --external</span><br><span class="line">openstack network create dmzinternalnet --external</span><br><span class="line">openstack subnet create --subnet-range 172.21.8.0/24 --network dmzinternalnet --allocation-pool start=172.21.8.86,end=172.21.8.100 --gateway 172.21.8.1 dmzsubnetinternal</span><br><span class="line">openstack subnet create --subnet-range 193.169.205.0/24 --network dmzexternalnet --allocation-pool start=193.169.205.87,end=193.169.205.100 --gateway 193.169.205.1 dmzsubnetexternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetinternal</span><br><span class="line">openstack router add subnet externalrouter dmzsubnetexternal</span><br><span class="line"></span><br><span class="line">#注:也可以不创建两个network, 只创建一个network, 然后将两个subnet都加到这个network, 在和router关联时特殊处理, 如:</span><br><span class="line">openstack router create --disable --centralized --ha dmzrouterinternal</span><br><span class="line">openstack router add subnet dmzrouterinternal dmztenantinternalsubnet</span><br><span class="line">openstack router set --external-gateway dmznet --fixed-ip subnet=dmzsubnetinternal,ip-address=172.21.8.87 dmzrouterinternal</span><br><span class="line">openstack router set --enable dmzrouterinternal</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterinternal</span><br><span class="line">openstack router set --external-gateway dmzinternalnet dmzrouterinternal</span><br><span class="line">openstack network create tenantnet</span><br><span class="line">openstack subnet create --subnet-range 192.168.4.0/24 --network tenantnet --allocation-pool start=192.168.4.87,end=192.168.4.100 --gateway 192.168.4.1 tenantsubnet</span><br><span class="line">openstack router add subnet dmzrouterinternal tenantsubnet</span><br><span class="line"></span><br><span class="line">openstack router create dmzrouterexternal</span><br><span class="line">openstack router set --external-gateway dmzexternalnet dmzrouterexternal</span><br><span class="line"></span><br><span class="line">openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show dmzexternalnet -c id -f value) externaldns</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name mykey --network=$(openstack network show tenantnet -c id -f value) i1</span><br><span class="line">dmzinternalnet=$(openstack network show dmzinternalnet -f value -c id)</span><br><span class="line">fip=$(openstack floating ip create $dmzinternalnet -f value -c floating_ip_address)</span><br><span class="line">openstack floating ip set $fip --fixed-ip-address 192.168.4.100 --port $(openstack port list --fixed-ip ip-address=192.168.4.100 -c id -f value)</span><br><span class="line"></span><br><span class="line">$ openstack server list</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| ID                                   | Name        | Status | Networks                             | Image   | Flavor   |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line">| 3a1d1c70-6165-4060-ad78-9c67717e61e8 | externaldns | ACTIVE | dmzexternalnet=193.169.205.99        | cirros2 | m1.small |</span><br><span class="line">| 89b497c0-f236-4df4-8293-18f44547e239 | i1          | ACTIVE | tenantnet=192.168.4.100, 172.21.8.95 | cirros2 | m1.small |</span><br><span class="line">+--------------------------------------+-------------+--------+--------------------------------------+---------+----------+</span><br><span class="line"></span><br><span class="line">ubuntu@zhhuabj-bastion:~/stsstack-bundles/openstack$ openstack router list</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| ID                                   | Name              | Status | State | Project                          | Distributed | HA    |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line">| 09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 | dmzrouterinternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| 8320db06-5a9d-46fb-8af6-5c7b974ff7a9 | externalrouter    | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">| ef19ea38-13e0-416a-9ce1-ac25c8aba9c0 | dmzrouterexternal | ACTIVE | UP    | e2402e56ee0a4c31904e46b5c01c80f8 | False       | False |</span><br><span class="line">+--------------------------------------+-------------------+--------+-------+----------------------------------+-------------+-------+</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route add 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -d 193.169.205.99</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -i qg-e6cd9397-b8 -s 193.169.205.99 fa:16:3e:7b:af:d6</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] PERM on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">...</span><br><span class="line">1 packets transmitted, 0 packets received, 100% packet loss</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route del 193.169.205.0/24 dev qg-e6cd9397-b8 scope link</span><br><span class="line">$ ping 193.169.205.99 -c 1</span><br><span class="line">PING 193.169.205.99 (193.169.205.99): 56 data bytes</span><br><span class="line">64 bytes from 193.169.205.99: seq=0 ttl=62 time=11.998 ms</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 arp -a</span><br><span class="line">? (172.21.8.1) at fa:16:3e:0f:87:da [ether] on qg-e6cd9397-b8</span><br><span class="line">? (192.168.4.100) at fa:16:3e:5d:2f:5b [ether] on qr-e4d7b70a-14</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qg-e6cd9397-b8</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-09ac17b3-c1ec-4d47-b70a-9f6e3ae98004 ip route</span><br><span class="line">default via 172.21.8.1 dev qg-e6cd9397-b8</span><br><span class="line">172.21.8.0/24 dev qg-e6cd9397-b8 proto kernel scope link src 172.21.8.92</span><br><span class="line">192.168.4.0/24 dev qr-e4d7b70a-14 proto kernel scope link src 192.168.4.1</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 arp -a</span><br><span class="line">? (172.21.8.92) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.87) at fa:16:3e:09:83:10 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.86) at fa:16:3e:89:ce:85 [ether] on qr-0912ab72-90</span><br><span class="line">? (193.169.205.99) at fa:16:3e:7b:af:d6 [ether] on qr-6fa183e9-a6</span><br><span class="line">? (172.21.8.95) at fa:16:3e:d5:36:a6 [ether] on qr-0912ab72-90</span><br><span class="line">? (172.21.8.87) at fa:16:3e:a1:c2:e4 [ether] on qr-0912ab72-90</span><br><span class="line">root@juju-a7ddde-stein-5:~# ip netns exec qrouter-8320db06-5a9d-46fb-8af6-5c7b974ff7a9 ip route</span><br><span class="line">172.21.8.0/24 dev qr-0912ab72-90 proto kernel scope link src 172.21.8.1</span><br><span class="line">193.169.205.0/24 dev qr-6fa183e9-a6 proto kernel scope link src 193.169.205.1</span><br></pre></td></tr></table></figure></p>
-<h2 id="20201112更新"><a href="#20201112更新" class="headerlink" title="20201112更新"></a>20201112更新</h2><p>ssh这次失去连接，是因为台式机上的虚机使用mavtap时不小心将bridge改成了passthough导致虚机启动时失去网络.</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1880,7 +1925,7 @@ wget -c ${realurl}
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">95</span>
+                  <span class="site-state-item-count">96</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

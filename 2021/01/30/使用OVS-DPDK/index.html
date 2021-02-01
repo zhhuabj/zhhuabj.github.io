@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2021/01/30/使用OVS-DPDK/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华  发表于：2016-04-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 硬件要求网卡得支持DPDK，见：http://dpdk.org/doc/nics CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb 不一定非要支持DPDK硬件">
-<meta property="og:updated_time" content="2021-01-30T02:17:32.234Z">
+<meta property="og:updated_time" content="2021-01-30T02:42:04.035Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用OVS DPDK">
 <meta name="twitter:description" content="作者：张华  发表于：2016-04-07版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明( http://blog.csdn.net/quqi99 ) 硬件要求网卡得支持DPDK，见：http://dpdk.org/doc/nics CPU得支持DPDK, 测试命令：cat  /proc/cpuinfo |grep pdpe1gb 不一定非要支持DPDK硬件">
@@ -356,7 +356,7 @@
 <p>与Neutron的集成</p>
 <p>​</p>
 <p>nova已经支持vhost-user与hugepages特性，显然在nova.conf应该打开。</p>
-<p>[DEFAULT]<br>ovs_use_usvhost = True<br>[libvirt]<br>use_hugepages = True</p>
+<h1 id="then-the-OVS-ML2-driver-will-use-the-vhost-user-VIF-type-and-pass-the-necessary-binding-details-to-use-OVS-DPDK-and-vhost-user-sockets"><a href="#then-the-OVS-ML2-driver-will-use-the-vhost-user-VIF-type-and-pass-the-necessary-binding-details-to-use-OVS-DPDK-and-vhost-user-sockets" class="headerlink" title="then the OVS ML2 driver will use the vhost-user VIF type and pass the necessary binding details to use OVS+DPDK and vhost-user sockets."></a>then the OVS ML2 driver will use the vhost-user VIF type and pass the necessary binding details to use OVS+DPDK and vhost-user sockets.</h1><p>[OVS]<br>datapath_type=netdev<br>vhostuser_socket_dir=/var/run/openvswitch<br>[libvirt]<br>use_hugepages = True</p>
 <p>另外，应该手工创建上述的ovsbr0，然后在/etc/neutron/plugins/ml2/ml2_conf.ini指定使用ovsbr0作为provider network.</p>
 <p>[ovs]<br>bridge_mappings = default:ovsbr0</p>
 <p>dpdk与neutron集成的工程叫networking-ovs-dpdk，在devstack加下列一行可使用devstack创建ovs dpdk环境。</p>
@@ -502,7 +502,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">95</span>
+                  <span class="site-state-item-count">96</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
@@ -539,7 +539,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver"><span class="nav-number">1.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver"><span class="nav-number">2.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices"><span class="nav-number">3.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver-1"><span class="nav-number">4.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver-1"><span class="nav-number">5.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices-1"><span class="nav-number">6.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#To-enable-openvswitch-dpdk"><span class="nav-number">7.</span> <span class="nav-text">To enable openvswitch-dpdk</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver"><span class="nav-number">1.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver"><span class="nav-number">2.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices"><span class="nav-number">3.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-DPDK-compatible-driver-1"><span class="nav-number">4.</span> <span class="nav-text">Network devices using DPDK-compatible driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Network-devices-using-kernel-driver-1"><span class="nav-number">5.</span> <span class="nav-text">Network devices using kernel driver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Other-network-devices-1"><span class="nav-number">6.</span> <span class="nav-text">Other network devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#To-enable-openvswitch-dpdk"><span class="nav-number">7.</span> <span class="nav-text">To enable openvswitch-dpdk</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#then-the-OVS-ML2-driver-will-use-the-vhost-user-VIF-type-and-pass-the-necessary-binding-details-to-use-OVS-DPDK-and-vhost-user-sockets"><span class="nav-number">8.</span> <span class="nav-text">then the OVS ML2 driver will use the vhost-user VIF type and pass the necessary binding details to use OVS+DPDK and vhost-user sockets.</span></a></li></ol></div>
             
 
           </div>

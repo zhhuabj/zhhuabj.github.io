@@ -231,6 +231,132 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/19/为什么dnsmasq服务总是重启/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/05/19/为什么dnsmasq服务总是重启/" itemprop="url">为什么dnsmasq服务总是重启</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-05-19T15:48:08+08:00">
+                2020-05-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-05-19<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>最近, 是有点感觉到家里的网络有时有点慢, 特别有时候看网页时显示dns找不到,但马上在半秒之内又自动找着了成功显示页面. 能用也不算特别慢所以一直就没太注意这个事.<br>依平时的经验, 这种慢一般和dns有关, 所以今早就特地登录到路由器查看dnsmasq的状态. 检查了一遍配置啥的也没见异常, 但无意间发现dnsmasq的进程ID有时在变(不是很经常, 不容易观察出来).</p>
+<h2 id="dnsmasq-exiting-on-receipt-of-SIGTERM"><a href="#dnsmasq-exiting-on-receipt-of-SIGTERM" class="headerlink" title="dnsmasq: exiting on receipt of SIGTERM"></a>dnsmasq: exiting on receipt of SIGTERM</h2><p>然后就想着将 dnmasq进程停掉, 然后以debug模式(-d)启动看看日志, 但是当运行了/etc/init.d/dnsma stop之后怎么也停不掉啊, 一会儿进程又自动启动了. 读代码发现openwrt的init脚本使用了procd, 但将所有procd相关的行全注释掉之后, 停掉了但还是马上就自动启动了.<br>然后发现是/etc/rc.common在自动启动, 接着就在反复测试过程中形成了下列的代码.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# cat /etc/init.d/dnsmasq</span><br><span class="line">#!/bin/sh /etc/rc.common</span><br><span class="line">START=80</span><br><span class="line">start() &#123;</span><br><span class="line">      #/usr/sbin/dnsmasq --conf-dir=/tmp/dnsmasq.d --conf-file=/etc/dnsmasq.conf --user=dnsmasq --group=dnsmasq --server=114.114.114.114 -k &amp;</span><br><span class="line">   fi</span><br><span class="line">&#125;</span><br><span class="line">stop() &#123;</span><br><span class="line">   killall dnsmasq</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这时在前台以’/usr/sbin/dnsmasq –conf-dir=/tmp/dnsmasq.d –conf-file=/etc/dnsmasq.conf –user=dnsmasq –group=dnsmasq –server=114.114.114.114 -d’调试时发现dnsmasq进程自已会退出, 报这个错”dnsmasq: exiting on receipt of SIGTERM”<br>这时以为是dnsmasq程序有问题, 正在绝望之刻, 注意到了原因dnsmasq是被上面的stop杀死的. 通过/etc/init.d/dnsmasq stop根本停不住dnsmasq, 所以上面的stop函数中的killall dnsmasq在后台被定期运行, 这样就杀死了前台的debug dnsmasq进程.</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>搞清楚’dnsmasq: exiting on receipt of SIGTERM’发生的原因之后, 将脚本暂时改成下列丑陋的代码:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">COLUMNS=999 ps -ef |grep dns</span><br><span class="line">oot@OpenWrt:~# cat /etc/init.d/dnsmasq</span><br><span class="line">#!/bin/sh /etc/rc.common</span><br><span class="line">START=80</span><br><span class="line">SERVICE_USE_PID=1</span><br><span class="line">SERVICE_WRITE_PID=1</span><br><span class="line">SERVICE_DAEMONIZE=1</span><br><span class="line"></span><br><span class="line">start() &#123;</span><br><span class="line"># Only use &apos;if pidof dnsmasq &gt;/dev/null&apos; will see more and more processes when upstream network is down so change to use awk&apos; NF</span><br><span class="line"># and in some system it gives me 0 when binary not running and in some systems it gives me NULL(nothing)</span><br><span class="line">if [ -z `pidof dnsmasq` ];then</span><br><span class="line">    ulimit -c unlimited</span><br><span class="line">    echo &quot;dnsmasq stopped, start it now ...&quot;</span><br><span class="line">    mkdir -p /var/lib/misc</span><br><span class="line">    service_start /usr/sbin/dnsmasq --conf-dir=/tmp/dnsmasq.ssr --conf-file=/etc/dnsmasq.conf --user=dnsmasq --group=dnsmasq \</span><br><span class="line">      --server=221.130.33.60 --listen-address=192.168.99.1,127.0.0.1 --dhcp-range=192.168.99.100,192.168.99.199,3650d \</span><br><span class="line">      --dhcp-option=3,192.168.99.1 --dhcp-option=option:dns-server,192.168.99.1 --cache-size=0</span><br><span class="line">elif [ $(pidof dnsmasq |awk &apos;&#123;print NF&#125;&apos;) -eq 1 ];then</span><br><span class="line">    echo &quot;dnsmasq is running&quot;</span><br><span class="line">else</span><br><span class="line">    echo &apos;upstream network is down&apos;</span><br><span class="line">fi</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">stop() &#123;</span><br><span class="line">   #echo &apos;NOTE: we must not use &apos;killall dnsmasq&apos; to stop dnsmasq here because stop function always be called by rc.common periodically&apos;</span><br><span class="line">   #killall dnsmasq &gt;/dev/null</span><br><span class="line">   #service_stop /usr/sbin/dnsmasq</span><br><span class="line">   return</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">#don&apos;t custom restart so that it can be always invoked automatically to run start()</span><br><span class="line">#restart() &#123;</span><br><span class="line">   #workaround to avoid killall dnamasq in stop() because do not know why restart is always invoked automatically</span><br><span class="line">   #echo &apos;hint: both stop and restart not work for dnsmasq service&apos;</span><br><span class="line">   #exit 0</span><br><span class="line">   #start</span><br><span class="line">   #sleep 1</span><br><span class="line">   #return</span><br><span class="line">#&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="server-can’t-find-xxx-my-salesforce-com-REFUSED"><a href="#server-can’t-find-xxx-my-salesforce-com-REFUSED" class="headerlink" title="server can’t find xxx.my.salesforce.com: REFUSED"></a>server can’t find xxx.my.salesforce.com: REFUSED</h2><p>另外, 解释白名单的dns没问题, 解析黑名单的dns也没问题, 但解析不在名单之内的dns时报’server can’t find xxx.my.salesforce.com: REFUSED’之类的错误时, 那是因为dnsmasq命令中没有添加–server=114.114.114.114</p>
+<h2 id="cache-size-0"><a href="#cache-size-0" class="headerlink" title="cache-size=0"></a>cache-size=0</h2><p>–cache-size=0避免使用使用dnsmasq的缓存</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/15/Play-with-OSM/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1424,252 +1550,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/13/Debian-Customer-PPA-RFC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/01/13/Debian-Customer-PPA-RFC/" itemprop="url">Debian Customer PPA RFC</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-13T16:42:43+08:00">
-                2020-01-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2016-01-13<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>Precondition<br>a, sudo apt install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file debhelper dh-systemd openstack-pkg-tools</p>
-<p>b, GPG key<br>scp -r /home/hua/.gnupg ubuntu@192.168.100.3:~/<br>gpg –list-public           # or gpg –gen-key<br>export GPGKEY=XXXXXX<br>gpg –send-keys –keyserver keyserver.ubuntu.com $GPGKEY</p>
-<p>c, SSH key<br>ssh-keygen -t rsa<br><a href="https://launchpad.net/~/+editsshkeys" target="_blank" rel="external">https://launchpad.net/~/+editsshkeys</a></p>
-<p>d, Bazaar<br>bzr whoami “<email>“<br>bzr launchpad-login <lauchpad_id></lauchpad_id></email></p>
-<p>Get the source code<br>a, Add related ppa to /etc/apt/source.list<br>   ppa info can be found from lanchpad <a href="https://launchpad.net/~zhhuabj/+archivesubscriptions" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archivesubscriptions</a></p>
-<p>b, Import the public key and update the repository<br>   sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys <public-key><br>   sudo apt-get update</public-key></p>
-<p>c, Get the source code (pls don’t add other repository when executing this step)</p>
-<p>   #Get package from the ppa<br>   sudo apt-get source <package-name>    </package-name></p>
-<p>   #Get package from official repo</p>
-<pre><code> sudo pip install --upgrade lazr.restfulclient
-
-#pull-lp-source cinder trusty
-</code></pre><p>   #debcheckout –git-track=’*’ nova   #for openstack sru</p>
-<p>d, dget *.dsc</p>
-<p>Example:</p>
-<p>sudo add-apt-repository cloud-archive:kilo</p>
-<p>#uncomment deb-src in /etc/apt/sources.list.d/cloudarchive-kilo.list<br>$ cat /etc/apt/sources.list.d/cloudarchive-kilo.list<br>deb <a href="http://ubuntu-cloud.archive.canonical.com/ubuntu" target="_blank" rel="external">http://ubuntu-cloud.archive.canonical.com/ubuntu</a> trusty-updates/kilo main<br>deb-src <a href="http://ubuntu-cloud.archive.canonical.com/ubuntu" target="_blank" rel="external">http://ubuntu-cloud.archive.canonical.com/ubuntu</a> trusty-updates/kilo main</p>
-<p>sudo rm /var/lib/apt/lists/* -vf &amp;&amp; sudo apt-get update</p>
-<p>rmadison libvirt</p>
-<p>sudo apt-cache madison nova-compute  #See all versions<br>sudo apt-get source nova=1:2015.1.2-0ubuntu2~cloud</p>
-<p>其中get-get source相当于:</p>
-<p>#<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+packages?field.name_filter=qemu&amp;field.status_filter=superseded&amp;field.series_filter=" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+packages?field.name_filter=qemu&amp;field.status_filter=superseded&amp;field.series_filter=</a><br>wget <a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz</a><br>wget <a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</a><br>wget <a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg.orig.tar.xz" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg.orig.tar.xz</a><br>dpkg-source -x qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</p>
-<p>Patch package<br>1, quilt configuration<br>   a, sudo apt-get install quilt devscripts dh-make<br>   b, Export to bash env<br>      export QUILT_PATCHES=debian/patches<br>      export QUILT_NO_DIFF_INDEX=1<br>      export QUILT_NO_DIFF_TIMESTAMPS=1<br>      export QUILT_REFRESH_ARGS=”-p ab”<br>      export QUILT_PATCHES=debian/patches<br>      export QUILT_REFRESH_ARGS=”-p ab –no-timestamps –no-index”</p>
-<p>#git format-patch -1 2150d5d8e17323bc9fce11903da3afffda211d26<br>quilt import /bak/openstack/nova/0001-pci-eliminate-DB-lookup-PCI-requests-during-claim.patch</p>
-<p>   c, Creating a new patch.<br>      quilt new test.diff<br>      quilt add neutron/agent/linux/ovs_lib.py<br>      quilt refresh<br>      quilt rename -P test.diff test2.diff<br>      cat debian/patches/test.diff<br>      quilt pop -a</p>
-<p>   d, For the exsiting patch,<br>      Put the patch into ‘./debian/patches’ directory<br>      Pppend it into ‘./debian/patch/series’ file<br>      Use ‘quilt push -a’ command to push all existing patches onto the source tree.<br>      quilt refresh</p>
-<p>3, changelog<br>   dch -i #can be changed later by dch -e<br>   cat debian/changelog<br>   cat debian/copyright<br>   cat debian/rules<br>   cat debian/control</p>
-<p>   ppa name format:  <customername>[-<openstack-version>|-<ubuntu-release>]<br>   changelog format: <upstream-version>hf<lp-bug-number>v<date>.<buildnum><br>   dch -b -Dprecise-updates -v1:2014.1.5-0ubuntu1.2hf123456v20150902.0<br>   nova (1:2014.1.5-0ubuntu1.2hf123456v20150902.0) precise-update; urgency=low</buildnum></date></lp-bug-number></upstream-version></ubuntu-release></openstack-version></customername></p>
-<pre><code>* [HOTFIX] Fixes some catastrophic failure (LP: #123456)
-  - blah blah blah
-  - d/p/my-awesome-backport.patch
-</code></pre><p>4, Edit ppa’s dependancy in ‘Edit PPA dependencies’ field.<br>   Eg:<br>   for Juno,    ~ubuntu-cloud-archive/ubuntu/juno-staging<br>   for grizzly, ~ubuntu-cloud-archive/grizzly-staging</p>
-<p>5, Resolv the dependancy<br>   dpkg-checkbuilddeps</p>
-<p>   add grizzly dependancy repository</p>
-<p>   #sudo add-apt-repository ppa:ubuntu-cloud-archive/grizzly-staging<br>   deb <a href="http://ppa.launchpad.net/ubuntu-cloud-archive/grizzly-staging/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/ubuntu-cloud-archive/grizzly-staging/ubuntu</a> precise main<br>   deb-src <a href="http://ppa.launchpad.net/ubuntu-cloud-archive/grizzly-staging/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/ubuntu-cloud-archive/grizzly-staging/ubuntu</a> precise main<br>   sudo apt-get build-dep  quantum    # will read debian/control to resolv dependancy.<br>   sudo apt-get build-dep –no-install-recommends quantum</p>
-<p>6, Build<br>   find . -name “*.pyc” -exec rm -rf {} \;</p>
-<p>   #build signed source package<br>   debuild -S -k<your key="" here=""></your></p>
-<p>   #build signed binary package<br>   debuild -b -k<your key="" here=""></your></p>
-<p>   #build unsigned source package<br>   debuild -i -us -uc -S</p>
-<p>   #build unsigned binary package which can be tested by the command ‘dpkg -i <pac>.deb’<br>   debuild -i -us -uc -b</pac></p>
-<p>   debuild -S -sa –changes-option=-DDistribution=precise -k<gpgkey>  # -sa is used for including source code</gpgkey></p>
-<h1 id="pdebuild-–debbuildopts-sa"><a href="#pdebuild-–debbuildopts-sa" class="headerlink" title="pdebuild –debbuildopts -sa"></a>pdebuild –debbuildopts -sa</h1><p>   #for openstack sru, 有时候这步不成功，需要先将patch用quilt格式化一下再用（quilt import, quilt push -a, quilt refresh)</p>
-<p>   sudo apt install build-essential devscripts quilt dh-autoreconf fakeroot dpkg-dev python-sphinx</p>
-<p>   gbp buildpackage -S -k$GPGKEY</p>
-<p>   #gbp buildpackage -S -us -uc</p>
-<p>2, debiandiff, 这步需要将老新build两次再用debdiff命令产生<br>   a, Use the existing debdiff, patch -p1 &lt; ../trusty.debdiff<br>   b, Create new debdiff, <a href="http://packaging.ubuntu.com/html/traditional-packaging.html#creating-a-debdiff" target="_blank" rel="external">http://packaging.ubuntu.com/html/traditional-packaging.html#creating-a-debdiff</a><br>      debuild -S                                              #build old source to generate dsc file<br>      debdiff old.dsc new.dsc                           #generate debdiff by comparing two sources</p>
-<p>7, Upload to PPA<br>   export DEBEMAIL=<email><br>   export DEBFULLNAME=<name, e.g.="" "zhang"=""></name,></email></p>
-<p>   #Test PPA can be created in <a href="https://launchpad.net/~zhhuabj/+activate-ppa" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+activate-ppa</a><br>   dput -f ppa:zhhuabj/trusty-sru-testing test.changes</p>
-<p>   #openstack sru</p>
-<p>git push –all lp:~<launchpad-id>/ubuntu/+source/nova<br>git push –tags lp:~<launchpad-id>/ubuntu/+source/nova</launchpad-id></launchpad-id></p>
-<p>如果用git的话，需要先在~/.git_config中添加：</p>
-<p>[url “git+ssh://zhhuabj@git.launchpad.net/“]<br>        insteadof = lp:</p>
-<p>然后执行：git push lp:~zhhuabj/ubuntu/+source/nova</p>
-<p>最后访问： <a href="https://code.launchpad.net/~zhhuabj/ubuntu/+source/nova/+git/nova" target="_blank" rel="external">https://code.launchpad.net/~zhhuabj/ubuntu/+source/nova/+git/nova</a></p>
-<p>8, sru进度查看</p>
-<p>UA,    <a href="https://people.canonical.com/~ubuntu-archive/pending-sru.html" target="_blank" rel="external">https://people.canonical.com/~ubuntu-archive/pending-sru.html</a></p>
-<p>UCA, reqorts.qa.ubuntu.com/reports/ubuntu-server/cloud-archive/kilo_versions.html</p>
-<p>附录一，sbuild</p>
-<p>#sbuild, <a href="https://wiki.ubuntu.com/SimpleSbuild" target="_blank" rel="external">https://wiki.ubuntu.com/SimpleSbuild</a></p>
-<p>#sudo add-apt-repository cloud-archive:liberty<br>cat /etc/apt/sources.list.d/ubuntu-cloud-archive-liberty-staging-trusty.list</p>
-<p>deb <a href="http://ubuntu-cloud.archive.canonical.com/ubuntu" target="_blank" rel="external">http://ubuntu-cloud.archive.canonical.com/ubuntu</a> liberty-updates/ubuntu main</p>
-<h1 id="deb-http-ppa-launchpad-net-ubuntu-cloud-archive-liberty-staging-ubuntu-trusty-main"><a href="#deb-http-ppa-launchpad-net-ubuntu-cloud-archive-liberty-staging-ubuntu-trusty-main" class="headerlink" title="deb http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu trusty main"></a>deb <a href="http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu</a> trusty main</h1><h1 id="deb-src-http-ppa-launchpad-net-ubuntu-cloud-archive-liberty-staging-ubuntu-trusty-main"><a href="#deb-src-http-ppa-launchpad-net-ubuntu-cloud-archive-liberty-staging-ubuntu-trusty-main" class="headerlink" title="deb-src http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu trusty main"></a>deb-src <a href="http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/ubuntu-cloud-archive/liberty-staging/ubuntu</a> trusty main</h1><p>schroot -l<br>schroot -c source:trusty-amd64 -u root         #这句会告成电脑没有声音，可以使用sudo killall pulseaudio解决<br>schroot -c trusty-amd64 -u root  #do work<br>apt-get build-dep libvirt-bin<br>sbuild -d trusty-amd64</p>
-<p>附录二, pbuilder</p>
-<p>#pbuilder <a href="https://wiki.ubuntu.com/PbuilderHowto" target="_blank" rel="external">https://wiki.ubuntu.com/PbuilderHowto</a>   <a href="http://www.cr173.com/html/28930_1.html" target="_blank" rel="external">http://www.cr173.com/html/28930_1.html</a><br>sudo apt-get install pbuilder debootstrap devscripts apt-cacher-ng<br>echo ‘Acquire::http::Proxy “<a href="http://127.0.0.1:3142" target="_blank" rel="external">http://127.0.0.1:3142</a>“;’ | sudo tee /etc/apt/apt.conf.d/01acng<br>$ sudo cat /etc/pbuilderrc<br>MIRRORSITE=<a href="http://us.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://us.archive.ubuntu.com/ubuntu/</a><br>export http_proxy=<a href="http://127.0.0.1:3142/" target="_blank" rel="external">http://127.0.0.1:3142/</a><br>export http_proxys=<a href="http://127.0.0.1:3142/" target="_blank" rel="external">http://127.0.0.1:3142/</a></p>
-<p>DEBFULLNAME=’xxx’<br>DEBEMAIL=’xxx@xxx.com’</p>
-<p>DISTRIBUTION=’trusty’<br>OTHERMIRROR=”deb <a href="http://us.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://us.archive.ubuntu.com/ubuntu/</a> ${DISTRIBUTION} universe”<br>OTHERMIRROR+=”|deb <a href="http://us.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://us.archive.ubuntu.com/ubuntu/</a> ${DISTRIBUTION}-updates main universe”<br>OTHERMIRROR+=”|deb <a href="http://us.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://us.archive.ubuntu.com/ubuntu/</a> ${DISTRIBUTION}-proposed main”<br>EXTRAPACKAGES=’’<br>EXTRAPACKAGES+=’ vim sudo openssh-server bash-completion wget rsync git build-essential gdb crash apt-transport-https ca-certificates ubuntu-cloud-keyring’</p>
-<h1 id="Cloud-Archive"><a href="#Cloud-Archive" class="headerlink" title="Cloud Archive"></a>Cloud Archive</h1><p>#OS_RELEASE=’liberty’</p>
-<p>#OTHERMIRROR+=”|deb <a href="http://ubuntu-cloud.archive.canonical.com/ubuntu" target="_blank" rel="external">http://ubuntu-cloud.archive.canonical.com/ubuntu</a> $DISTRIBUTION-updates/$OS_RELEASE main”</p>
-<p>if [ -n “$OS_RELEASE” ]; then<br>    BASETGZ=”/var/cache/pbuilder/$DISTRIBUTION-$OS_RELEASE-base.tgz”<br>else<br>    BASETGZ=”/var/cache/pbuilder/$DISTRIBUTION-base.tgz”<br>fi</p>
-<p>#sudo pbuilder –create –distribution trusty –architecture amd64 –basetgz /images/pbuilder/trusty-amd64-base.tgz –debootstrapopts –variant=buildd<br>sudo pbuilder –create –distribution trusty –architecture amd64 –debootstrapopts –variant=buildd</p>
-<p>sudo cp /var/cache/pbuilder/trusty-base.tgz /var/cache/pbuilder/trusty-liberty-base.tgz</p>
-<p>then uncomment OS_RELEASE, run ‘sudo pbuilder update’ again</p>
-<p>sudo pbuilder login –save-after-login  #equal to chroot</p>
-<p>echo ‘precedence ::ffff:0:0/96 100’ &gt;&gt; /etc/gai.conf<br>root# Add UCA repository  to source.list,</p>
-<pre><code># &apos;deb http://ubuntu-cloud.archive.canonical.com/ubuntu liberty-updates/ubuntu main&apos; &amp;&amp; apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8A6844A29F68104E
-
-or apt-get install software-properties-common python-software-properties  &amp;&amp;  add-apt-repository cloud-archive:liberty
-</code></pre><p>root# apt update</p>
-<p>then exit chroot, press ctrl-d to save</p>
-<p>#schroot -c trusty-amd64 -p apt update</p>
-<p>#it’s more safer to use the following chroot instead of above ‘pbulider login’ and ‘schroot’ to modify chroot env</p>
-<p>LANG=C DEBIAN_FRONTEND=noninteractive chroot /var/lib/schroot/chroots/trusty-amd64 bash -c ‘apt-get update’<br>echo ‘hua     ALL=(ALL) NOPASSWD:ALL’ |sudo tee -a /var/lib/schroot/chroots/trusty-amd64/etc/sudoers</p>
-<p>sudo pbuilder update   #run again when building the package every time</p>
-<p>wget <a href="https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14-3.dsc" target="_blank" rel="external">https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14-3.dsc</a><br>wget <a href="https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14.orig.tar.gz" target="_blank" rel="external">https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14.orig.tar.gz</a><br>wget <a href="https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14-3.debian.tar.xz" target="_blank" rel="external">https://launchpad.net/debian/+archive/primary/+files/libvirt_1.2.14-3.debian.tar.xz</a></p>
-<p>#注意：上面的是debian包，需要先使用beyond compare工具和ubuntu的1.2.16对debian目录进行比较转化成ubuntu包，转换规则是：</p>
-<p>1， 凡1.2.14有的，1.2.16没有的，删</p>
-<p>2， 凡1.2.14没有的，1.2.16有的，增</p>
-<p>3， 凡1.2.14与1.2.16不一致的以1.2.16为准</p>
-<p>4， debian/patch和debian/changlog可以不作处理</p>
-<p>5， debian/control也是重点</p>
-<p>#sudo pbuilder –build –distribution trusty –architecture amd64 ./libvirt_1.2.14-3.dsc</p>
-<p>dpkg-source -x libvirt_1.2.14-3.dsc &amp;&amp; cd libvirt-1.2.14</p>
-<h1 id="sudo-pdebuild"><a href="#sudo-pdebuild" class="headerlink" title="sudo pdebuild"></a>sudo pdebuild</h1><p>sudo pdebuild –debbuildopts -sa  # sometimes need to include source code for uca</p>
-<h1 id="you’d-better-not-add-sudo"><a href="#you’d-better-not-add-sudo" class="headerlink" title="you’d better not add sudo"></a>you’d better not add sudo</h1><p>debsign /var/cache/pbuilder/result/<package><em><version>.changes -k$GPGKEY<br>dput ppa:techtonik/backports /var/cache/pbuilder/result/<package></package></version></em><version>.changes</version></package></p>
-<p>注意： 其他帐户的私有PPA要点击”Manage Access”按钮将自己LP ID加进去之后才能在<a href="https://launchpad.net/~zhhuabj/+archivesubscriptions" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archivesubscriptions</a> 键接看到ppa的用户名和密码</p>
-<p>sudo apt-get autoclean<br>sudo apt-get update<br>sudo apt-get -f install</p>
-<p>sudo apt update</p>
-<p>cat /etc/apt/source.list</p>
-<p>deb <a href="http://cn.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://cn.archive.ubuntu.com/ubuntu/</a> xenial main restricted universe multiverse<br>deb <a href="http://cn.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://cn.archive.ubuntu.com/ubuntu/</a> xenial-updates main restricted universe multiverse<br>deb <a href="http://cn.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://cn.archive.ubuntu.com/ubuntu/</a> xenial-proposed main restricted universe multiverse<br>deb <a href="http://security.ubuntu.com/ubuntu" target="_blank" rel="external">http://security.ubuntu.com/ubuntu</a> xenial-security main restricted universe multiverse</p>
-<p>#deb-src <a href="http://us.archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://us.archive.ubuntu.com/ubuntu/</a> trusty main</p>
-<h2 id="ubuntu-ddebs"><a href="#ubuntu-ddebs" class="headerlink" title="ubuntu ddebs"></a>ubuntu ddebs</h2><h1 id="deb-http-ddebs-ubuntu-com-xenial-main-restricted-universe-multiverse"><a href="#deb-http-ddebs-ubuntu-com-xenial-main-restricted-universe-multiverse" class="headerlink" title="deb http://ddebs.ubuntu.com/ xenial main restricted universe multiverse"></a>deb <a href="http://ddebs.ubuntu.com/" target="_blank" rel="external">http://ddebs.ubuntu.com/</a> xenial main restricted universe multiverse</h1><h1 id="deb-http-ddebs-ubuntu-com-xenial-updates-main-restricted-universe-multiverse"><a href="#deb-http-ddebs-ubuntu-com-xenial-updates-main-restricted-universe-multiverse" class="headerlink" title="deb http://ddebs.ubuntu.com/ xenial-updates main restricted universe multiverse"></a>deb <a href="http://ddebs.ubuntu.com/" target="_blank" rel="external">http://ddebs.ubuntu.com/</a> xenial-updates main restricted universe multiverse</h1><h1 id="deb-http-ddebs-ubuntu-com-xenial-proposed-main-restricted-universe-multiverse"><a href="#deb-http-ddebs-ubuntu-com-xenial-proposed-main-restricted-universe-multiverse" class="headerlink" title="deb http://ddebs.ubuntu.com/ xenial-proposed main restricted universe multiverse"></a>deb <a href="http://ddebs.ubuntu.com/" target="_blank" rel="external">http://ddebs.ubuntu.com/</a> xenial-proposed main restricted universe multiverse</h1><h1 id="deb-http-ddebs-ubuntu-com-xenial-security-main-restricted-universe-multiverse"><a href="#deb-http-ddebs-ubuntu-com-xenial-security-main-restricted-universe-multiverse" class="headerlink" title="deb http://ddebs.ubuntu.com/ xenial-security main restricted universe multiverse"></a>deb <a href="http://ddebs.ubuntu.com/" target="_blank" rel="external">http://ddebs.ubuntu.com/</a> xenial-security main restricted universe multiverse</h1><h2 id="kernel-ppa"><a href="#kernel-ppa" class="headerlink" title="kernel ppa"></a>kernel ppa</h2><h1 id="deb-http-ppa-launchpad-net-canonical-kernel-team-ppa-ubuntu-xenial-main"><a href="#deb-http-ppa-launchpad-net-canonical-kernel-team-ppa-ubuntu-xenial-main" class="headerlink" title="deb http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu xenial main"></a>deb <a href="http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu</a> xenial main</h1><h1 id="deb-src-http-ppa-launchpad-net-canonical-kernel-team-ppa-ubuntu-xenial-main"><a href="#deb-src-http-ppa-launchpad-net-canonical-kernel-team-ppa-ubuntu-xenial-main" class="headerlink" title="deb-src http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu xenial main"></a>deb-src <a href="http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu" target="_blank" rel="external">http://ppa.launchpad.net/canonical-kernel-team/ppa/ubuntu</a> xenial main</h1><p>附录 - 如何修改ubuntu-installer</p>
-<p>Ubuntu有两个Installer [3], 一个是修改版的Debian Installer <a href="也叫d-i, 用C/bash写的">2</a>, 一个用于desktop CD安装的Ubiquity[1] (前端用python写的，后端还是d-i, ‘bzr branch <a href="http://bazaar.launchpad.net/~ubuntu-installer/ubiquity/trunk‘)。" target="_blank" rel="external">http://bazaar.launchpad.net/~ubuntu-installer/ubiquity/trunk‘)。</a><br>例如，要修改ubiquity源码(sudo apt-get source ubiquity)下的./d-i/source/preseed/debian/network-preseed.postinst文件，先从<a href="https://launchpad.net/d-i(debian对应的链接是https://anonscm.debian.org/cgit/d-i/）找到ubuntu修改后的d-i应该对应preseed，然后找到对应的源码为http://bazaar.launchpad.net/~ubuntu-installer/preseed/master/view/head:/debian/network-preseed.postinst" target="_blank" rel="external">https://launchpad.net/d-i(debian对应的链接是https://anonscm.debian.org/cgit/d-i/）找到ubuntu修改后的d-i应该对应preseed，然后找到对应的源码为http://bazaar.launchpad.net/~ubuntu-installer/preseed/master/view/head:/debian/network-preseed.postinst</a> (也可通过’bzr branch lp:preseed’或’bzr branch lp:~ubuntu-core-dev/preseed/ubuntu’命令下载源码).<br>sudo apt-get source preseed<br>bzr branch <a href="http://bazaar.launchpad.net/~ubuntu-core-dev/preseed/ubuntu" target="_blank" rel="external">http://bazaar.launchpad.net/~ubuntu-core-dev/preseed/ubuntu</a></p>
-<p>那么如何将修改的preseed debdiff生成iso文件呢？只需要先将preseed dput到ppa (preseed是没有patchless的，直接修改要修改的文件即可), 等它build完成之后然后再将debian-installer (sudo apt-get source debain-installer，不需要修改源文件，只需要在changelog中增加版本号) dput到ppa即可。等 build完之后便可以生成mini.iso ( <a href="http://ppa.launchpad.net/zhhuabj/xenial-sru-testing/ubuntu/dists/xenial/main/installer-amd64/20101020ubuntu451.19/images/netboot/mini.iso" target="_blank" rel="external">http://ppa.launchpad.net/zhhuabj/xenial-sru-testing/ubuntu/dists/xenial/main/installer-amd64/20101020ubuntu451.19/images/netboot/mini.iso</a> )。</p>
-<p>如何测试这个mini.iso呢？和测试full iso的方法一样，启动后在选择语言处按TAB键(full iso是按F6键)进入grub菜单，然后添加url=<a href="http://192.168.99.135/xenial.preseed即可。在正式版出来之前只能使用mini.iso，full" target="_blank" rel="external">http://192.168.99.135/xenial.preseed即可。在正式版出来之前只能使用mini.iso，full</a> iso的日期可参见：<a href="https://wiki.ubuntu.com/BionicBeaver/ReleaseSchedule" target="_blank" rel="external">https://wiki.ubuntu.com/BionicBeaver/ReleaseSchedule</a></p>
-<p>[1] <a href="https://code.launchpad.net/~ubuntu-installer/ubiquity/trunk" target="_blank" rel="external">https://code.launchpad.net/~ubuntu-installer/ubiquity/trunk</a><br>[2] <a href="http://d-i.alioth.debian.org/doc/talks/debconf6/paper/" target="_blank" rel="external">http://d-i.alioth.debian.org/doc/talks/debconf6/paper/</a><br>[3] <a href="https://wiki.ubuntu.com/Installer/Development" target="_blank" rel="external">https://wiki.ubuntu.com/Installer/Development</a><br>[4] <a href="http://bazaar.launchpad.net/~ubuntu-core-dev/preseed/ubuntu/view/head:/debian/network-preseed.postinst" target="_blank" rel="external">http://bazaar.launchpad.net/~ubuntu-core-dev/preseed/ubuntu/view/head:/debian/network-preseed.postinst</a><br>[5] <a href="http://bazaar.launchpad.net/~ubuntu-installer/preseed/master/view/head:/debian/network-preseed.postinst" target="_blank" rel="external">http://bazaar.launchpad.net/~ubuntu-installer/preseed/master/view/head:/debian/network-preseed.postinst</a><br>[6] <a href="https://anonscm.debian.org/cgit/d-i/preseed.git/tree/debian/network-preseed.postinst" target="_blank" rel="external">https://anonscm.debian.org/cgit/d-i/preseed.git/tree/debian/network-preseed.postinst</a></p>
-<p>附录： How to use schroot to enter a chroot without using sudo</p>
-<p>sudo apt install -y schroot sbuild debhelper ubuntu-dev-tools piuparts<br>sudo mkdir -p /var/lib/schroot/chroots/trusty-amd64<br>sudo cp /etc/schroot/schroot.conf /etc/schroot/schroot.conf.old<br>sudo debootstrap –include=sudo,bash-completion,kernel-wedge,fakeroot,git,vim,bc,gawk,libncurses5-dev,libssl-dev,openssl,build-essential,rsync –arch=amd64 trusty /var/lib/schroot/chroots/trusty-amd64 <a href="http://archive.ubuntu.com/ubuntu/" target="_blank" rel="external">http://archive.ubuntu.com/ubuntu/</a></p>
-<p>#sudo pbuilder login –save-after-login</p>
-<p>#schroot -c trusty-amd64 -p apt update</p>
-<p>#it’s more safer to use the following chroot instead of above ‘pbulider login’ and ‘schroot’ to modify chroot env</p>
-<p>LANG=C DEBIAN_FRONTEND=noninteractive chroot /var/lib/schroot/chroots/trusty-amd64 bash -c ‘apt-get update’<br>echo ‘hua     ALL=(ALL) NOPASSWD:ALL’ |sudo tee -a /var/lib/schroot/chroots/trusty-amd64/etc/sudoers</p>
-<p>vi /etc/schroot/chroot.d/sbuild-trusty-amd64<br>[trusty-amd64]<br>description=trusty-amd64</p>
-<h1 id="To-avoid-the-error-‘You-do-not-have-permission-to-access-the-schroot-service’"><a href="#To-avoid-the-error-‘You-do-not-have-permission-to-access-the-schroot-service’" class="headerlink" title="To avoid the error ‘You do not have permission to access the schroot service’"></a>To avoid the error ‘You do not have permission to access the schroot service’</h1><p>users=hua<br>groups=sbuild,root,admin<br>root-groups=sbuild,root,admin</p>
-<h1 id="Uncomment-these-lines-to-allow-members-of-these-groups-to-access"><a href="#Uncomment-these-lines-to-allow-members-of-these-groups-to-access" class="headerlink" title="Uncomment these lines to allow members of these groups to access"></a>Uncomment these lines to allow members of these groups to access</h1><h1 id="the-source-chroots-directly-useful-for-automated-updates-etc"><a href="#the-source-chroots-directly-useful-for-automated-updates-etc" class="headerlink" title="the -source chroots directly (useful for automated updates, etc)."></a>the -source chroots directly (useful for automated updates, etc).</h1><p>#source-root-users=sbuild,root,admin</p>
-<p>#source-root-groups=sbuild,root,admin<br>type=directory<br>profile=default<br>union-type=overlayfs</p>
-<h1 id="We-can-also-use-the-chroot-which-is-created-by-pbuilder-eg-tar-xf-var-cache-pbuilder-trusty-base-tgz"><a href="#We-can-also-use-the-chroot-which-is-created-by-pbuilder-eg-tar-xf-var-cache-pbuilder-trusty-base-tgz" class="headerlink" title="We can also use the chroot which is created by pbuilder. eg: tar -xf /var/cache/pbuilder/trusty-base.tgz"></a>We can also use the chroot which is created by pbuilder. eg: tar -xf /var/cache/pbuilder/trusty-base.tgz</h1><p>directory=/var/lib/schroot/chroots/trusty-amd64<br>source-root-users=root,sbuild,admin<br>source-root-groups=root,sbuild,admin<br>preserve-environment=true</p>
-<h1 id="https-blog-csdn-net-fenglailea-article-details-37035995"><a href="#https-blog-csdn-net-fenglailea-article-details-37035995" class="headerlink" title="https://blog.csdn.net/fenglailea/article/details/37035995"></a><a href="https://blog.csdn.net/fenglailea/article/details/37035995" target="_blank" rel="external">https://blog.csdn.net/fenglailea/article/details/37035995</a></h1><p>sudo groupadd admin<br>sudo adduser $USER admin<br>schroot -l<br>schroot -c trusty-amd64<br>schroot -c trusty-amd64 – cmd …</p>
-<p>#export $(dpkg-architecture -aarm64); export CROSS_COMPILE=aarch64-linux-gnu-</p>
-<p>#fakeroot debian/rules clean binary-generic</p>
-<p>附录 - The best solution to fix broken ubuntu package</p>
-<p>sudo apt update –fix-missing<br>hua@t440p:~$ sudo dpkg –configure -a<br>dpkg: dependency problems prevent configuration of bpfcc-tools:<br> bpfcc-tools depends on python-bpfcc (&gt;= 0.5.0-5ubuntu1); however:<br>  Package python-bpfcc is not installed.<br>dpkg: error processing package bpfcc-tools (–configure):<br> dependency problems - leaving unconfigured<br>Errors were encountered while processing:<br> bpfcc-tools</p>
-<p>#Remove python-bpfcc and bpfcc-tools from the file /var/lib/dpkg/status<br>sudo vim /var/lib/dpkg/status</p>
-<p>#then run<br>sudo fuser -vki /var/lib/dpkg/lock<br>sudo dpkg –configure -a</p>
-<p>Reference<br>1, <a href="https://help.launchpad.net/Packaging/UploadErrors" target="_blank" rel="external">https://help.launchpad.net/Packaging/UploadErrors</a><br>2, <a href="https://wiki.canonical.com/STS/Engineering/Hotfix" target="_blank" rel="external">https://wiki.canonical.com/STS/Engineering/Hotfix</a><br>3, <a href="http://packaging.ubuntu.com/html/fixing-a-bug.html#work-on-a-fix" target="_blank" rel="external">http://packaging.ubuntu.com/html/fixing-a-bug.html#work-on-a-fix</a><br>4, <a href="http://packaging.ubuntu.com/html/traditional-packaging.html#creating-a-debdiff" target="_blank" rel="external">http://packaging.ubuntu.com/html/traditional-packaging.html#creating-a-debdiff</a><br>5, <a href="http://blog.packagecloud.io/debian/debuild/packaging/2015/06/08/buildling-deb-packages-with-debuild/" target="_blank" rel="external">http://blog.packagecloud.io/debian/debuild/packaging/2015/06/08/buildling-deb-packages-with-debuild/</a></p>
-<p>6, <a href="https://wiki.ubuntu.com/OpenStack/StableReleaseUpdates" target="_blank" rel="external">https://wiki.ubuntu.com/OpenStack/StableReleaseUpdates</a><br>7, <a href="https://wiki.ubuntu.com/OpenStack/CorePackages" target="_blank" rel="external">https://wiki.ubuntu.com/OpenStack/CorePackages</a><br>8, <a href="https://wiki.ubuntu.com/ServerTeam/OpenStack/SRUCadence" target="_blank" rel="external">https://wiki.ubuntu.com/ServerTeam/OpenStack/SRUCadence</a></p>
-<p>9, <a href="https://wiki.ubuntu.com/SimpleSbuild#" target="_blank" rel="external">https://wiki.ubuntu.com/SimpleSbuild#</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1720,7 +1600,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">95</span>
+                  <span class="site-state-item-count">96</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
