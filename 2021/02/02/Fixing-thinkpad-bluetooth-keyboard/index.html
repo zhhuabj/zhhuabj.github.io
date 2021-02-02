@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-03-30) 为了保护颈椎, 已经习惯不用鼠标, 但是高度依赖于Thinkpad的小红点鼠标. 但是蓝牙经常性一个月会断一次, 断了之后很难连接上. 这次更奇葩了, 蓝牙灯也不灭, 键盘上也没有重置的键, 只好等到今天蓝牙键盘电池耗尽之后再试, 但是还是连不上, 错误为:123M">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fixing thinkpad bluetooth keyboard">
+<meta property="og:url" content="http://yoursite.com/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-03-30) 为了保护颈椎, 已经习惯不用鼠标, 但是高度依赖于Thinkpad的小红点鼠标. 但是蓝牙经常性一个月会断一次, 断了之后很难连接上. 这次更奇葩了, 蓝牙灯也不灭, 键盘上也没有重置的键, 只好等到今天蓝牙键盘电池耗尽之后再试, 但是还是连不上, 错误为:123M">
+<meta property="og:updated_time" content="2021-02-02T07:59:20.515Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fixing thinkpad bluetooth keyboard">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-03-30) 为了保护颈椎, 已经习惯不用鼠标, 但是高度依赖于Thinkpad的小红点鼠标. 但是蓝牙经常性一个月会断一次, 断了之后很难连接上. 这次更奇葩了, 蓝牙灯也不灭, 键盘上也没有重置的键, 只好等到今天蓝牙键盘电池耗尽之后再试, 但是还是连不上, 错误为:123M">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/"/>
+
+
+
+
+
+  <title>Fixing thinkpad bluetooth keyboard | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Fixing thinkpad bluetooth keyboard</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T15:59:12+08:00">
+                2021-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-03-30)</strong></p>
+<p>为了保护颈椎, 已经习惯不用鼠标, 但是高度依赖于Thinkpad的小红点鼠标. 但是蓝牙经常性一个月会断一次, 断了之后很难连接上. 这次更奇葩了, 蓝牙灯也不灭, 键盘上也没有重置的键, 只好等到今天蓝牙键盘电池耗尽之后再试, 但是还是连不上, 错误为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Mar 30 07:46:42 t440p bluetoothd[10079]: Can&apos;t get HIDP connection info</span><br><span class="line">Mar 30 07:46:43 t440p bluetoothd[10079]: connect error: Invalid exchange (52)</span><br><span class="line">Mar 30 07:46:50 t440p kernel: [240741.397564] Bluetooth: hci0: last event is not cmd complete (0x0f)</span><br></pre></td></tr></table></figure></p>
+<p>在设置GUI里先删除这个蓝牙, 也报错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Mar 30 07:58:28 t440p gnome-control-c[9696]: Failed to remove device &apos;/org/bluez/hci1/dev_90_7F_61_00_23_C3&apos;: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name :1.505 was not provided by any .service files</span><br></pre></td></tr></table></figure></p>
+<p>好吧, 通过下列命令删除, 再连接, 这次终于算成功了. 本博客将继续记录蓝牙今后遇到的所有连接问题.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:$ bluetoothctl</span><br><span class="line">[NEW] Controller 00:15:00:CB:B0:FF t440p #2 [default]</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">[NEW] Device 04:F1:28:31:D2:10 Nokia 7</span><br><span class="line">[NEW] Controller 00:1A:7D:DA:71:13 t440p #1</span><br><span class="line">[NEW] Device 00:15:00:CB:B0:FF t440p</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Agent registered</span><br><span class="line">[bluetooth]# list</span><br><span class="line">Controller 00:15:00:CB:B0:FF t440p #2 [default]</span><br><span class="line">Controller 00:1A:7D:DA:71:13 t440p #1</span><br><span class="line">[bluetooth]# devices</span><br><span class="line">Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Device 04:F1:28:31:D2:10 Nokia 7</span><br><span class="line">[bluetooth]# info 90:7F:61:00:23:C3</span><br><span class="line">Device 90:7F:61:00:23:C3 (public)</span><br><span class="line">	Name: ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">	Alias: ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">	Class: 0x00000540</span><br><span class="line">	Icon: input-keyboard</span><br><span class="line">	Paired: yes</span><br><span class="line">	Trusted: no</span><br><span class="line">	Blocked: no</span><br><span class="line">	Connected: no</span><br><span class="line">	LegacyPairing: no</span><br><span class="line">[bluetooth]# remove 90:7F:61:00:23:C3</span><br><span class="line">[DEL] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Device has been removed</span><br><span class="line">[bluetooth]# power on</span><br><span class="line">Changing power on succeeded</span><br></pre></td></tr></table></figure></p>
+<p>然后升级bluez到5.5版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dpkg --status bluez | grep &apos;^Version:&apos;</span><br><span class="line">sudo add-apt-repository ppa:bluetooth/bluez</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br></pre></td></tr></table></figure></p>
+<h2 id="Disable-bluetooth’s-autosuspend"><a href="#Disable-bluetooth’s-autosuspend" class="headerlink" title="Disable bluetooth’s autosuspend"></a>Disable bluetooth’s autosuspend</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@t440p:~# grep -r &apos;auto&apos; /etc/rc.local</span><br><span class="line"># disable bluetooth&apos;s autosuspend - dmesg |grep blue</span><br><span class="line">echo -1 &gt;/sys/bus/usb/devices/3-11/power/autosuspend_delay_ms</span><br><span class="line">root@t440p:~# grep -r &apos;IdleTimeout&apos; /etc/bluetooth/input.conf</span><br><span class="line">IdleTimeout=0</span><br><span class="line">root@t440p:~# grep -r &apos;FastConnectable&apos; /etc/bluetooth/main.conf</span><br><span class="line">FastConnectable = true</span><br><span class="line"></span><br><span class="line">sudo systemctl restart bluetooth</span><br><span class="line"></span><br><span class="line">#https://blog.csdn.net/weixin_43971560/article/details/100591034</span><br><span class="line">sudo apt-get install --reinstall xserver-xorg-input-all</span><br></pre></td></tr></table></figure>
+<h2 id="Another-post"><a href="#Another-post" class="headerlink" title="Another post"></a>Another post</h2><p><a href="https://blog.csdn.net/quqi99/article/details/103754977" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/103754977</a><br><a href="https://zhhuabj.blog.csdn.net/article/details/83109470" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/83109470</a></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://askubuntu.com/questions/822249/unpair-remove-bluetooth-devices-in-16-04-1-and-other-problems" target="_blank" rel="external">https://askubuntu.com/questions/822249/unpair-remove-bluetooth-devices-in-16-04-1-and-other-problems</a><br>[2] <a href="http://events17.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf" target="_blank" rel="external">http://events17.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf</a><br>[3] <a href="https://medium.com/@overcode/fixing-bluetooth-in-ubuntu-pop-os-18-04-d4b8dbf7ddd6" target="_blank" rel="external">https://medium.com/@overcode/fixing-bluetooth-in-ubuntu-pop-os-18-04-d4b8dbf7ddd6</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/02/02/Ubuntu-18-04安装全面战争三国游戏/" rel="next" title="Ubuntu 18.04安装全面战争三国游戏">
+                <i class="fa fa-chevron-left"></i> Ubuntu 18.04安装全面战争三国游戏
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Disable-bluetooth’s-autosuspend"><span class="nav-number">1.</span> <span class="nav-text">Disable bluetooth’s autosuspend</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Another-post"><span class="nav-number">2.</span> <span class="nav-text">Another post</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">3.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

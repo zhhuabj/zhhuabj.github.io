@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2021/02/01/Thinkpad-T440p安装Linux的种种问题/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华  发表于：2014-05-08版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Thinkpad T440p里使用了一些最新的硬件，这些硬件厂商对Linux高度不兼容, 下面是安装ubuntu 14.04与win8双系统时遇到的一些问题。1, 要在BIOS（F1键）里disable掉UEFI">
-<meta property="og:updated_time" content="2021-02-01T15:24:55.990Z">
+<meta property="og:updated_time" content="2021-02-02T03:58:07.775Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Thinkpad T440p安装Linux的种种问题">
 <meta name="twitter:description" content="作者：张华  发表于：2014-05-08版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Thinkpad T440p里使用了一些最新的硬件，这些硬件厂商对Linux高度不兼容, 下面是安装ubuntu 14.04与win8双系统时遇到的一些问题。1, 要在BIOS（F1键）里disable掉UEFI">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-01T10:27:18+08:00">
                 2021-02-01
@@ -355,6 +355,7 @@
 <p>chrome://settings/?search=hardware uncheck ‘Use hardware acceleration when available’<br>chrome://flags/ search ‘gpu’ then disable ‘Accelerated 2D canvas’  and ‘GPU rasterization’</p>
 <p>shift + esc to see chrome task</p>
 <p>Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染, 当GPU性能不好时反而慢，不如直接使用CPU</p>
+<p>20210202更新 - GPU问题总结<br>shift + esc打开看到GPU Process在开hangout时cpu超100%，另外风扇响个不停(cpu温度从70多升到80多），这都是gpu性能差但chrome又强制打开了gpu硬件加速造成的，关闭gpu加速即可。</p>
 
       
     </div>
@@ -459,8 +460,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">97</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -510,7 +511,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

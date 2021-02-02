@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,512 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/21/Debug-OpenvSwitch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/21/Debug-OpenvSwitch/" itemprop="url">Debug OpenvSwitch</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-21T14:57:58+08:00">
+                2021-01-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="GDB调试"><a href="#GDB调试" class="headerlink" title="GDB调试"></a>GDB调试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># will stop service</span><br><span class="line">sysctl kernel.core_pattern</span><br><span class="line">sudo service apport start force_start=1 enabled=1</span><br><span class="line">grep enabled /etc/default/apport</span><br><span class="line">sudo killall -SIGSEGV ovs-vswitchd</span><br><span class="line">sudo cat /var/log/apport.log</span><br><span class="line"></span><br><span class="line"># won&apos;t stop service</span><br><span class="line">gdb -ex &quot;set pagination 0&quot; -ex &quot;thread apply all bt&quot; -batch -p $(pidof ovs-vswitchd) #for call trace</span><br><span class="line">gcore $(pidof ovs-vswitchd)</span><br><span class="line">sudo apt install openvswitch-dbg cgdb</span><br><span class="line">#cgdb $(which ovs-vswitchd) $(pidof ovs-vswitchd)</span><br><span class="line">cgdb ovs-vswitchd /var/crash/_usr_lib_openvswitch-switch_ovs-vswitchd.0.crash</span><br></pre></td></tr></table></figure>
+<h2 id="Debug-Log"><a href="#Debug-Log" class="headerlink" title="Debug Log"></a>Debug Log</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># log level: emer，err，warn，info，dbg,OFF</span><br><span class="line"># log type: console, syslog, file</span><br><span class="line">sudo ovs-appctl vlog/list |grep vswitchd</span><br><span class="line">sudo ovs-appctl vlog/set vswitchd:file:dbg</span><br><span class="line">sudo ovs-appctl vlog/set vswitchd:file:OFF</span><br><span class="line">sudo ovs-appctl vlog/set ANY:ANY:dbg</span><br><span class="line"></span><br><span class="line"># use this one, we can see the realtime log</span><br><span class="line">sudo ovs-appctl vlog/set ANY:file:dbg</span><br><span class="line">tail -f /var/log/openvswitch/ovs-vswitchd.log</span><br></pre></td></tr></table></figure>
+<h2 id="CLI-Usage"><a href="#CLI-Usage" class="headerlink" title="CLI Usage"></a>CLI Usage</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#网桥状态</span><br><span class="line">ovs-vsctl show</span><br><span class="line">#网桥查询</span><br><span class="line">ovs-vsctl list-br</span><br><span class="line">#端口查询</span><br><span class="line">ovs-vsctl list-ports br-int</span><br><span class="line">#接口查询</span><br><span class="line">ovs-vsctl list-ifaces br-int</span><br><span class="line">#端口、接口归属查询</span><br><span class="line">ovs-vsctl port-to-br tap30580aa5-b0</span><br><span class="line">ovs-vsctl iface-to-br tap30580aa5-b0</span><br><span class="line">#查询网桥流表</span><br><span class="line">ovs-ofctl dump-flows br-int</span><br><span class="line">#查询网桥信息</span><br><span class="line">ovs-ofctl show br-int</span><br><span class="line">#Datapath统计信息查询：hit表示datapath命中数，missed未命中，lost表示没有传递到用户空间就丢弃了</span><br><span class="line">ovs-dpctl show</span><br><span class="line">#查询端口详细统计信息</span><br><span class="line">ovs-dpctl show -s</span><br><span class="line">#指定端口统计信息</span><br><span class="line">ovs-ofctl dump-ports br-int 1</span><br><span class="line">#网桥转发规则</span><br><span class="line">ovs-appctl fdb/show br-int</span><br><span class="line"></span><br><span class="line">#日志查询</span><br><span class="line">ovsdb-tool show-log -m /var/lib/openvswitch/conf.db</span><br><span class="line"></span><br><span class="line">#流表匹配</span><br><span class="line">ovs-appctl ofproto/trace br-tun dl_vlan=1</span><br></pre></td></tr></table></figure>
+<h2 id="tcpdump"><a href="#tcpdump" class="headerlink" title="tcpdump"></a>tcpdump</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">* On compute node</span><br><span class="line">tcpdump -vvv -neli tapd76aea08-db port 67 or port 68 or arp -w `hostname`-tapd76aea08-db-vmport.pcap</span><br><span class="line"></span><br><span class="line">* On dhcp-agent</span><br><span class="line">sudo ip netns exec qdhcp-2be2d2e6-a691-49fb-b260-c4e8abe86fd7 tcpdump -neli any port 67 or port 68 or arp -w `hostname`-dhcpport.pcap</span><br><span class="line"></span><br><span class="line">* Run dhclient &lt;interface&gt; on the VM</span><br><span class="line">Check if the instance got IP or not</span><br></pre></td></tr></table></figure>
+<h2 id="Flow-Debug-ovs-stat"><a href="#Flow-Debug-ovs-stat" class="headerlink" title="Flow Debug - ovs-stat"></a>Flow Debug - ovs-stat</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"># https://snapcraft.io/ovs-stat</span><br><span class="line">juju ssh nova-compute/0 -- sudo -s</span><br><span class="line">#sudo snap install snapd --edge</span><br><span class="line">sudo snap install ovs-stat</span><br><span class="line"></span><br><span class="line"># for analysing ovs itself</span><br><span class="line">sudo snap connect ovs-stat:openvswitch</span><br><span class="line">sudo snap connect ovs-stat:network-control</span><br><span class="line"></span><br><span class="line"># for analysing sosreport ovs data where sosreport is on a seperate filesystem</span><br><span class="line">#sudo snap connect ovs-stat:removable-media</span><br><span class="line"></span><br><span class="line">#sudo ovs-stat -p /tmp/results --tree ./sosreport-015 --openstack</span><br><span class="line">sudo ovs-stat -p /tmp/results --tree --openstack</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# readlink -f /tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/bridges/br-int/ports/*</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/int-br-data</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/patch-tun</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/tapcdda0c13-5e</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.ports&quot;</span><br><span class="line">int-br-data  patch-int  patch-tun  phy-br-data  tapcdda0c13-5e  vxlan-0a05008d</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.bridge br-int&quot;</span><br><span class="line">int-br-data     patch-tun       tapcdda0c13-5e</span><br><span class="line"></span><br><span class="line">#demo help</span><br><span class="line">root@juju-7c33c2-bionic-7:~# sudo ls /tmp/snap.ovs-stat/tmp/results</span><br><span class="line">juju-7c33c2-bionic-7</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">ofproto-trace</span><br><span class="line">openstack</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">openstack.bridge</span><br><span class="line">openstack.bridge.ports</span><br><span class="line">openstack.bridges</span><br><span class="line">openstack.bridges.list</span><br><span class="line">openstack.dvr</span><br><span class="line">openstack.l2pop</span><br><span class="line">openstack.local-vlans</span><br><span class="line">openstack.local-vlans.info</span><br><span class="line">openstack.port</span><br><span class="line">openstack.port.flows</span><br><span class="line">openstack.port.info</span><br><span class="line">openstack.port.list</span><br><span class="line">openstack.ports</span><br><span class="line">openstack.ports.list</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.port tapcdda0c13-5e&quot;</span><br><span class="line">Port tapcdda0c13-5e:</span><br><span class="line">  - bridge: br-int</span><br><span class="line">  - id: 6</span><br><span class="line">  - local-vlan: 3</span><br><span class="line">  - mac address: fe:16:3e:c4:58:9c</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.l2pop 3&quot;</span><br><span class="line">10.5.0.141</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;ofproto-trace&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">ofproto-trace.port</span><br><span class="line">ofproto-trace.port.all</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;ofproto-trace.port tapcdda0c13-5e&quot;</span><br><span class="line">IMPORTANT: it looks like this port is attached to a vm so mac address has been converted from fe:16:3e:c4:58:9c to fa:16:3e:c4:58:9c</span><br><span class="line">[arp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,arp,arp_spa=192.168.21.7,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">[icmp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,ip,nw_proto=1,nw_src=192.168.21.7,nw_dst=1.1.1.1,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">[dhcp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int udp,in_port=6,dl_src=fa:16:3e:c4:58:9c,dl_dst=ff:ff:ff:ff:ff:ff,nw_src=0.0.0.0,nw_dst=255.255.255.255,udp_src=68,udp_dst=67</span><br><span class="line">[vm-to-vm]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,tcp,dl_src=fa:16:3e:c4:58:9c,dl_dst=MAC_OF_REMOTE_INSTANCE</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,dl_vlan=3,dl_src=fa:16:3e:c4:58:9c,dl_dst=MAC_OF_REMOTE_INSTANCE</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# sudo ovs-appctl ofproto/trace br-int in_port=6,arp,arp_spa=192.168.21.7,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">Flow: arp,in_port=6,vlan_tci=0x0000,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7,arp_tpa=0.0.0.0,arp_op=0,arp_sha=00:00:00:00:00:00,arp_tha=00:00:00:00:00:00</span><br><span class="line">bridge(&quot;br-int&quot;)</span><br><span class="line">----------------</span><br><span class="line"> 0. priority 0, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    goto_table:60</span><br><span class="line">60. in_port=6, priority 100, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    set_field:0x6-&gt;reg5</span><br><span class="line">    set_field:0x3-&gt;reg6</span><br><span class="line">    resubmit(,71)</span><br><span class="line">71. arp,reg5=0x6,in_port=6,dl_src=fa:16:3e:c4:58:9c,arp_spa=192.168.21.7, priority 95, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    resubmit(,94)</span><br><span class="line">94. priority 1, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    NORMAL</span><br><span class="line">     -&gt; no learned MAC for destination, flooding</span><br><span class="line"></span><br><span class="line">    bridge(&quot;br-tun&quot;)</span><br><span class="line">    ----------------</span><br><span class="line">         0. in_port=1, priority 1, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:2</span><br><span class="line">         2. dl_dst=00:00:00:00:00:00/01:00:00:00:00:00, priority 0, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:20</span><br><span class="line">        20. priority 0, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:22</span><br><span class="line">        22. dl_vlan=3, priority 1, cookie 0x95591ec120b6fb4b</span><br><span class="line">            pop_vlan</span><br><span class="line">            set_field:0x4d1-&gt;tun_id</span><br><span class="line">            output:3</span><br><span class="line">             -&gt; output to kernel tunnel</span><br><span class="line"></span><br><span class="line">bridge(&quot;br-data&quot;)</span><br><span class="line">-----------------</span><br><span class="line"> 0. in_port=1, priority 2, cookie 0xf521d3d0416ecc5b</span><br><span class="line">    drop</span><br><span class="line"></span><br><span class="line">Final flow: arp,reg5=0x6,reg6=0x3,in_port=6,vlan_tci=0x0000,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7,arp_tpa=0.0.0.0,arp_op=0,arp_sha=00:00:00:00:00:00,arp_tha=00:00:00:00:00:00</span><br><span class="line">Megaflow: pkt_mark=0,recirc_id=0,ct_state=-trk,eth,arp,in_port=6,vlan_tci=0x0000/0x1fff,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7</span><br><span class="line">Datapath actions: set(tunnel(tun_id=0x4d1,src=10.5.2.207,dst=10.5.0.141,ttl=64,tp_dst=4789,flags(df|key))),6,push_vlan(vid=3,pcp=0),1</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/WIP-Start-my-first-kernel-journey/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/16/WIP-Start-my-first-kernel-journey/" itemprop="url">(WIP)Start my first kernel journey</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:58:40+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-03-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>在内核大神gavin同学的帮助下，我开始了人生中第一件和kernel相关的work， 在HP DL360p Gen8服务器上运行OpenStack时发生crash。</p>
+<p>先排除APIC问题<br>APIC(Advanced Programmable Interrupt Controller)是用来管理中断的（另一个ACPI是用来管理电源的, Advanced Configuration and Power Interface)。<br>大家知道，I/O设备可以通过DMA(Direct Memory Access)直接存取内存地址（称为DMA地址，也称为Bus address)。最开始，这个DMA地址都是物理内存地址，并且要求只能是一块连续的地址，而且还要求必须是低位地址，极不灵活，也不能适应虚拟机的需要，所以DMAR(DMA remapping)也就出现了，IOMMU硬件负责操作DMA remapping操作在I/O设备访问的DMA地址翻译成实际的物理内存地址，并做检查访问权限的操作实现隔离。<br>当CPU访问一个在地址翻译表中不存在的DMA地址时就会触发一个fault，内核会判断这个是合法还是非法地址，如果是合法地址就分配相应的物理内存并建立从物理地址到虚拟地址的翻译项，如果是非法地址就会给进程发个signal产生core dump。所以这些fault有些是recoverable，有些是non-recoverable，所以IOMMU就利用中断的方式呼唤内核（中断服务程序是dmar_fault)。<br>DMAR的初始化操作是内核使用alloc_iommu函数根据ACPI中的dmar table进行的，每一个表项对应一个dmar设备，名称从dmar0开始依次递增。<br>每个CPU可能会有自己单独的中断控制器（也叫LOCAL APIC，每个CPU一个，处理LOCAL I/O设备的中断，外部I/O设备的中断也是先经I/O APIC再经LOCAL APIC到达处理器, 也可以不经过I/O APIC直接到LOCAL APIC这叫MSI，跨处理器之间的中断Inter-processor interrupts(IPIs)， APIC定时器中断，性能监测计数器的中断，温度传感器中断，APIC内部中断等)，也有一个共用的叫I/O APIC（通常一个机器一个），特性处理。<br>APIC按时期可分为3个版本，APIC, xAPIC与x2APIC。xAPIC中的寄存器是通过内存映射到一段物理地址，在x2APIC模式中，取消了内存映射方式来读取APIC的寄存器，而是采用了MSR的方式。MSR的全写是Model-specific register(每个型号特有的寄存器)这样的好处是不用再担心内存地址的冲突问题。<br>实际上，内核是从BIOS里读取的dmar table，而HP Gen8的BIOS程序是有问题的，它从APIC里读到的dmar table是坏的（通常在系统日志里会报“Your BIOS is broken; DMAR reported at address”）。<br>Driver是OS的一部分(运行在主机的CPU)，Firmware是设备一部分（设备用的镜像，由内核将fireware加载到内存然后由Driver传送到设备上运行在设备里的CPU上), Driver在初始化时可以调用Fireware的request_firmware等接口。<br>在BIOS不支持x2apic的时候内核已经开始支持它了，这会造成问题，所以BIOS检查DMAR的x2apic标志退出内核的x2apic模式，内核也要从代码上支持这种退出（git log 41750d3， intremap=no_x2apic_optout表示内核忽略这种退出)。</p>
+<p>&lt;Gen8，硬件不支持x2apic, 内核也就不会用xapic，正确</p>
+<blockquote>
+<p>Gen8, 硬件支持x2apic, 内核也会用xapic。<br>=Gen8，硬件支持x2apic, 但BIOS没有正确传递dmar table给内核，故内核需做如下设置禁用x2apic，但是Fireware依然使用x2apic，所以内核可能Crash，也可能一些其他奇怪的问题出现。</p>
+<h1 id="let-X2APIC-enabled-with-IRQ-remapping，-so-it-only-differs-from-xapic-in-IRQ-remapping"><a href="#let-X2APIC-enabled-with-IRQ-remapping，-so-it-only-differs-from-xapic-in-IRQ-remapping" class="headerlink" title="let X2APIC enabled with IRQ remapping， so it only differs from xapic in IRQ remapping"></a>let X2APIC enabled with IRQ remapping， so it only differs from xapic in IRQ remapping</h1><p>“intel_idle.max_cstate=0 intremap=no_x2apic_optout”<br>OR</p>
+<h1 id="disable-X2APIC-AND-IRQ-remapping-will-use-xapic-instead-of-x2apic"><a href="#disable-X2APIC-AND-IRQ-remapping-will-use-xapic-instead-of-x2apic" class="headerlink" title="disable X2APIC AND IRQ remapping, will use xapic instead of x2apic"></a>disable X2APIC AND IRQ remapping, will use xapic instead of x2apic</h1><p>“intel_idle.max_cstate=0 nox2apic intermap=off”     </p>
+</blockquote>
+<p>禁用C状态<br>闲置时保持低电压状态的处理理的闲置状态称为”C状态“，C0是正常状态，级别高于它状态可以省电，但调度到这省电状态的CPU时延迟时间会略微加长。所以对于某些特殊不需要省电的应用可以禁用它（意味着数据中心的温度升高） 。内核包含了针对Intel处理器C状态的驱动程序（称为intel_idel)，因为它是内核的，所以即使BIOS设置禁用C状态仍然会生效。所以应该使用核心参数intel_idle.max_cstate=0来禁用intel_idle驱动程序，这样，内核将恢复为由BIOS提供的ACPI表开层C状态控制。</p>
+<p>General Protection Fault<br>Oops显示为general protection fault。内核发生了污染（make Tainted: G D, P代表私有驱动加载，F代表模块强制加载，R代表模块强制卸载，M代表机器检查，B代表检测到错误页，’GD’ means that some module was not licensed as GPL and that a crash or BUG() occurred. 具体地见：<a href="http://lxr.free-electrons.com/source/Documentation/oops-tracing.txt)，所以的进程在35号CPU上被执行，发生问题的代码是（RIP" target="_blank" rel="external">http://lxr.free-electrons.com/source/Documentation/oops-tracing.txt)，所以的进程在35号CPU上被执行，发生问题的代码是（RIP</a> = kmem_cache_alloc_trace+0x5e/0x140 OR RIP = <strong>kmalloc+0x7b/0x190）。<br>(gdb) list *(</strong>kmalloc+0x7b)<br>0xffffffff8116611b is in __kmalloc (/build/buildd/linux-3.2.0/mm/slub.c:2325).<br>2320 <em> 3. If they were not changed replace tid and freelist<br>2321 </em><br>2322 <em> Since this is without lock semantics the protection is only against<br>2323 </em> code executing on this cpu <em>not</em> from access by other cpus.<br>2324 */<br>2325 if (unlikely(!irqsafe_cpu_cmpxchg_double(<br>2326 s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>2327 object, tid,<br>2328 get_freepointer_safe(s, object), next_tid(tid)))) { </p>
+<p>(gdb) list <em>(kmem_cache_alloc_trace+0x5e)<br>0xffffffff8116657e is in kmem_cache_alloc_trace (/build/buildd/linux-3.2.0/mm/slub.c:2325).<br>2320 </em> 3. If they were not changed replace tid and freelist<br>2321 <em><br>2322 </em> Since this is without lock semantics the protection is only against<br>2323 <em> code executing on this cpu </em>not<em> from access by other cpus.<br>2324 </em>/<br>2325 if (unlikely(!irqsafe_cpu_cmpxchg_double(<br>2326 s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>2327 object, tid,<br>2328 get_freepointer_safe(s, object), next_tid(tid)))) { </p>
+<p>上面两个地址的输出都指向同一函数irqsafe_cpu_cmpxchg_double， 通过objdump函数查看它的机器码如下：<br>0xffffffff81166576 &lt;+86&gt;: mov (%r12),%rsi<br>0xffffffff8116657e &lt;+94&gt;: mov 0x0(%r13,%rax,1),%rbx ### R13 = UPPER HALF OF BASE POINTER<br>0xffffffff81166583 &lt;+99&gt;: mov %r13,%rax<br>0xffffffff81166586 &lt;+102&gt;: callq 0xffffffff8131cb20 ### CALL </p>
+<p>继续查看函数0xffffffff8131cb20的机器码：<br>(gdb) x/30i 0xffffffff8131cb20 ### CALLED<br>0xffffffff8131cb20: pushfq ### PUSH RFLAGS into stack<br>0xffffffff8131cb21: cli ### <strong><strong> CLEAR INTERRUPT FLAG </strong></strong><br>0xffffffff8131cb22: cmp %gs:(%rsi),%rax </p>
+<p>所以调用顺序应该如下，猜测极有可能是因为在35号CPU上执行local_irq_save时发生了general protection fault。<br>irqsafe_cpu_cmpxchg_double (#define) -&gt;<br>irqsafe_generic_cpu_cmpxchg_double (#define) -&gt;<br>local_irq_save(#define)-&gt;… </p>
+<p>通过crash找源码<br>上面是通过gdb找的源码，直接通过如下的gdb vmlinux找到源码是/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2412， 想继续看源码需要将源码安装在提示的位置/build/buildd/linux-lts-trusty-3.13.0。<br>gdb /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic<br>Reading symbols from /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic…done.<br>(gdb) list *(kmem_cache_alloc_trace+0x5e)<br>0xffffffff811af2de is in kmem_cache_alloc_trace (/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2412).<br>2407 /build/buildd/linux-lts-trusty-3.13.0/mm/slub.c: No such file or directory</p>
+<p>那样太麻烦，我们来看一下如何通过crash找错误的源码：</p>
+<p>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
+<p>ubuntu@server-2e5cbffc-ed54-465b-9934-f8681dba8c21:/mnt/73670$ addr2line 0xffffffff811af2fc -e /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic -f -i<br>get_freepointer<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:260<br>get_freepointer_safe<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:275<br>slab_alloc_node<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2416<br>slab_alloc<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2455<br>kmem_cache_alloc_trace<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2472</p>
+<p>cmpxchg原子操作<br>看看上面的irqsafe_generic_cpu_cmpxchg_double中的cmpxchg是什么，当多个线程往同一个链表头里插入数据时容易发生同步问题，采用悲观锁的开销太大，可以采用乐观锁重试直至不发生同步为止：<br>do{<br>  old_head = queue-&gt;head;<br>  new_head-&gt;next = old_head;<br>  if (old_head == queue-&gt;head){<br>    queue-&gt;head = new_head;<br>  }<br>}while(queue-&gt;head != new_head)<br>但问题是上面的第4与第5行无法保证原子操作，CPU的cas/cmpxchg指令正是来干这件事让其原子化。具体参见：<a href="http://blog.chinaunix.net/uid-24830931-id-3487817.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-24830931-id-3487817.html</a><br>R = cmpxchg(A, C, B) </p>
+<pre><code>- Assign A = B if A == C
+- Return A at the time of the call, unconditionally
+</code></pre><p>使用cmpxchg指令改写之后的代码如下：<br>do{<br>  old_head = queue-&gt;head;<br>  new_head-&gt;next = old_head;<br>  val=cmpxchg(&amp;queue-&gt;head, old_head, new_head);<br>}while(val!=old_head)</p>
+<p>cmpxchg_double<br>根据irqsafe_cpu_cmpxchg_double中的cmpxchg_double搜到（git log)一个bug（git show cdcd62986），可使用参数”intel_idle.max_cstate=0 nox2apic intremap=off”在linux3.8内核中试试。</p>
+<p>slab &amp; slub的区别<br>见：<a href="http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf" target="_blank" rel="external">http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf</a><br>slab用于传统机器，slob用于嵌入式系统，slub用于大型系统。<br>fast-path，从per-cpu的freelist列表上分配叫fast-path<br>slow-path，从per-cpu的cpu slab（跨cpu了）或partial slabs列表分配叫slow-path<br>very slow-path, 从per-node（跨numa节点了）上分配或加锁分配叫very slow-path.<br>this_cpu_cmpxchg_double用于避免中断，cmpxchg_double用于避免用锁。<br>slub对slab的改进便是：内核的slab_alloc方法就是使用上面的cmpxchg原子操作原理使用乐观锁的方式往slab的freelist里插slub对象（因为执行插这个链表的动态是可能多个CPU在进程调度的）。</p>
+<p>排除中断服务程序中由特权级产生的General Protection Fault<br>如果处理过程将在被中断任务同一个特权级上运行，那么：处理器把EFLAGS、CS和EIP寄存器的当前值保存在当前堆栈上。<br>如果异常会产生一个错误号，那么该错误号也会被最后压入新栈中。为了从中断处理过程中返回，处理过程必须使用IRET指令。IRET指令与RET指令类似，但IRET还会把保存的寄存器内容恢复到EFLAGS 中。不过只有当CPL是0时才会恢复EFLAGS中的IOPL字段，并且只有当当前特权级CPL不大于IOPL(I/O Privilege Level in FLAGS register)时，IF标志才会被改变。如果当调用中断处理过程时发生了堆栈切换，那么在返回时IRET指令会切换到原来的堆栈。当CPL&gt;IOPL时便会产生General Protection Fault。CS:0010的地址位数显示在内核态，EFLAGS = 00010282 (Decimal) == 0010 1000 0010 1010 (Binary). IOPL = Bits 12 and 13 from EFLAGS = 10. 所以排除这种特级级产生的General Protection Fault<br>0xffffffff8131cb20: pushfq ### PUSH RFLAGS into stack<br>0xffffffff8131cb21: cli ### <strong><strong> CLEAR INTERRUPT FLAG </strong></strong><br>…<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548034] RIP: 0010:[<ffffffff8116616e>] [<ffffffff8116616e>] kmem_cache_alloc_trace+0x5e/0x140<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548191] RSP: 0018:ffff883f6f035d98 EFLAGS: 00010282<br>…<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548820] CS: 0010 DS: 002b ES: 002b CR0: 000000008005003b </ffffffff8116616e></ffffffff8116616e></p>
+<p>“per-cpu”内存是否毁坏<br>内核使用per-cpu为每一个CPU都生成一个变量的副本避免加锁，并充分利用cpu硬件的缓存提升性能。所有CPU的静态per-cpu通过DEFINE_PER_CPU定义在一个特殊的段里。动态per-cpu变量仍然使用页机制。下面显示似乎是free list指针在per-cpu kmem缓存中毁坏了(3.13.0-45-generic有问题，3.13.0-46无问题）， 其中kmem的-S参数代表显示slab缓存信息：<br>crash&gt; kmem -S | grep -i invalid<br>kmem: invalid kernel virtual address: ffff00088fec6500 type: “get_freepointer”<br>kmem: invalid kernel virtual address: ffff0008569645a0  type: “get_freepointer”</p>
+<p>继续使用内核参数slub_debug=PU,kmalloc-32,apparmor=0检测(CONFIG_DEBUG_SLAB, 为便于调试，在每个对象可以添加SLAB_RED_ZONE，添加这块内存的最后使用者SLAB_STORE_USER，且用SLAB_POISON初始化对象。当slab出错时，在没有redzone时会在系统日志里将缓存名称与对象开始地址打印出来，若有redzone会将缓存名称、对象开始地址、最后用户、对象的内容、对象前后的信息打印出来)，它一旦检测到slab错误后，内核将丢弃old slab page并且重新分配新的，用它将更难于产生crash(不用这个参数的话得用到这个非法地址后才会panic, 可以使用slab_debug=PUC参数，C代表内核在下一次alocation/free时检测到它为非法地址就panic)，但是可以从它的dmesg信息中找到一些有用的东西进一步分析。</p>
+<p>其它类似于slab_debug的内存检测工具有：kmemcheck, kasan(v4.0-rc1)</p>
+<p>Kasan是什么<br>用户空间使用AddressSanitizer (Asan), ThreadSanitizer and MemorySanitizer， 这些工具现在是gcc和clang编译器的一部分，内核空间使用Kasan。<br>SLUB_DEBUG/DEBUG_SLAB, Can detect some out-of-bounds and use-after-free accesses， Can’t detect out-of-bounds reads， Detects bugs only on allocation / freeing in some cases<br>DEBUG_PAGEALLOC， Unmaps freed pages from address space， Can detect some use-after-free accesses， Detects use-after-free only when the whole page is unused<br>kmemcheck， Detects use-after-free accesses and uninitialized-memory-reads， Causes page fault on each memory access (slow)<br>KASan(Kernel Address Sanitizer, A dynamic memory error detector for the linux kernel), can detect both out-of-bound and use-after-free errors， Based on compiler instrumentation， Detects out-of-bounds for both writes and reads， Has strong use-after-free detection， Detects bugs at the point of occurrence， Prints informative reports, well replace kmemcheck, Asan will unlikely replace debug slab and pagealloc that can be enabled at runtime. kmemcheck couldn’t work on several CPUs but KASan doesn’t have such limitation.<br><a href="https://gitlab.com/veo-labs/linux/commit/0b24becc810dc3be6e3f94103a866f214c282394" target="_blank" rel="external">https://gitlab.com/veo-labs/linux/commit/0b24becc810dc3be6e3f94103a866f214c282394</a><br>KSan使用1/8的内核内存用做shadow memory(memory中的每8 bytes在shadow memory都映射了1 byte, bit0-0代表这8个bytes都是合法的，哪个bit为1就代表哪个bit不合法, 不同的负数代表不同的非法内存含义如redzones, freed memory)，并使用下列的直接映射方法和memory关联(KASAN_SHADOW_SCALE_SHIFT=3)。<br> unsigned long kasan_mem_to_shadow(unsigned long addr)<br>     {<br>                return (addr &gt;&gt; KASAN_SHADOW_SCALE_SHIFT) + KASAN_SHADOW_OFFSET;<br>     }<br>需要一个特别的编译器将特别的call(<strong>asan_load*(addr, </strong>asan_store*(addr))放在每个以1,2,4,8或16开始的memory前面去检查内存访问是法合法。所以使用它的性能损耗分inline compiler instrumentation and simple linear shadow memory两部分，用户空间的Asan慢2倍左右，内核空间慢10~30%左右。<br>安装，使用CONFIG_KASAN编译后的内核插入test_kasan模块(sudo insmod /lib/modules/4.4.0-9-generic/kernel/lib/test_kasan.ko)。如何分析输出见：<a href="https://www.kernel.org/doc/Documentation/kasan.txt" target="_blank" rel="external">https://www.kernel.org/doc/Documentation/kasan.txt</a></p>
+<p>使用crash分析core dump文件<br>$ cat crash-start.sh<br>exec crash –mod /mnt/ddeb-3.13.0-34.60/usr/lib/debug/lib/modules/3.13.0-45-generic/ /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic dump.201502181928</p>
+<p>crash&gt; sys |grep KERNEL<br>      KERNEL: /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic</p>
+<p>crash&gt; set<br>    PID: 47656<br>COMMAND: “make”<br>   TASK: ffff880115fa3000  [THREAD_INFO: ffff881f136ec000]<br>    CPU: 14<br>  STATE: TASK_RUNNING (PANIC)</p>
+<p>crash&gt; ps -a |grep 47656<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br>ps: cannot access user stack address: 7ffff54eead3<br>ps: no user stack</p>
+<p>crash&gt; vtop -c 47656 7ffff54eead3<br>VIRTUAL     PHYSICAL<br>7ffff54eead3  5d6e73ad3       </p>
+<p>   PML: f82e7c7f8 =&gt; 14fb42067<br>   PUD: 14fb42ff8 =&gt; fda9b9067<br>   PMD: fda9b9d50 =&gt; fdd61d067<br>   PTE: fdd61d770 =&gt; 80000005d6e73865<br>  PAGE: 5d6e73000</p>
+<pre><code>PTE         PHYSICAL   FLAGS
+</code></pre><p>80000005d6e73865  5d6e73000  (PRESENT|USER|ACCESSED|DIRTY|NX)</p>
+<pre><code>VMA           START       END     FLAGS FILE
+</code></pre><p>ffff880fe7c34240 7ffff54cd000 7ffff54f2000 100173 </p>
+<pre><code>PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
+</code></pre><p>ffffea00175b9cc0  5d6e73000 ffff8813d0b6e341 7fffffffb  1 2ffff000008006c referenced,uptodate,lru,active,swapbacked</p>
+<p>crash&gt; task |grep  sp<br>    sp0 = 0xffff881f136ee000,<br>    sp = 0xffff881f136edf58,<br>    usersp = 0x7ffff54ea970,<br>crash&gt; rd 0xffff881f136edf58 -e 0xffff881f136ee000<br>ffff881f136edf58:  00007ffff54ea80c 0000000002474696   ..N……FG…..<br>ffff881f136edf68:  0000000002474692 00000000026029c0   .FG……)<code>.....
+ffff881f136edf78:  00007ffff54ea8b0 0000000000000000   ..N.............
+ffff881f136edf88:  0000000000000246 756265642f343431   F.......144/debu
+ffff881f136edf98:  2e322e3170735f33 6e69622f37327970   3_sp1.2.py27/bin
+ffff881f136edfa8:  000000000000003b ffffffffffffffff   ;...............
+ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..<br>ffff881f136edfc8:  00007ffff54ea80c 000000000000003b   ..N…..;…….<br>ffff881f136edfd8:  00002b8eeccad427 0000000000000033   ‘….+..3…….<br>ffff881f136edfe8:  0000000000000246 00007ffff54ea138   F…….8.N…..<br>ffff881f136edff8:  000000000000002b                    +…….</p>
+<p>crash&gt; files<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br>ROOT: /    CWD: /…../development@2/secure_vm<br> FD       FILE            DENTRY           INODE       TYPE PATH<br>  0 ffff880fde784d00 ffff880daee9c900 ffff880fd3614470 FIFO<br>  1 ffff881223615400 ffff881293e6c180 ffff881fe5ea7d78 FIFO<br>  2 ffff881223615400 ffff881293e6c180 ffff881fe5ea7d78 FIFO<br>  3 ffff881f13757a00 ffff880191c16d80 ffff880fd3612da0 FIFO </p>
+<p>crash&gt; kmem -S |grep invalid<br>kmem: invalid kernel virtual address: ffff00088fec6500  type: “get_freepointer”<br>kmem: invalid kernel virtual address: ffff00088fec6500  type: “get_freepointer”</p>
+<p>crash&gt; struct kmem_cache<br>struct kmem_cache {<br>    struct kmem_cache_cpu <em>cpu_slab;<br>    unsigned long flags;<br>    unsigned long min_partial;<br>    int size;<br>    int object_size;<br>    int offset;<br>    int cpu_partial;<br>    struct kmem_cache_order_objects oo;<br>    struct kmem_cache_order_objects max;<br>    struct kmem_cache_order_objects min;<br>    gfp_t allocflags;<br>    int refcount;<br>    void (</em>ctor)(void <em>);<br>    int inuse;<br>    int align;<br>    int reserved;<br>    const char </em>name;<br>    struct list_head list;<br>    struct kobject kobj;<br>    struct memcg_cache_params <em>memcg_params;<br>    int max_attr_size;<br>    int remote_node_defrag_ratio;<br>    struct kmem_cache_node </em>node[64];<br>}<br>SIZE: 0x2c8<br>crash&gt; struct kmem_cache.offset<br>struct kmem_cache {<br>   [0x20] int offset;<br>}</p>
+<h1 id="disable-apparmor-GRUB-CMDLINE-LINUX-DEFAULT-”quiet-splash-apparmor-0”"><a href="#disable-apparmor-GRUB-CMDLINE-LINUX-DEFAULT-”quiet-splash-apparmor-0”" class="headerlink" title="disable apparmor, GRUB_CMDLINE_LINUX_DEFAULT=”quiet splash apparmor=0”"></a>disable apparmor, GRUB_CMDLINE_LINUX_DEFAULT=”quiet splash apparmor=0”</h1><p>crash&gt; bt -l<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”</p>
+<p> #0 [ffff881f136ed960] machine_kexec at ffffffff8104d9a1<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/machine_kexec_64.c: 266</p>
+<p> #1 [ffff881f136ed9d0] crash_kexec at ffffffff810ec218<br>    /build/buildd/linux-lts-trusty-3.13.0/kernel/kexec.c: 1099</p>
+<p> #2 [ffff881f136edaa0] oops_end at ffffffff81765ec8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/dumpstack.c: 230</p>
+<p> #3 [ffff881f136edad0] die at ffffffff81018648<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/dumpstack.c: 310</p>
+<p> #4 [ffff881f136edb00] do_general_protection at ffffffff817657c0<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/traps.c: 304</p>
+<p> #5 [ffff881f136edb30] general_protection at ffffffff817650c8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 1514<br>    [exception RIP: kmem_cache_alloc_trace+0x7c]<br>    RIP: ffffffff811af2fc  RSP: ffff881f136edbe8  RFLAGS: 00010282<br>    RAX: 0000000000000000  RBX: ffff880fff410830  RCX: 0000000000b735a1<br>    RDX: 0000000000b735a0  RSI: 00000000000080d0  RDI: 0000000000016240<br>    RBP: ffff881f136edc38   R8: ffff88203f896240   R9: ffffffff8132906a<br>    R10: 8080808080808080  R11: 0000000000000000  R12: ffff880fff403c00<br>    R13: ffff00088fec6500  R14: 00000000000080d0  R15: ffff880fff403c00<br>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018</p>
+<p> #6 [ffff881f136edc40] apparmor_file_alloc_security at ffffffff8132906a<br>    /build/buildd/linux-lts-trusty-3.13.0/security/apparmor/include/file.h: 61</p>
+<p> #7 [ffff881f136edc70] security_file_alloc at ffffffff812e9c56<br>    /build/buildd/linux-lts-trusty-3.13.0/security/security.c: 691</p>
+<p> #8 [ffff881f136edc80] get_empty_filp at ffffffff811cc8c0<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/file_table.c: 130</p>
+<p> #9 [ffff881f136edcb0] path_openat at ffffffff811da2b8<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/namei.c: 3169</p>
+<p>#10 [ffff881f136edd70] do_filp_open at ffffffff811db5c3<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/namei.c: 3238</p>
+<p>#11 [ffff881f136ede40] open_exec at ffffffff811d1ec5<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 767</p>
+<p>#12 [ffff881f136edea0] do_execve_common at ffffffff811d242b<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1500</p>
+<p>#13 [ffff881f136edf10] do_execve at ffffffff811d26b8<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1586</p>
+<p>#14 [ffff881f136edf20] sys_execve at ffffffff811d293d<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1688</p>
+<p>#15 [ffff881f136edf50] stub_execve at ffffffff8176ded9<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 870<br>    RIP: 00002b8eeccad427  RSP: 00007ffff54ea138  RFLAGS: 00000246<br>    RAX: 000000000000003b  RBX: 0000000000000000  RCX: ffffffffffffffff<br>    RDX: 00000000026029c0  RSI: 0000000002603e80  RDI: 00007ffff54ea80c<br>    RBP: 00007ffff54ea8b0   R8: 6e69622f37327970   R9: 2e322e3170735f33<br>    R10: 756265642f343431  R11: 0000000000000246  R12: 00000000026029c0<br>    R13: 0000000002474692  R14: 0000000002474696  R15: 00007ffff54ea80c<br>    ORIG_RAX: 000000000000003b  CS: 0033  SS: 002b</p>
+<p>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
+<p>crash&gt; dis kmem_cache_alloc_trace<br>0xffffffff811af280 <kmem_cache_alloc_trace>:    nopl   0x0(%rax,%rax,1)<br>0xffffffff811af285 <kmem_cache_alloc_trace+0x5>:        push   %rbp<br>0xffffffff811af286 <kmem_cache_alloc_trace+0x6>:        mov    %rsp,%rbp<br>0xffffffff811af289 <kmem_cache_alloc_trace+0x9>:        push   %r15<br>0xffffffff811af28b <kmem_cache_alloc_trace+0xb>:        mov    %rdi,%r15<br>0xffffffff811af28e <kmem_cache_alloc_trace+0xe>:        push   %r14<br>0xffffffff811af290 <kmem_cache_alloc_trace+0x10>:       mov    %esi,%r14d<br>0xffffffff811af293 <kmem_cache_alloc_trace+0x13>:       push   %r13<br>0xffffffff811af295 <kmem_cache_alloc_trace+0x15>:       push   %r12<br>0xffffffff811af297 <kmem_cache_alloc_trace+0x17>:       push   %rbx<br>0xffffffff811af298 <kmem_cache_alloc_trace+0x18>:       sub    $0x28,%rsp<br>0xffffffff811af29c <kmem_cache_alloc_trace+0x1c>:       mov    0xb65ece(%rip),%eax        # 0xffffffff81d15170 <gfp_allowed_mask><br>0xffffffff811af2a2 <kmem_cache_alloc_trace+0x22>:       mov    %rdx,-0x40(%rbp)<br>0xffffffff811af2a6 <kmem_cache_alloc_trace+0x26>:       mov    0x8(%rbp),%r9<br>0xffffffff811af2aa <kmem_cache_alloc_trace+0x2a>:       and    %esi,%eax<br>0xffffffff811af2ac <kmem_cache_alloc_trace+0x2c>:       test   $0x10,%al<br>0xffffffff811af2ae <kmem_cache_alloc_trace+0x2e>:       je     0xffffffff811af2bd <kmem_cache_alloc_trace+0x3d><br>0xffffffff811af2b0 <kmem_cache_alloc_trace+0x30>:       mov    %r9,-0x50(%rbp)<br>0xffffffff811af2b4 <kmem_cache_alloc_trace+0x34>:       callq  0xffffffff81760d30 <_cond_resched><br>0xffffffff811af2b9 <kmem_cache_alloc_trace+0x39>:       mov    -0x50(%rbp),%r9<br>0xffffffff811af2bd <kmem_cache_alloc_trace+0x3d>:       nopl   0x0(%rax,%rax,1)<br>0xffffffff811af2c2 <kmem_cache_alloc_trace+0x42>:       mov    %r15,%r12<br>0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45>:       mov    (%r12),%r8<br>0xffffffff811af2c9 <kmem_cache_alloc_trace+0x49>:       add    %gs:0xcce8,%r8<br>0xffffffff811af2d2 <kmem_cache_alloc_trace+0x52>:       mov    0x8(%r8),%rdx<br>0xffffffff811af2d6 <kmem_cache_alloc_trace+0x56>:       mov    (%r8),%r13<br>0xffffffff811af2d9 <kmem_cache_alloc_trace+0x59>:       mov    0x10(%r8),%rax<br>0xffffffff811af2dd <kmem_cache_alloc_trace+0x5d>:       test   %r13,%r13<br>0xffffffff811af2e0 <kmem_cache_alloc_trace+0x60>:       je     0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0><br>0xffffffff811af2e6 <kmem_cache_alloc_trace+0x66>:       test   %rax,%rax<br>0xffffffff811af2e9 <kmem_cache_alloc_trace+0x69>:       je     0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0><br>0xffffffff811af2ef <kmem_cache_alloc_trace+0x6f>:       movslq 0x20(%r12),%rax<br>0xffffffff811af2f4 <kmem_cache_alloc_trace+0x74>:       mov    (%r12),%rdi<br>0xffffffff811af2f8 <kmem_cache_alloc_trace+0x78>:       lea    0x1(%rdx),%rcx<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx<br>0xffffffff811af301 <kmem_cache_alloc_trace+0x81>:       mov    %r13,%rax<br>0xffffffff811af304 <kmem_cache_alloc_trace+0x84>:       cmpxchg16b %gs:(%rdi)<br>0xffffffff811af309 <kmem_cache_alloc_trace+0x89>:       sete   %al<br>0xffffffff811af30c <kmem_cache_alloc_trace+0x8c>:       test   %al,%al<br>0xffffffff811af30e <kmem_cache_alloc_trace+0x8e>:       je     0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af310 <kmem_cache_alloc_trace+0x90>:       movslq 0x20(%r12),%rax<br>0xffffffff811af315 <kmem_cache_alloc_trace+0x95>:       prefetcht0 (%rbx,%rax,1)<br>0xffffffff811af319 <kmem_cache_alloc_trace+0x99>:       test   %r13,%r13<br>0xffffffff811af31c <kmem_cache_alloc_trace+0x9c>:       jne    0xffffffff811af418 <kmem_cache_alloc_trace+0x198><br>0xffffffff811af322 <kmem_cache_alloc_trace+0xa2>:       movslq 0x18(%r15),%r15<br>0xffffffff811af326 <kmem_cache_alloc_trace+0xa6>:       mov    0x8(%rbp),%rax<br>0xffffffff811af32a <kmem_cache_alloc_trace+0xaa>:       mov    %rax,-0x48(%rbp)<br>0xffffffff811af32e <kmem_cache_alloc_trace+0xae>:       mov    %r15,-0x38(%rbp)<br>0xffffffff811af332 <kmem_cache_alloc_trace+0xb2>:       nopl   0x0(%rax,%rax,1)<br>0xffffffff811af337 <kmem_cache_alloc_trace+0xb7>:       add    $0x28,%rsp<br>0xffffffff811af33b <kmem_cache_alloc_trace+0xbb>:       mov    %r13,%rax<br>0xffffffff811af33e <kmem_cache_alloc_trace+0xbe>:       pop    %rbx<br>0xffffffff811af33f <kmem_cache_alloc_trace+0xbf>:       pop    %r12<br>0xffffffff811af341 <kmem_cache_alloc_trace+0xc1>:       pop    %r13<br>0xffffffff811af343 <kmem_cache_alloc_trace+0xc3>:       pop    %r14<br>0xffffffff811af345 <kmem_cache_alloc_trace+0xc5>:       pop    %r15<br>0xffffffff811af347 <kmem_cache_alloc_trace+0xc7>:       pop    %rbp<br>0xffffffff811af348 <kmem_cache_alloc_trace+0xc8>:       retq<br>0xffffffff811af349 <kmem_cache_alloc_trace+0xc9>:       nopl   0x0(%rax)<br>0xffffffff811af350 <kmem_cache_alloc_trace+0xd0>:       test   $0x800,%r14d<br>0xffffffff811af357 <kmem_cache_alloc_trace+0xd7>:       mov    %r15,%r12<br>0xffffffff811af35a <kmem_cache_alloc_trace+0xda>:       jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af360 <kmem_cache_alloc_trace+0xe0>:       mov    %gs:0xb7e0,%eax<br>0xffffffff811af368 <kmem_cache_alloc_trace+0xe8>:       test   $0x1fff00,%eax<br>0xffffffff811af36d <kmem_cache_alloc_trace+0xed>:       jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af373 <kmem_cache_alloc_trace+0xf3>:       mov    %gs:0xb800,%rax<br>0xffffffff811af37c <kmem_cache_alloc_trace+0xfc>:       cmpq   $0x0,0x2a8(%rax)<br>0xffffffff811af384 <kmem_cache_alloc_trace+0x104>:      je     0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af38a <kmem_cache_alloc_trace+0x10a>:      testb  $0x20,0x16(%rax)<br>0xffffffff811af38e <kmem_cache_alloc_trace+0x10e>:      jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af394 <kmem_cache_alloc_trace+0x114>:      mov    0x8(%rax),%rdx<br>0xffffffff811af398 <kmem_cache_alloc_trace+0x118>:      mov    0x10(%rdx),%rdx<br>0xffffffff811af39c <kmem_cache_alloc_trace+0x11c>:      and    $0x4,%edx<br>0xffffffff811af39f <kmem_cache_alloc_trace+0x11f>:      jne    0xffffffff811af45b <kmem_cache_alloc_trace+0x1db><br>0xffffffff811af3a5 <kmem_cache_alloc_trace+0x125>:      mov    %r14d,%esi<br>0xffffffff811af3a8 <kmem_cache_alloc_trace+0x128>:      mov    %r15,%rdi<br>0xffffffff811af3ab <kmem_cache_alloc_trace+0x12b>:      mov    %r9,-0x50(%rbp)<br>0xffffffff811af3af <kmem_cache_alloc_trace+0x12f>:      callq  0xffffffff811bc810 <__memcg_kmem_get_cache><br>0xffffffff811af3b4 <kmem_cache_alloc_trace+0x134>:      mov    -0x50(%rbp),%r9<br>0xffffffff811af3b8 <kmem_cache_alloc_trace+0x138>:      mov    %rax,%r12<br>0xffffffff811af3bb <kmem_cache_alloc_trace+0x13b>:      jmpq   0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af3c0 <kmem_cache_alloc_trace+0x140>:      mov    0xb43989(%rip),%rbx        # 0xffffffff81cf2d50 <__tracepoint_kmalloc+0x30><br>0xffffffff811af3c7 <kmem_cache_alloc_trace+0x147>:      test   %rbx,%rbx<br>0xffffffff811af3ca <kmem_cache_alloc_trace+0x14a>:      je     0xffffffff811af40d <kmem_cache_alloc_trace+0x18d><br>0xffffffff811af3cc <kmem_cache_alloc_trace+0x14c>:      mov    (%rbx),%rax<br>0xffffffff811af3cf <kmem_cache_alloc_trace+0x14f>:      lea    0x10(%rbx),%r15<br>0xffffffff811af3d3 <kmem_cache_alloc_trace+0x153>:      mov    %rbx,%r12<br>0xffffffff811af3d6 <kmem_cache_alloc_trace+0x156>:      nopw   %cs:0x0(%rax,%rax,1)<br>0xffffffff811af3e0 <kmem_cache_alloc_trace+0x160>:      mov    0x8(%r12),%rdi<br>0xffffffff811af3e5 <kmem_cache_alloc_trace+0x165>:      add    $0x10,%r12<br>0xffffffff811af3e9 <kmem_cache_alloc_trace+0x169>:      mov    %r14d,%r9d<br>0xffffffff811af3ec <kmem_cache_alloc_trace+0x16c>:      mov    -0x38(%rbp),%r8<br>0xffffffff811af3f0 <kmem_cache_alloc_trace+0x170>:      mov    -0x40(%rbp),%rcx<br>0xffffffff811af3f4 <kmem_cache_alloc_trace+0x174>:      mov    %r13,%rdx<br>0xffffffff811af3f7 <kmem_cache_alloc_trace+0x177>:      mov    -0x48(%rbp),%rsi<br>0xffffffff811af3fb <kmem_cache_alloc_trace+0x17b>:      callq  *%rax<br>0xffffffff811af3fd <kmem_cache_alloc_trace+0x17d>:      mov    %r12,%rax<br>0xffffffff811af400 <kmem_cache_alloc_trace+0x180>:      sub    %rbx,%rax<br>0xffffffff811af403 <kmem_cache_alloc_trace+0x183>:      mov    -0x10(%r15,%rax,1),%rax<br>0xffffffff811af408 <kmem_cache_alloc_trace+0x188>:      test   %rax,%rax<br>0xffffffff811af40b <kmem_cache_alloc_trace+0x18b>:      jne    0xffffffff811af3e0 <kmem_cache_alloc_trace+0x160><br>0xffffffff811af40d <kmem_cache_alloc_trace+0x18d>:      jmpq   0xffffffff811af337 <kmem_cache_alloc_trace+0xb7><br>0xffffffff811af412 <kmem_cache_alloc_trace+0x192>:      nopw   0x0(%rax,%rax,1)<br>0xffffffff811af418 <kmem_cache_alloc_trace+0x198>:      test   $0x8000,%r14d<br>0xffffffff811af41f <kmem_cache_alloc_trace+0x19f>:      je     0xffffffff811af322 <kmem_cache_alloc_trace+0xa2><br>0xffffffff811af425 <kmem_cache_alloc_trace+0x1a5>:      movslq 0x1c(%r12),%rdx<br>0xffffffff811af42a <kmem_cache_alloc_trace+0x1aa>:      xor    %esi,%esi<br>0xffffffff811af42c <kmem_cache_alloc_trace+0x1ac>:      mov    %r13,%rdi<br>0xffffffff811af42f <kmem_cache_alloc_trace+0x1af>:      callq  0xffffffff81387bf0 <__memset><br>0xffffffff811af434 <kmem_cache_alloc_trace+0x1b4>:      jmpq   0xffffffff811af322 <kmem_cache_alloc_trace+0xa2><br>0xffffffff811af439 <kmem_cache_alloc_trace+0x1b9>:      nopl   0x0(%rax)<br>0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0>:      mov    %r9,%rcx<br>0xffffffff811af443 <kmem_cache_alloc_trace+0x1c3>:      mov    $0xffffffff,%edx<br>0xffffffff811af448 <kmem_cache_alloc_trace+0x1c8>:      mov    %r14d,%esi<br>0xffffffff811af44b <kmem_cache_alloc_trace+0x1cb>:      mov    %r12,%rdi<br>0xffffffff811af44e <kmem_cache_alloc_trace+0x1ce>:      callq  0xffffffff81750117 <__slab_alloc><br>0xffffffff811af453 <kmem_cache_alloc_trace+0x1d3>:      mov    %rax,%r13<br>0xffffffff811af456 <kmem_cache_alloc_trace+0x1d6>:      jmpq   0xffffffff811af319 <kmem_cache_alloc_trace+0x99><br>0xffffffff811af45b <kmem_cache_alloc_trace+0x1db>:      testb  $0x1,0x5f1(%rax)<br>0xffffffff811af462 <kmem_cache_alloc_trace+0x1e2>:      je     0xffffffff811af3a5 <kmem_cache_alloc_trace+0x125><br>0xffffffff811af468 <kmem_cache_alloc_trace+0x1e8>:      jmpq   0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af46d <kmem_cache_alloc_trace+0x1ed>:      nopl   (%rax)</kmem_cache_alloc_trace+0x1ed></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x1e8></kmem_cache_alloc_trace+0x125></kmem_cache_alloc_trace+0x1e2></kmem_cache_alloc_trace+0x1db></kmem_cache_alloc_trace+0x99></kmem_cache_alloc_trace+0x1d6></kmem_cache_alloc_trace+0x1d3></__slab_alloc></kmem_cache_alloc_trace+0x1ce></kmem_cache_alloc_trace+0x1cb></kmem_cache_alloc_trace+0x1c8></kmem_cache_alloc_trace+0x1c3></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x1b9></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x1b4></__memset></kmem_cache_alloc_trace+0x1af></kmem_cache_alloc_trace+0x1ac></kmem_cache_alloc_trace+0x1aa></kmem_cache_alloc_trace+0x1a5></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x19f></kmem_cache_alloc_trace+0x198></kmem_cache_alloc_trace+0x192></kmem_cache_alloc_trace+0xb7></kmem_cache_alloc_trace+0x18d></kmem_cache_alloc_trace+0x160></kmem_cache_alloc_trace+0x18b></kmem_cache_alloc_trace+0x188></kmem_cache_alloc_trace+0x183></kmem_cache_alloc_trace+0x180></kmem_cache_alloc_trace+0x17d></kmem_cache_alloc_trace+0x17b></kmem_cache_alloc_trace+0x177></kmem_cache_alloc_trace+0x174></kmem_cache_alloc_trace+0x170></kmem_cache_alloc_trace+0x16c></kmem_cache_alloc_trace+0x169></kmem_cache_alloc_trace+0x165></kmem_cache_alloc_trace+0x160></kmem_cache_alloc_trace+0x156></kmem_cache_alloc_trace+0x153></kmem_cache_alloc_trace+0x14f></kmem_cache_alloc_trace+0x14c></kmem_cache_alloc_trace+0x18d></kmem_cache_alloc_trace+0x14a></kmem_cache_alloc_trace+0x147></__tracepoint_kmalloc+0x30></kmem_cache_alloc_trace+0x140></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x13b></kmem_cache_alloc_trace+0x138></kmem_cache_alloc_trace+0x134></__memcg_kmem_get_cache></kmem_cache_alloc_trace+0x12f></kmem_cache_alloc_trace+0x12b></kmem_cache_alloc_trace+0x128></kmem_cache_alloc_trace+0x125></kmem_cache_alloc_trace+0x1db></kmem_cache_alloc_trace+0x11f></kmem_cache_alloc_trace+0x11c></kmem_cache_alloc_trace+0x118></kmem_cache_alloc_trace+0x114></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x10e></kmem_cache_alloc_trace+0x10a></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x104></kmem_cache_alloc_trace+0xfc></kmem_cache_alloc_trace+0xf3></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0xed></kmem_cache_alloc_trace+0xe8></kmem_cache_alloc_trace+0xe0></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0xda></kmem_cache_alloc_trace+0xd7></kmem_cache_alloc_trace+0xd0></kmem_cache_alloc_trace+0xc9></kmem_cache_alloc_trace+0xc8></kmem_cache_alloc_trace+0xc7></kmem_cache_alloc_trace+0xc5></kmem_cache_alloc_trace+0xc3></kmem_cache_alloc_trace+0xc1></kmem_cache_alloc_trace+0xbf></kmem_cache_alloc_trace+0xbe></kmem_cache_alloc_trace+0xbb></kmem_cache_alloc_trace+0xb7></kmem_cache_alloc_trace+0xb2></kmem_cache_alloc_trace+0xae></kmem_cache_alloc_trace+0xaa></kmem_cache_alloc_trace+0xa6></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x198></kmem_cache_alloc_trace+0x9c></kmem_cache_alloc_trace+0x99></kmem_cache_alloc_trace+0x95></kmem_cache_alloc_trace+0x90></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x8e></kmem_cache_alloc_trace+0x8c></kmem_cache_alloc_trace+0x89></kmem_cache_alloc_trace+0x84></kmem_cache_alloc_trace+0x81></kmem_cache_alloc_trace+0x7c></kmem_cache_alloc_trace+0x78></kmem_cache_alloc_trace+0x74></kmem_cache_alloc_trace+0x6f></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x69></kmem_cache_alloc_trace+0x66></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x60></kmem_cache_alloc_trace+0x5d></kmem_cache_alloc_trace+0x59></kmem_cache_alloc_trace+0x56></kmem_cache_alloc_trace+0x52></kmem_cache_alloc_trace+0x49></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x42></kmem_cache_alloc_trace+0x3d></kmem_cache_alloc_trace+0x39></_cond_resched></kmem_cache_alloc_trace+0x34></kmem_cache_alloc_trace+0x30></kmem_cache_alloc_trace+0x3d></kmem_cache_alloc_trace+0x2e></kmem_cache_alloc_trace+0x2c></kmem_cache_alloc_trace+0x2a></kmem_cache_alloc_trace+0x26></kmem_cache_alloc_trace+0x22></gfp_allowed_mask></kmem_cache_alloc_trace+0x1c></kmem_cache_alloc_trace+0x18></kmem_cache_alloc_trace+0x17></kmem_cache_alloc_trace+0x15></kmem_cache_alloc_trace+0x13></kmem_cache_alloc_trace+0x10></kmem_cache_alloc_trace+0xe></kmem_cache_alloc_trace+0xb></kmem_cache_alloc_trace+0x9></kmem_cache_alloc_trace+0x6></kmem_cache_alloc_trace+0x5></kmem_cache_alloc_trace></p>
+<p>slab_alloc的代码<br>/*</p>
+<ul>
+<li>Inlined fastpath so that allocation functions (kmalloc, kmem_cache_alloc)</li>
+<li>have the fastpath folded into their functions. So no function call</li>
+<li>overhead for requests that can be satisfied on the fastpath.<br>*</li>
+<li>The fastpath works by first checking if the lockless freelist can be used.</li>
+<li>If not then __slab_alloc is called for slow processing.<br>*</li>
+<li>Otherwise we can simply pick the next object from the lockless free list.<br><em>/<br>static __always_inline void </em>slab_alloc_node(struct kmem_cache <em>s,<br>gfp_t gfpflags, int node, unsigned long addr)<br>{<br>void **object;<br>struct kmem_cache_cpu </em>c;<br>struct page *page;<br>unsigned long tid;</li>
+</ul>
+<p>if (slab_pre_alloc_hook(s, gfpflags))<br>return NULL;</p>
+<p>s = memcg_kmem_get_cache(s, gfpflags);<br>redo:<br>/*</p>
+<ul>
+<li>Must read kmem_cache cpu data via this cpu ptr. Preemption is</li>
+<li>enabled. We may switch back and forth between cpus while</li>
+<li>reading from one cpu area. That does not matter as long</li>
+<li>as we end up on the original cpu again when doing the cmpxchg.<br>*</li>
+<li>Preemption is disabled for the retrieval of the tid because that</li>
+<li>must occur from the current processor. We cannot allow rescheduling</li>
+<li>on a different processor between the determination of the pointer</li>
+<li>and the retrieval of the tid.<br>*/<br>preempt_disable();<br>c = __this_cpu_ptr(s-&gt;cpu_slab);</li>
+</ul>
+<p>/*</p>
+<ul>
+<li>The transaction ids are globally unique per cpu and per operation on</li>
+<li>a per cpu queue. Thus they can be guarantee that the cmpxchg_double</li>
+<li>occurs on the right processor and that there was no operation on the</li>
+<li>linked list in between.<br>*/<br>tid = c-&gt;tid;<br>preempt_enable();</li>
+</ul>
+<p>object = c-&gt;freelist;<br>page = c-&gt;page;<br>if (unlikely(!object || !node_match(page, node)))<br>object = __slab_alloc(s, gfpflags, node, addr, c);</p>
+<p>else {<br>void *next_object = get_freepointer_safe(s, object);   #但是这句是在对应numa节点之下per-cpu数据，不会和下面的this_cpu_cmpxchg_double产生冲突</p>
+<p>/*</p>
+<ul>
+<li>The cmpxchg will only match if there was no additional</li>
+<li>operation and if we are on the right processor.<br>*</li>
+<li>The cmpxchg does the following atomically (without lock</li>
+<li>semantics!)</li>
+<li><ol>
+<li>Relocate first pointer to the current per cpu area.</li>
+</ol>
+</li>
+<li><ol>
+<li>Verify that tid and freelist have not been changed</li>
+</ol>
+</li>
+<li><ol>
+<li>If they were not changed replace tid and freelist<br>*</li>
+</ol>
+</li>
+<li>Since this is without lock semantics the protection is only</li>
+<li>against code executing on this cpu <em>not</em> from access by</li>
+<li>other cpus.<br>*/<br>if (unlikely(!this_cpu_cmpxchg_double(<br>s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>object, tid,<br>next_object, next_tid(tid)))) {</li>
+</ul>
+<p>note_cmpxchg_failure(“slab_alloc”, s, tid);<br>goto redo;<br>}<br>prefetch_freepointer(s, next_object);<br>stat(s, ALLOC_FASTPATH);<br>}</p>
+<p>if (unlikely(gfpflags &amp; __GFP_ZERO) &amp;&amp; object)<br>memset(object, 0, s-&gt;object_size);</p>
+<p>slab_post_alloc_hook(s, gfpflags, object);</p>
+<p>return object;<br>}</p>
+<p>代码解释见：<a href="http://blog.chinaunix.net/uid-26859697-id-5498373.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-26859697-id-5498373.html</a><br>this_cpu_cmpxchg_double()原子指令操作。该原子操作主要做了三件事情：1）重定向首指针指向当前CPU的空间；2）判断tid和freelist未被修改；3）如果未被修改，也就是相等，确信此次slab分配未被CPU迁移，接着将新的tid和freelist数据覆盖过去以更新。<br>具体将this_cpu_cmpxchg_double()的功能展开用C语言表述就是:<br>if ((<strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;freelist) == object) &amp;&amp; (</strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;tid) == tid))<br>{<br>    <strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;freelist) = next_object;
+    </strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;tid) = next_tid(tid);<br>    return true;<br>}<br>else<br>{<br>    return false;<br>}</p>
+<p>CONFIG_DEBUG_PAGEALLOC参数<br>下面发现错误的get_freepointer函数里有CONFIG_DEBUG_PAGEALLOC（debug_pagealloc=1），我们来研究一下这个参数CONFIG_DEBUG_PAGEALLOC。<br>static inline void <em>get_freepointer_safe(struct kmem_cache </em>s, void <em>object)<br>{<br>void </em>p;</p>
+<p>#ifdef CONFIG_DEBUG_PAGEALLOC<br>probe_kernel_read(&amp;p, (void **)(object + s-&gt;offset), sizeof(p));</p>
+<p>#else<br>p = get_freepointer(s, object);</p>
+<p>#endif<br>return p;<br>}</p>
+<p>见：<a href="https://lwn.net/Articles/321595/，" target="_blank" rel="external">https://lwn.net/Articles/321595/，</a> 它不能检测read非法内存，只能检测write非法内存，并且要好长一段时间写到那里才发生。</p>
+<p>per-cpu数据的内核抢占问题<br>同步有两层：一层是不同cpu之间的，第二层是相同cpu之间的(虽然get_freepointer_safe作为per-cpu的数据无论什么时候都不会被其他cpu执行，但是this_cpu_cmpxchg_double作为乐观锁是有可能不执行freelist/tid更新的（进程调度到同一CPU上执行了slab对象的free操作），这时候乐观执行 get_freepointer_safe就会访问错误内存地址了)。第一种不同cpu之间的情形已经采用per-cpu机制自动做了，但是第二种相同cpu之间在不禁止进程抢占的情形下仍然是有可能发生同步问题的，那内核是怎么做到的呢？<br>static <strong>always_inline void slab_free(struct kmem_cache <em>s,<br>struct page </em>page, void *x, unsigned long addr){<br>…<br>redo:<br>preempt_disable();<br>c = </strong>this_cpu_ptr(s-&gt;cpu_slab);<br>tid = c-&gt;tid;<br>preempt_enable();</p>
+<p>if (likely(page == c-&gt;page)) {<br>set_freepointer(s, object, c-&gt;freelist);</p>
+<p>static <strong>always_inline void <em>slab_alloc_node(struct kmem_cache </em>s,<br>gfp_t gfpflags, int node, unsigned long addr){<br>…<br>redo:<br>preempt_disable();<br>c = </strong>this_cpu_ptr(s-&gt;cpu_slab);<br>tid = c-&gt;tid;<br>preempt_enable();</p>
+<p>object = c-&gt;freelist;<br>page = c-&gt;page;<br>if (unlikely(!object || !node_match(page, node)))<br>object = __slab_alloc(s, gfpflags, node, addr, c);<br>else {<br>void *next_object = get_freepointer_safe(s, object);</p>
+<p>slab_alloc_node与slab_free获取freelist是禁止抢占了的，是成对出现的，应该内核没同步这方面的问题</p>
+<p>Kasan检查<br>内核排查似乎没有问题，有可能是应用层使用slab时先free再引用出的问题，但仅从crash无法找到是哪个应用造成的，还得结合kasan来继续追查（DEBUG_PAGELLOC这些参数对read无效，仅对write有效，所以真正crash时离发生内存错误的时间较远，参考价值不大），kasan更加实时。kasan结果如下：<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br>44<br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br>55<br>56<br>57<br>58<br>59<br>60<br>61<br>62<br>63<br>64<br>65<br>66<br>67<br>68<br>69<br>70<br>71<br>72<br>73<br>74<br>75<br>76<br>77<br>78<br>79<br>80<br>81<br>82<br>83<br>84<br>85<br>86<br>87<br>88<br>89<br>90<br>91<br>92<br>93<br>94<br>95<br>96<br>97<br>98<br>99<br>100<br>101<br>102<br>103<br>104<br>105<br>106<br>107<br>108<br>109<br>110<br>111<br>112<br>113<br>114<br>115<br>116<br>117<br>118<br>119<br>120<br>121<br>122<br>123<br>124<br>125<br>126<br>127<br>128<br>129<br>130<br>131<br>132<br>133<br>134<br>135<br>136<br>137<br>138<br>139<br>140<br>141<br>142<br>143<br>144<br>145<br>146<br>147<br>148<br>149<br>150<br>151<br>152<br>[230056.938787] ==================================================================<br>[230056.938834] BUG: KASan: out of bounds access in isolate_migratepages_range+0x663/0xb30 at addr ffff880279cc76d1<br>[230056.938869] Read of size 8 by task cc1/27473<br>[230056.938887] =============================================================================<br>[230056.938915] BUG anon_vma (Not tainted): kasan: bad access detected<br>[230056.938936] —————————————————————————–<br>[230056.938936]<br>[230056.938970] Disabling lock debugging due to kernel taint<br>[230056.938981] INFO: Allocated in anon_vma_prepare+0x189/0x250 age=7323 cpu=16 pid=31029<br>[230056.939012] <strong>slab_alloc+0x4f8/0x560<br>[230056.939029] kmem_cache_alloc+0x18b/0x1e0<br>[230056.939047] anon_vma_prepare+0x189/0x250<br>[230056.939065] do_wp_page+0x837/0xb10<br>[230056.939081] handle_mm_fault+0x884/0x1160<br>[230056.939102] </strong>do_page_fault+0x218/0x750<br>[230056.939119] do_page_fault+0x1a/0x70<br>[230056.939135] page_fault+0x28/0x30<br>[230056.939154] INFO: Freed in <strong>put_anon_vma+0x69/0xe0 age=8588 cpu=4 pid=29418<br>[230056.939212] </strong>slab_free+0x2ab/0x3f0<br>[230056.939260] kmem_cache_free+0x1c1/0x200<br>[230056.939307] <strong>put_anon_vma+0x69/0xe0<br>[230056.939355] unlink_anon_vmas+0x2a8/0x320<br>[230056.939402] free_pgtables+0x50/0x1c0<br>[230056.939450] exit_mmap+0xca/0x1e0<br>[230056.939496] mmput+0x82/0x1b0<br>[230056.939541] do_exit+0x391/0x1060<br>[230056.939587] do_group_exit+0x86/0x130<br>[230056.939633] SyS_exit_group+0x1d/0x20<br>[230056.939681] system_call_fastpath+0x1a/0x1f<br>[230056.939729] INFO: Slab 0xffffea0009e73100 objects=43 used=30 fp=0xffff880279cc67a8 flags=0x2ffff0000004080<br>[230056.939820] INFO: Object 0xffff880279cc7658 @offset=13912 fp=0xffff880279cc7c38<br>[230056.939820]<br>[230056.939939] Bytes b4 ffff880279cc7648: 10 00 00 00 5b 17 00 00 ef 25 6b 03 01 00 00 00 ….[….%k…..<br>[230056.940031] Object ffff880279cc7658: 58 76 cc 79 02 88 ff ff 00 00 00 00 00 00 00 00 Xv.y…………<br>[230056.940123] Object ffff880279cc7668: 00 00 00 00 5a 5a 5a 5a 70 76 cc 79 02 88 ff ff ….ZZZZpv.y….<br>[230056.940214] Object ffff880279cc7678: 70 76 cc 79 02 88 ff ff 01 00 00 00 03 00 00 00 pv.y…………<br>[230056.940306] Object ffff880279cc7688: 58 76 cc 79 02 88 ff ff b8 2a 20 31 02 88 ff ff Xv.y…..* 1….<br>[230056.940400] CPU: 8 PID: 27473 Comm: cc1 Tainted: G B 3.13.0-76-generic #120hf00073670v20160120b0h5d3e6ab<br>[230056.940406] Hardware name: Cisco Systems Inc UCSC-C220-M3L/UCSC-C220-M3L, BIOS C220M3.2.0.3.0.080120140402 08/01/2014<br>[230056.940410] ffffea0009e73100 ffff880736bbf750 ffffffff81a6e195 ffff8804e881b840<br>[230056.940422] ffff880736bbf780 ffffffff81244c1d ffff8804e881b840 ffffea0009e73100<br>[230056.940431] ffff880279cc7658 ffffea001aa99c98 ffff880736bbf7a8 ffffffff8124ad66<br>[230056.940440] Call Trace:<br>[230056.940450] [<ffffffff81a6e195>] dump_stack+0x45/0x56<br>[230056.940458] [<ffffffff81244c1d>] print_trailer+0xfd/0x170<br>[230056.940466] [<ffffffff8124ad66>] object_err+0x36/0x40<br>[230056.940474] [<ffffffff8124cd29>] kasan_report_error+0x1e9/0x3a0<br>[230056.940484] [<ffffffff8125d9f8>] ? memcg_check_events+0x28/0x380<br>[230056.940491] [<ffffffff81221c2d>] ? rmap_walk+0x32d/0x340<br>[230056.940499] [<ffffffff8124d390>] kasan_report+0x40/0x50<br>[230056.940506] [<ffffffff81205ee3>] ? isolate_migratepages_range+0x663/0xb30<br>[230056.940513] [<ffffffff8124c019>] </ffffffff8124c019></ffffffff81205ee3></ffffffff8124d390></ffffffff81221c2d></ffffffff8125d9f8></ffffffff8124cd29></ffffffff8124ad66></ffffffff81244c1d></ffffffff81a6e195></strong>asan_load8+0x69/0xa0<br>[230056.940521] [<ffffffff81205ee3>] isolate_migratepages_range+0x663/0xb30<br>[230056.940531] [<ffffffff811dc5e7>] ? zone_watermark_ok+0x57/0x70<br>[230056.940538] [<ffffffff812067c6>] compact_zone+0x416/0x700<br>[230056.940545] [<ffffffff81206b45>] compact_zone_order+0x95/0x100<br>[230056.940553] [<ffffffff81207002>] try_to_compact_pages+0x102/0x1a0<br>[230056.940562] [<ffffffff811e21e6>] <strong>alloc_pages_direct_compact+0x96/0x290<br>[230056.940570] [<ffffffff811e2d5e>] </ffffffff811e2d5e></strong>alloc_pages_nodemask+0x97e/0xc40<br>[230056.940578] [<ffffffff8123ce24>] alloc_pages_vma+0xb4/0x200<br>[230056.940587] [<ffffffff812572ca>] do_huge_pmd_anonymous_page+0x13a/0x490<br>[230056.940594] [<ffffffff8120f072>] ? do_numa_page+0x192/0x200<br>[230056.940602] [<ffffffff81210c07>] handle_mm_fault+0x267/0x1160<br>[230056.940610] [<ffffffff81a7d028>] <strong>do_page_fault+0x218/0x750<br>[230056.940618] [<ffffffff8121aead>] ? do_mmap_pgoff+0x47d/0x500<br>[230056.940627] [<ffffffff811fd699>] ? vm_mmap_pgoff+0xa9/0xd0<br>[230056.940635] [<ffffffff81a7d57a>] do_page_fault+0x1a/0x70<br>[230056.940642] [<ffffffff81a785a8>] page_fault+0x28/0x30<br>[230056.940645] Memory state around the buggy address:<br>[230056.940696] ffff880279cc7580: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.940780] ffff880279cc7600: fc fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00<br>[230056.940865] &gt;ffff880279cc7680: 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.940947] ^<br>[230056.941001] ffff880279cc7700: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.941085] ffff880279cc7780: fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00 00<br>[230056.941167] ==================================================================<br>[230056.941250] ==================================================================<br>[230056.941336] BUG: KASan: out of bounds access in balloon_page_isolate+0x6a/0x1d0 at addr ffff880279cc76d1<br>[230056.941426] Read of size 8 by task cc1/27473<br>[230056.941473] =============================================================================<br>[230056.941560] BUG anon_vma (Tainted: G B ): kasan: bad access detected<br>[230056.941642] —————————————————————————–<br>[230056.941642]<br>[230056.941764] INFO: Allocated in anon_vma_prepare+0x189/0x250 age=7323 cpu=16 pid=31029<br>[230056.941850] </ffffffff81a785a8></ffffffff81a7d57a></ffffffff811fd699></ffffffff8121aead></strong>slab_alloc+0x4f8/0x560<br>[230056.941898] kmem_cache_alloc+0x18b/0x1e0<br>[230056.941946] anon_vma_prepare+0x189/0x250<br>[230056.941993] do_wp_page+0x837/0xb10<br>[230056.942039] handle_mm_fault+0x884/0x1160<br>[230056.942087] <strong>do_page_fault+0x218/0x750<br>[230056.942134] do_page_fault+0x1a/0x70<br>[230056.942180] page_fault+0x28/0x30<br>[230056.942228] INFO: Freed in </strong>put_anon_vma+0x69/0xe0 age=8588 cpu=4 pid=29418<br>[230056.942286] <strong>slab_free+0x2ab/0x3f0<br>[230056.942333] kmem_cache_free+0x1c1/0x200<br>[230056.942381] </strong>put_anon_vma+0x69/0xe0<br>[230056.942428] unlink_anon_vmas+0x2a8/0x320<br>[230056.942476] free_pgtables+0x50/0x1c0<br>[230056.942523] exit_mmap+0xca/0x1e0<br>[230056.942567] mmput+0x82/0x1b0<br>[230056.942611] do_exit+0x391/0x1060<br>[230056.942657] do_group_exit+0x86/0x130<br>[230056.942703] SyS_exit_group+0x1d/0x20<br>[230056.942750] system_call_fastpath+0x1a/0x1f<br>[230056.942798] INFO: Slab 0xffffea0009e73100 objects=43 used=30 fp=0xffff880279cc67a8 flags=0x2ffff0000004080<br>[230056.942889] INFO: Object 0xffff880279cc7658 @offset=13912 fp=0xffff880279cc7c38<br>[230056.942889]<br>[230056.943006] Bytes b4 ffff880279cc7648: 10 00 00 00 5b 17 00 00 ef 25 6b 03 01 00 00 00 ….[….%k…..<br>[230056.943098] Object ffff880279cc7658: 58 76 cc 79 02 88 ff ff 00 00 00 00 00 00 00 00 Xv.y…………<br>[230056.943190] Object ffff880279cc7668: 00 00 00 00 5a 5a 5a 5a 70 76 cc 79 02 88 ff ff ….ZZZZpv.y….<br>[230056.943281] Object ffff880279cc7678: 70 76 cc 79 02 88 ff ff 01 00 00 00 03 00 00 00 pv.y…………<br>[230056.943372] Object ffff880279cc7688: 58 76 cc 79 02 88 ff ff b8 2a 20 31 02 88 ff ff Xv.y…..* 1….<br>[230056.943465] CPU: 8 PID: 27473 Comm: cc1 Tainted: G B 3.13.0-76-generic #120hf00073670v20160120b0h5d3e6ab<br>[230056.943470] Hardware name: Cisco Systems Inc UCSC-C220-M3L/UCSC-C220-M3L, BIOS C220M3.2.0.3.0.080120140402 08/01/2014<br>[230056.943473] ffffea0009e73100 ffff880736bbf710 ffffffff81a6e195 ffff8804e881b840<br>[230056.943482] ffff880736bbf740 ffffffff81244c1d ffff8804e881b840 ffffea0009e73100<br>[230056.943491] ffff880279cc7658 ffffea001aa99c98 ffff880736bbf768 ffffffff8124ad66<br>[230056.943500] Call Trace:<br>[230056.943507] [<ffffffff81a6e195>] dump_stack+0x45/0x56<br>[230056.943515] [<ffffffff81244c1d>] print_trailer+0xfd/0x170<br>[230056.943523] [<ffffffff8124ad66>] object_err+0x36/0x40<br>[230056.943530] [<ffffffff8124cd29>] kasan_report_error+0x1e9/0x3a0<br>[230056.943537] [<ffffffff8124d390>] kasan_report+0x40/0x50<br>[230056.943544] [<ffffffff812075fa>] ? balloon_page_isolate+0x6a/0x1d0<br>[230056.943551] [<ffffffff8124c019>] <strong>asan_load8+0x69/0xa0<br>[230056.943558] [<ffffffff8124d390>] ? kasan_report+0x40/0x50<br>[230056.943565] [<ffffffff812075fa>] balloon_page_isolate+0x6a/0x1d0<br>[230056.943572] [<ffffffff8124c019>] ? </ffffffff8124c019></ffffffff812075fa></ffffffff8124d390></strong>asan_load8+0x69/0xa0<br>[230056.943579] [<ffffffff81206315>] isolate_migratepages_range+0xa95/0xb30<br>[230056.943587] [<ffffffff811dc5e7>] ? zone_watermark_ok+0x57/0x70<br>[230056.943594] [<ffffffff812067c6>] compact_zone+0x416/0x700<br>[230056.943602] [<ffffffff81206b45>] compact_zone_order+0x95/0x100<br>[230056.943609] [<ffffffff81207002>] try_to_compact_pages+0x102/0x1a0<br>[230056.943617] [<ffffffff811e21e6>] <strong>alloc_pages_direct_compact+0x96/0x290<br>[230056.943625] [<ffffffff811e2d5e>] </ffffffff811e2d5e></strong>alloc_pages_nodemask+0x97e/0xc40<br>[230056.943633] [<ffffffff8123ce24>] alloc_pages_vma+0xb4/0x200<br>[230056.943641] [<ffffffff812572ca>] do_huge_pmd_anonymous_page+0x13a/0x490<br>[230056.943649] [<ffffffff8120f072>] ? do_numa_page+0x192/0x200<br>[230056.943656] [<ffffffff81210c07>] handle_mm_fault+0x267/0x1160<br>[230056.943664] [<ffffffff81a7d028>] __do_page_fault+0x218/0x750<br>[230056.943672] [<ffffffff8121aead>] ? do_mmap_pgoff+0x47d/0x500<br>[230056.943680] [<ffffffff811fd699>] ? vm_mmap_pgoff+0xa9/0xd0<br>[230056.943687] [<ffffffff81a7d57a>] do_page_fault+0x1a/0x70<br>[230056.943694] [<ffffffff81a785a8>] page_fault+0x28/0x30<br>[230056.943698] Memory state around the buggy address:<br>[230056.943748] ffff880279cc7580: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.943832] ffff880279cc7600: fc fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00<br>[230056.943917] &gt;ffff880279cc7680: 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.943999] ^<br>[230056.944053] ffff880279cc7700: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.944138] ffff880279cc7780: fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00 00<br>[230056.944220] ==================================================================</ffffffff81a785a8></ffffffff81a7d57a></ffffffff811fd699></ffffffff8121aead></ffffffff81a7d028></ffffffff81210c07></ffffffff8120f072></ffffffff812572ca></ffffffff8123ce24></ffffffff811e21e6></ffffffff81207002></ffffffff81206b45></ffffffff812067c6></ffffffff811dc5e7></ffffffff81206315></ffffffff8124c019></ffffffff812075fa></ffffffff8124d390></ffffffff8124cd29></ffffffff8124ad66></ffffffff81244c1d></ffffffff81a6e195></ffffffff81a7d028></ffffffff81210c07></ffffffff8120f072></ffffffff812572ca></ffffffff8123ce24></ffffffff811e21e6></ffffffff81207002></ffffffff81206b45></ffffffff812067c6></ffffffff811dc5e7></ffffffff81205ee3></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Compile-old-non-existing-UCA-packages/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/16/Compile-old-non-existing-UCA-packages/" itemprop="url">Compile old non-existing UCA packages</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:57:18+08:00">
+                2021-01-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2016-08-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<p>For example, we want to use qemu 1:2.2+dfsg-5expubuntu9.6~cloud0, but those packages don’t exist anymore in UCA.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-cache madison qemu-system</span><br><span class="line">qemu-system | 1:2.5+dfsg-5ubuntu10.2~cloud0 | http://ubuntu-cloud.archive.canonical.com/ubuntu/ trusty-updates/mitaka/main amd64 Packages</span><br><span class="line">qemu-system | 1:2.2+dfsg-5expubuntu9.7~cloud5 | http://ppa.launchpad.net/ubuntu-cloud-archive/kilo-staging/ubuntu/ trusty/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0+dfsg-2ubuntu1.26 | http://archive.ubuntu.com/ubuntu/ trusty-updates/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0+dfsg-2ubuntu1.26 | http://security.ubuntu.com/ubuntu/ trusty-security/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0~rc1+dfsg-0ubuntu3 | http://archive.ubuntu.com/ubuntu/ trusty/main amd64 Packages</span><br><span class="line">      qemu | 2.0.0~rc1+dfsg-0ubuntu3 | http://archive.ubuntu.com/ubuntu/ trusty/main Sources</span><br><span class="line">      qemu | 2.0.0+dfsg-2ubuntu1.26 | http://archive.ubuntu.com/ubuntu/ trusty-updates/main Sources</span><br><span class="line">      qemu | 2.0.0+dfsg-2ubuntu1.26 | http://security.ubuntu.com/ubuntu/ trusty-security/main Sources</span><br><span class="line">      qemu | 1:2.2+dfsg-5expubuntu9.7~cloud5 | http://ppa.launchpad.net/ubuntu-cloud-archive/kilo-staging/ubuntu/ trusty/main Sources</span><br></pre></td></tr></table></figure></p>
+<p>But we can compile them by ourself.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">#https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+packages?field.name_filter=qemu&amp;field.status_filter=superseded&amp;field.series_filter=</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg.orig.tar.xz</span><br><span class="line">dpkg-source -x qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">cd qemu-2.2+dfsg/</span><br><span class="line">sudo apt-get install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file devscripts</span><br><span class="line">sudo apt-add-repository ppa:ubuntu-cloud-archive/kilo-staging</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get build-dep qemu</span><br><span class="line">dpkg-checkbuilddeps</span><br><span class="line">DEB_BUILD_OPTIONS=nocheck debuild -us -uc</span><br><span class="line"></span><br><span class="line">$ ls</span><br><span class="line">qemu-2.2+dfsg</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.build</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.changes</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">qemu_2.2+dfsg.orig.tar.xz</span><br><span class="line">qemu-guest-agent_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-kvm_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-arm_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-common_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-mips_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-misc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-ppc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-sparc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-x86_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user-binfmt_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user-static_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-utils_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +766,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:56:00+08:00">
                 2021-01-16
@@ -396,7 +902,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:54:49+08:00">
                 2021-01-16
@@ -576,7 +1082,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:45:24+08:00">
                 2021-01-16
@@ -731,7 +1237,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-15T19:11:40+08:00">
                 2021-01-15
@@ -888,7 +1394,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-14T20:22:20+08:00">
                 2021-01-14
@@ -1029,7 +1535,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-30T12:13:20+08:00">
                 2020-12-30
@@ -1219,7 +1725,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-28T10:06:02+08:00">
                 2020-12-28
@@ -1335,537 +1841,6 @@ c、gdb &lt;program&gt; &lt;PID&gt;
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/RabbitMQ-Deep-Dive/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/12/RabbitMQ-Deep-Dive/" itemprop="url">RabbitMQ Deep Dive</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:01:46+08:00">
-                2020-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2015-06-03<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>AMQP概念<br>通过消息机制，可以实现数据传输，非阻塞型操作，推送通知，发布/订阅，异步处理，work队列。<br>AMQP当中有四个概念非常重要：虚拟主机（virtual host），交换机（exchange），队列（queue）和绑定（binding）。</p>
-<p>virutal host相当于namespace，用于不同tenant之间的exchange, queue, binding的隔离。<br> Queue队列, 每个消息都会被投入到一个或多个队列。消息就一直在里面，直到有客户端（也就是消费者，Consumer）连接到这个队列并且将其取走为止。队列是由消费者（Consumer）通过程序建立的，不是通过配置文件或者命令行工具。<br>Binding绑定, 它的作用就是把exchange和queue按照路由规则绑定起来。<br>Routing_Key路由关键字：exchange根据这个关键字进行消息投递。<br>Channele消息通道：在客户端的每个连接里，可建立多个channel，每个channel代表一个会话任务。<br>Exchange交换机，对消息进行路由，当收到Publisher传递给它的消息后，Excahnge会根据路由键routing_key决定将消息加入到哪些消息队列中。<br>消息的类型：</p>
-<p>Direct Exchange – 处理路由键。需要将一个队列绑定到交换机上，要求该消息与一个特定的路由键完全匹配。一对一交换类型。<br>Topic Exchange – 将路由键和某模式进行匹配。此时队列需要绑定要一个模式上。符号“#”匹配一个或多个词，符号“*”匹配不多不少一个词。一对多主题多播交换类型。<br>Fanout Exchange – 不处理路由键。你只需要简单的将队列绑定到交换机上。一个发送到交换机的消息都会被转发到与该交换机绑定的所有队列上。一对多广播交换类型。</p>
-<p>RabbitMQ简介与特点<br>RabbitMQ是一个开源的AMQP协议的实现，它具有如下特点：可靠性（Reliability）, RabbitMQ使用一些机制来保证程序的可靠性，如持久化、传输确认机制、发布确认、高可用性。灵活的路由机制（Flexible Routing）, 在消息进入队列之前，通过Exchange来路由消息的。对于典型的路由功能，RabbitMQ已经提供了一些内置的Exchange来实现。针对更复杂的路由功能，可以将多个Exchange绑定在一起，也通过插件机制实现自己的Exchange。消息集群（Clustering）多个RabbitMQ服务器可以组成一个集群，形成单个逻辑Broker。Federation, For servers that need to be more loosely and unreliably connected than clustering allows, RabbitMQ offers a federation model.队列高可用（Highly Available Queues）, 队列可以在集群中的机器上进行镜像，以确保在硬件问题下还保证消息安全。多种协议的支持（Multi-protocol）, RabbitMQ支持多种消息队列协议。</p>
-<p>一个rabbitmq python例子</p>
-<p>#coding:utf-8<br>import sys<br>from amqplib import client_0_8 as amqp<br>if <strong>name</strong> == ‘<strong>main</strong>‘:<br>    if (len(sys.argv) &lt;= 1):<br>        ispublisher = ‘0’<br>        print “Then pls run ‘rabbittest 1’ to sent message.”<br>    else:<br>        ispublisher = sys.argv[1]<br>    conn = amqp.Connection(host=”localhost:5672 “, userid=”guest”, password=”password”, virtual_host=”/“, insist=False)</p>
-<pre><code># 每个channel都被分配了一个整数标识
-chan = conn.channel()
-# 创建一个队列，它是durable的（重启后会重新建立）a
-# 消费者断开时不会自动删除（auto_delte=False)
-chan.queue_declare(queue=&quot;queue1&quot;, durable=True, exclusive=False, auto_delete=False)
-# 创建交换机，参数意思和上面的队列是一样的，还有一个type类型：fanout, direct, topic
-chan.exchange_declare(exchange=&quot;switch1&quot;, type=&quot;direct&quot;,
-                      durable=True, auto_delete=False,)
-# 绑定交换机和队列
-chan.queue_bind(queue=&quot;queue1&quot;, exchange=&quot;switch1&quot;, routing_key=&quot;key1&quot;)
-if (ispublisher == &apos;1&apos;):
-    # 生产者
-    msg = amqp.Message(&quot;Test message!&quot;)
-    msg.properties[&quot;delivery_mode&quot;] = 2
-    chan.basic_publish(msg, exchange=&quot;switch1&quot;, routing_key=&quot;key1&quot;)
-else:
-    # 主动从队列拉消息
-    msg = chan.basic_get(&quot;queue1&quot;)
-    print msg.body
-    chan.basic_ack(msg.delivery_tag)
-    # 消息来了通知回调
-    # 如果no_ack=True可以使用chan.basic_ack()人工确认，使用delivery_tag参数
-    def recv_callback(msg):
-        print &apos;Received: &apos; + msg.body
-    chan.basic_consume(queue=&apos;queue1&apos;, no_ack=False,
-                       callback=recv_callback, consumer_tag=&quot;testtag&quot;)
-    # chan.basic_cancel(&quot;testtag&quot;) # 取消回调函数
-    while True:
-        chan.wait()  # 等待在队列上，直到下一个消息到达队列。
-chan.close()
-conn.close()
-</code></pre><p>RabbitMQ CLI<br>安装，sudo apt-get install rabbitmq-server<br>重启，sudo service rabbitmq-server restart<br>sudo rabbitmqctl list_vhostssudo rabbitmqctl add_vhost demo<br>sudo rabbitmqctl list_users<br>sudo rabbitmqctl add_user test password<br>sudo rabbitmqctl change_password test password<br>sudo rabbitmqctl clear_password test<br>sudo rabbitmqctl list_user_permissions test<br>sudo rabbitmqctl set_permissions -p demo test “.<em>“ “.</em>“ “.*”<br>sudo rabbitmqctl clear_permissions -p demo test<br>sudo rabbitmqctl list_queues -p demo name durable auto_delete slave_pids synchronised_slave_pids<br>sudo rabbitmqadmin delete queue name=’queuename’<br>sudo rabbitmqctl list_exchanges -p demosudo rabbitmqctl list_bindings -p demo<br>sudo rabbitmqctl list_consumers -p demosudo rabbitmqctl statussudo rabbitmqctl report</p>
-<h1 id="fileds-can-be-name-durable-auto-delete-arguments-policy-pid-owner-pid-exclusive-exclusive-consumer-pid-exclusive-consumer-tag-messages-ready-messages-unacknowledged-messages-messages-ready-ram-messages-unacknowledged-ram-messages-ram-messages-persistent-message-bytes-message-bytes-ready-message-bytes-unacknowledged-message-bytes-ram-message-bytes-persistent-head-message-timestamp-disk-reads-disk-writes-consumers-consumer-utilisation-memory-slave-pids-synchronised-slave-pids-state"><a href="#fileds-can-be-name-durable-auto-delete-arguments-policy-pid-owner-pid-exclusive-exclusive-consumer-pid-exclusive-consumer-tag-messages-ready-messages-unacknowledged-messages-messages-ready-ram-messages-unacknowledged-ram-messages-ram-messages-persistent-message-bytes-message-bytes-ready-message-bytes-unacknowledged-message-bytes-ram-message-bytes-persistent-head-message-timestamp-disk-reads-disk-writes-consumers-consumer-utilisation-memory-slave-pids-synchronised-slave-pids-state" class="headerlink" title="fileds can be:  [name, durable, auto_delete, arguments, policy, pid, owner_pid, exclusive, exclusive_consumer_pid, exclusive_consumer_tag, messages_ready, messages_unacknowledged, messages, messages_ready_ram, messages_unacknowledged_ram, messages_ram, messages_persistent, message_bytes, message_bytes_ready, message_bytes_unacknowledged, message_bytes_ram, message_bytes_persistent, head_message_timestamp, disk_reads, disk_writes, consumers, consumer_utilisation, memory, slave_pids, synchronised_slave_pids, state]"></a>fileds can be:  [name, durable, auto_delete, arguments, policy, pid, owner_pid, exclusive, exclusive_consumer_pid, exclusive_consumer_tag, messages_ready, messages_unacknowledged, messages, messages_ready_ram, messages_unacknowledged_ram, messages_ram, messages_persistent, message_bytes, message_bytes_ready, message_bytes_unacknowledged, message_bytes_ram, message_bytes_persistent, head_message_timestamp, disk_reads, disk_writes, consumers, consumer_utilisation, memory, slave_pids, synchronised_slave_pids, state]</h1><p>sudo rabbitmqctl list_queues name slave_pids synchronised_slave_pids durable -p openstack<br>RabbitMQ GUI</p>
-<p>Enable it, sudo rabbitmq-plugins enable rabbitmq_management<br><a href="http://localhost:15672" target="_blank" rel="external">http://localhost:15672</a>  (guest/guest)<br>RabbitMQ配置文件<br><a href="http://www.rabbitmq.com/configure.html#configuration-file" target="_blank" rel="external">http://www.rabbitmq.com/configure.html#configuration-file</a><br>sudo find / -name rabbitmq.config*<br>sudo mv /usr/share/doc/rabbitmq-server/rabbitmq.config.example.gz /etc/rabbitmq/cd /etc/rabbitmq/ &amp;&amp; sudo gunzip rabbitmq.config.example.gz<br>sudo mv rabbitmq.config.example rabbitmq.config<br>RabbitMQ调优</p>
-<p>1, 流控(Flow Control)机制，默认RabbitMQ在使用机器的40%以上的内存时流控机制会起作用block掉所有连接。故确保使用64位操作系统与64位Erlang VM。当RabbitMQ是集群情况下，当其中有一台机器硬盘不足的时候，所有节点的producer链接也会被阻止。</p>
-<p>rabbitmqctl  set_vm_memory_high_watermark 0.4<br>rabbitmqctl set_vm_memory_high_watermark_paging_ratio 0.75<br>rabbitmqctl status<br><a href="http://www.rabbitmq.com/memory.html" target="_blank" rel="external">http://www.rabbitmq.com/memory.html</a><br>Max open files，/etc/default/rabbitmq-server<br>ulimit -n 65535<br>cat /proc/$RABBITMQ_BEAM_PROCESS_PID/limits<br>2, Erlang的Hipe优化, 可以设置hipe_compiles设置。可以看到有20-50%的性能优化。而你只需要付出1分钟左右的延迟启动。 HiPE需要你检查是否编译进入你的Erlang安装环境。Ubuntu，需要安装erlang-base-hipe.默认有些平台不支持。如果Erlang VM segfaults,请关闭这个选项。</p>
-<p>[{rabbit, [{hipe_compile, true}]}].<br>RabbitMQ集群</p>
-<p>跨三个节点部署 RabbitMQ 集群和镜像消息队列。可以使用 HAProxy 提供负载均衡，或者将 RabbitMQ host list 配置给 OpenStack 组件（使用 rabbit_hosts 和 rabbit_ha_queues 配置项）。</p>
-<p>先看第一种方式（采用HAproxy）：</p>
-<h1 id="每个节点上执行下列命令配置RabbitMQ集群"><a href="#每个节点上执行下列命令配置RabbitMQ集群" class="headerlink" title="每个节点上执行下列命令配置RabbitMQ集群"></a>每个节点上执行下列命令配置RabbitMQ集群</h1><h1 id="根据需要设置当前节点的工作模式-ram-disk-，ROOT-NODE-HOSTNAME为集群根节点的主机名，注意在此必须使用主机名"><a href="#根据需要设置当前节点的工作模式-ram-disk-，ROOT-NODE-HOSTNAME为集群根节点的主机名，注意在此必须使用主机名" class="headerlink" title="根据需要设置当前节点的工作模式(ram/disk)，ROOT_NODE_HOSTNAME为集群根节点的主机名，注意在此必须使用主机名"></a>根据需要设置当前节点的工作模式(ram/disk)，ROOT_NODE_HOSTNAME为集群根节点的主机名，注意在此必须使用主机名</h1><p>apt-get install rabbitmq-server<br>rabbitmq-server -detached                   #detached为后台运行别占据终端<br>echo ‘MYRABBITMQCLUSTERABC’ &gt; /var/lib/rabbitmq/.erlang.cookie<br>chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie<br>chmod 400 /var/lib/rabbitmq/.erlang.cookie<br>/usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management<br>/usr/sbin/rabbitmqctl stop_app<br>/usr/sbin/rabbitmqctl reset<br>/usr/sbin/rabbitmqctl join_cluster –ram rabbit@${ROOT_NODE_HOSTNAME}<br>/usr/sbin/rabbitmqctl start_app<br>service rabbitmq-server restart</p>
-<h1 id="在主节点上添加用户"><a href="#在主节点上添加用户" class="headerlink" title="在主节点上添加用户"></a>在主节点上添加用户</h1><p>/usr/sbin/rabbitmqctl add_user web_admin password<br>/usr/sbin/rabbitmqctl add_user mgmt_admin password<br>/usr/sbin/rabbitmqctl set_user_tags username monitoring<br>/usr/sbin/rabbitmqctl set_user_tags mgmt_admin administrator<br>/usr/sbin/rabbitmqctl rabbitmqctl list_users<br>/usr/sbin/rabbitmqctl set_permissions -p / mgmt_admin “.<em>“ “.</em>“ “.*”</p>
-<h1 id="设置HAProxy-需要设置成镜像队列，可以访问http-192-168-64-87-8888，用户名web-admin-password进行访问"><a href="#设置HAProxy-需要设置成镜像队列，可以访问http-192-168-64-87-8888，用户名web-admin-password进行访问" class="headerlink" title="设置HAProxy, 需要设置成镜像队列，可以访问http://192.168.64.87:8888，用户名web_admin/password进行访问"></a>设置HAProxy, 需要设置成镜像队列，可以访问<a href="http://192.168.64.87:8888，用户名web_admin/password进行访问" target="_blank" rel="external">http://192.168.64.87:8888，用户名web_admin/password进行访问</a></h1><p>/usr/sbin/rabbitmqctl set_policy ha-all “^” ‘{“ha-mode”:”all”}’<br>修改文件：/etc/haproxy/haproxy.cfg<br>listen rabbitmq_cluster 0.0.0.0:5672<br>mode tcp<br>balance roundrobin<br>server   node1 192.168.1.1:5672 check inter 2000 rise 2 fall 3<br>/usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -D<br>第二种使用 rabbit_hosts 和 rabbit_ha_queues 配置项：</p>
-<p>rabbit_hosts = rabbit1:5672,rabbit2:5672<br>rabbit_host = rabbit1<br>rabbit_ha_queues = true<br>如果配置了rabbit_hosts，那么nova将会按照顺序连接一个RabbitMQ服务，如果正在使用的MQ服务断开则依次尝试连接下一个，由于所有MQ的消息都是同步的，所以消息不会丢失。<br>如果配置了rabbit_host，那么需要在集群前架设haproxy，保证集群VIP服务正常。</p>
-<p>confirm that actual queue is connected and can consume that queue.  </p>
-<p>sudo rabbitmq-plugins enable rabbitmq_management<br>wget <a href="http://127.0.0.1:15672/cli/rabbitmqadmin" target="_blank" rel="external">http://127.0.0.1:15672/cli/rabbitmqadmin</a> &amp;&amp; chmod 777 rabbitmqadmi<br>sudo rabbitmqctl add_user test password<br>sudo rabbitmqctl set_user_tags test administrator<br>sudo rabbitmqctl set_permissions -p openstack test “.<em>“ “.</em>“ “.*”<br><a href="http://10.5.0.6:15672/#/queues/openstack/compute.juju-a09725-xenial-mitaka-7" target="_blank" rel="external">http://10.5.0.6:15672/#/queues/openstack/compute.juju-a09725-xenial-mitaka-7</a><br>./rabbitmqadmin publish -V openstack -u test -p password exchange=nova routing_key=compute.juju-a09725-xenial-mitaka-7 payload=”test”<br>tail -f /var/log/nova/nova-compute.log</p>
-<p>具体地见：<a href="http://m.blog.csdn.net/blog/gtt116/21083533" target="_blank" rel="external">http://m.blog.csdn.net/blog/gtt116/21083533</a><br>Debug Hacks<br>$ tshark -r xxx.pcap |awk ‘{arr[$5]++}END{for (a in arr) print a, arr[a]}’ |sort -n -k 2 -r | head -n 3<br>10.55.74.103 62756<br>10.55.74.142 12976<br>10.55.74.139 12228<br>juju run -u rabbitmq-server/0 ‘sudo rabbitmqctl list_queues -p openstack|grep -wv 0’</p>
-<p>watch -c “sudo rabbitmqctl list_queues -p openstack | grep -E ‘log|neutron|agent’”<br>Reset rabbitmq slave<br>1) On juju-3182a3-69-lxd-2, back mnesia, stop the service<br>$ sudo mv /var/lib/rabbitmq/mnesia /var/lib/rabbitmq/mnesia-back<br>$ sudo service rabbitmq-server stop<br>2) Forget the cluster nodes from the rabbit master node<br>$ sudo rabbitmqctl stop_app<br>$ sudo rabbitmqctl forget_cluster_node rabbit@juju-3182a3-69-lxd-2<br>$ sudo rabbitmqctl start_app<br>如何恢复systemd管理的native mirror rabbitmq cluster</p>
-<p>如何恢复systemd管理的native mirror rabbitmq cluster<br>1, 确保在3个节点上，rabbitmq-server先由systemd启动(随后会由pacemaker接管)，这样能可能运行rabbitmqctl cluster_status命令．假设此时3个节点各自为政．<br>juju run –application=rabbitmq-server ‘sudo rabbitmqctl cluster_status’</p>
-<p>2, juju status看有没有error状态，例如现在看到rabbitmq-server/1因为下列日志为error状态, rabbitmq-server/1上运行：<br><a href="https://www.jianshu.com/p/498c63e4ace1" target="_blank" rel="external">https://www.jianshu.com/p/498c63e4ace1</a><br><a href="https://ywnz.com/linuxyffq/3899.html" target="_blank" rel="external">https://ywnz.com/linuxyffq/3899.html</a><br>2020-02-21 09:24:09 DEBUG config-changed subprocess.CalledProcessError: Command ‘[‘timeout’, ‘180’, ‘/usr/sbin/rabbitmqctl’, ‘wait’, ‘/var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid’]’ returned non-zero exit status 70.<br>systemctl restart rabbitmq-server<br>rabbitmqctl status |grep pid   #write pid to /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@juju-cbd760-octavia-10.pid<br>juju resolved rabbitmq-server/1 –no-retry<br>[可选]确保juju status没有rabbitmq untis相关错误之后，触发hooks<br>juju run –application ha hooks/config-changed<br>juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju show-status-log neutron-openvswitch/2</p>
-<p>3, 没有ceph的情况下，代码显示必须有ha-vip-only=true<br>juju deploy -n 3 rabbitmq-server<br>juju deploy hacluster ha<br>juju add-relation rabbitmq-server ha<br>juju config rabbitmq-server vip=10.5.100.20<br>juju config rabbitmq-server vip_iface=ens3<br>juju config ha corosync_bindiface=ens3<br>juju config rabbitmq-server ha-vip-only=true<br>juju config ha cluster_count=3<br>juju config rabbitmq-server min-cluster-size=3</p>
-<p>4, 找到leader，假如leader是rabbitmq-server/1，并在其上找到cluster_name<br>juju run –application rabbitmq-server “is-leader”   #assue rabbitmq-server/1 is the leader<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status |grep cluster<br> {cluster_name,<a href="&#109;&#x61;&#x69;&#x6c;&#116;&#111;&#58;&#x3c;&#34;&#x72;&#x61;&#x62;&#x62;&#105;&#x74;&#x6d;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#114;&#x40;&#x6a;&#117;&#106;&#117;&#45;&#99;&#x62;&#100;&#x37;&#54;&#48;&#x2d;&#x6f;&#99;&#x74;&#97;&#118;&#x69;&#97;&#x2d;&#x31;&#48;&#34;">&#x3c;&#34;&#x72;&#x61;&#x62;&#x62;&#105;&#x74;&#x6d;&#113;&#x2d;&#115;&#x65;&#x72;&#x76;&#101;&#114;&#x40;&#x6a;&#117;&#106;&#117;&#45;&#99;&#x62;&#100;&#x37;&#54;&#48;&#x2d;&#x6f;&#99;&#x74;&#97;&#118;&#x69;&#97;&#x2d;&#x31;&#48;&#34;</a>&gt;},</p>
-<p>5, rabbitmq-server/1, 把RABBITMQ_NODENAME由localhost改成juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-10<br>root@juju-cbd760-octavia-10:~# cat /var/lib/rabbitmq/.erlang.cookie<br>CZIFVOYCELFFGUFWJBZY<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status</p>
-<p>但代码中有这一句会在ha-vip-only=false时将RABBITMQ_NODENAME设为localhost, 所以ha-vip-only应为ha-vip-only，<br>同时，这里也说对于rabbitmq的hacluster方式的ha已经废弃了<br><a href="https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250" target="_blank" rel="external">https://github.com/openstack/charm-rabbitmq-server/blob/master/hooks/rabbitmq_context.py#L250</a></p>
-<pre><code># TODO: this is legacy HA and should be removed since it is now
-# deprecated.
-if relation_ids(&apos;ha&apos;):
-    if not config(&apos;ha-vip-only&apos;):
-        # TODO: do we need to remove this setting if it already exists
-        # and the above is false?
-        context[&apos;settings&apos;][&apos;RABBITMQ_NODENAME&apos;] = \
-            &apos;{}@localhost&apos;.format(service_name())
-</code></pre><p>6, 登录到rabbitmq-server/0,　修改hostname并加入集群<br>root@juju-cbd760-octavia-9:~# grep -r ‘RABBITMQ_NODENAME’ /etc/rabbitmq/rabbitmq-env.conf<br>RABBITMQ_NODENAME=rabbitmq-server@juju-cbd760-octavia-9<br>systemctl restart rabbitmq-server<br>rabbitmqctl cluster_status<br>rabbitmqctl stop_app<br>rabbitmqctl reset<br>rabbitmqctl join_cluster rabbitmq-server@juju-cbd760-octavia-10<br>rabbitmqctl cluster_status</p>
-<p>7, 登录到rabbitmq-server/2重复上一步，只是hostname不同, 这里为juju-cbd760-octavia-11</p>
-<p>8, 此时．<br>root@juju-cbd760-octavia-10:~# rabbitmqctl cluster_status<br>Cluster status of node ‘rabbitmq-server@juju-cbd760-octavia-10’<br>[{nodes,[{disc,[‘rabbitmq-server@juju-cbd760-octavia-10’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-11’,<br>                ‘rabbitmq-server@juju-cbd760-octavia-9’]}]},<br> {running_nodes,[‘rabbitmq-server@juju-cbd760-octavia-10’]},<br> {cluster_name,<a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#111;&#58;&#60;&#34;&#x72;&#97;&#98;&#x62;&#105;&#x74;&#x6d;&#113;&#45;&#x73;&#101;&#114;&#118;&#101;&#x72;&#64;&#106;&#117;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#48;&#45;&#111;&#99;&#116;&#97;&#x76;&#x69;&#97;&#x2d;&#x31;&#48;&#x22;">&#60;&#34;&#x72;&#97;&#98;&#x62;&#105;&#x74;&#x6d;&#113;&#45;&#x73;&#101;&#114;&#118;&#101;&#x72;&#64;&#106;&#117;&#x6a;&#x75;&#x2d;&#99;&#98;&#x64;&#55;&#54;&#48;&#45;&#111;&#99;&#116;&#97;&#x76;&#x69;&#97;&#x2d;&#x31;&#48;&#x22;</a>&gt;},<br> {partitions,[]},<br> {alarms,[{‘rabbitmq-server@juju-cbd760-octavia-10’,[]}]}]</p>
-<p>9, 但上面修复只是systemd管理的native集群.<br>   如何被pacemaker管理呢？ 在rabbmitmq-server/1上(juju-cbd760-octavia-10)停掉systemd,启动corosync与packemaker，但前提是hacluster charm已经成功为corosync配置了res_rabbitmq_vip resources (当ha-vip-only=true时只有这一个）<br>   此时看到crm status没有res_rabbitmq_vip这个resource，</p>
-<p>#juju run –application rabbitmq-server hooks/ha-relation-joined<br>juju run –application ha hooks/config-changed<br>juju run –unit ha/0 “sudo corosync-quorumtool -s”<br>juju run –unit ha/0 “sudo crm status”<br>juju run –unit ha/0 “sudo crm resource restart res_rabbitmq_vip”<br>juju run –unit ha/0 “sudo crm resource clean res_rabbitmq_vip”</p>
-<p>#<a href="https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster" target="_blank" rel="external">https://github.com/ClusterLabs/resource-agents/blob/master/heartbeat/rabbitmq-cluster</a><br>ls /usr/lib/ocf/resource.d/rabbitmq/rabbitmq-server-ha<br>　　　若运行上面hook无法加入res_rabbitmq_vip的话，检查代码是应该设置ha-vip-only=true，然后使用下面方法添加:<br>juju remove-relation rabbitmq-server ha<br>juju add-relation rabbitmq-server ha<br>      然后可以看到：<br>root@juju-cbd760-octavia-11:~# crm status |grep vip<br> res_rabbitmq_vip       (ocf::heartbeat:IPaddr2):       Started juju-cbd760-octavia-10<br>     但是仍然看到这种错误：<br>ubuntu@zhhuabj-bastion:~$ juju status |grep waiting<br>rabbitmq-server             3.6.10   waiting      3  rabbitmq-server             jujucharms  358  ubuntu<br>rabbitmq-server/0                waiting   idle   9        10.5.0.35       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/1*               waiting   idle   10       10.5.0.32       5672/tcp                    Unit has peers, but RabbitMQ not clustered<br>rabbitmq-server/2                waiting   idle   11       10.5.0.28       5672/tcp                    Unit has peers, but RabbitMQ not clustered</p>
-<p>10, 继续调试, ha relation的数目不对，所以停在’ Unit has peers, but RabbitMQ not clustered’<br>ubuntu@zhhuabj-bastion:~$ juju run –unit rabbitmq-server/0 “relation-ids ha”<br>ha:41<br>ubuntu@zhhuabj-bastion:~$ juju run –unit rabbitmq-server/0 “relation-list -r ha:41”<br>ha/3   #because hacluster was named to ha so name is ha/3 now<br>ubuntu@zhhuabj-bastion:~$ juju run –unit rabbitmq-server/0 “relation-get -r ha:41 - ha/3”<br>clustered: “yes”<br>egress-subnets: 10.5.0.35/32<br>ingress-address: 10.5.0.35<br>private-address: 10.5.0.35</p>
-<p>它在找rabbitmqctl cluster_status中为running_nodes的个数<br> 828 @cached<br> 829 def clustered():<br> 830     ‘’’ Determine whether local rabbitmq-server is clustered ‘’’<br> 831     # NOTE: A rabbitmq node can only join a cluster once.<br> 832     # Simply checking for more than one running node tells us<br> 833     # if this unit is in a cluster.<br> 834     if len(running_nodes()) &gt; 1:<br> 835         return True<br> 836     else:<br> 837         return False</p>
-<p> 787 @cached<br> 788 def running_nodes():<br> 789     ‘’’ Determine the current set of running nodes in the RabbitMQ cluster ‘’’<br> 790     return nodes(get_running=True)</p>
-<p> 770 @cached<br> 771 def nodes(get_running=False):<br> 772     ‘’’ Get list of nodes registered in the RabbitMQ cluster ‘’’<br> 773     out = rabbitmqctl_normalized_output(‘cluster_status’)<br> 774     cluster_status = {}<br> 775     for m in re.finditer(“{([^,]+),(?![{)[([^]]*)”, out):<br> 776         state = m.group(1)<br> 777         items = m.group(2).split(‘,’)<br> 778         items = [x.replace(“‘“, ‘’).strip() for x in items]<br> 779         cluster_status.update({state: items})<br> 780<br> 781     if get_running:<br> 782         return cluster_status.get(‘running_nodes’, [])<br> 783<br> 784     return cluster_status.get(‘disc’, []) + cluster_status.get(‘ram’, [])<br>Fix a rabbitmq issue<br><a href="https://zhhuabj.blog.csdn.net/article/details/105847301" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/105847301</a></p>
-<p>Reference<br>[1] <a href="https://gist.github.com/niedbalski/69a72103adad4f0f9609a0857c9810a4" target="_blank" rel="external">https://gist.github.com/niedbalski/69a72103adad4f0f9609a0857c9810a4</a></p>
-<p>[2] <a href="https://pastebin.ubuntu.com/p/sJ94RmmS5x/" target="_blank" rel="external">https://pastebin.ubuntu.com/p/sJ94RmmS5x/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/Fix-a-rabbitmq-issue/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/12/Fix-a-rabbitmq-issue/" itemprop="url">Fix a rabbitmq issue</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-12T12:00:58+08:00">
-                2020-12-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>问题</strong><br>rabbitmq cluster的3个节点挂了. 3个节点是lxd容器:<br>11-lxd-8<br>69-lxd-2<br>9-lxd-9<br><strong>初步sosreport分析</strong><br>11-lxd-8上看到system_limit错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Too many processes</span><br><span class="line">=ERROR REPORT==== 17-Apr-2020::13:19:44 ===</span><br><span class="line">Ranch listener &#123;acceptor,&#123;0,0,0,0,0,0,0,0&#125;,5672&#125; connection process start failure; rabbit_connection_sup:start_link/4 crashed with reason: error:system_limit</span><br></pre></td></tr></table></figure></p>
-<p>但是已经设置了LimitNOFILE<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;Limit&apos; lib/systemd/system/rabbitmq-server.service</span><br><span class="line">LimitNOFILE=65536</span><br></pre></td></tr></table></figure></p>
-<p>不过LimitNOFILE似乎是管file_descriptors的, 而不是erlang processes的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;file_descriptors,     [&#123;total_limit,65436&#125;,      &#123;total_used,6415&#125;,      &#123;sockets_limit,58890&#125;,      &#123;sockets_used,6413&#125;]&#125;,</span><br><span class="line">16:28:22  &#123;processes,[&#123;limit,1048576&#125;,&#123;used,118304&#125;]&#125;,</span><br></pre></td></tr></table></figure></p>
-<p>上面的输出显示似乎用了118304个erlang processes还未超出limit. 不过, 这可能是重启机器之后抓的sosreport. 并且limit已经很大, 单纯增加limit似乎也并不是正道. 所以继续寻找线索.</p>
-<p>在69-lxd-2里也看到了’Error while waiting for Mnesia tables’这种错误, 似乎是Mnesia数据库未同步.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">var/log/rabbitmq/rabbit@juju-3182a3-69-lxd-2.log.1</span><br><span class="line">=INFO REPORT==== 17-Apr-2020::13:27:26 ===</span><br><span class="line">Waiting for Mnesia tables for 30000 ms, 9 retries left</span><br><span class="line">=WARNING REPORT==== 17-Apr-2020::13:27:56 ===</span><br><span class="line">Error while waiting for Mnesia tables: &#123;timeout_waiting_for_tables,</span><br><span class="line">[rabbit_user,rabbit_user_permission,</span><br><span class="line">rabbit_vhost,rabbit_durable_route,</span><br><span class="line">rabbit_durable_exchange,</span><br><span class="line">rabbit_runtime_parameters,</span><br><span class="line">rabbit_durable_queue]&#125;</span><br></pre></td></tr></table></figure></p>
-<p>3个units上用’netstat -s’看到大量的reset tcp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sos_commands/networking/netstat_-s |head -n2</span><br><span class="line">7154216 connection resets received</span><br><span class="line">34025359 resets sent</span><br></pre></td></tr></table></figure></p>
-<h2 id="深入分析"><a href="#深入分析" class="headerlink" title="深入分析"></a>深入分析</h2><p>9-lxd-9上 通过下列命令看到各个openstack组件上都有到9-lxd-9的rabbitmq tcp连接, 一个组件就有约四五百个连接, 是不是多了一点? 其他两个units没这么多.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat sos_commands/networking/netstat_-W_-neopa| awk &apos;/:5672/ &#123; print $5 &#125;&apos; | awk -F: &apos;&#123; a[$1]++ &#125;; END &#123; for (i in a) print i, a[i] &#125;&apos; |sort -n -k 2 -r |more |head -n 80</span><br></pre></td></tr></table></figure></p>
-<p>但一个组件就有四五百个连接, 每个组件都这么多, 不可能每个组件都有问题吧. 除了大量tcp连接可以造成容器cpu升高, host机器的cpu升高也可以造成容器cpu升高的吧. 所以接着检查host机器的cpu占用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat sos_commands/process/ps_auxwww |head -n 1</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">$ cat sos_commands/process/ps_auxwww |head -n1 &amp;&amp; cat sos_commands/process/ps_auxwww |sort -n -k3 -r | head -n 3</span><br><span class="line">USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND</span><br><span class="line">nova 1936435 130 0.0 347704 126140 ? Rs 11:40 0:01 /usr/bin/python2 /usr/bin/nova-api-metadata --config-file=/etc/nova/nova.conf --log-file=/var/log/nova/nova-api-metadata.log</span><br><span class="line">libvirt+ 1809025 100 0.0 51373088 236744 ? Sl Mar09 56456:32 qemu-system-x86_64 -enable-kvm -name guest=instance-000099e0,debug-threads=on -S -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-26-instance-000099e0/master-key.aes -machine pc-i440fx-</span><br></pre></td></tr></table></figure></p>
-<p>ok, 虚机占用cpu就是100%. 看样子是控制服务(rabbitmq)与计算服务(nova-compute)安装到同一台物理机了, 虚机占用的cpu或者内存大页什么的直接导致rabbitmq cluster挂掉.<br>注:<br>ps命令中第三列相加的cpu大于100%也不一定就意味着cpu一定高, 因为可以这些进程全跑在一个cpu核的, 它可能计算的是一个核的, 要想准确还得使用mpstat来查看</p>
-<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><p>调整架构是不可能了, 可以暂时使用isolcpu隔离一些cpu单独通过taskset给rabbitmq使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mpstat -P ALL 能看到所有cpu核的负载情况</span><br><span class="line">cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq</span><br><span class="line">grub中添加isolcpus=1,3来隔离1和3的cpu待用, 然后运行update-grub后重启, 验证:</span><br><span class="line">1, cat /proc/cmdline |grep isolcpu</span><br><span class="line">2, ps -To &apos;pid,lwp,psr,cmd&apos; -p 310597</span><br><span class="line">3, ps -eo pid,cmd,psr |awk &apos;&#123;if($3=3) print $0&#125;&apos;</span><br><span class="line">taskset -p0x8 &lt;pid&gt;绑定&lt;pid&gt;到cpu3</span><br><span class="line">taskset -c 1 /etc/init.d/mysql start</span><br><span class="line">systemd manages the affinity for you. See &quot;man systemd.exec&quot; and CPUAffinity= option.</span><br></pre></td></tr></table></figure></p>
-<h2 id="20201212更新-queue-master-locator-min-master"><a href="#20201212更新-queue-master-locator-min-master" class="headerlink" title="20201212更新 - queue_master_locator=min-master"></a>20201212更新 - queue_master_locator=min-master</h2><p>我们可能需要配置queue_master_locator=min-master - <a href="https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759" target="_blank" rel="external">https://bugs.launchpad.net/charm-rabbitmq-server/+bug/1890759</a>, 进而可能造成这两个bug (控制平面居然影响了数据面） - <a href="https://bugs.launchpad.net/neutron/+bug/1871850" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1871850</a><br><a href="https://bugs.launchpad.net/neutron/+bug/1869808" target="_blank" rel="external">https://bugs.launchpad.net/neutron/+bug/1869808</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># Queue masters are mostly on 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report | awk -F&apos;\t&apos; &apos;/^Queues on openstack/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 15</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 15426</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 309</span><br><span class="line"></span><br><span class="line"># Most connections are made to 11-lxd-8</span><br><span class="line">&gt; cat rabbitmqctl_report| awk -F&apos;\t&apos; &apos;/^Connections/ &#123;a=1&#125;; a &amp;&amp; /rabbit/ &#123;split($1,s,&quot;.&quot;); b[s[1]]++&#125;; NF==0 &#123;a=0&#125;; END &#123;for(i in b) &#123;print i, b[i]&#125;&#125;&apos;</span><br><span class="line">&lt;rabbit@juju-0aa49a-9-lxd-9 8763</span><br><span class="line">&lt;rabbit@juju-0aa49a-11-lxd-8 14843</span><br><span class="line">&lt;rabbit@juju-0aa49a-10-lxd-8 6413</span><br><span class="line"></span><br><span class="line"># 11-lxd-8 uses the most memory</span><br><span class="line">&gt; cat rabbitmqctl_report| awk &apos;/^Status/ &#123;a=1; print&#125;; a &amp;&amp; /total,/; !NF &#123;a=0&#125;&apos;</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-10-lxd-8&apos;</span><br><span class="line">     [&#123;total,3536412448&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-11-lxd-8&apos;</span><br><span class="line">     [&#123;total,7030459176&#125;,</span><br><span class="line">Status of node &apos;rabbit@juju-0aa49a-9-lxd-9&apos;</span><br><span class="line">     [&#123;total,4256377400&#125;,</span><br></pre></td></tr></table></figure></p>
-<p>crontab检查rabbitmq memory使用率:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"># process_memory_checker.sh</span><br><span class="line">MAILTO=root</span><br><span class="line">process=&quot;bin/beam.smp&quot;</span><br><span class="line">mem_percentage=`ps -o %mem,command ax | grep &quot;$&#123;process&#125;&quot; | grep -v grep | awk &apos;&#123;print $1&#125;&apos;`</span><br><span class="line">threshold_percentage=25</span><br><span class="line">if (( $(echo &quot;$&#123;mem_percentage&#125; &gt; $&#123;threshold_percentage&#125;&quot;|bc -l) ));</span><br><span class="line">then</span><br><span class="line">	echo &quot;Process $&#123;process&#125; on `hostname -f` is using $&#123;mem_percentage&#125;% of total memory (threshold is $&#123;threshold_percentage&#125;%).&quot; | \</span><br><span class="line">	mail -s &quot;Memory usage warning for process $&#123;process&#125; on $(hostname -s)&quot; $&#123;MAILTO&#125; 2&gt; /dev/null;</span><br><span class="line">	exit 1;</span><br><span class="line">fi</span><br><span class="line">echo &quot;No memory issues found for process $&#123;process&#125;&quot;</span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
-<p>另外，客户发现memory用到超过vm_memory_high_watermark_paging_ratio (<a href="https://www.rabbitmq.com/memory.html#paging" target="_blank" rel="external">https://www.rabbitmq.com/memory.html#paging</a> )时似乎memory也没有被page到硬盘造成memory一直在增大，这个网页（<a href="https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。" target="_blank" rel="external">https://stackoverflow.com/questions/21666537/rabbitmq-memory-control-queue-is-full-and-is-not-paging-connection-hangs）说对“durable=true”queue才生效。</a><br>“rabbitmqctl list_queues name  durable -p openstack”看到的durable都是false, 难道是在设置各组件的olso设置为(charm似乎不支持）amqp_durable_queues=True吗?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[oslo_messaging_rabbit]</span><br><span class="line">amqp_durable_queues = True</span><br></pre></td></tr></table></figure></p>
-<p>但这个patch说上面配置被废弃了 - <a href="https://bugs.launchpad.net/oslo.messaging/+bug/1433956" target="_blank" rel="external">https://bugs.launchpad.net/oslo.messaging/+bug/1433956</a>, 但master code中有这个配置，还没细查。另外，这个网页（<a href="https://elkano.org/blog/high-availability-rabbitmq-cluster-openstack/）说用这个配置：" target="_blank" rel="external">https://elkano.org/blog/high-availability-rabbitmq-cluster-openstack/）说用这个配置：</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[oslo_messaging_rabbit]</span><br><span class="line">rabbit_hosts=node1:5672,node2:5672,node3:5672</span><br><span class="line">rabbit_retry_interval=1</span><br><span class="line">rabbit_retry_backoff=2</span><br><span class="line">rabbit_max_retries=0</span><br><span class="line">rabbit_ha_queues=true</span><br><span class="line">rabbit_userid = openstack</span><br><span class="line">rabbit_password = openstack_pass</span><br><span class="line">amqp_auto_delete = true</span><br><span class="line">amqp_durable_queues=True</span><br></pre></td></tr></table></figure></p>
-<p>charm ./charmhelpers/contrib/openstack/templates/section-rabbitmq-oslo 中有下面代码：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 8 &#123;% if rabbitmq_ha_queues -%&#125;</span><br><span class="line"> 9 rabbit_ha_queues = True</span><br><span class="line">10 rabbit_durable_queues = False</span><br><span class="line">11 &#123;% endif -%&#125;</span><br></pre></td></tr></table></figure></p>
-<p>其他debug手段:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo rabbitmqctl -p openstack list_queues|grep -vw 0</span><br><span class="line"></span><br><span class="line"># returns a list with info about memory dynamically allocated by the Erlang emulator</span><br><span class="line">rabbitmqctl eval &apos;erlang:memory().&apos;</span><br><span class="line">rabbitmq-diagnostics memory_breakdown  #for new version</span><br></pre></td></tr></table></figure></p>
-<p>内存使用量一直突然增长可能是这个错误造成的， 详见：<a href="https://bugs.launchpad.net/oslo.messaging/+bug/1789177" target="_blank" rel="external">https://bugs.launchpad.net/oslo.messaging/+bug/1789177</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;no exchange&apos; var/log/rabbitmq/rabbit@juju-0aa49a-10-lxd-8.log |wc -l</span><br><span class="line">3511</span><br><span class="line">$ grep -r &apos;no exchange&apos; var/log/rabbitmq/rabbit@juju-0aa49a-10-lxd-8.log |head -n1</span><br><span class="line">operation basic.publish caused a channel exception not_found: no exchange &apos;reply_bee2ebfe01854e0595ddaa7462dc4054&apos; in vhost &apos;openstack&apos;</span><br></pre></td></tr></table></figure></p>
-<p>这是关于rabbitm HA一个非常好的贴子（<a href="https://blog.csdn.net/zyz511919766/article/details/41896823" target="_blank" rel="external">https://blog.csdn.net/zyz511919766/article/details/41896823</a>), 也就是说，在rabbitmq non-ha中，exchange与 bindings也是在所在节点上的，而queue只处于一个节点。在rabbitmq ha环境中，只是将queue也根据policy放置在所有或某些节点上。当consumer从rabbitmq的某个节点消费queue时，consumer死掉了，consumer创建的reply-xxx queues也会被删掉但此时可能consumer没有收到basic cancel signal（eg：当reply-xxx被删后刚好consumer在重启）, 这样，consumer没ack消息这样server还会继续给consumer发, 但此时就会报no exchange (exchange与reply-xxx queue都是consumer创建的，reply-xxx queue为0时exchange也会被删除）。<br>但是，有一点没闹明白，consumer重启之后不是会调用 reconnect继续重建exchange与reploy-xxx queue么？不过在重建之前，server会继续发， 这段期间就会有no exchange错误吧，这样会耗费大量的cpu，这样或许也是cpu升级的原因 （Lots of exchanges create problems during failover under high load）。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ grep -r &apos;^reply_&apos; sos_commands/rabbitmq/rabbitmqctl_report |grep exchange |head -n1</span><br><span class="line">reply_0003bee270e54c8cb9b78ba3b51ba4e2  exchange        reply_0003bee270e54c8cb9b78ba3b51ba4e2  queue   reply_0003bee270e54c8cb9b78ba3b51ba4e2  []      openstack</span><br><span class="line">$ grep -r &apos;^reply_&apos; sos_commands/rabbitmq/rabbitmqctl_report |grep exchange |wc -l</span><br><span class="line">24991</span><br></pre></td></tr></table></figure></p>
-<p>24991肯定会造成memory一直升高，所以一个最好办法就是设置x-cancel-on-ha-failover让queue没了时也取消consumer。另一个办法是也可以哪出哪些consumer在作怪.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat sos_commands/networking/netstat_-W_-neopa| awk &apos;/:5672/ &#123; print $5 &#125;&apos; | awk -F: &apos;&#123; a[$1]++ &#125;; END &#123; for (i in a) print i, a[i] &#125;&apos; |sort -n -k 2 -r |more |head -n 3</span><br><span class="line">10.160.0.106 96</span><br><span class="line">10.160.0.208 86</span><br><span class="line">10.160.0.75 83</span><br></pre></td></tr></table></figure></p>
-<p>也可以用下面的policy缓解:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#rabbitmqctl set_policy min-masters-queue -p openstack &apos;.*&apos; &apos;&#123;&quot;queue-master-locator&quot;:&quot;min-masters&quot;&#125;&apos; --apply-to queues --priority 10</span><br><span class="line">rabbitmqctl set_policy HA -p openstack &apos;^(?!amq\\.).*&apos; &apos;&#123;&quot;queue-master-locator&quot;:&quot;min-masters&quot;, &quot;ha-mode&quot;:&quot;all&quot;, &quot;ha-sync-mode&quot;:&quot;automatic&quot;&#125;&apos;</span><br></pre></td></tr></table></figure></p>
-<p>但是exchange只是记录的一个名称，是不占用内存的，queues可能会占用内存。但30481个queue也就1.2G左右，也不大啊。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat rabbitmq_report.txt |gawk -F&apos;\t&apos; &apos;/^Queues on openstack/ &#123;a=1;next&#125;; a &amp;&amp; NF &#123;mem+=$17; n+=1&#125;; !NF &#123;a=0&#125; END &#123;print n, mem&#125;&apos;</span><br><span class="line">30481 1248040000</span><br></pre></td></tr></table></figure></p>
-<p>相较，rabbitmqctl status显示queue_procs与queue_slave_procs占用的内存更大, queue_procs占了约199G. 队列占用的内存指的是队列进程消耗的，并不包含消息体（在二进制中）。当内存不足时，这部分的内存将交换到磁盘上。</p>
-<ul>
-<li>queue_procs：主队列，索引和消息保存在内存中。排队的消息数量越多，通常会将此内容归因于此部分。但是，这在很大程度上取决于队列属性以及消息是否作为瞬态发布</li>
-<li>queue_slave_procs：队列镜像，索引和消息保存在内存中。减少镜像（副本）的数量或不使用固有的瞬态数据镜像队列可以减少镜像使用的RAM量。排队的消息数量越多，通常会将此内容归因于此部分。但是，这在很大程度上取决于队列属性以及消息是否作为瞬态发布。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;queue_procs,199051279736&#125;,</span><br><span class="line">&#123;queue_slave_procs,1243762680&#125;,</span><br></pre></td></tr></table></figure>
-<p>这个网页（<a href="https://www.rabbitmq.com/monitoring.html#diagnostics-observer）提到&#39;rabbitmq-diagnostics" target="_blank" rel="external">https://www.rabbitmq.com/monitoring.html#diagnostics-observer）提到&#39;rabbitmq-diagnostics</a> observer’命令可以像top一样查看erlang虚拟机内进程的内存使用量，但rabbitmq-server 3.8版本才支持啊。那perf是否可以查看erlang虚机机内进程的call trace呢？但这篇文章说了怎么查erlang下的进程所用内存：<br>RabbitMQ及Erlang内存使用分析 - <a href="https://blog.csdn.net/jaredcoding/article/details/78115235" target="_blank" rel="external">https://blog.csdn.net/jaredcoding/article/details/78115235</a><br>RabbitMQ运维经验分享 - <a href="https://my.oschina.net/hackandhike/blog/801052" target="_blank" rel="external">https://my.oschina.net/hackandhike/blog/801052</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rabbitmqctl status #single node status</span><br><span class="line">rabbitmqctl report #cluster status</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/27/Shell编程注意点/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/11/27/Shell编程注意点/" itemprop="url">Shell编程注意点</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-27T09:53:02+08:00">
-                2020-11-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华 写于：发表于：2011-04-06<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>1在shell脚本中调用另一个脚本的三种不同方式(fork,exec, source)<br>       我们先谈谈在shell脚本中调用另一个脚本的三种不同方式的区别（fork,exec, source )</p>
-<p>fork ( /directory/script.sh ), fork是最普通的,就是直接在脚本里面用/directory/script.sh来调用script.sh这个脚本.运行的时候开一个sub-shell执行调用的脚本，sub-shell执行的时候,parent-shell还在。sub-shell执行完毕后返回parent-shell.sub-shell从parent-shell继承环境变量.但是sub-shell中的环境变量不会带回parent-shell</p>
-<p>exec(exec /directory/script.sh) exec与fork不同，不需要新开一个sub-shell来执行被调用的脚本. 被调用的脚本与父脚本在同一个shell内执行。但是使用exec调用一个新脚本以后,父脚本中exec行之后的内容就不会再执行了。这是exec和source的区别</p>
-<p>source(source/directory/script.sh)与fork的区别是不新开一个sub-shell来执行被调用的脚本，而是在同一个shell中执行.所以被调用的脚本中声明的变量和环境变量,都可以在主脚本中得到和使用.</p>
-<p>可以通过下面这两个脚本来体会三种调用方式的不同:</p>
-<p>1.sh </p>
-<p>#!/bin/bash<br>A=B<br>echo “PID for 1.sh before exec/source/fork:$$”<br>exportA<br>echo “1.sh: /$A is $A”<br>case $1 in<br>       exec)<br>               echo “using exec…”<br>               exec ./2.sh ;;<br>       source)<br>               echo “using source…”<br>               ../2.sh ;;<br>        *)<br>               echo”using fork by default…”<br>               ./2.sh ;;<br>esac<br>echo”PID for 1.sh after exec/source/fork:$$”<br>echo “1.sh:/$A is $A”<br>2.sh </p>
-<p>#!/bin/bash<br>echo”PID for 2.sh: $$”<br>echo “2.sh get /$A=$A from1.sh”<br>A=C<br>export A<br>echo “2.sh: /$A is $A”</p>
-<p>执行情况：<br>$./1.sh<br>PID for 1.sh beforeexec/source/fork:5845364<br>1.sh: $A is B<br>using fork bydefault…<br>PID for 2.sh: 5242940<br>2.sh get $A=B from 1.sh<br>2.sh:$A is C<br>PID for 1.sh after exec/source/fork:5845364<br>1.sh: $A isB<br>$ ./1.sh exec<br>PID for 1.sh beforeexec/source/fork:5562668<br>1.sh: $A is B<br>using exec…<br>PID for2.sh: 5562668<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>$./1.sh source<br>PID for 1.sh beforeexec/source/fork:5156894<br>1.sh: $A is B<br>using source…<br>PIDfor 2.sh: 5156894<br>2.sh get $A=B from 1.sh<br>2.sh: $A is C<br>PIDfor 1.sh after exec/source/fork:5156894<br>1.sh: $A is C<br>$<br>2函数调用<br>先看一个例子，执行mysql的函数mysqlExec,如下：</p>
-<p>source“mysql.conf”</p>
-<p>mysqlExec(){<br>sql=$1<br>sqlOp=<code>echo${sql:0:6}| tr A-Z a-z</code><br>if[ “$sqlOp” != “select” ]; then<br>  sql=$sql”;select row_count();”<br>fi</p>
-<p>#use different mysql command depends on the password</p>
-<p>if[ -z $MYSQL_PASSWORD ]<br>then<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -se “${sql};”<br>else<br>  $mysql $MYSQL_DATABASE -h$MYSQL_HOSTNAME -u$MYSQL_USERNAME -p$MYSQL_PASSWORD-se “${sql};”<br>fi<br>status=$?<br>if[ $status -eq 0 ]; then<br>  if[ “$sqlOp” != “select” ]; then<br>    log “OK $sql”<br>  fi<br>else<br>  log “Occur DB Error, can retry in 3 seconds later -&gt; $sql”<br>  sleep3<br>  echo “DB_ERROR”<br>fi<br>return $status<br>exit<br>}</p>
-<p>函数调用要注意两点：<br>1）函数中可以用echo,如上面的echo “DB_ERROR”，在调用时要获取echo的值，应该这样:<br>campaign=<code>mysqlExec&quot;$sql&quot;</code><br>if[ “x$campaign” == “x” -o “$campaign” ==”DB_ERROR” ]; then<br>continue<br>fi<br>2)函数中也可以有返回值，如上面的return $status，在调用时应该通过$?获得，如：<br>if[ $? -eq 0 ]; then<br>echo“zhanghua”<br>fi</p>
-<p>3) 如果想从被调用的函数处返回一个值，可以这样</p>
-<p>   调用gen_conf函数，传一个引用（注意不是变量）config_file进去， gen_conf $host config_file</p>
-<p>   在gen_conf函数中通过__resultvar变量返回值:</p>
-<p>   gen_config{</p>
-<pre><code> local  __resultvar=$2
-eval $__resultvar=&quot;&apos;$config&apos;&quot;
-</code></pre><p>   }</p>
-<p>3shell中的要用局部变量很纠结<br>你会看到shell有一个非常大的缺点，就是它在函数调用时，没有局部变量与全局变量之分，如A脚本调用B脚本中的一个函数，在B脚本内部有一个变量vari（你可能受JAVA影响认为它是局部变量那就大错特错了），如果A脚本中也有这个名为vari的变量，那么在函数返回时，B脚本的那个vari变量会将A脚本的vari变量覆盖，举个例子：<br>updateWithOptimisticLock(){<br>rand=$1<br>campaignId=$2<br>seq=1<br>updateVal=-1<br>status=1<br>while[ true ]; do<br>if[ $seq -gt 3 ]; then<br>log”FATAL ERROR, Update num error, $updatesql”<br>break<br>fi<br>cur=<code>queryCur&quot;$campaignId&quot;</code><br>if[ “$cur” == “DB_ERROR” ]; then<br>continue<br>fi<br>updateVal=$(($cur+$rand))<br>if[ “$rand” == “0” ]; then<br>break<br>fi<br>updatesql=”updatet<em>campaign</em> set num=$updateVal where campaign<em>id=$campaignId andnum=$cur”<br>affectRows=<code>mysqlExec&quot;$updatesql&quot;</code><br>if[ “$affectRows” == “1” ]; then<br>status=0<br>break<br>fi<br>seq=$(($seq+1))<br>done<br>echo$updateVal<br>return$status<br>}<br>调用的伪码如下，这时里面的seq变量会被上述updateWithOptimisticLock函数中的变量seq给覆盖，所以在shell中没有局部变量一说<br>seq=1<br>while[ $seq -le $cycleNum ]; do<br>updateFakeNumWithOptimisticLock$rand $campaignId<br>done<br>4使用xargs来传参数<br>在shell中的管道符|很强大，可以将前一条命令的标准输出作为下一条命令的标准输入，但是如果下一条命令不是标准输入而是需要传参的话，那怎么办呢，用xargs即可，例如下列shell中xargs命令的-i选项告诉xargs用前一条命令的标准输出去替换{}。<br>find. | xargs zgrep “<url>/Search?” | sed’s/.*q=/([-</url></em><em>()~.%+0-9A-Za-z]</em>/).*//1/‘ | sort -nr | uniq -c | sort-nr | head -1000 | xargs -i php -r “echorawurldecode(‘{}’)./“/n/“;” &gt; result.out &amp;</p>
-<p>另， 修改/etc/hosts, 能处理127或localhost打头的多个hostname项如(ubuntu.me.com  ubuntu)， 用‘/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts’是为了避免IPv6 中的node如ff02::1 ip6-allnodes</p>
-<p>/usr/bin/awk ‘$1 ~ /^127|localhost/ {print $0}’ /etc/hosts |awk ‘$1 ~ /^127|localhost/ {print $0}’ | /bin/sed “s/\s<em>(${CURRENT_HOSTNAME})(\s</em>)/\t${NETCFG_HOSTNAME}/g”</p>
-<p>当然exec也可以实现上述功能，只是exec都是一次性读入内存容易内存溢出，如：<br>find. -name “<em>.m4” -exec grep –color -H “catalina”{} /;<br>5shell中的sed命令使用的正则是缩水版<br>shell中的sed命令使用的正则引擎和我们java中平常所用正则引擎并不一样，功能比较弱。<br>如上节中的|sed ‘s/.</em>q=/([-_<em>()~.%+0-9A-Za-z]</em>/)，就是因为shell的很多正则不支持，才在使用sed命令时用了那么多枚举。</p>
-<p>20191115更新</p>
-<p>上面说法不正确, sed可以加-r参数不用枚举, 例:</p>
-<p>grep -r ‘get_or_set_cached_cell_and_set_connections’ var/log/nova/ |sed -r ‘s/.+(waited|held) (.+) inner.+/\2/g;t;d’ |sort -nr |head -n 5</p>
-<p>nova service-list –bi nova-compute | grep nova-compute | cut -d ‘ ‘ -f 4 | xargs -n 1 -I {} ssh -o StrictHostKeyChecking=no  ubuntu@{} “date; hostname; zgrep MessagingTimeout /var/log/nova/nova-compute.log*; echo -e ‘—————————–\n’”</p>
-<p>数组</p>
-<p>readarray -t cookies&lt;&lt;&lt;”<code>ls -1 /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/cookies/| grep -v 6cc04af0837d3b42</code>“<br>for c in ${cookies[@]}; do grep -rl $c /var/snap/ovs-stat/common/tmp/tmp.662kJWxfEg/juju-4f585d-sf00272961-cisco-7/ovs/bridges/br-int/flowinfo/tables; done| sort| uniq -c</p>
-<p>svcs=(<br>nova-compute-kvm<br>neutron-openvswitch<br>)<br>for svc in ${svcs[@]}; do<br>juju config $svc worker-multiplier<br>done</p>
-<p>排序相加</p>
-<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r<br>uid     tgid     total_vm  rss      pgtables_bytes  swapents  oom_score_adj  name<br>100112  832785   5760963   1650592  16789504        76362     0              beam.smp</p>
-<p>cat ps.txt | sed ‘s/.<em>](.</em>)/\1/g’ | column -t | body sort -n -k4 -r | awk ‘{sum+=$4;} END{print sum;}’</p>
-<p>rabbitmq相序相加举例</p>
-<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa |head -n1<br>Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer<br>tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      101        1671174047 178/systemd-resolve  off (0.00/0/0)</p>
-<p>$ cat sos<em>commands/networking/netstat</em>-W_-neopa| awk ‘/:5672/ { print $5 }’ | awk -F: ‘{ a[$1]++ }; END { for (i in a) print i, a[i] }’ |sort -n -k 2 -r |more |head -n 10<br>10.164.0.107 69</p>
-<p>实例 - 抓取</p>
-<p>#!/bin/bash</p>
-<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip lynx’ || lynx -dump ftp://ftp.hycom.org/datasets/force/ncep_cfsr/netcdf/ &gt;page.txt<br>grep -r “ftp://“ page.txt |awk ‘{print $2}’ &gt; urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>for url in $(cat urls.txt)<br>do<br>  skip=”0”<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  readarray -t exist_files&lt;&lt;&lt;”<code>ls .</code>“<br>  for f in ${exist_files[@]}; do<br>    [[ “$name” == “$f” ]] &amp;&amp; skip=”1”; break;<br>  done<br>  if [ “$skip” == “1” ]; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${url}”;<br>    wget -c ${url}<br>  fi<br>done<br>改进版</p>
-<p>#!/bin/bash</p>
-<h1 id="Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1"><a href="#Usage-nohup-proxychains4-crawl-sh-gt-log-txt-2-gt-1-amp-1" class="headerlink" title="Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;"></a>Usage: nohup proxychains4 ./crawl.sh &gt; log.txt 2&gt;1&amp;</h1><p>#set -x<br>[[ -f page.txt ]] &amp;&amp; echo ‘skip creating lynx’ || lynx -dump <a href="http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html" target="_blank" rel="external">http://tds.hycom.org/thredds/catalog/datasets/force/ncep_cfsr/netcdf/catalog.html</a> &gt;page.txt<br>[[ -f urls.txt ]] &amp;&amp; echo ‘skip creating urls.txt’ || grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>sed -i ‘/dswsfc/d’ urls.txt<br>sed -i ‘/dlwsfc/d’ urls.txt<br>readarray -t exist_files&lt;&lt;&lt;”<code>ls . |grep -E &#39;\.nc$&#39;</code>“;  #can’t use multiple commands in [[ ]]<br>[[ -f skip.txt ]] &amp;&amp; echo ‘will use skip.txt’ || printf “%s\n” “${exist_files[@]}” &gt; skip.txt<br>readarray -t skip_files&lt;&lt;&lt;”<code>cat skip.txt</code>“<br>for url in $(cat urls.txt)<br>do<br>  name=$(echo $url |awk -F ‘/‘ ‘{print $NF}’)<br>  realurl=’<a href="http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name" target="_blank" rel="external">http://tds.hycom.org/thredds/fileServer/datasets/force/ncep_cfsr/netcdf/&#39;$name</a><br>  if <code>echo ${skip_files[@]} |grep -q &quot;$name&quot;</code>; then<br>    echo “skipping ${f}”;<br>  else<br>    echo “download ${realurl}”;</p>
-<pre><code>#wget -c --limit-rate=3m ${realurl}
-wget -c ${realurl}
-#echo ${realurl} &gt;&gt; skip.txt
-</code></pre><p>  fi<br>done<br>获取绝对目录</p>
-<p>export OS_CACERT=$(dirname “$(realpath -s “${BASH_SOURCE[0]}”)”)/ssl/openstack-ssl/results/cacert.pem<br>从国外下载气象数据</p>
-<p>#gdisk /dev/sdd1   #t, 0700</p>
-<p>#sudo mkfs.ntfs -f -L win /dev/sdd1</p>
-<p>#sudo ntfsfix /dev/sdd1<br>sudo mkfs.ext4 /dev/xvdb<br>sudo parted /dev/xvdb  #print<br>sudo mount /dev/xvdb /mnt/<br>sudo mkdir -p /mnt/ftp<br>sudo chown -R $USER /mnt/<br>sudo apt install curlftpfs -y</p>
-<p>#sudo fusermount -zu /mnt/ftp<br>sudo curlftpfs ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>sudo curlftpfs -o rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp<br>$ scp -i ~/.aws/zhhuabj.pem ubuntu@13.114.59.98:/mnt/ftp/uvel/rarchv.2012_205_00_3zu.nc4 /tmp/<br>rarchv.2012_205_00_3zu.nc4                                                                                                94%  236MB   7.6MB/s   00:01 ETA</p>
-<h1 id="using-direct-io-and-cache-no-to-avoid-using-disk"><a href="#using-direct-io-and-cache-no-to-avoid-using-disk" class="headerlink" title="using direct_io and cache=no to avoid using disk"></a>using direct_io and cache=no to avoid using disk</h1><p>sudo bash -c ‘cat &gt;&gt;/etc/fstab’ &lt;&lt;EOF<br>curlftpfs#@ftp.hycom.org/datasets/global/GLBa0.08_rect/data/ /mnt/ftp fuse defaults,direct_io,cache=no,rw,allow_other,uid=1000,gid=1000,_netdev 0 0<br>EOF<br>sudo mount -a</p>
-<p>rsync -avztur -e “ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.aws/lxj.pem” –progress ubuntu@3.18.107.xxx:/mnt/ftp .</p>
-<p>注意：　上面加了direct_io,cache=no后总是hang，得去掉．</p>
-<p>#debug curlftpfs<br>sudo fusermount -zu /mnt/ftp/2d<br>sudo curlftpfs -f -v -o debug,ftpfs_debug=3,rw,allow_other,uid=1000,gid=1000 ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/2d /mnt/ftp/2d<br>1, use lftp to mirror</p>
-<h1 id="lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data"><a href="#lftp-e-“mirror-–delete-–only-newer-–verbose-–parallel-2”-ftp-ftp-hycom-org-datasets-global-GLBa0-08-rect-data" class="headerlink" title="lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/"></a>lftp -e “mirror –delete –only-newer –verbose –parallel=2” ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/</h1><p>lftp -c “set ftp:list-options -a;<br>open ‘ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/‘;<br>lcd /home/ubuntu/test;<br>cd 2d<br>mirror -c –use-cache –verbose –allow-chown –allow-suid –no-umask –verbose –parallel=2”</p>
-<p>2, use wget to mirror</p>
-<p>wget -c -m ftp://ftp.hycom.org/datasets/global/GLBa0.08_rect/data/<br>lynx -dump <a href="http://13.59.199.151/new_01hr/" target="_blank" rel="external">http://13.59.199.151/new_01hr/</a> &gt; page.txt<br>grep -r “http://“ page.txt |awk ‘{print $2}’ |grep -E ‘.nc$’ &gt; urls.txt<br>aria2c -x 10 -i urls.txt &gt;/dev/null 2&gt;/dev/null &amp;</p>
-<p>并行运行</p>
-<p>token=’111’<br>seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS echo “$token”</p>
-<p>#!/bin/bash -eux<br>PARALLEL_REQS=5<br>SLEEP_SECS=0.1<br>TEMPLOG=$(mktemp).log<br>K8S_ENDPOINT=’/api’<br>export CLUSTER_NAME=”juju-cluster”<br>APISERVER=$(kubectl config view -o jsonpath=”{.clusters[?(@.name==\”$CLUSTER_NAME\”)].cluster.server}”)<br>TOKEN=$(kubectl get secrets -o jsonpath=”{.items[?(@.metadata.annotations[‘kubernetes.io/service-account.name’]==’default’)].data.token}”|base64 –decode)</p>
-<h1 id="trap-ctrl-c-and-call-ctrl-c"><a href="#trap-ctrl-c-and-call-ctrl-c" class="headerlink" title="trap ctrl-c and call ctrl_c()"></a>trap ctrl-c and call ctrl_c()</h1><p>trap ctrl_c INT<br>function ctrl<em>c() {<br>  local DEST=query-kubeapiserver.$(date ‘+%Y%m%d</em>%H%M’).log<br>  mv $TEMPLOG $DEST<br>  echo “output at $DEST”<br>  exit 0<br>}</p>
-<p>set +x<br>while true; do<br>  echo “in while loop”<br>  seq $PARALLEL_REQS | xargs -I {} -n1 -P$PARALLEL_REQS curl -s -X GET $APISERVER$K8S_ENDPOINT –header “Authorization: Bearer $TOKEN” –insecure 2&gt;&amp;1 &gt;&gt; $TEMPLOG</p>
-<h1 id="seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG"><a href="#seq-PARALLEL-REQS-xargs-I-P-PARALLEL-REQS-sudo-etcd-etcdctl-–cacert-root-cdk-etcd-client-ca-pem-–cert-root-cdk-etcd-client-cert-pem-–key-root-cdk-etcd-client-key-pem-–endpoints-ETCD-ENDPOINTS-get-w-json-KEY-2-gt-amp-1-gt-gt-TEMPLOG" class="headerlink" title="seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG"></a>seq $PARALLEL_REQS | xargs -I {} -P$PARALLEL_REQS sudo etcd.etcdctl –cacert /root/cdk/etcd/client-ca.pem –cert /root/cdk/etcd/client-cert.pem –key /root/cdk/etcd/client-key.pem –endpoints=$ETCD_ENDPOINTS get -w json $KEY 2&gt;&amp;1 &gt;&gt; $TEMPLOG</h1><p>  echo “sleeping..”<br>  /bin/sleep $SLEEP_SECS<br>  echo “sleep done”<br>done</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1916,8 +1891,8 @@ wget -c ${realurl}
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">97</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1967,7 +1942,7 @@ wget -c ${realurl}
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

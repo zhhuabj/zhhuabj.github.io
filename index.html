@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -217,6 +217,382 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/" itemprop="url">Fixing thinkpad bluetooth keyboard</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T15:59:12+08:00">
+                2021-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-03-30)</strong></p>
+<p>为了保护颈椎, 已经习惯不用鼠标, 但是高度依赖于Thinkpad的小红点鼠标. 但是蓝牙经常性一个月会断一次, 断了之后很难连接上. 这次更奇葩了, 蓝牙灯也不灭, 键盘上也没有重置的键, 只好等到今天蓝牙键盘电池耗尽之后再试, 但是还是连不上, 错误为:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Mar 30 07:46:42 t440p bluetoothd[10079]: Can&apos;t get HIDP connection info</span><br><span class="line">Mar 30 07:46:43 t440p bluetoothd[10079]: connect error: Invalid exchange (52)</span><br><span class="line">Mar 30 07:46:50 t440p kernel: [240741.397564] Bluetooth: hci0: last event is not cmd complete (0x0f)</span><br></pre></td></tr></table></figure></p>
+<p>在设置GUI里先删除这个蓝牙, 也报错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Mar 30 07:58:28 t440p gnome-control-c[9696]: Failed to remove device &apos;/org/bluez/hci1/dev_90_7F_61_00_23_C3&apos;: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name :1.505 was not provided by any .service files</span><br></pre></td></tr></table></figure></p>
+<p>好吧, 通过下列命令删除, 再连接, 这次终于算成功了. 本博客将继续记录蓝牙今后遇到的所有连接问题.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:$ bluetoothctl</span><br><span class="line">[NEW] Controller 00:15:00:CB:B0:FF t440p #2 [default]</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">[NEW] Device 04:F1:28:31:D2:10 Nokia 7</span><br><span class="line">[NEW] Controller 00:1A:7D:DA:71:13 t440p #1</span><br><span class="line">[NEW] Device 00:15:00:CB:B0:FF t440p</span><br><span class="line">[NEW] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Agent registered</span><br><span class="line">[bluetooth]# list</span><br><span class="line">Controller 00:15:00:CB:B0:FF t440p #2 [default]</span><br><span class="line">Controller 00:1A:7D:DA:71:13 t440p #1</span><br><span class="line">[bluetooth]# devices</span><br><span class="line">Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Device 04:F1:28:31:D2:10 Nokia 7</span><br><span class="line">[bluetooth]# info 90:7F:61:00:23:C3</span><br><span class="line">Device 90:7F:61:00:23:C3 (public)</span><br><span class="line">	Name: ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">	Alias: ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">	Class: 0x00000540</span><br><span class="line">	Icon: input-keyboard</span><br><span class="line">	Paired: yes</span><br><span class="line">	Trusted: no</span><br><span class="line">	Blocked: no</span><br><span class="line">	Connected: no</span><br><span class="line">	LegacyPairing: no</span><br><span class="line">[bluetooth]# remove 90:7F:61:00:23:C3</span><br><span class="line">[DEL] Device 90:7F:61:00:23:C3 ThinkPad Compact Bluetooth Keyboard with TrackPoint</span><br><span class="line">Device has been removed</span><br><span class="line">[bluetooth]# power on</span><br><span class="line">Changing power on succeeded</span><br></pre></td></tr></table></figure></p>
+<p>然后升级bluez到5.5版本<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dpkg --status bluez | grep &apos;^Version:&apos;</span><br><span class="line">sudo add-apt-repository ppa:bluetooth/bluez</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get upgrade</span><br></pre></td></tr></table></figure></p>
+<h2 id="Disable-bluetooth’s-autosuspend"><a href="#Disable-bluetooth’s-autosuspend" class="headerlink" title="Disable bluetooth’s autosuspend"></a>Disable bluetooth’s autosuspend</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@t440p:~# grep -r &apos;auto&apos; /etc/rc.local</span><br><span class="line"># disable bluetooth&apos;s autosuspend - dmesg |grep blue</span><br><span class="line">echo -1 &gt;/sys/bus/usb/devices/3-11/power/autosuspend_delay_ms</span><br><span class="line">root@t440p:~# grep -r &apos;IdleTimeout&apos; /etc/bluetooth/input.conf</span><br><span class="line">IdleTimeout=0</span><br><span class="line">root@t440p:~# grep -r &apos;FastConnectable&apos; /etc/bluetooth/main.conf</span><br><span class="line">FastConnectable = true</span><br><span class="line"></span><br><span class="line">sudo systemctl restart bluetooth</span><br><span class="line"></span><br><span class="line">#https://blog.csdn.net/weixin_43971560/article/details/100591034</span><br><span class="line">sudo apt-get install --reinstall xserver-xorg-input-all</span><br></pre></td></tr></table></figure>
+<h2 id="Another-post"><a href="#Another-post" class="headerlink" title="Another post"></a>Another post</h2><p><a href="https://blog.csdn.net/quqi99/article/details/103754977" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/103754977</a><br><a href="https://zhhuabj.blog.csdn.net/article/details/83109470" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/83109470</a></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://askubuntu.com/questions/822249/unpair-remove-bluetooth-devices-in-16-04-1-and-other-problems" target="_blank" rel="external">https://askubuntu.com/questions/822249/unpair-remove-bluetooth-devices-in-16-04-1-and-other-problems</a><br>[2] <a href="http://events17.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf" target="_blank" rel="external">http://events17.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf</a><br>[3] <a href="https://medium.com/@overcode/fixing-bluetooth-in-ubuntu-pop-os-18-04-d4b8dbf7ddd6" target="_blank" rel="external">https://medium.com/@overcode/fixing-bluetooth-in-ubuntu-pop-os-18-04-d4b8dbf7ddd6</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/02/Ubuntu-18-04安装全面战争三国游戏/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/02/02/Ubuntu-18-04安装全面战争三国游戏/" itemprop="url">Ubuntu 18.04安装全面战争三国游戏</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T12:30:47+08:00">
+                2021-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2019-08-02<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository multiverse</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install -y libvulkan1 libvulkan-dev mesa-vulkan-drivers</span><br><span class="line">#sudo add-apt-repository ppa:graphics-drivers/ppa  #Use latest version</span><br><span class="line">sudo lshw -c display             #By default, the opensource nouveau driver is being used for Nvidia card.</span><br><span class="line">sudo ubuntu-drivers devices      #List available driver for your Nvidia card from the default Ubuntu repo.</span><br><span class="line">sudo ubuntu-drivers autoinstall  #Or run: sudo apt install nvidia-driver-390</span><br><span class="line">#sudo apt purge nvidia-*</span><br><span class="line">sudo shutdown -r now</span><br><span class="line">sudo lshw -c display</span><br><span class="line">prime-select query</span><br><span class="line"></span><br><span class="line">sudo prime-select intel</span><br><span class="line">sudo prime-select nvidia</span><br><span class="line">watch -n 1 nvidia-smi</span><br><span class="line"></span><br><span class="line">sudo cpupower -c all frequency-set -g performance</span><br><span class="line">echo &apos;GOVERNOR=&quot;performance&quot;&apos; | sudo tee /etc/default/cpufrequtils</span><br><span class="line">cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor</span><br><span class="line">sudo systemctl restart cpufrequtils</span><br><span class="line">sudo systemctl disable ondemand</span><br><span class="line"></span><br><span class="line">sudo apt install -y steam</span><br><span class="line">mkdir -p /game/.steam &amp;&amp; rm -rf ~/.steam &amp;&amp; ln -s /game/.steam ~/.steam</span><br><span class="line">steam</span><br><span class="line"></span><br><span class="line">#optimize the performance</span><br><span class="line">sudo add-apt-repository ppa:samoilov-lex/gamemode</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt install -y gamemode</span><br><span class="line"># then open &apos;NVIDIA X Server Settings&apos; program, and set &apos;Enable FXAA&apos;</span><br><span class="line"></span><br><span class="line">https://support.feralinteractive.com/docs/zh_cn/threekingdomstw/1.0.4/linux/faqs/?access=zooevrj6xb&amp;utm_source=game_linux&amp;utm_medium=link&amp;utm_campaign=game_linux_threekingdomstw_support#i_linux_graphics_drivers</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/02/CPU-governor/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/02/02/CPU-governor/" itemprop="url">CPU governor</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T12:15:20+08:00">
+                2021-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2019-04-25)</strong></p>
+<h2 id="performance-and-powersave"><a href="#performance-and-powersave" class="headerlink" title="performance and powersave"></a>performance and powersave</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># we can set CPU governor in BIOS or Power Mangement Program or the following Linux commands</span><br><span class="line">sudo apt install cpufrequtils sysfsutils linux-tools-generic -y</span><br><span class="line"># all cpu info</span><br><span class="line">cpufreq-info</span><br><span class="line"># cpu info for just cpu0</span><br><span class="line">cpupower frequency-info</span><br><span class="line"># just set cpu0 to performance mode</span><br><span class="line">sudo cpufreq-set -g performance</span><br><span class="line"># set all cpu to powersave mode</span><br><span class="line">sudo cpupower -c all frequency-set -g powersave</span><br><span class="line">cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor</span><br><span class="line">cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq</span><br><span class="line">cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq</span><br><span class="line">cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq</span><br><span class="line">cat /proc/cpuinfo | grep -i &quot;cpu mhz&quot;</span><br><span class="line"></span><br><span class="line"># How to persistence these configurations</span><br><span class="line">sudo sed -i &apos;s/^GOVERNOR=.*/GOVERNOR=&quot;powersave&quot;/&apos;/etc/init.d/cpufrequtils</span><br><span class="line"># or</span><br><span class="line">echo &apos;GOVERNOR=&quot;powersave&quot;&apos; | sudo tee/etc/default/cpufrequtils</span><br><span class="line"></span><br><span class="line">sudo systemctl restart cpufrequtils</span><br><span class="line">sudo systemctl disable ondemand</span><br></pre></td></tr></table></figure>
+<h2 id="userspace-and-ondemand"><a href="#userspace-and-ondemand" class="headerlink" title="userspace and ondemand"></a>userspace and ondemand</h2><p>This is because your system is using the new driver called intel_pstate. There are only two governors available when using this driver: powersave and performance.<br>The userspace governor is only available with the older acpi-cpufreq driver (which will be automatically used if you disable intel_pstate at boot time; you then set the governor/frequency with cpupower):</p>
+<p>disable the current driver: add intel_pstate=disable to your kernel boot line<br>boot, then load the userspace module: modprobe cpufreq_userspace<br>set the governor: cpupower frequency-set –governor userspace<br>set the frequency: cpupower –cpu all frequency-set –freq 800MHz<br>NOTE:　还是要intel-pstate驱动吧，因为：</p>
+<ul>
+<li>intel_pstate驱动程序知道CPU工作方式的详细信息，并且比通用ACPI解决方案做得更好</li>
+<li>intel_pstate仅提供两个调控器，powersave而performance。英特尔声称intel_pstate的“省电”速度比具有“性能”的通用acpi调速器快</li>
+</ul>
+<h2 id="openwrt-setting"><a href="#openwrt-setting" class="headerlink" title="openwrt setting"></a>openwrt setting</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for core in $(seq 0 &quot;$(($(getconf _NPROCESSORS_ONLN) - 1))&quot;); do</span><br><span class="line">echo &#123;performance|powersave&#125; &gt;/sys/devices/system/cpu/cpu$core/cpufreq/scaling_governor ;</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +636,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T09:57:34+08:00">
                 2021-02-02
@@ -428,7 +804,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-01T10:27:18+08:00">
                 2021-02-01
@@ -527,6 +903,7 @@
 <p>chrome://settings/?search=hardware uncheck ‘Use hardware acceleration when available’<br>chrome://flags/ search ‘gpu’ then disable ‘Accelerated 2D canvas’  and ‘GPU rasterization’</p>
 <p>shift + esc to see chrome task</p>
 <p>Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染, 当GPU性能不好时反而慢，不如直接使用CPU</p>
+<p>20210202更新 - GPU问题总结<br>shift + esc打开看到GPU Process在开hangout时cpu超100%，另外风扇响个不停(cpu温度从70多升到80多），这都是gpu性能差但chrome又强制打开了gpu硬件加速造成的，关闭gpu加速即可。</p>
 
           
         
@@ -604,7 +981,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-30T10:31:56+08:00">
                 2021-01-30
@@ -767,7 +1144,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-30T10:17:17+08:00">
                 2021-01-30
@@ -977,7 +1354,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-28T12:37:28+08:00">
                 2021-01-28
@@ -1267,7 +1644,7 @@ multiple TCP/UDP ports per iptables rule using multiport module
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-25T16:51:16+08:00">
                 2021-01-25
@@ -1416,7 +1793,7 @@ multiple TCP/UDP ports per iptables rule using multiport module
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-23T09:38:20+08:00">
                 2021-01-23
@@ -1524,512 +1901,6 @@ multiple TCP/UDP ports per iptables rule using multiport module
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/21/Debug-OpenvSwitch/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/21/Debug-OpenvSwitch/" itemprop="url">Debug OpenvSwitch</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-21T14:57:58+08:00">
-                2021-01-21
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-12-28<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="GDB调试"><a href="#GDB调试" class="headerlink" title="GDB调试"></a>GDB调试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># will stop service</span><br><span class="line">sysctl kernel.core_pattern</span><br><span class="line">sudo service apport start force_start=1 enabled=1</span><br><span class="line">grep enabled /etc/default/apport</span><br><span class="line">sudo killall -SIGSEGV ovs-vswitchd</span><br><span class="line">sudo cat /var/log/apport.log</span><br><span class="line"></span><br><span class="line"># won&apos;t stop service</span><br><span class="line">gdb -ex &quot;set pagination 0&quot; -ex &quot;thread apply all bt&quot; -batch -p $(pidof ovs-vswitchd) #for call trace</span><br><span class="line">gcore $(pidof ovs-vswitchd)</span><br><span class="line">sudo apt install openvswitch-dbg cgdb</span><br><span class="line">#cgdb $(which ovs-vswitchd) $(pidof ovs-vswitchd)</span><br><span class="line">cgdb ovs-vswitchd /var/crash/_usr_lib_openvswitch-switch_ovs-vswitchd.0.crash</span><br></pre></td></tr></table></figure>
-<h2 id="Debug-Log"><a href="#Debug-Log" class="headerlink" title="Debug Log"></a>Debug Log</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># log level: emer，err，warn，info，dbg,OFF</span><br><span class="line"># log type: console, syslog, file</span><br><span class="line">sudo ovs-appctl vlog/list |grep vswitchd</span><br><span class="line">sudo ovs-appctl vlog/set vswitchd:file:dbg</span><br><span class="line">sudo ovs-appctl vlog/set vswitchd:file:OFF</span><br><span class="line">sudo ovs-appctl vlog/set ANY:ANY:dbg</span><br><span class="line"></span><br><span class="line"># use this one, we can see the realtime log</span><br><span class="line">sudo ovs-appctl vlog/set ANY:file:dbg</span><br><span class="line">tail -f /var/log/openvswitch/ovs-vswitchd.log</span><br></pre></td></tr></table></figure>
-<h2 id="CLI-Usage"><a href="#CLI-Usage" class="headerlink" title="CLI Usage"></a>CLI Usage</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#网桥状态</span><br><span class="line">ovs-vsctl show</span><br><span class="line">#网桥查询</span><br><span class="line">ovs-vsctl list-br</span><br><span class="line">#端口查询</span><br><span class="line">ovs-vsctl list-ports br-int</span><br><span class="line">#接口查询</span><br><span class="line">ovs-vsctl list-ifaces br-int</span><br><span class="line">#端口、接口归属查询</span><br><span class="line">ovs-vsctl port-to-br tap30580aa5-b0</span><br><span class="line">ovs-vsctl iface-to-br tap30580aa5-b0</span><br><span class="line">#查询网桥流表</span><br><span class="line">ovs-ofctl dump-flows br-int</span><br><span class="line">#查询网桥信息</span><br><span class="line">ovs-ofctl show br-int</span><br><span class="line">#Datapath统计信息查询：hit表示datapath命中数，missed未命中，lost表示没有传递到用户空间就丢弃了</span><br><span class="line">ovs-dpctl show</span><br><span class="line">#查询端口详细统计信息</span><br><span class="line">ovs-dpctl show -s</span><br><span class="line">#指定端口统计信息</span><br><span class="line">ovs-ofctl dump-ports br-int 1</span><br><span class="line">#网桥转发规则</span><br><span class="line">ovs-appctl fdb/show br-int</span><br><span class="line"></span><br><span class="line">#日志查询</span><br><span class="line">ovsdb-tool show-log -m /var/lib/openvswitch/conf.db</span><br><span class="line"></span><br><span class="line">#流表匹配</span><br><span class="line">ovs-appctl ofproto/trace br-tun dl_vlan=1</span><br></pre></td></tr></table></figure>
-<h2 id="tcpdump"><a href="#tcpdump" class="headerlink" title="tcpdump"></a>tcpdump</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">* On compute node</span><br><span class="line">tcpdump -vvv -neli tapd76aea08-db port 67 or port 68 or arp -w `hostname`-tapd76aea08-db-vmport.pcap</span><br><span class="line"></span><br><span class="line">* On dhcp-agent</span><br><span class="line">sudo ip netns exec qdhcp-2be2d2e6-a691-49fb-b260-c4e8abe86fd7 tcpdump -neli any port 67 or port 68 or arp -w `hostname`-dhcpport.pcap</span><br><span class="line"></span><br><span class="line">* Run dhclient &lt;interface&gt; on the VM</span><br><span class="line">Check if the instance got IP or not</span><br></pre></td></tr></table></figure>
-<h2 id="Flow-Debug-ovs-stat"><a href="#Flow-Debug-ovs-stat" class="headerlink" title="Flow Debug - ovs-stat"></a>Flow Debug - ovs-stat</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line"># https://snapcraft.io/ovs-stat</span><br><span class="line">juju ssh nova-compute/0 -- sudo -s</span><br><span class="line">#sudo snap install snapd --edge</span><br><span class="line">sudo snap install ovs-stat</span><br><span class="line"></span><br><span class="line"># for analysing ovs itself</span><br><span class="line">sudo snap connect ovs-stat:openvswitch</span><br><span class="line">sudo snap connect ovs-stat:network-control</span><br><span class="line"></span><br><span class="line"># for analysing sosreport ovs data where sosreport is on a seperate filesystem</span><br><span class="line">#sudo snap connect ovs-stat:removable-media</span><br><span class="line"></span><br><span class="line">#sudo ovs-stat -p /tmp/results --tree ./sosreport-015 --openstack</span><br><span class="line">sudo ovs-stat -p /tmp/results --tree --openstack</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# readlink -f /tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/bridges/br-int/ports/*</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/int-br-data</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/patch-tun</span><br><span class="line">/tmp/snap.ovs-stat/tmp/results/juju-7c33c2-bionic-7/ovs/ports/tapcdda0c13-5e</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.ports&quot;</span><br><span class="line">int-br-data  patch-int  patch-tun  phy-br-data  tapcdda0c13-5e  vxlan-0a05008d</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.bridge br-int&quot;</span><br><span class="line">int-br-data     patch-tun       tapcdda0c13-5e</span><br><span class="line"></span><br><span class="line">#demo help</span><br><span class="line">root@juju-7c33c2-bionic-7:~# sudo ls /tmp/snap.ovs-stat/tmp/results</span><br><span class="line">juju-7c33c2-bionic-7</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">ofproto-trace</span><br><span class="line">openstack</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">openstack.bridge</span><br><span class="line">openstack.bridge.ports</span><br><span class="line">openstack.bridges</span><br><span class="line">openstack.bridges.list</span><br><span class="line">openstack.dvr</span><br><span class="line">openstack.l2pop</span><br><span class="line">openstack.local-vlans</span><br><span class="line">openstack.local-vlans.info</span><br><span class="line">openstack.port</span><br><span class="line">openstack.port.flows</span><br><span class="line">openstack.port.info</span><br><span class="line">openstack.port.list</span><br><span class="line">openstack.ports</span><br><span class="line">openstack.ports.list</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.port tapcdda0c13-5e&quot;</span><br><span class="line">Port tapcdda0c13-5e:</span><br><span class="line">  - bridge: br-int</span><br><span class="line">  - id: 6</span><br><span class="line">  - local-vlan: 3</span><br><span class="line">  - mac address: fe:16:3e:c4:58:9c</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;openstack.l2pop 3&quot;</span><br><span class="line">10.5.0.141</span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;ofproto-trace&quot;</span><br><span class="line">Choose one of the following:</span><br><span class="line">ofproto-trace.port</span><br><span class="line">ofproto-trace.port.all</span><br><span class="line">root@juju-7c33c2-bionic-7:~# ovs-stat -p /tmp/results --host juju-7c33c2-bionic-7 --query &quot;ofproto-trace.port tapcdda0c13-5e&quot;</span><br><span class="line">IMPORTANT: it looks like this port is attached to a vm so mac address has been converted from fe:16:3e:c4:58:9c to fa:16:3e:c4:58:9c</span><br><span class="line">[arp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,arp,arp_spa=192.168.21.7,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">[icmp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,ip,nw_proto=1,nw_src=192.168.21.7,nw_dst=1.1.1.1,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">[dhcp]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int udp,in_port=6,dl_src=fa:16:3e:c4:58:9c,dl_dst=ff:ff:ff:ff:ff:ff,nw_src=0.0.0.0,nw_dst=255.255.255.255,udp_src=68,udp_dst=67</span><br><span class="line">[vm-to-vm]</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,tcp,dl_src=fa:16:3e:c4:58:9c,dl_dst=MAC_OF_REMOTE_INSTANCE</span><br><span class="line">sudo ovs-appctl ofproto/trace br-int in_port=6,dl_vlan=3,dl_src=fa:16:3e:c4:58:9c,dl_dst=MAC_OF_REMOTE_INSTANCE</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-7c33c2-bionic-7:~# sudo ovs-appctl ofproto/trace br-int in_port=6,arp,arp_spa=192.168.21.7,dl_src=fa:16:3e:c4:58:9c</span><br><span class="line">Flow: arp,in_port=6,vlan_tci=0x0000,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7,arp_tpa=0.0.0.0,arp_op=0,arp_sha=00:00:00:00:00:00,arp_tha=00:00:00:00:00:00</span><br><span class="line">bridge(&quot;br-int&quot;)</span><br><span class="line">----------------</span><br><span class="line"> 0. priority 0, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    goto_table:60</span><br><span class="line">60. in_port=6, priority 100, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    set_field:0x6-&gt;reg5</span><br><span class="line">    set_field:0x3-&gt;reg6</span><br><span class="line">    resubmit(,71)</span><br><span class="line">71. arp,reg5=0x6,in_port=6,dl_src=fa:16:3e:c4:58:9c,arp_spa=192.168.21.7, priority 95, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    resubmit(,94)</span><br><span class="line">94. priority 1, cookie 0xe1185b8d7fdb39b4</span><br><span class="line">    NORMAL</span><br><span class="line">     -&gt; no learned MAC for destination, flooding</span><br><span class="line"></span><br><span class="line">    bridge(&quot;br-tun&quot;)</span><br><span class="line">    ----------------</span><br><span class="line">         0. in_port=1, priority 1, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:2</span><br><span class="line">         2. dl_dst=00:00:00:00:00:00/01:00:00:00:00:00, priority 0, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:20</span><br><span class="line">        20. priority 0, cookie 0x95591ec120b6fb4b</span><br><span class="line">            goto_table:22</span><br><span class="line">        22. dl_vlan=3, priority 1, cookie 0x95591ec120b6fb4b</span><br><span class="line">            pop_vlan</span><br><span class="line">            set_field:0x4d1-&gt;tun_id</span><br><span class="line">            output:3</span><br><span class="line">             -&gt; output to kernel tunnel</span><br><span class="line"></span><br><span class="line">bridge(&quot;br-data&quot;)</span><br><span class="line">-----------------</span><br><span class="line"> 0. in_port=1, priority 2, cookie 0xf521d3d0416ecc5b</span><br><span class="line">    drop</span><br><span class="line"></span><br><span class="line">Final flow: arp,reg5=0x6,reg6=0x3,in_port=6,vlan_tci=0x0000,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7,arp_tpa=0.0.0.0,arp_op=0,arp_sha=00:00:00:00:00:00,arp_tha=00:00:00:00:00:00</span><br><span class="line">Megaflow: pkt_mark=0,recirc_id=0,ct_state=-trk,eth,arp,in_port=6,vlan_tci=0x0000/0x1fff,dl_src=fa:16:3e:c4:58:9c,dl_dst=00:00:00:00:00:00,arp_spa=192.168.21.7</span><br><span class="line">Datapath actions: set(tunnel(tun_id=0x4d1,src=10.5.2.207,dst=10.5.0.141,ttl=64,tp_dst=4789,flags(df|key))),6,push_vlan(vid=3,pcp=0),1</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/WIP-Start-my-first-kernel-journey/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/16/WIP-Start-my-first-kernel-journey/" itemprop="url">(WIP)Start my first kernel journey</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:58:40+08:00">
-                2021-01-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2016-03-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>在内核大神gavin同学的帮助下，我开始了人生中第一件和kernel相关的work， 在HP DL360p Gen8服务器上运行OpenStack时发生crash。</p>
-<p>先排除APIC问题<br>APIC(Advanced Programmable Interrupt Controller)是用来管理中断的（另一个ACPI是用来管理电源的, Advanced Configuration and Power Interface)。<br>大家知道，I/O设备可以通过DMA(Direct Memory Access)直接存取内存地址（称为DMA地址，也称为Bus address)。最开始，这个DMA地址都是物理内存地址，并且要求只能是一块连续的地址，而且还要求必须是低位地址，极不灵活，也不能适应虚拟机的需要，所以DMAR(DMA remapping)也就出现了，IOMMU硬件负责操作DMA remapping操作在I/O设备访问的DMA地址翻译成实际的物理内存地址，并做检查访问权限的操作实现隔离。<br>当CPU访问一个在地址翻译表中不存在的DMA地址时就会触发一个fault，内核会判断这个是合法还是非法地址，如果是合法地址就分配相应的物理内存并建立从物理地址到虚拟地址的翻译项，如果是非法地址就会给进程发个signal产生core dump。所以这些fault有些是recoverable，有些是non-recoverable，所以IOMMU就利用中断的方式呼唤内核（中断服务程序是dmar_fault)。<br>DMAR的初始化操作是内核使用alloc_iommu函数根据ACPI中的dmar table进行的，每一个表项对应一个dmar设备，名称从dmar0开始依次递增。<br>每个CPU可能会有自己单独的中断控制器（也叫LOCAL APIC，每个CPU一个，处理LOCAL I/O设备的中断，外部I/O设备的中断也是先经I/O APIC再经LOCAL APIC到达处理器, 也可以不经过I/O APIC直接到LOCAL APIC这叫MSI，跨处理器之间的中断Inter-processor interrupts(IPIs)， APIC定时器中断，性能监测计数器的中断，温度传感器中断，APIC内部中断等)，也有一个共用的叫I/O APIC（通常一个机器一个），特性处理。<br>APIC按时期可分为3个版本，APIC, xAPIC与x2APIC。xAPIC中的寄存器是通过内存映射到一段物理地址，在x2APIC模式中，取消了内存映射方式来读取APIC的寄存器，而是采用了MSR的方式。MSR的全写是Model-specific register(每个型号特有的寄存器)这样的好处是不用再担心内存地址的冲突问题。<br>实际上，内核是从BIOS里读取的dmar table，而HP Gen8的BIOS程序是有问题的，它从APIC里读到的dmar table是坏的（通常在系统日志里会报“Your BIOS is broken; DMAR reported at address”）。<br>Driver是OS的一部分(运行在主机的CPU)，Firmware是设备一部分（设备用的镜像，由内核将fireware加载到内存然后由Driver传送到设备上运行在设备里的CPU上), Driver在初始化时可以调用Fireware的request_firmware等接口。<br>在BIOS不支持x2apic的时候内核已经开始支持它了，这会造成问题，所以BIOS检查DMAR的x2apic标志退出内核的x2apic模式，内核也要从代码上支持这种退出（git log 41750d3， intremap=no_x2apic_optout表示内核忽略这种退出)。</p>
-<p>&lt;Gen8，硬件不支持x2apic, 内核也就不会用xapic，正确</p>
-<blockquote>
-<p>Gen8, 硬件支持x2apic, 内核也会用xapic。<br>=Gen8，硬件支持x2apic, 但BIOS没有正确传递dmar table给内核，故内核需做如下设置禁用x2apic，但是Fireware依然使用x2apic，所以内核可能Crash，也可能一些其他奇怪的问题出现。</p>
-<h1 id="let-X2APIC-enabled-with-IRQ-remapping，-so-it-only-differs-from-xapic-in-IRQ-remapping"><a href="#let-X2APIC-enabled-with-IRQ-remapping，-so-it-only-differs-from-xapic-in-IRQ-remapping" class="headerlink" title="let X2APIC enabled with IRQ remapping， so it only differs from xapic in IRQ remapping"></a>let X2APIC enabled with IRQ remapping， so it only differs from xapic in IRQ remapping</h1><p>“intel_idle.max_cstate=0 intremap=no_x2apic_optout”<br>OR</p>
-<h1 id="disable-X2APIC-AND-IRQ-remapping-will-use-xapic-instead-of-x2apic"><a href="#disable-X2APIC-AND-IRQ-remapping-will-use-xapic-instead-of-x2apic" class="headerlink" title="disable X2APIC AND IRQ remapping, will use xapic instead of x2apic"></a>disable X2APIC AND IRQ remapping, will use xapic instead of x2apic</h1><p>“intel_idle.max_cstate=0 nox2apic intermap=off”     </p>
-</blockquote>
-<p>禁用C状态<br>闲置时保持低电压状态的处理理的闲置状态称为”C状态“，C0是正常状态，级别高于它状态可以省电，但调度到这省电状态的CPU时延迟时间会略微加长。所以对于某些特殊不需要省电的应用可以禁用它（意味着数据中心的温度升高） 。内核包含了针对Intel处理器C状态的驱动程序（称为intel_idel)，因为它是内核的，所以即使BIOS设置禁用C状态仍然会生效。所以应该使用核心参数intel_idle.max_cstate=0来禁用intel_idle驱动程序，这样，内核将恢复为由BIOS提供的ACPI表开层C状态控制。</p>
-<p>General Protection Fault<br>Oops显示为general protection fault。内核发生了污染（make Tainted: G D, P代表私有驱动加载，F代表模块强制加载，R代表模块强制卸载，M代表机器检查，B代表检测到错误页，’GD’ means that some module was not licensed as GPL and that a crash or BUG() occurred. 具体地见：<a href="http://lxr.free-electrons.com/source/Documentation/oops-tracing.txt)，所以的进程在35号CPU上被执行，发生问题的代码是（RIP" target="_blank" rel="external">http://lxr.free-electrons.com/source/Documentation/oops-tracing.txt)，所以的进程在35号CPU上被执行，发生问题的代码是（RIP</a> = kmem_cache_alloc_trace+0x5e/0x140 OR RIP = <strong>kmalloc+0x7b/0x190）。<br>(gdb) list *(</strong>kmalloc+0x7b)<br>0xffffffff8116611b is in __kmalloc (/build/buildd/linux-3.2.0/mm/slub.c:2325).<br>2320 <em> 3. If they were not changed replace tid and freelist<br>2321 </em><br>2322 <em> Since this is without lock semantics the protection is only against<br>2323 </em> code executing on this cpu <em>not</em> from access by other cpus.<br>2324 */<br>2325 if (unlikely(!irqsafe_cpu_cmpxchg_double(<br>2326 s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>2327 object, tid,<br>2328 get_freepointer_safe(s, object), next_tid(tid)))) { </p>
-<p>(gdb) list <em>(kmem_cache_alloc_trace+0x5e)<br>0xffffffff8116657e is in kmem_cache_alloc_trace (/build/buildd/linux-3.2.0/mm/slub.c:2325).<br>2320 </em> 3. If they were not changed replace tid and freelist<br>2321 <em><br>2322 </em> Since this is without lock semantics the protection is only against<br>2323 <em> code executing on this cpu </em>not<em> from access by other cpus.<br>2324 </em>/<br>2325 if (unlikely(!irqsafe_cpu_cmpxchg_double(<br>2326 s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>2327 object, tid,<br>2328 get_freepointer_safe(s, object), next_tid(tid)))) { </p>
-<p>上面两个地址的输出都指向同一函数irqsafe_cpu_cmpxchg_double， 通过objdump函数查看它的机器码如下：<br>0xffffffff81166576 &lt;+86&gt;: mov (%r12),%rsi<br>0xffffffff8116657e &lt;+94&gt;: mov 0x0(%r13,%rax,1),%rbx ### R13 = UPPER HALF OF BASE POINTER<br>0xffffffff81166583 &lt;+99&gt;: mov %r13,%rax<br>0xffffffff81166586 &lt;+102&gt;: callq 0xffffffff8131cb20 ### CALL </p>
-<p>继续查看函数0xffffffff8131cb20的机器码：<br>(gdb) x/30i 0xffffffff8131cb20 ### CALLED<br>0xffffffff8131cb20: pushfq ### PUSH RFLAGS into stack<br>0xffffffff8131cb21: cli ### <strong><strong> CLEAR INTERRUPT FLAG </strong></strong><br>0xffffffff8131cb22: cmp %gs:(%rsi),%rax </p>
-<p>所以调用顺序应该如下，猜测极有可能是因为在35号CPU上执行local_irq_save时发生了general protection fault。<br>irqsafe_cpu_cmpxchg_double (#define) -&gt;<br>irqsafe_generic_cpu_cmpxchg_double (#define) -&gt;<br>local_irq_save(#define)-&gt;… </p>
-<p>通过crash找源码<br>上面是通过gdb找的源码，直接通过如下的gdb vmlinux找到源码是/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2412， 想继续看源码需要将源码安装在提示的位置/build/buildd/linux-lts-trusty-3.13.0。<br>gdb /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic<br>Reading symbols from /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic…done.<br>(gdb) list *(kmem_cache_alloc_trace+0x5e)<br>0xffffffff811af2de is in kmem_cache_alloc_trace (/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2412).<br>2407 /build/buildd/linux-lts-trusty-3.13.0/mm/slub.c: No such file or directory</p>
-<p>那样太麻烦，我们来看一下如何通过crash找错误的源码：</p>
-<p>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
-<p>ubuntu@server-2e5cbffc-ed54-465b-9934-f8681dba8c21:/mnt/73670$ addr2line 0xffffffff811af2fc -e /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic -f -i<br>get_freepointer<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:260<br>get_freepointer_safe<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:275<br>slab_alloc_node<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2416<br>slab_alloc<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2455<br>kmem_cache_alloc_trace<br>/build/buildd/linux-lts-trusty-3.13.0/mm/slub.c:2472</p>
-<p>cmpxchg原子操作<br>看看上面的irqsafe_generic_cpu_cmpxchg_double中的cmpxchg是什么，当多个线程往同一个链表头里插入数据时容易发生同步问题，采用悲观锁的开销太大，可以采用乐观锁重试直至不发生同步为止：<br>do{<br>  old_head = queue-&gt;head;<br>  new_head-&gt;next = old_head;<br>  if (old_head == queue-&gt;head){<br>    queue-&gt;head = new_head;<br>  }<br>}while(queue-&gt;head != new_head)<br>但问题是上面的第4与第5行无法保证原子操作，CPU的cas/cmpxchg指令正是来干这件事让其原子化。具体参见：<a href="http://blog.chinaunix.net/uid-24830931-id-3487817.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-24830931-id-3487817.html</a><br>R = cmpxchg(A, C, B) </p>
-<pre><code>- Assign A = B if A == C
-- Return A at the time of the call, unconditionally
-</code></pre><p>使用cmpxchg指令改写之后的代码如下：<br>do{<br>  old_head = queue-&gt;head;<br>  new_head-&gt;next = old_head;<br>  val=cmpxchg(&amp;queue-&gt;head, old_head, new_head);<br>}while(val!=old_head)</p>
-<p>cmpxchg_double<br>根据irqsafe_cpu_cmpxchg_double中的cmpxchg_double搜到（git log)一个bug（git show cdcd62986），可使用参数”intel_idle.max_cstate=0 nox2apic intremap=off”在linux3.8内核中试试。</p>
-<p>slab &amp; slub的区别<br>见：<a href="http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf" target="_blank" rel="external">http://events.linuxfoundation.org/images/stories/pdf/klf2012_kim.pdf</a><br>slab用于传统机器，slob用于嵌入式系统，slub用于大型系统。<br>fast-path，从per-cpu的freelist列表上分配叫fast-path<br>slow-path，从per-cpu的cpu slab（跨cpu了）或partial slabs列表分配叫slow-path<br>very slow-path, 从per-node（跨numa节点了）上分配或加锁分配叫very slow-path.<br>this_cpu_cmpxchg_double用于避免中断，cmpxchg_double用于避免用锁。<br>slub对slab的改进便是：内核的slab_alloc方法就是使用上面的cmpxchg原子操作原理使用乐观锁的方式往slab的freelist里插slub对象（因为执行插这个链表的动态是可能多个CPU在进程调度的）。</p>
-<p>排除中断服务程序中由特权级产生的General Protection Fault<br>如果处理过程将在被中断任务同一个特权级上运行，那么：处理器把EFLAGS、CS和EIP寄存器的当前值保存在当前堆栈上。<br>如果异常会产生一个错误号，那么该错误号也会被最后压入新栈中。为了从中断处理过程中返回，处理过程必须使用IRET指令。IRET指令与RET指令类似，但IRET还会把保存的寄存器内容恢复到EFLAGS 中。不过只有当CPL是0时才会恢复EFLAGS中的IOPL字段，并且只有当当前特权级CPL不大于IOPL(I/O Privilege Level in FLAGS register)时，IF标志才会被改变。如果当调用中断处理过程时发生了堆栈切换，那么在返回时IRET指令会切换到原来的堆栈。当CPL&gt;IOPL时便会产生General Protection Fault。CS:0010的地址位数显示在内核态，EFLAGS = 00010282 (Decimal) == 0010 1000 0010 1010 (Binary). IOPL = Bits 12 and 13 from EFLAGS = 10. 所以排除这种特级级产生的General Protection Fault<br>0xffffffff8131cb20: pushfq ### PUSH RFLAGS into stack<br>0xffffffff8131cb21: cli ### <strong><strong> CLEAR INTERRUPT FLAG </strong></strong><br>…<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548034] RIP: 0010:[<ffffffff8116616e>] [<ffffffff8116616e>] kmem_cache_alloc_trace+0x5e/0x140<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548191] RSP: 0018:ffff883f6f035d98 EFLAGS: 00010282<br>…<br>Nov 27 18:34:52 sgsxeris001 kernel: [521055.548820] CS: 0010 DS: 002b ES: 002b CR0: 000000008005003b </ffffffff8116616e></ffffffff8116616e></p>
-<p>“per-cpu”内存是否毁坏<br>内核使用per-cpu为每一个CPU都生成一个变量的副本避免加锁，并充分利用cpu硬件的缓存提升性能。所有CPU的静态per-cpu通过DEFINE_PER_CPU定义在一个特殊的段里。动态per-cpu变量仍然使用页机制。下面显示似乎是free list指针在per-cpu kmem缓存中毁坏了(3.13.0-45-generic有问题，3.13.0-46无问题）， 其中kmem的-S参数代表显示slab缓存信息：<br>crash&gt; kmem -S | grep -i invalid<br>kmem: invalid kernel virtual address: ffff00088fec6500 type: “get_freepointer”<br>kmem: invalid kernel virtual address: ffff0008569645a0  type: “get_freepointer”</p>
-<p>继续使用内核参数slub_debug=PU,kmalloc-32,apparmor=0检测(CONFIG_DEBUG_SLAB, 为便于调试，在每个对象可以添加SLAB_RED_ZONE，添加这块内存的最后使用者SLAB_STORE_USER，且用SLAB_POISON初始化对象。当slab出错时，在没有redzone时会在系统日志里将缓存名称与对象开始地址打印出来，若有redzone会将缓存名称、对象开始地址、最后用户、对象的内容、对象前后的信息打印出来)，它一旦检测到slab错误后，内核将丢弃old slab page并且重新分配新的，用它将更难于产生crash(不用这个参数的话得用到这个非法地址后才会panic, 可以使用slab_debug=PUC参数，C代表内核在下一次alocation/free时检测到它为非法地址就panic)，但是可以从它的dmesg信息中找到一些有用的东西进一步分析。</p>
-<p>其它类似于slab_debug的内存检测工具有：kmemcheck, kasan(v4.0-rc1)</p>
-<p>Kasan是什么<br>用户空间使用AddressSanitizer (Asan), ThreadSanitizer and MemorySanitizer， 这些工具现在是gcc和clang编译器的一部分，内核空间使用Kasan。<br>SLUB_DEBUG/DEBUG_SLAB, Can detect some out-of-bounds and use-after-free accesses， Can’t detect out-of-bounds reads， Detects bugs only on allocation / freeing in some cases<br>DEBUG_PAGEALLOC， Unmaps freed pages from address space， Can detect some use-after-free accesses， Detects use-after-free only when the whole page is unused<br>kmemcheck， Detects use-after-free accesses and uninitialized-memory-reads， Causes page fault on each memory access (slow)<br>KASan(Kernel Address Sanitizer, A dynamic memory error detector for the linux kernel), can detect both out-of-bound and use-after-free errors， Based on compiler instrumentation， Detects out-of-bounds for both writes and reads， Has strong use-after-free detection， Detects bugs at the point of occurrence， Prints informative reports, well replace kmemcheck, Asan will unlikely replace debug slab and pagealloc that can be enabled at runtime. kmemcheck couldn’t work on several CPUs but KASan doesn’t have such limitation.<br><a href="https://gitlab.com/veo-labs/linux/commit/0b24becc810dc3be6e3f94103a866f214c282394" target="_blank" rel="external">https://gitlab.com/veo-labs/linux/commit/0b24becc810dc3be6e3f94103a866f214c282394</a><br>KSan使用1/8的内核内存用做shadow memory(memory中的每8 bytes在shadow memory都映射了1 byte, bit0-0代表这8个bytes都是合法的，哪个bit为1就代表哪个bit不合法, 不同的负数代表不同的非法内存含义如redzones, freed memory)，并使用下列的直接映射方法和memory关联(KASAN_SHADOW_SCALE_SHIFT=3)。<br> unsigned long kasan_mem_to_shadow(unsigned long addr)<br>     {<br>                return (addr &gt;&gt; KASAN_SHADOW_SCALE_SHIFT) + KASAN_SHADOW_OFFSET;<br>     }<br>需要一个特别的编译器将特别的call(<strong>asan_load*(addr, </strong>asan_store*(addr))放在每个以1,2,4,8或16开始的memory前面去检查内存访问是法合法。所以使用它的性能损耗分inline compiler instrumentation and simple linear shadow memory两部分，用户空间的Asan慢2倍左右，内核空间慢10~30%左右。<br>安装，使用CONFIG_KASAN编译后的内核插入test_kasan模块(sudo insmod /lib/modules/4.4.0-9-generic/kernel/lib/test_kasan.ko)。如何分析输出见：<a href="https://www.kernel.org/doc/Documentation/kasan.txt" target="_blank" rel="external">https://www.kernel.org/doc/Documentation/kasan.txt</a></p>
-<p>使用crash分析core dump文件<br>$ cat crash-start.sh<br>exec crash –mod /mnt/ddeb-3.13.0-34.60/usr/lib/debug/lib/modules/3.13.0-45-generic/ /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic dump.201502181928</p>
-<p>crash&gt; sys |grep KERNEL<br>      KERNEL: /mnt/ddeb-3.13.0-34.60/usr/lib/debug/boot/vmlinux-3.13.0-45-generic</p>
-<p>crash&gt; set<br>    PID: 47656<br>COMMAND: “make”<br>   TASK: ffff880115fa3000  [THREAD_INFO: ffff881f136ec000]<br>    CPU: 14<br>  STATE: TASK_RUNNING (PANIC)</p>
-<p>crash&gt; ps -a |grep 47656<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br>ps: cannot access user stack address: 7ffff54eead3<br>ps: no user stack</p>
-<p>crash&gt; vtop -c 47656 7ffff54eead3<br>VIRTUAL     PHYSICAL<br>7ffff54eead3  5d6e73ad3       </p>
-<p>   PML: f82e7c7f8 =&gt; 14fb42067<br>   PUD: 14fb42ff8 =&gt; fda9b9067<br>   PMD: fda9b9d50 =&gt; fdd61d067<br>   PTE: fdd61d770 =&gt; 80000005d6e73865<br>  PAGE: 5d6e73000</p>
-<pre><code>PTE         PHYSICAL   FLAGS
-</code></pre><p>80000005d6e73865  5d6e73000  (PRESENT|USER|ACCESSED|DIRTY|NX)</p>
-<pre><code>VMA           START       END     FLAGS FILE
-</code></pre><p>ffff880fe7c34240 7ffff54cd000 7ffff54f2000 100173 </p>
-<pre><code>PAGE         PHYSICAL      MAPPING       INDEX CNT FLAGS
-</code></pre><p>ffffea00175b9cc0  5d6e73000 ffff8813d0b6e341 7fffffffb  1 2ffff000008006c referenced,uptodate,lru,active,swapbacked</p>
-<p>crash&gt; task |grep  sp<br>    sp0 = 0xffff881f136ee000,<br>    sp = 0xffff881f136edf58,<br>    usersp = 0x7ffff54ea970,<br>crash&gt; rd 0xffff881f136edf58 -e 0xffff881f136ee000<br>ffff881f136edf58:  00007ffff54ea80c 0000000002474696   ..N……FG…..<br>ffff881f136edf68:  0000000002474692 00000000026029c0   .FG……)<code>.....
-ffff881f136edf78:  00007ffff54ea8b0 0000000000000000   ..N.............
-ffff881f136edf88:  0000000000000246 756265642f343431   F.......144/debu
-ffff881f136edf98:  2e322e3170735f33 6e69622f37327970   3_sp1.2.py27/bin
-ffff881f136edfa8:  000000000000003b ffffffffffffffff   ;...............
-ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..<br>ffff881f136edfc8:  00007ffff54ea80c 000000000000003b   ..N…..;…….<br>ffff881f136edfd8:  00002b8eeccad427 0000000000000033   ‘….+..3…….<br>ffff881f136edfe8:  0000000000000246 00007ffff54ea138   F…….8.N…..<br>ffff881f136edff8:  000000000000002b                    +…….</p>
-<p>crash&gt; files<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”<br>ROOT: /    CWD: /…../development@2/secure_vm<br> FD       FILE            DENTRY           INODE       TYPE PATH<br>  0 ffff880fde784d00 ffff880daee9c900 ffff880fd3614470 FIFO<br>  1 ffff881223615400 ffff881293e6c180 ffff881fe5ea7d78 FIFO<br>  2 ffff881223615400 ffff881293e6c180 ffff881fe5ea7d78 FIFO<br>  3 ffff881f13757a00 ffff880191c16d80 ffff880fd3612da0 FIFO </p>
-<p>crash&gt; kmem -S |grep invalid<br>kmem: invalid kernel virtual address: ffff00088fec6500  type: “get_freepointer”<br>kmem: invalid kernel virtual address: ffff00088fec6500  type: “get_freepointer”</p>
-<p>crash&gt; struct kmem_cache<br>struct kmem_cache {<br>    struct kmem_cache_cpu <em>cpu_slab;<br>    unsigned long flags;<br>    unsigned long min_partial;<br>    int size;<br>    int object_size;<br>    int offset;<br>    int cpu_partial;<br>    struct kmem_cache_order_objects oo;<br>    struct kmem_cache_order_objects max;<br>    struct kmem_cache_order_objects min;<br>    gfp_t allocflags;<br>    int refcount;<br>    void (</em>ctor)(void <em>);<br>    int inuse;<br>    int align;<br>    int reserved;<br>    const char </em>name;<br>    struct list_head list;<br>    struct kobject kobj;<br>    struct memcg_cache_params <em>memcg_params;<br>    int max_attr_size;<br>    int remote_node_defrag_ratio;<br>    struct kmem_cache_node </em>node[64];<br>}<br>SIZE: 0x2c8<br>crash&gt; struct kmem_cache.offset<br>struct kmem_cache {<br>   [0x20] int offset;<br>}</p>
-<h1 id="disable-apparmor-GRUB-CMDLINE-LINUX-DEFAULT-”quiet-splash-apparmor-0”"><a href="#disable-apparmor-GRUB-CMDLINE-LINUX-DEFAULT-”quiet-splash-apparmor-0”" class="headerlink" title="disable apparmor, GRUB_CMDLINE_LINUX_DEFAULT=”quiet splash apparmor=0”"></a>disable apparmor, GRUB_CMDLINE_LINUX_DEFAULT=”quiet splash apparmor=0”</h1><p>crash&gt; bt -l<br>PID: 47656  TASK: ffff880115fa3000  CPU: 14  COMMAND: “make”</p>
-<p> #0 [ffff881f136ed960] machine_kexec at ffffffff8104d9a1<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/machine_kexec_64.c: 266</p>
-<p> #1 [ffff881f136ed9d0] crash_kexec at ffffffff810ec218<br>    /build/buildd/linux-lts-trusty-3.13.0/kernel/kexec.c: 1099</p>
-<p> #2 [ffff881f136edaa0] oops_end at ffffffff81765ec8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/dumpstack.c: 230</p>
-<p> #3 [ffff881f136edad0] die at ffffffff81018648<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/dumpstack.c: 310</p>
-<p> #4 [ffff881f136edb00] do_general_protection at ffffffff817657c0<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/traps.c: 304</p>
-<p> #5 [ffff881f136edb30] general_protection at ffffffff817650c8<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 1514<br>    [exception RIP: kmem_cache_alloc_trace+0x7c]<br>    RIP: ffffffff811af2fc  RSP: ffff881f136edbe8  RFLAGS: 00010282<br>    RAX: 0000000000000000  RBX: ffff880fff410830  RCX: 0000000000b735a1<br>    RDX: 0000000000b735a0  RSI: 00000000000080d0  RDI: 0000000000016240<br>    RBP: ffff881f136edc38   R8: ffff88203f896240   R9: ffffffff8132906a<br>    R10: 8080808080808080  R11: 0000000000000000  R12: ffff880fff403c00<br>    R13: ffff00088fec6500  R14: 00000000000080d0  R15: ffff880fff403c00<br>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018</p>
-<p> #6 [ffff881f136edc40] apparmor_file_alloc_security at ffffffff8132906a<br>    /build/buildd/linux-lts-trusty-3.13.0/security/apparmor/include/file.h: 61</p>
-<p> #7 [ffff881f136edc70] security_file_alloc at ffffffff812e9c56<br>    /build/buildd/linux-lts-trusty-3.13.0/security/security.c: 691</p>
-<p> #8 [ffff881f136edc80] get_empty_filp at ffffffff811cc8c0<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/file_table.c: 130</p>
-<p> #9 [ffff881f136edcb0] path_openat at ffffffff811da2b8<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/namei.c: 3169</p>
-<p>#10 [ffff881f136edd70] do_filp_open at ffffffff811db5c3<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/namei.c: 3238</p>
-<p>#11 [ffff881f136ede40] open_exec at ffffffff811d1ec5<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 767</p>
-<p>#12 [ffff881f136edea0] do_execve_common at ffffffff811d242b<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1500</p>
-<p>#13 [ffff881f136edf10] do_execve at ffffffff811d26b8<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1586</p>
-<p>#14 [ffff881f136edf20] sys_execve at ffffffff811d293d<br>    /build/buildd/linux-lts-trusty-3.13.0/fs/exec.c: 1688</p>
-<p>#15 [ffff881f136edf50] stub_execve at ffffffff8176ded9<br>    /build/buildd/linux-lts-trusty-3.13.0/arch/x86/kernel/entry_64.S: 870<br>    RIP: 00002b8eeccad427  RSP: 00007ffff54ea138  RFLAGS: 00000246<br>    RAX: 000000000000003b  RBX: 0000000000000000  RCX: ffffffffffffffff<br>    RDX: 00000000026029c0  RSI: 0000000002603e80  RDI: 00007ffff54ea80c<br>    RBP: 00007ffff54ea8b0   R8: 6e69622f37327970   R9: 2e322e3170735f33<br>    R10: 756265642f343431  R11: 0000000000000246  R12: 00000000026029c0<br>    R13: 0000000002474692  R14: 0000000002474696  R15: 00007ffff54ea80c<br>    ORIG_RAX: 000000000000003b  CS: 0033  SS: 002b</p>
-<p>crash&gt; dis kmem_cache_alloc_trace+0x7c<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx</kmem_cache_alloc_trace+0x7c></p>
-<p>crash&gt; dis kmem_cache_alloc_trace<br>0xffffffff811af280 <kmem_cache_alloc_trace>:    nopl   0x0(%rax,%rax,1)<br>0xffffffff811af285 <kmem_cache_alloc_trace+0x5>:        push   %rbp<br>0xffffffff811af286 <kmem_cache_alloc_trace+0x6>:        mov    %rsp,%rbp<br>0xffffffff811af289 <kmem_cache_alloc_trace+0x9>:        push   %r15<br>0xffffffff811af28b <kmem_cache_alloc_trace+0xb>:        mov    %rdi,%r15<br>0xffffffff811af28e <kmem_cache_alloc_trace+0xe>:        push   %r14<br>0xffffffff811af290 <kmem_cache_alloc_trace+0x10>:       mov    %esi,%r14d<br>0xffffffff811af293 <kmem_cache_alloc_trace+0x13>:       push   %r13<br>0xffffffff811af295 <kmem_cache_alloc_trace+0x15>:       push   %r12<br>0xffffffff811af297 <kmem_cache_alloc_trace+0x17>:       push   %rbx<br>0xffffffff811af298 <kmem_cache_alloc_trace+0x18>:       sub    $0x28,%rsp<br>0xffffffff811af29c <kmem_cache_alloc_trace+0x1c>:       mov    0xb65ece(%rip),%eax        # 0xffffffff81d15170 <gfp_allowed_mask><br>0xffffffff811af2a2 <kmem_cache_alloc_trace+0x22>:       mov    %rdx,-0x40(%rbp)<br>0xffffffff811af2a6 <kmem_cache_alloc_trace+0x26>:       mov    0x8(%rbp),%r9<br>0xffffffff811af2aa <kmem_cache_alloc_trace+0x2a>:       and    %esi,%eax<br>0xffffffff811af2ac <kmem_cache_alloc_trace+0x2c>:       test   $0x10,%al<br>0xffffffff811af2ae <kmem_cache_alloc_trace+0x2e>:       je     0xffffffff811af2bd <kmem_cache_alloc_trace+0x3d><br>0xffffffff811af2b0 <kmem_cache_alloc_trace+0x30>:       mov    %r9,-0x50(%rbp)<br>0xffffffff811af2b4 <kmem_cache_alloc_trace+0x34>:       callq  0xffffffff81760d30 <_cond_resched><br>0xffffffff811af2b9 <kmem_cache_alloc_trace+0x39>:       mov    -0x50(%rbp),%r9<br>0xffffffff811af2bd <kmem_cache_alloc_trace+0x3d>:       nopl   0x0(%rax,%rax,1)<br>0xffffffff811af2c2 <kmem_cache_alloc_trace+0x42>:       mov    %r15,%r12<br>0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45>:       mov    (%r12),%r8<br>0xffffffff811af2c9 <kmem_cache_alloc_trace+0x49>:       add    %gs:0xcce8,%r8<br>0xffffffff811af2d2 <kmem_cache_alloc_trace+0x52>:       mov    0x8(%r8),%rdx<br>0xffffffff811af2d6 <kmem_cache_alloc_trace+0x56>:       mov    (%r8),%r13<br>0xffffffff811af2d9 <kmem_cache_alloc_trace+0x59>:       mov    0x10(%r8),%rax<br>0xffffffff811af2dd <kmem_cache_alloc_trace+0x5d>:       test   %r13,%r13<br>0xffffffff811af2e0 <kmem_cache_alloc_trace+0x60>:       je     0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0><br>0xffffffff811af2e6 <kmem_cache_alloc_trace+0x66>:       test   %rax,%rax<br>0xffffffff811af2e9 <kmem_cache_alloc_trace+0x69>:       je     0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0><br>0xffffffff811af2ef <kmem_cache_alloc_trace+0x6f>:       movslq 0x20(%r12),%rax<br>0xffffffff811af2f4 <kmem_cache_alloc_trace+0x74>:       mov    (%r12),%rdi<br>0xffffffff811af2f8 <kmem_cache_alloc_trace+0x78>:       lea    0x1(%rdx),%rcx<br>0xffffffff811af2fc <kmem_cache_alloc_trace+0x7c>:       mov    0x0(%r13,%rax,1),%rbx<br>0xffffffff811af301 <kmem_cache_alloc_trace+0x81>:       mov    %r13,%rax<br>0xffffffff811af304 <kmem_cache_alloc_trace+0x84>:       cmpxchg16b %gs:(%rdi)<br>0xffffffff811af309 <kmem_cache_alloc_trace+0x89>:       sete   %al<br>0xffffffff811af30c <kmem_cache_alloc_trace+0x8c>:       test   %al,%al<br>0xffffffff811af30e <kmem_cache_alloc_trace+0x8e>:       je     0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af310 <kmem_cache_alloc_trace+0x90>:       movslq 0x20(%r12),%rax<br>0xffffffff811af315 <kmem_cache_alloc_trace+0x95>:       prefetcht0 (%rbx,%rax,1)<br>0xffffffff811af319 <kmem_cache_alloc_trace+0x99>:       test   %r13,%r13<br>0xffffffff811af31c <kmem_cache_alloc_trace+0x9c>:       jne    0xffffffff811af418 <kmem_cache_alloc_trace+0x198><br>0xffffffff811af322 <kmem_cache_alloc_trace+0xa2>:       movslq 0x18(%r15),%r15<br>0xffffffff811af326 <kmem_cache_alloc_trace+0xa6>:       mov    0x8(%rbp),%rax<br>0xffffffff811af32a <kmem_cache_alloc_trace+0xaa>:       mov    %rax,-0x48(%rbp)<br>0xffffffff811af32e <kmem_cache_alloc_trace+0xae>:       mov    %r15,-0x38(%rbp)<br>0xffffffff811af332 <kmem_cache_alloc_trace+0xb2>:       nopl   0x0(%rax,%rax,1)<br>0xffffffff811af337 <kmem_cache_alloc_trace+0xb7>:       add    $0x28,%rsp<br>0xffffffff811af33b <kmem_cache_alloc_trace+0xbb>:       mov    %r13,%rax<br>0xffffffff811af33e <kmem_cache_alloc_trace+0xbe>:       pop    %rbx<br>0xffffffff811af33f <kmem_cache_alloc_trace+0xbf>:       pop    %r12<br>0xffffffff811af341 <kmem_cache_alloc_trace+0xc1>:       pop    %r13<br>0xffffffff811af343 <kmem_cache_alloc_trace+0xc3>:       pop    %r14<br>0xffffffff811af345 <kmem_cache_alloc_trace+0xc5>:       pop    %r15<br>0xffffffff811af347 <kmem_cache_alloc_trace+0xc7>:       pop    %rbp<br>0xffffffff811af348 <kmem_cache_alloc_trace+0xc8>:       retq<br>0xffffffff811af349 <kmem_cache_alloc_trace+0xc9>:       nopl   0x0(%rax)<br>0xffffffff811af350 <kmem_cache_alloc_trace+0xd0>:       test   $0x800,%r14d<br>0xffffffff811af357 <kmem_cache_alloc_trace+0xd7>:       mov    %r15,%r12<br>0xffffffff811af35a <kmem_cache_alloc_trace+0xda>:       jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af360 <kmem_cache_alloc_trace+0xe0>:       mov    %gs:0xb7e0,%eax<br>0xffffffff811af368 <kmem_cache_alloc_trace+0xe8>:       test   $0x1fff00,%eax<br>0xffffffff811af36d <kmem_cache_alloc_trace+0xed>:       jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af373 <kmem_cache_alloc_trace+0xf3>:       mov    %gs:0xb800,%rax<br>0xffffffff811af37c <kmem_cache_alloc_trace+0xfc>:       cmpq   $0x0,0x2a8(%rax)<br>0xffffffff811af384 <kmem_cache_alloc_trace+0x104>:      je     0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af38a <kmem_cache_alloc_trace+0x10a>:      testb  $0x20,0x16(%rax)<br>0xffffffff811af38e <kmem_cache_alloc_trace+0x10e>:      jne    0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af394 <kmem_cache_alloc_trace+0x114>:      mov    0x8(%rax),%rdx<br>0xffffffff811af398 <kmem_cache_alloc_trace+0x118>:      mov    0x10(%rdx),%rdx<br>0xffffffff811af39c <kmem_cache_alloc_trace+0x11c>:      and    $0x4,%edx<br>0xffffffff811af39f <kmem_cache_alloc_trace+0x11f>:      jne    0xffffffff811af45b <kmem_cache_alloc_trace+0x1db><br>0xffffffff811af3a5 <kmem_cache_alloc_trace+0x125>:      mov    %r14d,%esi<br>0xffffffff811af3a8 <kmem_cache_alloc_trace+0x128>:      mov    %r15,%rdi<br>0xffffffff811af3ab <kmem_cache_alloc_trace+0x12b>:      mov    %r9,-0x50(%rbp)<br>0xffffffff811af3af <kmem_cache_alloc_trace+0x12f>:      callq  0xffffffff811bc810 <__memcg_kmem_get_cache><br>0xffffffff811af3b4 <kmem_cache_alloc_trace+0x134>:      mov    -0x50(%rbp),%r9<br>0xffffffff811af3b8 <kmem_cache_alloc_trace+0x138>:      mov    %rax,%r12<br>0xffffffff811af3bb <kmem_cache_alloc_trace+0x13b>:      jmpq   0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af3c0 <kmem_cache_alloc_trace+0x140>:      mov    0xb43989(%rip),%rbx        # 0xffffffff81cf2d50 <__tracepoint_kmalloc+0x30><br>0xffffffff811af3c7 <kmem_cache_alloc_trace+0x147>:      test   %rbx,%rbx<br>0xffffffff811af3ca <kmem_cache_alloc_trace+0x14a>:      je     0xffffffff811af40d <kmem_cache_alloc_trace+0x18d><br>0xffffffff811af3cc <kmem_cache_alloc_trace+0x14c>:      mov    (%rbx),%rax<br>0xffffffff811af3cf <kmem_cache_alloc_trace+0x14f>:      lea    0x10(%rbx),%r15<br>0xffffffff811af3d3 <kmem_cache_alloc_trace+0x153>:      mov    %rbx,%r12<br>0xffffffff811af3d6 <kmem_cache_alloc_trace+0x156>:      nopw   %cs:0x0(%rax,%rax,1)<br>0xffffffff811af3e0 <kmem_cache_alloc_trace+0x160>:      mov    0x8(%r12),%rdi<br>0xffffffff811af3e5 <kmem_cache_alloc_trace+0x165>:      add    $0x10,%r12<br>0xffffffff811af3e9 <kmem_cache_alloc_trace+0x169>:      mov    %r14d,%r9d<br>0xffffffff811af3ec <kmem_cache_alloc_trace+0x16c>:      mov    -0x38(%rbp),%r8<br>0xffffffff811af3f0 <kmem_cache_alloc_trace+0x170>:      mov    -0x40(%rbp),%rcx<br>0xffffffff811af3f4 <kmem_cache_alloc_trace+0x174>:      mov    %r13,%rdx<br>0xffffffff811af3f7 <kmem_cache_alloc_trace+0x177>:      mov    -0x48(%rbp),%rsi<br>0xffffffff811af3fb <kmem_cache_alloc_trace+0x17b>:      callq  *%rax<br>0xffffffff811af3fd <kmem_cache_alloc_trace+0x17d>:      mov    %r12,%rax<br>0xffffffff811af400 <kmem_cache_alloc_trace+0x180>:      sub    %rbx,%rax<br>0xffffffff811af403 <kmem_cache_alloc_trace+0x183>:      mov    -0x10(%r15,%rax,1),%rax<br>0xffffffff811af408 <kmem_cache_alloc_trace+0x188>:      test   %rax,%rax<br>0xffffffff811af40b <kmem_cache_alloc_trace+0x18b>:      jne    0xffffffff811af3e0 <kmem_cache_alloc_trace+0x160><br>0xffffffff811af40d <kmem_cache_alloc_trace+0x18d>:      jmpq   0xffffffff811af337 <kmem_cache_alloc_trace+0xb7><br>0xffffffff811af412 <kmem_cache_alloc_trace+0x192>:      nopw   0x0(%rax,%rax,1)<br>0xffffffff811af418 <kmem_cache_alloc_trace+0x198>:      test   $0x8000,%r14d<br>0xffffffff811af41f <kmem_cache_alloc_trace+0x19f>:      je     0xffffffff811af322 <kmem_cache_alloc_trace+0xa2><br>0xffffffff811af425 <kmem_cache_alloc_trace+0x1a5>:      movslq 0x1c(%r12),%rdx<br>0xffffffff811af42a <kmem_cache_alloc_trace+0x1aa>:      xor    %esi,%esi<br>0xffffffff811af42c <kmem_cache_alloc_trace+0x1ac>:      mov    %r13,%rdi<br>0xffffffff811af42f <kmem_cache_alloc_trace+0x1af>:      callq  0xffffffff81387bf0 <__memset><br>0xffffffff811af434 <kmem_cache_alloc_trace+0x1b4>:      jmpq   0xffffffff811af322 <kmem_cache_alloc_trace+0xa2><br>0xffffffff811af439 <kmem_cache_alloc_trace+0x1b9>:      nopl   0x0(%rax)<br>0xffffffff811af440 <kmem_cache_alloc_trace+0x1c0>:      mov    %r9,%rcx<br>0xffffffff811af443 <kmem_cache_alloc_trace+0x1c3>:      mov    $0xffffffff,%edx<br>0xffffffff811af448 <kmem_cache_alloc_trace+0x1c8>:      mov    %r14d,%esi<br>0xffffffff811af44b <kmem_cache_alloc_trace+0x1cb>:      mov    %r12,%rdi<br>0xffffffff811af44e <kmem_cache_alloc_trace+0x1ce>:      callq  0xffffffff81750117 <__slab_alloc><br>0xffffffff811af453 <kmem_cache_alloc_trace+0x1d3>:      mov    %rax,%r13<br>0xffffffff811af456 <kmem_cache_alloc_trace+0x1d6>:      jmpq   0xffffffff811af319 <kmem_cache_alloc_trace+0x99><br>0xffffffff811af45b <kmem_cache_alloc_trace+0x1db>:      testb  $0x1,0x5f1(%rax)<br>0xffffffff811af462 <kmem_cache_alloc_trace+0x1e2>:      je     0xffffffff811af3a5 <kmem_cache_alloc_trace+0x125><br>0xffffffff811af468 <kmem_cache_alloc_trace+0x1e8>:      jmpq   0xffffffff811af2c5 <kmem_cache_alloc_trace+0x45><br>0xffffffff811af46d <kmem_cache_alloc_trace+0x1ed>:      nopl   (%rax)</kmem_cache_alloc_trace+0x1ed></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x1e8></kmem_cache_alloc_trace+0x125></kmem_cache_alloc_trace+0x1e2></kmem_cache_alloc_trace+0x1db></kmem_cache_alloc_trace+0x99></kmem_cache_alloc_trace+0x1d6></kmem_cache_alloc_trace+0x1d3></__slab_alloc></kmem_cache_alloc_trace+0x1ce></kmem_cache_alloc_trace+0x1cb></kmem_cache_alloc_trace+0x1c8></kmem_cache_alloc_trace+0x1c3></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x1b9></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x1b4></__memset></kmem_cache_alloc_trace+0x1af></kmem_cache_alloc_trace+0x1ac></kmem_cache_alloc_trace+0x1aa></kmem_cache_alloc_trace+0x1a5></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x19f></kmem_cache_alloc_trace+0x198></kmem_cache_alloc_trace+0x192></kmem_cache_alloc_trace+0xb7></kmem_cache_alloc_trace+0x18d></kmem_cache_alloc_trace+0x160></kmem_cache_alloc_trace+0x18b></kmem_cache_alloc_trace+0x188></kmem_cache_alloc_trace+0x183></kmem_cache_alloc_trace+0x180></kmem_cache_alloc_trace+0x17d></kmem_cache_alloc_trace+0x17b></kmem_cache_alloc_trace+0x177></kmem_cache_alloc_trace+0x174></kmem_cache_alloc_trace+0x170></kmem_cache_alloc_trace+0x16c></kmem_cache_alloc_trace+0x169></kmem_cache_alloc_trace+0x165></kmem_cache_alloc_trace+0x160></kmem_cache_alloc_trace+0x156></kmem_cache_alloc_trace+0x153></kmem_cache_alloc_trace+0x14f></kmem_cache_alloc_trace+0x14c></kmem_cache_alloc_trace+0x18d></kmem_cache_alloc_trace+0x14a></kmem_cache_alloc_trace+0x147></__tracepoint_kmalloc+0x30></kmem_cache_alloc_trace+0x140></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x13b></kmem_cache_alloc_trace+0x138></kmem_cache_alloc_trace+0x134></__memcg_kmem_get_cache></kmem_cache_alloc_trace+0x12f></kmem_cache_alloc_trace+0x12b></kmem_cache_alloc_trace+0x128></kmem_cache_alloc_trace+0x125></kmem_cache_alloc_trace+0x1db></kmem_cache_alloc_trace+0x11f></kmem_cache_alloc_trace+0x11c></kmem_cache_alloc_trace+0x118></kmem_cache_alloc_trace+0x114></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x10e></kmem_cache_alloc_trace+0x10a></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x104></kmem_cache_alloc_trace+0xfc></kmem_cache_alloc_trace+0xf3></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0xed></kmem_cache_alloc_trace+0xe8></kmem_cache_alloc_trace+0xe0></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0xda></kmem_cache_alloc_trace+0xd7></kmem_cache_alloc_trace+0xd0></kmem_cache_alloc_trace+0xc9></kmem_cache_alloc_trace+0xc8></kmem_cache_alloc_trace+0xc7></kmem_cache_alloc_trace+0xc5></kmem_cache_alloc_trace+0xc3></kmem_cache_alloc_trace+0xc1></kmem_cache_alloc_trace+0xbf></kmem_cache_alloc_trace+0xbe></kmem_cache_alloc_trace+0xbb></kmem_cache_alloc_trace+0xb7></kmem_cache_alloc_trace+0xb2></kmem_cache_alloc_trace+0xae></kmem_cache_alloc_trace+0xaa></kmem_cache_alloc_trace+0xa6></kmem_cache_alloc_trace+0xa2></kmem_cache_alloc_trace+0x198></kmem_cache_alloc_trace+0x9c></kmem_cache_alloc_trace+0x99></kmem_cache_alloc_trace+0x95></kmem_cache_alloc_trace+0x90></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x8e></kmem_cache_alloc_trace+0x8c></kmem_cache_alloc_trace+0x89></kmem_cache_alloc_trace+0x84></kmem_cache_alloc_trace+0x81></kmem_cache_alloc_trace+0x7c></kmem_cache_alloc_trace+0x78></kmem_cache_alloc_trace+0x74></kmem_cache_alloc_trace+0x6f></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x69></kmem_cache_alloc_trace+0x66></kmem_cache_alloc_trace+0x1c0></kmem_cache_alloc_trace+0x60></kmem_cache_alloc_trace+0x5d></kmem_cache_alloc_trace+0x59></kmem_cache_alloc_trace+0x56></kmem_cache_alloc_trace+0x52></kmem_cache_alloc_trace+0x49></kmem_cache_alloc_trace+0x45></kmem_cache_alloc_trace+0x42></kmem_cache_alloc_trace+0x3d></kmem_cache_alloc_trace+0x39></_cond_resched></kmem_cache_alloc_trace+0x34></kmem_cache_alloc_trace+0x30></kmem_cache_alloc_trace+0x3d></kmem_cache_alloc_trace+0x2e></kmem_cache_alloc_trace+0x2c></kmem_cache_alloc_trace+0x2a></kmem_cache_alloc_trace+0x26></kmem_cache_alloc_trace+0x22></gfp_allowed_mask></kmem_cache_alloc_trace+0x1c></kmem_cache_alloc_trace+0x18></kmem_cache_alloc_trace+0x17></kmem_cache_alloc_trace+0x15></kmem_cache_alloc_trace+0x13></kmem_cache_alloc_trace+0x10></kmem_cache_alloc_trace+0xe></kmem_cache_alloc_trace+0xb></kmem_cache_alloc_trace+0x9></kmem_cache_alloc_trace+0x6></kmem_cache_alloc_trace+0x5></kmem_cache_alloc_trace></p>
-<p>slab_alloc的代码<br>/*</p>
-<ul>
-<li>Inlined fastpath so that allocation functions (kmalloc, kmem_cache_alloc)</li>
-<li>have the fastpath folded into their functions. So no function call</li>
-<li>overhead for requests that can be satisfied on the fastpath.<br>*</li>
-<li>The fastpath works by first checking if the lockless freelist can be used.</li>
-<li>If not then __slab_alloc is called for slow processing.<br>*</li>
-<li>Otherwise we can simply pick the next object from the lockless free list.<br><em>/<br>static __always_inline void </em>slab_alloc_node(struct kmem_cache <em>s,<br>gfp_t gfpflags, int node, unsigned long addr)<br>{<br>void **object;<br>struct kmem_cache_cpu </em>c;<br>struct page *page;<br>unsigned long tid;</li>
-</ul>
-<p>if (slab_pre_alloc_hook(s, gfpflags))<br>return NULL;</p>
-<p>s = memcg_kmem_get_cache(s, gfpflags);<br>redo:<br>/*</p>
-<ul>
-<li>Must read kmem_cache cpu data via this cpu ptr. Preemption is</li>
-<li>enabled. We may switch back and forth between cpus while</li>
-<li>reading from one cpu area. That does not matter as long</li>
-<li>as we end up on the original cpu again when doing the cmpxchg.<br>*</li>
-<li>Preemption is disabled for the retrieval of the tid because that</li>
-<li>must occur from the current processor. We cannot allow rescheduling</li>
-<li>on a different processor between the determination of the pointer</li>
-<li>and the retrieval of the tid.<br>*/<br>preempt_disable();<br>c = __this_cpu_ptr(s-&gt;cpu_slab);</li>
-</ul>
-<p>/*</p>
-<ul>
-<li>The transaction ids are globally unique per cpu and per operation on</li>
-<li>a per cpu queue. Thus they can be guarantee that the cmpxchg_double</li>
-<li>occurs on the right processor and that there was no operation on the</li>
-<li>linked list in between.<br>*/<br>tid = c-&gt;tid;<br>preempt_enable();</li>
-</ul>
-<p>object = c-&gt;freelist;<br>page = c-&gt;page;<br>if (unlikely(!object || !node_match(page, node)))<br>object = __slab_alloc(s, gfpflags, node, addr, c);</p>
-<p>else {<br>void *next_object = get_freepointer_safe(s, object);   #但是这句是在对应numa节点之下per-cpu数据，不会和下面的this_cpu_cmpxchg_double产生冲突</p>
-<p>/*</p>
-<ul>
-<li>The cmpxchg will only match if there was no additional</li>
-<li>operation and if we are on the right processor.<br>*</li>
-<li>The cmpxchg does the following atomically (without lock</li>
-<li>semantics!)</li>
-<li><ol>
-<li>Relocate first pointer to the current per cpu area.</li>
-</ol>
-</li>
-<li><ol>
-<li>Verify that tid and freelist have not been changed</li>
-</ol>
-</li>
-<li><ol>
-<li>If they were not changed replace tid and freelist<br>*</li>
-</ol>
-</li>
-<li>Since this is without lock semantics the protection is only</li>
-<li>against code executing on this cpu <em>not</em> from access by</li>
-<li>other cpus.<br>*/<br>if (unlikely(!this_cpu_cmpxchg_double(<br>s-&gt;cpu_slab-&gt;freelist, s-&gt;cpu_slab-&gt;tid,<br>object, tid,<br>next_object, next_tid(tid)))) {</li>
-</ul>
-<p>note_cmpxchg_failure(“slab_alloc”, s, tid);<br>goto redo;<br>}<br>prefetch_freepointer(s, next_object);<br>stat(s, ALLOC_FASTPATH);<br>}</p>
-<p>if (unlikely(gfpflags &amp; __GFP_ZERO) &amp;&amp; object)<br>memset(object, 0, s-&gt;object_size);</p>
-<p>slab_post_alloc_hook(s, gfpflags, object);</p>
-<p>return object;<br>}</p>
-<p>代码解释见：<a href="http://blog.chinaunix.net/uid-26859697-id-5498373.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-26859697-id-5498373.html</a><br>this_cpu_cmpxchg_double()原子指令操作。该原子操作主要做了三件事情：1）重定向首指针指向当前CPU的空间；2）判断tid和freelist未被修改；3）如果未被修改，也就是相等，确信此次slab分配未被CPU迁移，接着将新的tid和freelist数据覆盖过去以更新。<br>具体将this_cpu_cmpxchg_double()的功能展开用C语言表述就是:<br>if ((<strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;freelist) == object) &amp;&amp; (</strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;tid) == tid))<br>{<br>    <strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;freelist) = next_object;
-    </strong>this_cpu_ptr(s-&gt;cpu_slab-&gt;tid) = next_tid(tid);<br>    return true;<br>}<br>else<br>{<br>    return false;<br>}</p>
-<p>CONFIG_DEBUG_PAGEALLOC参数<br>下面发现错误的get_freepointer函数里有CONFIG_DEBUG_PAGEALLOC（debug_pagealloc=1），我们来研究一下这个参数CONFIG_DEBUG_PAGEALLOC。<br>static inline void <em>get_freepointer_safe(struct kmem_cache </em>s, void <em>object)<br>{<br>void </em>p;</p>
-<p>#ifdef CONFIG_DEBUG_PAGEALLOC<br>probe_kernel_read(&amp;p, (void **)(object + s-&gt;offset), sizeof(p));</p>
-<p>#else<br>p = get_freepointer(s, object);</p>
-<p>#endif<br>return p;<br>}</p>
-<p>见：<a href="https://lwn.net/Articles/321595/，" target="_blank" rel="external">https://lwn.net/Articles/321595/，</a> 它不能检测read非法内存，只能检测write非法内存，并且要好长一段时间写到那里才发生。</p>
-<p>per-cpu数据的内核抢占问题<br>同步有两层：一层是不同cpu之间的，第二层是相同cpu之间的(虽然get_freepointer_safe作为per-cpu的数据无论什么时候都不会被其他cpu执行，但是this_cpu_cmpxchg_double作为乐观锁是有可能不执行freelist/tid更新的（进程调度到同一CPU上执行了slab对象的free操作），这时候乐观执行 get_freepointer_safe就会访问错误内存地址了)。第一种不同cpu之间的情形已经采用per-cpu机制自动做了，但是第二种相同cpu之间在不禁止进程抢占的情形下仍然是有可能发生同步问题的，那内核是怎么做到的呢？<br>static <strong>always_inline void slab_free(struct kmem_cache <em>s,<br>struct page </em>page, void *x, unsigned long addr){<br>…<br>redo:<br>preempt_disable();<br>c = </strong>this_cpu_ptr(s-&gt;cpu_slab);<br>tid = c-&gt;tid;<br>preempt_enable();</p>
-<p>if (likely(page == c-&gt;page)) {<br>set_freepointer(s, object, c-&gt;freelist);</p>
-<p>static <strong>always_inline void <em>slab_alloc_node(struct kmem_cache </em>s,<br>gfp_t gfpflags, int node, unsigned long addr){<br>…<br>redo:<br>preempt_disable();<br>c = </strong>this_cpu_ptr(s-&gt;cpu_slab);<br>tid = c-&gt;tid;<br>preempt_enable();</p>
-<p>object = c-&gt;freelist;<br>page = c-&gt;page;<br>if (unlikely(!object || !node_match(page, node)))<br>object = __slab_alloc(s, gfpflags, node, addr, c);<br>else {<br>void *next_object = get_freepointer_safe(s, object);</p>
-<p>slab_alloc_node与slab_free获取freelist是禁止抢占了的，是成对出现的，应该内核没同步这方面的问题</p>
-<p>Kasan检查<br>内核排查似乎没有问题，有可能是应用层使用slab时先free再引用出的问题，但仅从crash无法找到是哪个应用造成的，还得结合kasan来继续追查（DEBUG_PAGELLOC这些参数对read无效，仅对write有效，所以真正crash时离发生内存错误的时间较远，参考价值不大），kasan更加实时。kasan结果如下：<br>1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28<br>29<br>30<br>31<br>32<br>33<br>34<br>35<br>36<br>37<br>38<br>39<br>40<br>41<br>42<br>43<br>44<br>45<br>46<br>47<br>48<br>49<br>50<br>51<br>52<br>53<br>54<br>55<br>56<br>57<br>58<br>59<br>60<br>61<br>62<br>63<br>64<br>65<br>66<br>67<br>68<br>69<br>70<br>71<br>72<br>73<br>74<br>75<br>76<br>77<br>78<br>79<br>80<br>81<br>82<br>83<br>84<br>85<br>86<br>87<br>88<br>89<br>90<br>91<br>92<br>93<br>94<br>95<br>96<br>97<br>98<br>99<br>100<br>101<br>102<br>103<br>104<br>105<br>106<br>107<br>108<br>109<br>110<br>111<br>112<br>113<br>114<br>115<br>116<br>117<br>118<br>119<br>120<br>121<br>122<br>123<br>124<br>125<br>126<br>127<br>128<br>129<br>130<br>131<br>132<br>133<br>134<br>135<br>136<br>137<br>138<br>139<br>140<br>141<br>142<br>143<br>144<br>145<br>146<br>147<br>148<br>149<br>150<br>151<br>152<br>[230056.938787] ==================================================================<br>[230056.938834] BUG: KASan: out of bounds access in isolate_migratepages_range+0x663/0xb30 at addr ffff880279cc76d1<br>[230056.938869] Read of size 8 by task cc1/27473<br>[230056.938887] =============================================================================<br>[230056.938915] BUG anon_vma (Not tainted): kasan: bad access detected<br>[230056.938936] —————————————————————————–<br>[230056.938936]<br>[230056.938970] Disabling lock debugging due to kernel taint<br>[230056.938981] INFO: Allocated in anon_vma_prepare+0x189/0x250 age=7323 cpu=16 pid=31029<br>[230056.939012] <strong>slab_alloc+0x4f8/0x560<br>[230056.939029] kmem_cache_alloc+0x18b/0x1e0<br>[230056.939047] anon_vma_prepare+0x189/0x250<br>[230056.939065] do_wp_page+0x837/0xb10<br>[230056.939081] handle_mm_fault+0x884/0x1160<br>[230056.939102] </strong>do_page_fault+0x218/0x750<br>[230056.939119] do_page_fault+0x1a/0x70<br>[230056.939135] page_fault+0x28/0x30<br>[230056.939154] INFO: Freed in <strong>put_anon_vma+0x69/0xe0 age=8588 cpu=4 pid=29418<br>[230056.939212] </strong>slab_free+0x2ab/0x3f0<br>[230056.939260] kmem_cache_free+0x1c1/0x200<br>[230056.939307] <strong>put_anon_vma+0x69/0xe0<br>[230056.939355] unlink_anon_vmas+0x2a8/0x320<br>[230056.939402] free_pgtables+0x50/0x1c0<br>[230056.939450] exit_mmap+0xca/0x1e0<br>[230056.939496] mmput+0x82/0x1b0<br>[230056.939541] do_exit+0x391/0x1060<br>[230056.939587] do_group_exit+0x86/0x130<br>[230056.939633] SyS_exit_group+0x1d/0x20<br>[230056.939681] system_call_fastpath+0x1a/0x1f<br>[230056.939729] INFO: Slab 0xffffea0009e73100 objects=43 used=30 fp=0xffff880279cc67a8 flags=0x2ffff0000004080<br>[230056.939820] INFO: Object 0xffff880279cc7658 @offset=13912 fp=0xffff880279cc7c38<br>[230056.939820]<br>[230056.939939] Bytes b4 ffff880279cc7648: 10 00 00 00 5b 17 00 00 ef 25 6b 03 01 00 00 00 ….[….%k…..<br>[230056.940031] Object ffff880279cc7658: 58 76 cc 79 02 88 ff ff 00 00 00 00 00 00 00 00 Xv.y…………<br>[230056.940123] Object ffff880279cc7668: 00 00 00 00 5a 5a 5a 5a 70 76 cc 79 02 88 ff ff ….ZZZZpv.y….<br>[230056.940214] Object ffff880279cc7678: 70 76 cc 79 02 88 ff ff 01 00 00 00 03 00 00 00 pv.y…………<br>[230056.940306] Object ffff880279cc7688: 58 76 cc 79 02 88 ff ff b8 2a 20 31 02 88 ff ff Xv.y…..* 1….<br>[230056.940400] CPU: 8 PID: 27473 Comm: cc1 Tainted: G B 3.13.0-76-generic #120hf00073670v20160120b0h5d3e6ab<br>[230056.940406] Hardware name: Cisco Systems Inc UCSC-C220-M3L/UCSC-C220-M3L, BIOS C220M3.2.0.3.0.080120140402 08/01/2014<br>[230056.940410] ffffea0009e73100 ffff880736bbf750 ffffffff81a6e195 ffff8804e881b840<br>[230056.940422] ffff880736bbf780 ffffffff81244c1d ffff8804e881b840 ffffea0009e73100<br>[230056.940431] ffff880279cc7658 ffffea001aa99c98 ffff880736bbf7a8 ffffffff8124ad66<br>[230056.940440] Call Trace:<br>[230056.940450] [<ffffffff81a6e195>] dump_stack+0x45/0x56<br>[230056.940458] [<ffffffff81244c1d>] print_trailer+0xfd/0x170<br>[230056.940466] [<ffffffff8124ad66>] object_err+0x36/0x40<br>[230056.940474] [<ffffffff8124cd29>] kasan_report_error+0x1e9/0x3a0<br>[230056.940484] [<ffffffff8125d9f8>] ? memcg_check_events+0x28/0x380<br>[230056.940491] [<ffffffff81221c2d>] ? rmap_walk+0x32d/0x340<br>[230056.940499] [<ffffffff8124d390>] kasan_report+0x40/0x50<br>[230056.940506] [<ffffffff81205ee3>] ? isolate_migratepages_range+0x663/0xb30<br>[230056.940513] [<ffffffff8124c019>] </ffffffff8124c019></ffffffff81205ee3></ffffffff8124d390></ffffffff81221c2d></ffffffff8125d9f8></ffffffff8124cd29></ffffffff8124ad66></ffffffff81244c1d></ffffffff81a6e195></strong>asan_load8+0x69/0xa0<br>[230056.940521] [<ffffffff81205ee3>] isolate_migratepages_range+0x663/0xb30<br>[230056.940531] [<ffffffff811dc5e7>] ? zone_watermark_ok+0x57/0x70<br>[230056.940538] [<ffffffff812067c6>] compact_zone+0x416/0x700<br>[230056.940545] [<ffffffff81206b45>] compact_zone_order+0x95/0x100<br>[230056.940553] [<ffffffff81207002>] try_to_compact_pages+0x102/0x1a0<br>[230056.940562] [<ffffffff811e21e6>] <strong>alloc_pages_direct_compact+0x96/0x290<br>[230056.940570] [<ffffffff811e2d5e>] </ffffffff811e2d5e></strong>alloc_pages_nodemask+0x97e/0xc40<br>[230056.940578] [<ffffffff8123ce24>] alloc_pages_vma+0xb4/0x200<br>[230056.940587] [<ffffffff812572ca>] do_huge_pmd_anonymous_page+0x13a/0x490<br>[230056.940594] [<ffffffff8120f072>] ? do_numa_page+0x192/0x200<br>[230056.940602] [<ffffffff81210c07>] handle_mm_fault+0x267/0x1160<br>[230056.940610] [<ffffffff81a7d028>] <strong>do_page_fault+0x218/0x750<br>[230056.940618] [<ffffffff8121aead>] ? do_mmap_pgoff+0x47d/0x500<br>[230056.940627] [<ffffffff811fd699>] ? vm_mmap_pgoff+0xa9/0xd0<br>[230056.940635] [<ffffffff81a7d57a>] do_page_fault+0x1a/0x70<br>[230056.940642] [<ffffffff81a785a8>] page_fault+0x28/0x30<br>[230056.940645] Memory state around the buggy address:<br>[230056.940696] ffff880279cc7580: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.940780] ffff880279cc7600: fc fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00<br>[230056.940865] &gt;ffff880279cc7680: 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.940947] ^<br>[230056.941001] ffff880279cc7700: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.941085] ffff880279cc7780: fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00 00<br>[230056.941167] ==================================================================<br>[230056.941250] ==================================================================<br>[230056.941336] BUG: KASan: out of bounds access in balloon_page_isolate+0x6a/0x1d0 at addr ffff880279cc76d1<br>[230056.941426] Read of size 8 by task cc1/27473<br>[230056.941473] =============================================================================<br>[230056.941560] BUG anon_vma (Tainted: G B ): kasan: bad access detected<br>[230056.941642] —————————————————————————–<br>[230056.941642]<br>[230056.941764] INFO: Allocated in anon_vma_prepare+0x189/0x250 age=7323 cpu=16 pid=31029<br>[230056.941850] </ffffffff81a785a8></ffffffff81a7d57a></ffffffff811fd699></ffffffff8121aead></strong>slab_alloc+0x4f8/0x560<br>[230056.941898] kmem_cache_alloc+0x18b/0x1e0<br>[230056.941946] anon_vma_prepare+0x189/0x250<br>[230056.941993] do_wp_page+0x837/0xb10<br>[230056.942039] handle_mm_fault+0x884/0x1160<br>[230056.942087] <strong>do_page_fault+0x218/0x750<br>[230056.942134] do_page_fault+0x1a/0x70<br>[230056.942180] page_fault+0x28/0x30<br>[230056.942228] INFO: Freed in </strong>put_anon_vma+0x69/0xe0 age=8588 cpu=4 pid=29418<br>[230056.942286] <strong>slab_free+0x2ab/0x3f0<br>[230056.942333] kmem_cache_free+0x1c1/0x200<br>[230056.942381] </strong>put_anon_vma+0x69/0xe0<br>[230056.942428] unlink_anon_vmas+0x2a8/0x320<br>[230056.942476] free_pgtables+0x50/0x1c0<br>[230056.942523] exit_mmap+0xca/0x1e0<br>[230056.942567] mmput+0x82/0x1b0<br>[230056.942611] do_exit+0x391/0x1060<br>[230056.942657] do_group_exit+0x86/0x130<br>[230056.942703] SyS_exit_group+0x1d/0x20<br>[230056.942750] system_call_fastpath+0x1a/0x1f<br>[230056.942798] INFO: Slab 0xffffea0009e73100 objects=43 used=30 fp=0xffff880279cc67a8 flags=0x2ffff0000004080<br>[230056.942889] INFO: Object 0xffff880279cc7658 @offset=13912 fp=0xffff880279cc7c38<br>[230056.942889]<br>[230056.943006] Bytes b4 ffff880279cc7648: 10 00 00 00 5b 17 00 00 ef 25 6b 03 01 00 00 00 ….[….%k…..<br>[230056.943098] Object ffff880279cc7658: 58 76 cc 79 02 88 ff ff 00 00 00 00 00 00 00 00 Xv.y…………<br>[230056.943190] Object ffff880279cc7668: 00 00 00 00 5a 5a 5a 5a 70 76 cc 79 02 88 ff ff ….ZZZZpv.y….<br>[230056.943281] Object ffff880279cc7678: 70 76 cc 79 02 88 ff ff 01 00 00 00 03 00 00 00 pv.y…………<br>[230056.943372] Object ffff880279cc7688: 58 76 cc 79 02 88 ff ff b8 2a 20 31 02 88 ff ff Xv.y…..* 1….<br>[230056.943465] CPU: 8 PID: 27473 Comm: cc1 Tainted: G B 3.13.0-76-generic #120hf00073670v20160120b0h5d3e6ab<br>[230056.943470] Hardware name: Cisco Systems Inc UCSC-C220-M3L/UCSC-C220-M3L, BIOS C220M3.2.0.3.0.080120140402 08/01/2014<br>[230056.943473] ffffea0009e73100 ffff880736bbf710 ffffffff81a6e195 ffff8804e881b840<br>[230056.943482] ffff880736bbf740 ffffffff81244c1d ffff8804e881b840 ffffea0009e73100<br>[230056.943491] ffff880279cc7658 ffffea001aa99c98 ffff880736bbf768 ffffffff8124ad66<br>[230056.943500] Call Trace:<br>[230056.943507] [<ffffffff81a6e195>] dump_stack+0x45/0x56<br>[230056.943515] [<ffffffff81244c1d>] print_trailer+0xfd/0x170<br>[230056.943523] [<ffffffff8124ad66>] object_err+0x36/0x40<br>[230056.943530] [<ffffffff8124cd29>] kasan_report_error+0x1e9/0x3a0<br>[230056.943537] [<ffffffff8124d390>] kasan_report+0x40/0x50<br>[230056.943544] [<ffffffff812075fa>] ? balloon_page_isolate+0x6a/0x1d0<br>[230056.943551] [<ffffffff8124c019>] <strong>asan_load8+0x69/0xa0<br>[230056.943558] [<ffffffff8124d390>] ? kasan_report+0x40/0x50<br>[230056.943565] [<ffffffff812075fa>] balloon_page_isolate+0x6a/0x1d0<br>[230056.943572] [<ffffffff8124c019>] ? </ffffffff8124c019></ffffffff812075fa></ffffffff8124d390></strong>asan_load8+0x69/0xa0<br>[230056.943579] [<ffffffff81206315>] isolate_migratepages_range+0xa95/0xb30<br>[230056.943587] [<ffffffff811dc5e7>] ? zone_watermark_ok+0x57/0x70<br>[230056.943594] [<ffffffff812067c6>] compact_zone+0x416/0x700<br>[230056.943602] [<ffffffff81206b45>] compact_zone_order+0x95/0x100<br>[230056.943609] [<ffffffff81207002>] try_to_compact_pages+0x102/0x1a0<br>[230056.943617] [<ffffffff811e21e6>] <strong>alloc_pages_direct_compact+0x96/0x290<br>[230056.943625] [<ffffffff811e2d5e>] </ffffffff811e2d5e></strong>alloc_pages_nodemask+0x97e/0xc40<br>[230056.943633] [<ffffffff8123ce24>] alloc_pages_vma+0xb4/0x200<br>[230056.943641] [<ffffffff812572ca>] do_huge_pmd_anonymous_page+0x13a/0x490<br>[230056.943649] [<ffffffff8120f072>] ? do_numa_page+0x192/0x200<br>[230056.943656] [<ffffffff81210c07>] handle_mm_fault+0x267/0x1160<br>[230056.943664] [<ffffffff81a7d028>] __do_page_fault+0x218/0x750<br>[230056.943672] [<ffffffff8121aead>] ? do_mmap_pgoff+0x47d/0x500<br>[230056.943680] [<ffffffff811fd699>] ? vm_mmap_pgoff+0xa9/0xd0<br>[230056.943687] [<ffffffff81a7d57a>] do_page_fault+0x1a/0x70<br>[230056.943694] [<ffffffff81a785a8>] page_fault+0x28/0x30<br>[230056.943698] Memory state around the buggy address:<br>[230056.943748] ffff880279cc7580: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.943832] ffff880279cc7600: fc fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00<br>[230056.943917] &gt;ffff880279cc7680: 00 00 00 fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.943999] ^<br>[230056.944053] ffff880279cc7700: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc<br>[230056.944138] ffff880279cc7780: fc fc fc fc fc fc fc fc fc fc 00 00 00 00 00 00<br>[230056.944220] ==================================================================</ffffffff81a785a8></ffffffff81a7d57a></ffffffff811fd699></ffffffff8121aead></ffffffff81a7d028></ffffffff81210c07></ffffffff8120f072></ffffffff812572ca></ffffffff8123ce24></ffffffff811e21e6></ffffffff81207002></ffffffff81206b45></ffffffff812067c6></ffffffff811dc5e7></ffffffff81206315></ffffffff8124c019></ffffffff812075fa></ffffffff8124d390></ffffffff8124cd29></ffffffff8124ad66></ffffffff81244c1d></ffffffff81a6e195></ffffffff81a7d028></ffffffff81210c07></ffffffff8120f072></ffffffff812572ca></ffffffff8123ce24></ffffffff811e21e6></ffffffff81207002></ffffffff81206b45></ffffffff812067c6></ffffffff811dc5e7></ffffffff81205ee3></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Compile-old-non-existing-UCA-packages/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/16/Compile-old-non-existing-UCA-packages/" itemprop="url">Compile old non-existing UCA packages</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:57:18+08:00">
-                2021-01-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2016-08-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br><a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
-<p>For example, we want to use qemu 1:2.2+dfsg-5expubuntu9.6~cloud0, but those packages don’t exist anymore in UCA.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-cache madison qemu-system</span><br><span class="line">qemu-system | 1:2.5+dfsg-5ubuntu10.2~cloud0 | http://ubuntu-cloud.archive.canonical.com/ubuntu/ trusty-updates/mitaka/main amd64 Packages</span><br><span class="line">qemu-system | 1:2.2+dfsg-5expubuntu9.7~cloud5 | http://ppa.launchpad.net/ubuntu-cloud-archive/kilo-staging/ubuntu/ trusty/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0+dfsg-2ubuntu1.26 | http://archive.ubuntu.com/ubuntu/ trusty-updates/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0+dfsg-2ubuntu1.26 | http://security.ubuntu.com/ubuntu/ trusty-security/main amd64 Packages</span><br><span class="line">qemu-system | 2.0.0~rc1+dfsg-0ubuntu3 | http://archive.ubuntu.com/ubuntu/ trusty/main amd64 Packages</span><br><span class="line">      qemu | 2.0.0~rc1+dfsg-0ubuntu3 | http://archive.ubuntu.com/ubuntu/ trusty/main Sources</span><br><span class="line">      qemu | 2.0.0+dfsg-2ubuntu1.26 | http://archive.ubuntu.com/ubuntu/ trusty-updates/main Sources</span><br><span class="line">      qemu | 2.0.0+dfsg-2ubuntu1.26 | http://security.ubuntu.com/ubuntu/ trusty-security/main Sources</span><br><span class="line">      qemu | 1:2.2+dfsg-5expubuntu9.7~cloud5 | http://ppa.launchpad.net/ubuntu-cloud-archive/kilo-staging/ubuntu/ trusty/main Sources</span><br></pre></td></tr></table></figure></p>
-<p>But we can compile them by ourself.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">#https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+packages?field.name_filter=qemu&amp;field.status_filter=superseded&amp;field.series_filter=</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">wget https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/kilo-staging/+files/qemu_2.2+dfsg.orig.tar.xz</span><br><span class="line">dpkg-source -x qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">cd qemu-2.2+dfsg/</span><br><span class="line">sudo apt-get install gnupg pbuilder ubuntu-dev-tools bzr-builddeb apt-file devscripts</span><br><span class="line">sudo apt-add-repository ppa:ubuntu-cloud-archive/kilo-staging</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get build-dep qemu</span><br><span class="line">dpkg-checkbuilddeps</span><br><span class="line">DEB_BUILD_OPTIONS=nocheck debuild -us -uc</span><br><span class="line"></span><br><span class="line">$ ls</span><br><span class="line">qemu-2.2+dfsg</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.build</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.changes</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0.debian.tar.gz</span><br><span class="line">qemu_2.2+dfsg-5expubuntu9.6~cloud0.dsc</span><br><span class="line">qemu_2.2+dfsg.orig.tar.xz</span><br><span class="line">qemu-guest-agent_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-kvm_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-arm_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-common_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-mips_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-misc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-ppc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-sparc_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-system-x86_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user-binfmt_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-user-static_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br><span class="line">qemu-utils_2.2+dfsg-5expubuntu9.6~cloud0_amd64.deb</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2080,8 +1951,8 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">97</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">100</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -2131,7 +2002,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
