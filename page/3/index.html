@@ -231,6 +231,157 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/13/恢复系统记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/13/恢复系统记录/" itemprop="url">恢复系统记录</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-13T09:26:11+08:00">
+                2020-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2017-02-09<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</strong></p>
+<p>今天系统又无故crash并无法启动了，折腾了一下午，记录一下。</p>
+<p>突然运行“sudo apt-get update”时发生错误，一看是写保护，所以运行”sudo mount -o rw,remount /“, 但是系统报”unknown filesystem”，接着就crash了。</p>
+<p>重启后出现了grub resue界面，试图通过下列命令恢复grub时仍然报”unknown filesystem”错误。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ls (hd1,msdos5)</span><br><span class="line">set root=(hd1,msdos5)</span><br><span class="line">set prefix=(hd1,5)/boot/grub</span><br><span class="line">lsmod normal</span><br><span class="line">normal</span><br><span class="line"></span><br><span class="line">sudo update-grub</span><br><span class="line">sudo grub-install /dev/sdb</span><br></pre></td></tr></table></figure></p>
+<p>通过usb启动盘启动后运行“sudo fsck.ext4 -y /dev/sda9”之后上面磁盘的问题是解决了，也出现了登录界面，但是却无法登录，原本想通过下列命令重置:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo rm -fr ~/.cache/compizconfig-1</span><br><span class="line">sudo rm -fr ~/.Xauthority</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop unity compizconfig-settings-manager</span><br><span class="line">sudo dconf reset -f /org/compiz/</span><br><span class="line">setsid unity</span><br><span class="line">sudo rm -fr .cache/</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">http://kuring.me/ref/x_window/X_client_server_example.svg.png</span><br><span class="line">linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)</span><br><span class="line">1, ctrl+alt+fn [n: 1-12]: used to switch virtual control console, 1-6 is used for linux (eg: echo $DISPLAY &amp;&amp; xclock -display :0 &amp;&amp; DISPLAY=:0 xclock)</span><br><span class="line">2, startx process (login -&gt; bash -&gt; startx -&gt; xinit -&gt; X -&gt; ck-xinit-session -&gt; gnome-session), xinit is used to start X Server software.</span><br><span class="line">3, &apos;init 5&apos; is used to restart X window</span><br></pre></td></tr></table></figure>
+<p>但是发现/var/lib/dpkg目录不存在了，另外也有其他很多程序出现少文件的问题，不是我删除的，应该是fsck命令没有全部正确恢复inode吧。这种情况只能重装操作系统了，将所有工作需要的应用都安装好后也做了一个备份（dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz）， 今后再出问题时希望通过命令（gunzip -c /images/working_os_bak.img.gz | dd of=/dev/sdb conv=sync,noerror bs=64K）能快速恢复操作系统和所需要的应用吧。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># dd if=/dev/sdb conv=sync,noerror bs=64K | gzip -c  &gt; /images/working_os_bak.img.gz</span><br><span class="line">1831575+1 records in</span><br><span class="line">1831576+0 records out</span><br><span class="line">120034164736 bytes (120 GB, 112 GiB) copied, 914.123 s, 131 MB/s</span><br><span class="line"></span><br><span class="line">$ ll /images/working_os_bak.img.gz -h</span><br><span class="line">-rw-r--r-- 1 root root 4.7G Feb  9 17:36 /images/working_os_bak.img.gz</span><br></pre></td></tr></table></figure>
+<p>硬盘损坏看起来像：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;- - -&quot; &gt; /sys/class/scsi_host/host0/scan</span><br><span class="line"></span><br><span class="line">#Unused HDD</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2697.930058] ata3: hard resetting link</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245478] ata3: SATA link down (SStatus 0 SControl 300)</span><br><span class="line">Mar  1 10:24:28 node1 kernel: [ 2698.245490] ata3: EH complete</span><br><span class="line"></span><br><span class="line">#Good HDD</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2652.763243] ata1: hard resetting link</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.077298] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097249] ata1.00: configured for UDMA/133</span><br><span class="line">Mar  1 10:23:43 node1 kernel: [ 2653.097251] ata1: EH complete</span><br><span class="line"></span><br><span class="line">#Bad HDD</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696088] ata2.00: exception Emask 0x0 SAct 0x80000 SErr 0x0 action 0x6 frozen</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696098] ata2.00: failed command: READ FPDMA QUEUED</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108] ata2.00: cmd 60/10:98:b0:bd:3c/00:00:a6:00:00/40 tag 19 ncq 8192 in</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696108]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696113] ata2.00: status: &#123; DRDY &#125;</span><br><span class="line">Feb 28 16:00:30 node1 kernel: [  231.696119] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:36 node1 kernel: [  237.059963] ata2: link is slow to respond, please be patient (ready=0)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707975] ata2: COMRESET failed (errno=-16)</span><br><span class="line">Feb 28 16:00:40 node1 kernel: [  241.707980] ata2: hard resetting link</span><br><span class="line">Feb 28 16:00:46 node1 kernel: [  247.067970] ata2: link is slow to respond, please be patient (ready=0)</span><br></pre></td></tr></table></figure></p>
+<p>换硬盘不需要重装系统，将fstab文件修改一下即可:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LABEL=&quot;images&quot; /images         ext4    defaults        0       2</span><br><span class="line">LABEL=&quot;bak&quot; /bak         ext4    defaults        0       2</span><br><span class="line">192.168.99.122:/Public /nas nfs noauto,x-systemd.automount,x-systemd.device-timeout=10,timeo=14,x-systemd.idle-timeout=1min 0 0</span><br></pre></td></tr></table></figure></p>
+<h2 id="201923更新-解决login-loop问题"><a href="#201923更新-解决login-loop问题" class="headerlink" title="201923更新 - 解决login loop问题"></a>201923更新 - 解决login loop问题</h2><p>反复出现登录界面, 根据下列流程, 似乎问题只可能出现在gnome这块出问题了才会回到lightdm的登录界面处.<br>linux itself –&gt; X Server(xorg|wayland) &lt;- [X Protocol] -&gt; unity-greeter -&gt; Display Manager(GDM|lightdm, login GUI, /etc/X11/default-display-manager, or sudo dpkg-reconfigure lightdm) -&gt; Desktop Manager(GNOME, KDE) -&gt; X Application(eg: xclock)<br>搜索kern.log的Call strace确认问题与nvidia驱动相关:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"> 733 Nov 16 22:47:03 localhost kernel: [    1.896228] Could not determine valid watermarks for inherited state</span><br><span class="line"> 734 Nov 16 22:47:03 localhost kernel: [    1.896290] WARNING: CPU: 2 PID: 183 at /build/linux-O4X9pa/linux-4.15.0/drivers/gpu/d</span><br><span class="line"> 735 Nov 16 22:47:03 localhost kernel: [    1.896293] Modules linked in: nvidia_drm(POE) nvidia_modeset(POE) nvidia(POE) rtsx_pc</span><br><span class="line"> 736 Nov 16 22:47:03 localhost kernel: [    1.896309] CPU: 2 PID: 183 Comm: systemd-udevd Tainted: P           OE    4.15.0-68-g</span><br><span class="line"> 737 Nov 16 22:47:03 localhost kernel: [    1.896311] Hardware name: LENOVO 20AN002LCD/20AN002LCD, BIOS GLET64WW (2.18 ) 12/18/2</span><br><span class="line"> 738 Nov 16 22:47:03 localhost kernel: [    1.896342] RIP: 0010:intel_modeset_init+0xfcf/0x1010 [i915]</span><br><span class="line"></span><br><span class="line">748 Nov 16 22:47:03 localhost kernel: [    1.896362] Call Trace:</span><br><span class="line"> 749 Nov 16 22:47:03 localhost kernel: [    1.896389]  i915_driver_load+0xa73/0xe60 [i915]</span><br><span class="line"> 750 Nov 16 22:47:03 localhost kernel: [    1.896414]  i915_pci_probe+0x42/0x70 [i915]</span><br><span class="line"> 751 Nov 16 22:47:03 localhost kernel: [    1.896418]  local_pci_probe+0x47/0xa0</span><br><span class="line"> 752 Nov 16 22:47:03 localhost kernel: [    1.896421]  pci_device_probe+0x10e/0x1c0</span><br><span class="line"> 753 Nov 16 22:47:03 localhost kernel: [    1.896424]  driver_probe_device+0x30c/0x490</span><br><span class="line"> 754 Nov 16 22:47:03 localhost kernel: [    1.896426]  __driver_attach+0xcc/0xf0</span><br><span class="line"> 755 Nov 16 22:47:03 localhost kernel: [    1.896429]  ? driver_probe_device+0x490/0x490</span><br><span class="line"> 756 Nov 16 22:47:03 localhost kernel: [    1.896431]  bus_for_each_dev+0x70/0xc0</span><br><span class="line"> 757 Nov 16 22:47:03 localhost kernel: [    1.896433]  driver_attach+0x1e/0x20</span><br><span class="line"> 758 Nov 16 22:47:03 localhost kernel: [    1.896436]  bus_add_driver+0x1c7/0x270</span><br><span class="line"> 759 Nov 16 22:47:03 localhost kernel: [    1.896438]  ? 0xffffffffc041b000</span><br><span class="line"> 760 Nov 16 22:47:03 localhost kernel: [    1.896440]  driver_register+0x60/0xe0</span><br><span class="line"> 761 Nov 16 22:47:03 localhost kernel: [    1.896442]  ? 0xffffffffc041b000</span><br><span class="line"> 762 Nov 16 22:47:03 localhost kernel: [    1.896444]  __pci_register_driver+0x5a/0x60</span><br><span class="line"> 763 Nov 16 22:47:03 localhost kernel: [    1.896465]  i915_init+0x5c/0x5f [i915]</span><br></pre></td></tr></table></figure>
+<p>升级nvidia驱动从nvidia-driver-390到435看是否能解决问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">deb http://ppa.launchpad.net/graphics-drivers/ppa/ubuntu bionic main</span><br><span class="line">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys FCAE110B1118213C</span><br><span class="line">sudo apt purge nvidia-driver-390 &amp;&amp; sudo apt autoremove &amp;&amp; sudo apt install nvidia-driver-435</span><br></pre></td></tr></table></figure></p>
+<p>也可以试试:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#https://launchpad.net/~canonical-kernel-team/+archive/ubuntu/ppa</span><br><span class="line">sudo apt upgrade-dist</span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">#can install the latest hwe kernel by using above ppa</span><br><span class="line">sudo apt install --install-recommends linux-generic-hwe-18.04 xserver-xorg-hwe-18.04</span><br></pre></td></tr></table></figure></p>
+<p>20200203更 , 还是不行, 用下列方法重装了desktop再观察:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">sudo rm /var/lib/apt/lists/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock</span><br><span class="line">sudo rm /var/lib/dpkg/lock-frontend</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt clean</span><br><span class="line">sudo apt update --fix-missing</span><br><span class="line">sudo apt install -f</span><br><span class="line">sudo dpkg --configure -a</span><br><span class="line">sudo apt upgrade</span><br><span class="line">sudo apt dist-upgrade</span><br><span class="line"></span><br><span class="line">sudo apt purge *unity*</span><br><span class="line">sudo apt purge *gnome*</span><br><span class="line">sudo apt autoremove</span><br><span class="line">sudo apt-get install --reinstall ubuntu-desktop</span><br><span class="line">sudo update-grub</span><br><span class="line">sudo apt install gdm3</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line"></span><br><span class="line">#Install Gnome and set it as default</span><br><span class="line">sudo apt install gnome-session</span><br><span class="line">sudo update-alternatives --config gdm3.css</span><br><span class="line">sudo reboot</span><br><span class="line">#Switch to a Windows-like Taskbar - https://vitux.com/how-to-get-the-windows-look-feel-on-ubuntu/</span><br><span class="line">sudo apt install gnome-shell-extensions gnome-shell-extension-dash-to-panel gnome-tweaks adwaita-icon-theme-full</span><br><span class="line"></span><br><span class="line">#Install windows-style desktop Cinnamon, but it&apos;s bluetooth doesn&apos;t work</span><br><span class="line">sudo add-apt-repository ppa:embrosyn/cinnamon</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install cinnamon</span><br><span class="line">#sudo apt remove --autoremove cinnamon cinnamon-desktop-data</span><br><span class="line">#sudo add-apt-repository --remove ppa:embrosyn/cinnamon</span><br></pre></td></tr></table></figure>
+<p>20201113更新，切换到使用wayland再试试:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ grep -r &apos;Wayland&apos; /etc/gdm3/custom.conf</span><br><span class="line">WaylandEnable=true</span><br><span class="line">sudo systemctl restart gdm3</span><br><span class="line">hua@t440p:~$ echo $XDG_SESSION_TYPE</span><br><span class="line">wayland</span><br></pre></td></tr></table></figure>
+<p>但是gdm3是超级难用啊，刚装上就遇到chrome在gdm3上在复制粘贴时chrome就无响应的问题，只得再切回x11了，但我删除了lightdm遗留并且添加了下列配置，再难容一下吧。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cat /etc/gdm3/PostSession/Default</span><br><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">killall -9 -u $USER</span><br><span class="line"></span><br><span class="line">exit 0</span><br></pre></td></tr></table></figure></p>
+<p>20210118继续尝试，今天继续看到”systemd-logind got pause“错误,以及”PowerSaveMode, Timeout was reached”相关错误， 将尝试一下使用lightdm试试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install lightdm</span><br></pre></td></tr></table></figure></p>
+<p>另外，也将尝试下列命令是否能恢复</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo systemctl daemon-reexec &amp;&amp; sudo systemctl start systemd-logind</span><br></pre></td></tr></table></figure>
+<h2 id="20210122更新-－-台式机死机的问题"><a href="#20210122更新-－-台式机死机的问题" class="headerlink" title="20210122更新　－　台式机死机的问题"></a>20210122更新　－　台式机死机的问题</h2><p>台式机经常莫名其秒就死了，尤其在开kvm虚机时，今天又死了，然后在/var/crash目录发现了_usr_lib_x86_64-linux-gnu_indicator-keyboard_indicator-keyboard-service.108.crash<br>也发现了如下日志：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/var/log/kern.log</span><br><span class="line">Jan 22 17:46:21 node1 kernel: [ 2163.654654] indicator-keybo[2918]: segfault at 20 ip 00007f259e9213d0 sp 00007ffde892f540 error 6 in libglib-2.0.so.0.6400.3[7f259e919000+84000]</span><br><span class="line"></span><br><span class="line">/var/log/syslog</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Main process exited, code=dumped, status=11/SEGV</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Failed with result &apos;core-dump&apos;.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: indicator-keyboard.service: Scheduled restart job, restart counter is at 1.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Stopped Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 systemd[2065]: Started Indicator Keyboard Backend.</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keyboard-service[18705]: Unable to init server: Could not connect: Connection refused</span><br><span class="line">Jan 22 17:46:22 node1 indicator-keybo[18705]: gtk_icon_theme_get_for_screen: assertion &apos;GDK_IS_SCREEN (screen)&apos; failed</span><br></pre></td></tr></table></figure></p>
+<p>原本想运行”apt remove –purge indicator-keyboard“删除它，但使用ps -ef |grep indicator查看有lightdm的字眼，所以改用gdm3就好了：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install gdm3 -y</span><br><span class="line">sudo dpkg-reconfigure gdm3</span><br><span class="line">cat /etc/X11/default-display-manager</span><br><span class="line">sudo systemctl status display-manager</span><br></pre></td></tr></table></figure>
+<p>但是笔记本上经常性登录crash，似乎是gdm3的问题，目前正在改成lightdm试。</p>
+<p>目前系统很慢，使用“ps aux –sort=-pcpu | head”看到的是chrome慢，也看到大量这种错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Feb  1 15:09:30 t440p gnome-shell[3320]: libinput error: client bug: timer event25 debounce short: scheduled expiry is in the past (-19ms), your system is too slow</span><br></pre></td></tr></table></figure></p>
+<p>修改了下面但也是无效：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chrome://settings/?search=hardware selects &apos;Use hardware acceleration when available&apos;</span><br><span class="line">chrome://flags/#disable-accelerated-video-decode selects &apos;Hardware-accelerated video decode&apos;</span><br></pre></td></tr></table></figure>
+<p>似乎是遇到了这个问题　－　<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1122224" target="_blank" rel="external">https://bugs.chromium.org/p/chromium/issues/detail?id=1122224</a><br>回退到老版本试试：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VERSION_STRING=&quot;85.0.4183.121-1&quot; # Replace this value with the one you copied earlier</span><br><span class="line">wget &quot;https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_$&#123;VERSION_STRING&#125;_amd64.deb&quot;</span><br><span class="line">sudo dpkg -i &quot;google-chrome-stable_$&#123;VERSION_STRING&#125;&quot;</span><br></pre></td></tr></table></figure></p>
+<p>最终解决问题的是disable GPU<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">https://blog.csdn.net/weixin_39726131/article/details/111653527</span><br><span class="line"></span><br><span class="line">chrome://settings/?search=hardware uncheck &apos;Use hardware acceleration when available&apos;</span><br><span class="line">chrome://flags/ search &apos;gpu&apos; then disable &apos;Accelerated 2D canvas&apos;  and &apos;GPU rasterization&apos;</span><br><span class="line"></span><br><span class="line">shift + esc to see chrome task</span><br><span class="line"></span><br><span class="line">Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>t440p笔记本上只能使用lightdm (使用gdm3会产生login loop问题），而node1台式机上却只能使用gdm3 (使用lightdm会因indicator-keyboard莫名其妙的死机）<br>t440p笔记本上的chrome需要disable GPU，否则所有tab都使用GPU渲染若GPU性能不好反而慢。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/解决ssh-server偶尔连不上或者发现网络连接初始很慢的状况/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1519,150 +1670,6 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/10/14/Lost-connection-to-MySQL-server-during-query/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/10/14/Lost-connection-to-MySQL-server-during-query/" itemprop="url">Lost connection to MySQL server during query</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-10-14T13:37:44+08:00">
-                2020-10-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-11-06)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>neutron designate日志中发现错误”Got lower serial for”, 并且创建zone时永远停留在PENDING状态.</p>
-<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>minidns中看到下列日志:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var/log/designate/designate-mdns.log.2.gz:2018-10-23 23:27:36.016 94713 INFO designate.mdns.handler [req-26d8910d-61d5-4fd6-bc6b-df7acaf36c12 - - - - -] NotFound, refusing. Question was xxx.openstack-au-east-2.oc.xxx.com. IN SOA</span><br><span class="line">var/log/designate/designate-mdns.log.2.gz:2018-10-23 23:27:36.024 94713 WARNING designate.mdns.handler [req-fa5518dd-9506-44f8-a2ee-ee7d79ffaa3c - - - - -] ZoneNotFound while handling axfr request. Question was xxx.openstack-au-east-2.oc.xxx.com. IN AXFR: ZoneNotFound: Could not find Zone</span><br></pre></td></tr></table></figure></p>
-<p>根据代码[1], 查询DB时报ZoneNotFound从而导致无法构建SOA无法构建axfr response, 从而导致minidns master与bind9 slave无法做zone transfer, 这样导致bind9 slave的serial number也无法更新, 最终在minidns notify时看到”Got lower serial for”</p>
-<p>在发生ZoneNotFound的附近有下列日志:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[req-b48612b0-ed3e-46d9-8510-6634282ef0a2 - - - - -] Database connection was found disconnected; reconnecting: DBConnectionError: (pymysql.err.OperationalError) (2013, &apos;Lost connection to MySQL server during query&apos;) [SQL: u&apos;SELECT 1&apos;]</span><br></pre></td></tr></table></figure>
-<p>于是, 用下列测试程序重现了上述DB error,</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import time</span><br><span class="line">from sqlalchemy.engine import create_engine</span><br><span class="line">url = &apos;mysql+pymysql://root@127.0.0.1:3306/mysql&apos;</span><br><span class="line">engine = create_engine(url, pool_recycle=4).connect()</span><br><span class="line">query = &apos;SELECT NOW();&apos;</span><br><span class="line">while True:</span><br><span class="line">    print(&apos;Q1&apos;, engine.execute(query).fetchall())</span><br><span class="line">    engine.execute(&apos;SET wait_timeout=2&apos;)</span><br><span class="line">    time.sleep(3)</span><br><span class="line">    print(&apos;Q2&apos;, engine.execute(query).fetchall())</span><br></pre></td></tr></table></figure>
-<p>或者使用oslo.db测试程序:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p -e &quot;SET GLOBAL wait_timeout=5, slow_query_log=on, long_query_time=0.0;&quot;</span><br><span class="line"></span><br><span class="line">$ cat test.py</span><br><span class="line">import sys</span><br><span class="line">import time</span><br><span class="line">from oslo_config import cfg</span><br><span class="line">from oslo_db import options as db_options</span><br><span class="line">from oslo_db.sqlalchemy import session as db_session</span><br><span class="line">from sqlalchemy.sql.expression import select</span><br><span class="line">_facade = db_session.EngineFacade(&quot;mysql://root@localhost/test&quot;)</span><br><span class="line">x = _facade.get_session()</span><br><span class="line">print(x.scalar(select([23])))</span><br><span class="line">time.sleep(5)</span><br><span class="line">print(x.scalar(select([23])))</span><br></pre></td></tr></table></figure></p>
-<p>连接线的过期时间(pool_recycle, 连接池里的连接空闲一段时间后自动释放, oslo中默认是3600)不能大于服务器端的wait_timeout时间(这里是2, 默认是8小时). 所以应该设置wait_timeout大于3600, 或者haproxy中的配置大于3600.<br>wait_timeout是mysql的一个设置，主要是用来断开不使用的数据库连接。当连接空闲的时间达到wait_timeout设置的最大值时，mysql会主动切断这个连接，以供别的客户端连接数据库。这个值一般是28800，也就是8小时。在mysql中可以通过： show variables like “%timeout%”;获取。<br>另外，当数据库主动切断连接的时候，mysql客户端并不知道这个连接已经被切断，所以程序并不知道其已经无效了，如果mysql客户端再不支持ReConnect，双重的问题叠加在一起就会导致连接池返回无效连接的可能.</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p> mysqldump –single-transaction -u root -p designate –skip-extended-insert &gt; /tmp/designate-$(date +%s).sql</p>
-<p>For the error ‘Lost connection to MySQL server during query’,</p>
-<p>wait_timeout is a setting of mysql, which is used for server side to disconnect unused client connections proactively. The default is 8 hours(28800), we can check it by ‘show variables like “%timeout%”;’ or ‘juju config mysql wait-timeout’</p>
-<p>All the rest of the timeout below should be less than wait_timeout, if they are greater than wait_timeout, the error ‘Lost connection to MySQL server during query’ will happen.<br>1, the default value of olso’s connection_recycle_time is 3600<br>2, the timeout in haproxy.cfg</p>
-<p>So we need to collect the following info for further analyses.</p>
-<p>1, juju config mysql wait-timeout<br>2, mysql -unova -p -h<mysql_ip> -e ‘show variables like “%timeout%”‘  #eg: run it in nova-cloud-controller/0<br>3, juju ssh neutron-api/0 – sudo grep -r ‘connection_recycle_time’ /etc/neutron/<br>4, juju ssh neutron-api/0 – sudo grep -r ‘timeout’ /etc/haproxy/</mysql_ip></p>
-<h2 id="一些命令"><a href="#一些命令" class="headerlink" title="一些命令"></a>一些命令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#This will show which openstack service is using the most mysql connections</span><br><span class="line">select user, count(*) from information_schema.processlist group by user;</span><br><span class="line"></span><br><span class="line">juju run --application mysql leader-get</span><br><span class="line">juju run --application mysql &quot;mysql -uroot -pChangeMe123 -e \&quot;SELECT IFNULL(usr,&apos;All Users&apos;) user,IFNULL(hst,&apos;All Hosts&apos;) host,COUNT(1) Connections FROM (SELECT user usr,LEFT(host,LOCATE(&apos;:&apos;,host) - 1) hst FROM information_schema.processlist WHERE user NOT IN (&apos;system user&apos;,&apos;root&apos;)) A GROUP BY usr,hst WITH ROLLUP;\&quot;&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="附件"><a href="#附件" class="headerlink" title="附件"></a>附件</h2><p>openstack的各服务都有大量的这种错误：<br>var/log/mysql/error.log:2019-08-29T16:07:45.335406Z 420821 [Note] Aborted connection 420821 to db: ‘keystone’ user: ‘keystone’ host: ‘10.191.5.49’ (Got timeout reading communication packets)</p>
-<p>要求客户增大了connect_timeout, net_read_timeout, net_write_timeout, interactive_timeout后使用‘show global status like ‘aborted%’;’看到Aborted_clients的数目仍在增大<br>show global variables like ‘max_conn%’;<br>show global variables like ‘%timeout%’;<br>show global status like ‘aborted%’;<br>show processlist;</p>
-<p>这时发现在21:55:48， 所有的designate serveres都收到了mysql错误， 通过mysql的查询日志找到21:04到21:16之间mysql收到了40个gnocchi查询，一个查询就要返回500MB的大小, 然后看到了警告：InnoDB: Warning: difficult to find free blocks in the buffer pool (338 search iterations)!”<br>所以看起来像是IO swamp的问题进而造成查询超时。解决方法：<br>1， 增加innodb_buffer_pool_size (juju中通过dataset-size控制）<br>2, 删除gnocchi中的相关数据<br>3, 调查designate中当遇到mysql超时时是不是会反复retry造成对DB的flood</p>
-<h2 id="20201014更新"><a href="#20201014更新" class="headerlink" title="20201014更新"></a>20201014更新</h2><p>amphora-agent writes heatbeat to udp, then octavia-health-manager gets heatbeat from udp and writes them to DB, finally health_manager gets heartbeat from DB via get_stale_amphora to decide if failover process will be started</p>
-<p>当health-manager线程的数目(pgrep -af /usr/bin/octavia-health-manager | wc -l, 160)大于mysql的连接数时(ss -tp | grep -c :mysql, 90)时上面的get_stale_amphora就会报”Lost connection to MySQL server during query”错误(排除wait-timeout!=3600这个因素之后),<br>sqlalchemy看到这个错误后就会reconnect, 从而产生下面提到的”QueuePool limit of size 10 overflow 20 reached, connection timed out, timeout 10”这个错误(<a href="http://sqlalche.me/e/3o7r" target="_blank" rel="external">http://sqlalche.me/e/3o7r</a>). sqlalchemy’s reconnect可能不是replace, 而是删除老连接然后建立新连接, 这次当达到max_pool_size+max_overflow=20个连接后永远无新连接供它reconnect(sqlalchemy使用max_pool_size=10, 当一次使用多于5时, 会用到默认的max_overflow=10这样可以达到15个连接, 但多于20个后不再允许溢出.), 这可能是一个bug - <a href="https://github.com/sqlalchemy/sqlalchemy/issues/5308" target="_blank" rel="external">https://github.com/sqlalchemy/sqlalchemy/issues/5308</a></p>
-<p>可能在mysql在做failover时会出现这种情况, 因为new VIP owner没有old TCP connections从而导致之后的old TCP connections to go stale从而导致reconnect.</p>
-<p>可能的解决方法:<br>1, 如果mysql不再failover的话可能这个问题也不再重启了, 这个可以等下列fix<br>2, as a base leve request a stable backport for the following patch<br>health-manager的eventlet/greenlet的数目由health_update_threads参数决定, 默认与CPU核数同, 大多数情况下都是短连接会多路复用还没问题, 但有时候也会各种因素让有的变成长连接. charm中一般对于worker threads有0.25x的乘数(LXD容器中最大是4), octavia-charm也应该用这个乘数来减小worker threads的数目 - <a href="https://bugs.launchpad.net/charm-octavia/+bug/1889731" target="_blank" rel="external">https://bugs.launchpad.net/charm-octavia/+bug/1889731</a><br>3, We could additionally reconfigure the oslo.db [database] section to include a pool overflow limit at least as large as the number of expected threads by worker-multiplier<br>4, We could additionally open a bug against sqlalchemy that it should allow for connection replacement even when the pool limit is reached</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://github.com/openstack/designate/blob/stable/queens/designate/mdns/handler.py#L233" target="_blank" rel="external">https://github.com/openstack/designate/blob/stable/queens/designate/mdns/handler.py#L233</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1713,7 +1720,7 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">96</span>
+                  <span class="site-state-item-count">97</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

@@ -231,6 +231,174 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/02/GSO-TSO-GRO等对VirtIO虚机的网络性能影响分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/02/02/GSO-TSO-GRO等对VirtIO虚机的网络性能影响分析/" itemprop="url">GSO/TSO/GRO等对VirtIO虚机的网络性能影响分析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-02-02T09:57:34+08:00">
+                2021-02-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-04-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
+<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>IP层叫分片，TCP/UDP层叫分段。网卡能做的事（TCP/UDP组包校验和分段，IP添加包头校验与分片）尽量往网卡做，网卡不能做的也尽量迟后分片（发送）或提前合并片（接收）来减少在网络栈中传输和处理的包数目，从而减少数据传输和上下文切换所需要的CPU计算时间。</p>
+<p>发数据<br>TSO(TCP分段，TCP Segmentation Offload)在TCP处做，UFO(UDP分片，UDP Fragmentation Offload）因为UDP不支持分段所以移到下层的IP层做分片。TSO是使得网络协议栈能够将大块buffer推送至网卡，然后网卡执行分片工作，这样减轻了CPU 的负荷，但TSO需要硬件来实现分片功能；</p>
+<p>GSO(Generic Segmentation Offload)比TSO更通用，基本思想就是尽可能的推迟数据分片直至发送到网卡驱动之前，如果硬件不支持TSO分段则由dev_hard_start_xmit中的dev_gso_segment先软件分段的segs赋值给skb-&gt;next（skb-&gt;next = segs）, 如果网卡硬件支持分段则直接将GSO大帧（skb-next)传给网卡驱动(dev_hard_start_xmit中的ndo_start_xmit)（所以它传给virtio驱动的是GSO大帧），然后继续进行IP分片后再发往网卡。GSO自动检测网卡支持特性， 硬件不支持也可以使用GSO它更通用（TSO一定需要硬件支持）。当打开GSO时，GSO会在xmit那块做GSO分片时调用TCP/UDP的回调函数自动添加TCP/UDP头（不使用GSO的只有第一个分片有TCP/UDP头，后面接着的分片是没有的，这也是为什么在虚机里打开TSO/GSO时对于隧道会多出一块数据的原因），然后再调IP层回调函数为每个分片添加IP头。<br>命令(ethtool -K eth0 tso|gso off|on)可打开或关闭网卡驱动的gso/tso特性：</p>
+<p>1, 物理网卡不支持GSO时, 使用TSO时TCP分段在驱动处调用硬件做，不使用TSO时TCP分段在TCP协议处软件做。<br>2, 物理网卡不支持UFO时，使用GSO时在发送给驱动前一刻做，不使用GSO在IP层软件做。<br>3, 物理网卡不支持TSO时，使用GSO时在发送给驱动前一刻做，不使用GSO在TCP层软件做。</p>
+<p>TSO与GSO的重要区别</p>
+<p>1, TSO只有第一个分片有TCP头和IP头，接着的分段只有IP头。意味着第一个分段丢失，所有分段得重传。<br>2, GSO在分段时会调用TCP或UDP的回调函数(udp4_ufo_fragment)为每个分段都加上IP头，由于分段是通过mss设置的（mss由发送端设置），所以长度仍然可能超过mtu值，所以在IP层还得再分片(代码位于dev_hard_start_xmit)。</p>
+<p>收数据<br>LRO(Large Receive Offload），TSO是发，LRO是收。将多个TCP分段聚合成一个skb结构，以减小上层协议栈的skb的开销。skb的数据保存在skb-&gt;data中，分段的数据保存在skb_shared_info-&gt;frag_list中。<br>GRO(Generic Receive Offloading)，GSO是发，GRO是收。LRO使用发送方和目的地IP地址，IP封包ID，L4协议三者来区分段，对于从同一个SNAT域的两个机器发向同一目的IP的两个封包可能会存在相同的IP封包ID（因为不是全局分配的ID），这样会有所谓的卷绕的bug。GRO采用发送方和目的地IP地址，源/目的端口，L4协议三者来区分作为改进。所以对于后续的驱动都应该使用GRO的接口，而不是LRO。另外，GRO也支持多协议。<br>1, 物理网卡不支持GRO时, 使用LRO在驱动处合并了多个skb一次性通过网络栈，对CPU负荷的减轻是显然的。<br>2, 物理网卡不支持LRO时，使用GRO在从驱动接收数据那一刻合并了多个skb一次性通过网络栈，对CPU负荷的减轻是显然的。</p>
+<p>性能影响<br>性能依次是：客户机和宿主机GSO/TSO/UFO都打开 &gt; 客户机打开宿主机关闭 &gt; 客户机宿主机都关闭。</p>
+<p>对TCP来说，在CPU资源充足的情况下，TSO/GSO 能带来的效果不大，但是在CPU资源不足的情况下，其带来的改观还是很大的。<br>对UDP来说，其改进效果一般，改进效果不超过20%。所以在VxLAN环境中，其实是可以把GSO关闭，从而避免它带来的一些潜在问题。</p>
+<p>Offloading 带来的潜在问题<br>分段offloading可能会带来潜在的问题，比如网络传输的延迟latency，因为packets的大小的增加，大大增加了driver queue的容量（capacity）。比如说，系统一方面在使用大的packet size传输大量的数据，同时在运行许多的交换式应用（interactive application）。因为交互式应用会定时发送许多小的packet，这时候可能会应为这些小的packets被淹没在大的packets之中，需要等待较长的时间才能被处理，这可能会带来不可接受的延迟。在网络上也能看到一些建议，在使用这些offloading技术时如果发现莫名的网络问题，建议先将这些技术关闭后再看看情况有没有改变。</p>
+<h1 id="ethtool-K-interface-gso-off"><a href="#ethtool-K-interface-gso-off" class="headerlink" title="ethtool -K interface gso off"></a>ethtool -K interface gso off</h1><h1 id="ethtool-K-interface-tso-off"><a href="#ethtool-K-interface-tso-off" class="headerlink" title="ethtool -K interface tso off"></a>ethtool -K interface tso off</h1><p>VirtIO<br>在guest中有virtio前端驱动, 如针对网络的virtio-net，和其他驱动如virtio-pci等共同经过virt-queue的notify的trap中断到主机的hypervisor中执行host中面向guest前端驱动的api接口与后端驱动(virtio-backend driver)。guest内核的rx0与tx0两个队列与host的rx与tx两个队列通过socket共享内存交换数据。</p>
+<p>下面是如何打开virtqueue的调试功能</p>
+<p>echo -n “func virtqueue_add +flmpt” | sudo tee /sys/kernel/debug/dynamic_debug/control<br>sudo cat /sys/kernel/debug/dynamic_debug/control | grep virtio<br>这样能看到 virtqueue_add() 函数的信息：<br>drivers/virtio/virtio_ring.c:294 [virtio_ring]virtqueue_add =pmflt “Added buffer head %i to %p\012”<br>drivers/virtio/virtio_ring.c:236 [virtio_ring]virtqueue_add =pmflt “Can’t add buf len %i - avail = %i\012”</p>
+<p>vxlan的实现</p>
+<p>从guest出来的tcp数据到达host的vxlan driver时会调用vxlan_xmit, 它的主要逻辑是获取 vxlan dev，然后为 sk_buff 中的每一个skb调用vxlan_xmit_skb方法, vlan_xmit_skb除了计算 tos，ttl，df，src_port，dst_port，md，flags等以外，也调用skb_set_inner_protocol(skb, htons(ETH_P_TEB))设置GSO参数。最后调用udp_tunnel_xmit_skb将skb传给udp tunnel协议栈继续处理。<br>这样也就进了IP层的ip_finish_output_gso，如果硬件支持，则由硬件调用linux内核中的UDP GSO函数（当有GSO时，由 UDP协议栈提供UDP分片逻辑而不是IP分片逻辑，这使得每个分片都有完整的UDP包头，然后继续IP层的GSO分片。所以GSO本身是对UFO的优化）；如果硬件不支持，则在进入device driver queue之前由linux内核调用UDP GSO分片函数，然后再一直往下到网卡。<br>static int ip_finish_output_gso(struct net <em>net, struct sock </em>sk,<br>struct sk_buff *skb, unsigned int mtu){<br>…</p>
+<p>   #调用回调函数, 对于UDP则是调用UDP的gso_segment回调函数进行UDP GSO分段<br>   segs = skb_gso_segment(skb, features &amp; ~NETIF_F_GSO_MASK);<br>   …<br>do {<br>struct sk_buff *nskb = segs-&gt;next;<br>int err;<br>segs-&gt;next = NULL;</p>
+<pre><code>#有必要则IP分片，因为UDP GSO是按照MSS进行，MSS还是有可能超过IP分段所使用的host物理网卡MTU
+</code></pre><p>err = ip_fragment(net, sk, segs, mtu, ip_finish_output2);<br>if (err &amp;&amp; ret == 0)<br>ret = err;<br>segs = nskb;<br>} while (segs);</p>
+<p>这里是udp_offload.c中定义的回调函数：<br>static const struct net_offload udpv4_offload = {<br>.callbacks = {<br>.gso_segment = udp4_ufo_fragment,<br>                …<br>},<br>};<br>可见，在整个过程中，有客户机上TCP协议层设置的skb_shinfo(skb)-&gt;gso_size始终保持不变为MSS，因此，在网卡中最终所做的针对UDP GSO数据报的GSO分片所依据的分片的长度还是根据skb_shinfo(skb)-&gt;gso_size的值即TCP MSS，所以vxlan协议有一个问题，即host的IP分片是根据geuest中TCP连接的MSS来进行的。</p>
+<p>从geust到host的包流向</p>
+<p>1, netif_needs_gso先判断网卡是否支持GSO（guest里的virtio nic肯定支持），if(unlikely(foo))认为foo通常为0， 所以如果网卡支持TSO时dev_gso_segment将返回0（skb-&gt;next==NULL)，也就是说，当guest网卡的GSO特性打开时，guest会直接将没有分段的GSO大帧传递到virtio-net driver中。<br>int dev_hard_start_xmit(struct sk_buff <em>skb, struct net_device </em>dev,<br>struct netdev_queue <em>txq)<br>{<br>…<br>if (netif_needs_gso(skb, features)) {<br>if (unlikely(dev_gso_segment(skb, features)))<br>goto out_kfree_skb;<br>if (skb-&gt;next)<br>goto gso;<br>}<br>gso:<br>do {<br>struct sk_buff </em>nskb = skb-&gt;next;<br>skb-&gt;next = nskb-&gt;next;<br>…<br>rc = ops-&gt;ndo_start_xmit(nskb, dev);<br>…<br>} while (skb-&gt;next);</p>
+<p>static int dev_gso_segment(struct sk_buff <em>skb, netdev_features_t features)<br>{<br>struct sk_buff </em>segs;<br>segs = skb_gso_segment(skb, features);</p>
+<p>/<em> Verifying header integrity only. </em>/<br>if (!segs)<br>return 0;<br>skb-&gt;next = segs;<br>DEV_GSO_CB(skb)-&gt;destructor = skb-&gt;destructor;<br>skb-&gt;destructor = dev_gso_skb_destructor;<br>return 0;<br>}</p>
+<p>2, virtio_net.c中的如下代码定义了virtio-net driver的xmit函数为start_xmit，它会直接将这个GSO大帧通过vring(&lt;=64K)传给host上的virtio backend driver.<br>static const struct net_device_ops virtnet_netdev = {<br>        …<br>.ndo_start_xmit      = start_xmit,</p>
+<p>3, 然后host上的tap和bridge都会原封不动动转发这个GSO大帧(payload, inner-tcp, inner-ip, inner-ethernet)。</p>
+<p>4, host上的vxlan driver在原GSO大帧上添加vxlan帧头，从(payload, inner-tcp, inner-ip, inner-ethernet)变成(payload, inner-tcp, inner-ip, inner-ethernet, vxlan)。</p>
+<p>5, 如果host不支持GSO，那么在host的IP层直接对外层的UDP分片，注意：只有第1个分片有UDP头，接下来的分片没有UDP头。<br>   分片1： payload, inner-tcp, inner-ip, inner-ethernet, vxlan，outer-udp, outer-ip<br>   分片2： payload, inner-tcp, inner-ip, inner-ethernet, vxlan，outer-ip</p>
+<p>6, 如果host支持GSO，在host的dev_hard_start_xmit处（代码回到第1步），如果物理网卡支持TSO直接将大帧(payload, inner-tcp, inner-ip, inner-ethernet, vxlan)将给物理网卡的TSO去硬件分片。如果物理网卡不支持TSO将调用skb_gso_segment软件执行GSO。GSO由于会调用UDP的回调函数，但vxlan没有GSO回调函数，所以这里的GSO分片应该每一个分片都有UDP头部，但是只有第一个分片有vxlan头部。<br>   分片1： payload, inner-tcp, inner-ip, inner-ethernet, vxlan，outer-udp, outer-ip<br>   分片2： payload, inner-tcp, inner-ip, inner-ethernet，outer-udp, outer-ip</p>
+<p>7, 但是host的物理网卡是根据mss(由sender确定，也就是guest设定,而不是由mtu设定）发给远端的。host打开GSO增加outer-udp时可能会造成包大于mss值从而继续在添加outer-ip时做ip分片。所以redhat的最佳实践要求关闭host机上的GSO特性。</p>
+<p>从host到guest的包流向<br>1, 如果host上的GRO打开的话，host上的物理网卡要先将分片重组合并成一个大的GRO包。</p>
+<p>2, 包在过路由器时，conntrack需要将分段重组后使用防火墙规则检查，为防止攻击，路由器会有定时器设置一段时间没有做完分段重组就会丢弃清理相应的内存资源，下面参数可以设置分段使用的内存量和<br>hua@node1:~$ cat /proc/sys/net/ipv4/ipfrag_high_thresh  #一旦达到最高内存分配值，其它分段将被丢弃，直到达到最低内存分配值。<br>4194304<br>hua@node1:~$ cat /proc/sys/net/ipv4/ipfrag_low_thresh<br>3145728<br>hua@node1:~$ cat /proc/sys/net/ipv4/ipfrag_time<br>30<br>具体到openstack的网络节点，数据流向是：<br>eth0(pysical nic for public network) -&gt; br-ex (maybe a linux bridge) -&gt; qg-XXX -&gt; qr-XXX -&gt; br-int (ovs bridge) -&gt; ovs-patch-ports -&gt; br-tun (for stt tunnel) -&gt; eth1(pysical nic for management network)<br>如eth0, eth1的mtu是9000的话，若host的GRO打开的话，eth0收到数据会会分段重组成一个大GRO帧：<br>1, 如果br-ex是linux bridge，且net.bridge.bridge-nf-call-arptables = 1，在br-ex上就会分段重组然后使用qg-xxx的mtu=1500再进行分片。<br>2, 即使br-ex不是linux bridge，eth0在重组后做完防火墙后再使用9000再重新分片， 再传到后面1500的虚拟设备又会重组。<br>所以如果mtu设置不当，还不如将host上的TSO/GSO/GRO关闭(Redhat这是这样推荐的），这样也不会造成一个大帧反复重组和分片的问题了。</p>
+<p>另外就是路由器又和NAT搅和在一起的问题，由于在路由器上可能会重组再分片，路由器为了识别一个包属于哪一个分片，会使用&lt;发送方和接收方IP、IP分段ID，L4协议&gt;五元组来区分，由于SNAT在IP分段ID相同的话会出现来自NAT路由器背后不同机器上的分段的五元组相同的情况。所以后来GRO在TSO的基础上将这个五元组改为：&lt;发送方和接收方IP、TOS/协议字段，L4协议&gt;.</p>
+<p>3, 在linux bridge上，如果net.bridge.bridge-nf-call-arptables = 1 ， netfilter conntrack为了做二层的防欺骗检查也需要先分片重组, 然后重新分片（此时分片采用出口NIC的MTU进行分片, 而从geust往host出时的分片采用的是来自guest的mss值）。故不想linux bridge有防火墙功能的话应该设置：<br>net.bridge.bridge-nf-call-arptables = 0<br>net.bridge.bridge-nf-call-ip6tables = 0<br>net.bridge.bridge-nf-call-iptables = 0</p>
+<p>4, 另外，包在过路由器时，</p>
+<p>5, 然后virtio继续将大帧传入guest.</p>
+<p>VMware STT隧道<br>如果现在不是Linux + OVS bridge (ovs bridge支持STT，Linux Bridge不支持STT) + virtio， 而是VMware STT呢？有几个问题要搞清楚：<br>1, STT是加了伪装TCP头利用网卡的TSO特性硬件分片的，所以它走的是TCP，不是UDP（因为很多网卡不支持UDP的硬件分段）。<br>2, NSX Bridge是如何实现的，是否有类似于Linux中的net.bridge.bridge-nf-call-iptables, (tap -&gt; NSX bridge -&gt; ??? -&gt; dev_queue_xmit )<br>    这个网址（<a href="http://blog.scottlowe.org/learning-nvp-nsx/）有一堆关于nsx的介绍，nsx也是用了ovs的，bridge-nf-call-iptables只是linux" target="_blank" rel="external">http://blog.scottlowe.org/learning-nvp-nsx/）有一堆关于nsx的介绍，nsx也是用了ovs的，bridge-nf-call-iptables只是linux</a> bridge的特性，ovs bridge不存在这个特性。但nsx与neutron集成时可能仍然使用tap-&gt;qbr-&gt;qvb-&gt;qvr-&gt;br-int-&gt;ovs-patch-port-&gt;phy-br-eth0，在这里面qbr与phy-br-eth0均有可能是Linux Bridge.<br>3, NSX实现了virtio吗？<br>    上面已回答，nsx仍然使用ovs。virtio是qemu的特性，与nsx无关。</p>
+<p>解决办法<br>链连[10]上说：<br>1, 若用隧道guest中设置mtu</p>
+<p>2, echo 0 &gt; /proc/sys/net/bridge/bridge-nf-call-iptable (可选，如果有Linux Bridge的话）</p>
+<p>3, 关闭host上的GSO, TSO, GRO (如果为使用conntract特性没有关闭bridge-nf-call-iptable的话）</p>
+<p>4, 重点关注host机上物理网卡与Linux bridge上的mtu，其他的虚拟网卡的mtu可以默认设置很大如65000 (可选）</p>
+<p>5, 也可以试试关闭tx与rx两个offload特性，sudo ethtool –offload eth0 rx off tx off sg off tso off， 注意：在tx与rx打开时，chksum是在硬件网卡处做的，tcpdump的输出“cksum 0x0a2b (incorrect -&gt; xxx”应该是正常的。</p>
+<p>juju run –application nova-compute ‘for x in <code>ip netns | cut -f1 -d&quot; &quot;</code>; do ip netns exec $x bash -c “ip link list | sed -e \”s/2: (.<em>)@if.</em>/\1/;t;d\” | while read x; do ethtool –offload \$x rx off tx off sg off tso off; done”; done’</p>
+<p>参考</p>
+<p>[1] <a href="http://www.pagefault.info/?p=159" target="_blank" rel="external">http://www.pagefault.info/?p=159</a><br>[2] <a href="https://kris.io/2015/10/01/kvm-network-performance-tso-and-gso-turn-it-off/" target="_blank" rel="external">https://kris.io/2015/10/01/kvm-network-performance-tso-and-gso-turn-it-off/</a><br>[3] <a href="http://www.cnblogs.com/sammyliu/p/5227121.html" target="_blank" rel="external">http://www.cnblogs.com/sammyliu/p/5227121.html</a><br>[4] <a href="https://patchwork.ozlabs.org/patch/415791/" target="_blank" rel="external">https://patchwork.ozlabs.org/patch/415791/</a><br>[5] <a href="http://www.ibm.com/developerworks/cn/linux/l-virtio/" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/linux/l-virtio/</a><br>[6] <a href="http://www.cnblogs.com/sammyliu/p/5228581.html" target="_blank" rel="external">http://www.cnblogs.com/sammyliu/p/5228581.html</a><br>[7] <a href="http://royluo.org/2014/08/09/virtio-netdev-send/" target="_blank" rel="external">http://royluo.org/2014/08/09/virtio-netdev-send/</a><br>[8] <a href="https://markmc.fedorapeople.org/virtio-code-review/VirtioCodeReview.pdf" target="_blank" rel="external">https://markmc.fedorapeople.org/virtio-code-review/VirtioCodeReview.pdf</a></p>
+<p>[9] <a href="http://blog.csdn.net/majieyue/article/details/7929398" target="_blank" rel="external">http://blog.csdn.net/majieyue/article/details/7929398</a></p>
+<p>[10] <a href="https://ask.openstack.org/en/question/58607/poor-network-connection-issue-with-windows-instance/" target="_blank" rel="external">https://ask.openstack.org/en/question/58607/poor-network-connection-issue-with-windows-instance/</a></p>
+<p>[11] <a href="https://sokratisg.net/2012/04/01/udp-tcp-checksum-errors-from-tcpdump-nic-hardware-offloading/" target="_blank" rel="external">https://sokratisg.net/2012/04/01/udp-tcp-checksum-errors-from-tcpdump-nic-hardware-offloading/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/01/Thinkpad-T440p安装Linux的种种问题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -354,6 +522,11 @@
 <p>Feb 1 09:36:48 t440p gnome-shell[3675]: libinput error: client bug: timer event25 debounce: scheduled expiry is in the past (-6ms), your system is too slow</p>
 <p>perf data显示它和chrom有关，故设置：</p>
 <p>chrome://settings/?search=hardware selects ‘Use hardware acceleration when available’<br>chrome://flags/#disable-accelerated-video-decode selects ‘Hardware-accelerated video decode’</p>
+<p>但上面没解决问题，真正解决问题的是disable GPU</p>
+<p><a href="https://blog.csdn.net/weixin_39726131/article/details/111653527" target="_blank" rel="external">https://blog.csdn.net/weixin_39726131/article/details/111653527</a></p>
+<p>chrome://settings/?search=hardware uncheck ‘Use hardware acceleration when available’<br>chrome://flags/ search ‘gpu’ then disable ‘Accelerated 2D canvas’  and ‘GPU rasterization’</p>
+<p>shift + esc to see chrome task</p>
+<p>Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染, 当GPU性能不好时反而慢，不如直接使用CPU</p>
 
           
         
@@ -1857,142 +2030,6 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/16/Perform-a-bisect-test-to-identify-the-kernel-problem/" itemprop="url">Perform a bisect test to identify the kernel problem</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:56:00+08:00">
-                2021-01-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><em>作者：张华 发表于：2016-12-15<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</em></p>
-<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>sriov在Xenial上不work, <a href="https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1633634</a></p>
-<h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><ol>
-<li>先测Xenial最新的Ubuntu Kernel 4.4.0.57.60 (sudo apt-cache policy linux-image-generic-lts-xenial)。如果它没有问题，说明Upstream Kernel中的fixed patch已经被backport到了Ubuntu Xenial Kernel；如果它也有问题，一般需要在Upstream Kernel里bisect</li>
-<li><p>初略扫描代码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git</span><br><span class="line">git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git</span><br><span class="line">git log --tags --simplify-by-decoration --pretty=&quot;format:%ci %d&quot;</span><br><span class="line">#git log v3.13..v4.4 --oneline --no-merges |wc -l</span><br><span class="line">git log --since=&quot;2015-06-21 22:05:43&quot; --before=&quot;2015-07-05 11:01:52&quot; --oneline --no-merges |wc -l</span><br><span class="line">#filter by commit&apos;s author date rather than commit date, commit date may change when merging branch</span><br><span class="line">git log --since=&quot;2015-06-21 22:05:43&quot; --before=&quot;2015-07-05 11:01:52&quot; --format=&quot;%ad %h %s&quot; --date=iso --no-merges &gt; diff</span><br><span class="line">#Unfortunately, &apos;git log b953c0d..d770e55&apos; or &apos;git log tag1..tag2&apos; is not guaranteed to work</span><br><span class="line">#because those commits may be in different branches.</span><br><span class="line">#&apos;..&apos; means all of the commits that are in the v4.2-rc1 branch, but aren’t in the v4.1 branch</span><br><span class="line">#git log --no-merges --oneline v4.1..v4.2-rc1 &gt; diff</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>在Upstream Kernel (<a href="http://kernel.ubuntu.com/~kernel-ppa/mainline/)中继续bisect确定问题出在4.1和4.2-rc1之间" target="_blank" rel="external">http://kernel.ubuntu.com/~kernel-ppa/mainline/)中继续bisect确定问题出在4.1和4.2-rc1之间</a>. 参考：<a href="https://wiki.ubuntu.com/KernelTeam/GitKernelBuild" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/GitKernelBuild</a> (<strong>注：下列的命令只是针对Upstream Kernel</strong>, 对ubuntu Kernel的编译方法可见： <a href="https://blog.csdn.net/quqi99/article/details/50745614" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/50745614</a>) </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">git bisect start</span><br><span class="line">git bisect bad v4.2-rc1</span><br><span class="line">git bisect good v4.1</span><br><span class="line"></span><br><span class="line">git checkout bisect/bad</span><br><span class="line">#git bisect log &gt; bisectlog</span><br><span class="line">git bisect reset</span><br><span class="line">#git bisect replay bisectlog</span><br><span class="line"></span><br><span class="line">sudo apt-get install git build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache</span><br><span class="line">cp /boot/config-`uname -r` .config   #or make menuconfig </span><br><span class="line">make localmodconfig                  #speed compiling time for test by just using existing module config</span><br><span class="line">make clean</span><br><span class="line">yes &apos;&apos; | make oldconfig              #bring the config file up to date.</span><br><span class="line">make -j `getconf _NPROCESSORS_ONLN` deb-pkg LOCALVERSION=-custom</span><br><span class="line">#make drivers/usb/ehci.ko            #just build a module</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>(optional) sriov test method</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/cmdline </span><br><span class="line">BOOT_IMAGE=/boot/vmlinuz-4.1.36-040136-generic root=UUID=70f8e4d5-1773-4bb9-9dcc-f46ac966ebac ro pci-stub.ids=8086:10ca apparmor=0 intel_iommu=pt intel_iommu=on pci=assign-busses</span><br><span class="line"></span><br><span class="line">ln -s /etc/apparmor.d/usr.sbin.libvirtd  /etc/apparmor.d/disable/</span><br><span class="line">ln -s /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper  /etc/apparmor.d/disable/</span><br><span class="line">apparmor_parser -R  /etc/apparmor.d/usr.sbin.libvirtd</span><br><span class="line">apparmor_parser -R  /etc/apparmor.d/usr.lib.libvirt.virt-aa-helper</span><br><span class="line"></span><br><span class="line">sudo dmesg |grep -e DMAR -e IOMMU</span><br><span class="line">sudo lspci |grep 82576</span><br><span class="line">sudo virsh nodedev-list --tree </span><br><span class="line">find /sys/kernel/iommu_groups/ -type l</span><br><span class="line"></span><br><span class="line">readlink -f /sys/bus/pci/devices/0000:07:10.2/iommu_group</span><br><span class="line">echo 0000:07:10.2 &gt; /sys/bus/pci/devices/0000:07:10.2/driver/unbind</span><br><span class="line">echo 0000:07:10.2 &gt; /sys/bus/pci/drivers/vfio-pci/bind</span><br><span class="line">echo &quot;8086 10ca&quot; &gt; /sys/bus/pci/drivers/vfio-pci/new_id</span><br><span class="line"></span><br><span class="line">sudo tailf /var/log/libvirt/qemu/openstack.log</span><br><span class="line">sudo virsh attach-device openstack /root/new-device.xml --live --config</span><br><span class="line">$ sudo cat /root/new-device.xml</span><br><span class="line">&lt;hostdev mode=&apos;subsystem&apos; type=&apos;pci&apos; managed=&apos;yes&apos;&gt;</span><br><span class="line"> &lt;source&gt;</span><br><span class="line">   &lt;address domain=&apos;0x0000&apos; bus=&apos;0x07&apos; slot=&apos;0x10&apos; function=&apos;0x3&apos;/&gt;</span><br><span class="line"> &lt;/source&gt;</span><br><span class="line">&lt;/hostdev&gt;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>Fixed patch找到了的SRU问题，Upstream Kernel有LTS(<a href="https://www.kernel.org/category/releases.html" target="_blank" rel="external">https://www.kernel.org/category/releases.html</a>), Ubuntu Kernel也有LTS(<a href="https://wiki.ubuntu.com/Kernel/LTSEnablementStack)。" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/LTSEnablementStack)。</a><br>a) 如对于Xenial, Ubuntu Kernel是v4.4, 而v4.4也是Upstream LTS Kernel，所以需要将Fixed patch先backport到Upstream Kernel v4.4，而Ubuntu LTS Kernel会定期从Upstream LTS Kernel里拉，所以就不需要backport到Ubuntu kernel了。<br>b) 如对于trusty, Ubuntu Kernel是3.13, 该版本不是Upstream LTS Kernel，故需直接backport到Ubuntu Kernel v3.13即可（<a href="https://wiki.ubuntu.com/KernelTeam/KernelUpdates）" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/KernelUpdates）</a></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>[1] <a href="https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel</a><br>[2] <a href="https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/KernelGitGuide</a><br>[3] <a href="https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing" target="_blank" rel="external">https://wiki.edubuntu.org/Kernel/Dev/KernelBugFixing</a><br>[4] <a href="https://wiki.ubuntu.com/KernelTeam/KernelUpdates" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/KernelUpdates</a><br>[5] <a href="https://wiki.ubuntu.com/Kernel/Dev/StablePatchFormat" target="_blank" rel="external">https://wiki.ubuntu.com/Kernel/Dev/StablePatchFormat</a><br>[6] <a href="https://wiki.ubuntu.com/KernelTeam/GitKernelBuild" target="_blank" rel="external">https://wiki.ubuntu.com/KernelTeam/GitKernelBuild</a></p>
-</li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2043,7 +2080,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">96</span>
+                  <span class="site-state-item-count">97</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

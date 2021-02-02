@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2021/02/01/Thinkpad-T440p安装Linux的种种问题/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华  发表于：2014-05-08版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Thinkpad T440p里使用了一些最新的硬件，这些硬件厂商对Linux高度不兼容, 下面是安装ubuntu 14.04与win8双系统时遇到的一些问题。1, 要在BIOS（F1键）里disable掉UEFI">
-<meta property="og:updated_time" content="2021-02-01T02:27:30.897Z">
+<meta property="og:updated_time" content="2021-02-01T15:24:55.990Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Thinkpad T440p安装Linux的种种问题">
 <meta name="twitter:description" content="作者：张华  发表于：2014-05-08版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Thinkpad T440p里使用了一些最新的硬件，这些硬件厂商对Linux高度不兼容, 下面是安装ubuntu 14.04与win8双系统时遇到的一些问题。1, 要在BIOS（F1键）里disable掉UEFI">
@@ -350,6 +350,11 @@
 <p>Feb 1 09:36:48 t440p gnome-shell[3675]: libinput error: client bug: timer event25 debounce: scheduled expiry is in the past (-6ms), your system is too slow</p>
 <p>perf data显示它和chrom有关，故设置：</p>
 <p>chrome://settings/?search=hardware selects ‘Use hardware acceleration when available’<br>chrome://flags/#disable-accelerated-video-decode selects ‘Hardware-accelerated video decode’</p>
+<p>但上面没解决问题，真正解决问题的是disable GPU</p>
+<p><a href="https://blog.csdn.net/weixin_39726131/article/details/111653527" target="_blank" rel="external">https://blog.csdn.net/weixin_39726131/article/details/111653527</a></p>
+<p>chrome://settings/?search=hardware uncheck ‘Use hardware acceleration when available’<br>chrome://flags/ search ‘gpu’ then disable ‘Accelerated 2D canvas’  and ‘GPU rasterization’</p>
+<p>shift + esc to see chrome task</p>
+<p>Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染, 当GPU性能不好时反而慢，不如直接使用CPU</p>
 
       
     </div>
@@ -383,6 +388,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/02/02/GSO-TSO-GRO等对VirtIO虚机的网络性能影响分析/" rel="prev" title="GSO/TSO/GRO等对VirtIO虚机的网络性能影响分析">
+                GSO/TSO/GRO等对VirtIO虚机的网络性能影响分析 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -450,7 +459,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">96</span>
+                  <span class="site-state-item-count">97</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
