@@ -917,6 +917,11 @@
 <p>shift + esc to see chrome task</p>
 <p>Chrome 浏览器默认开启了“GPU 渲染”的特性，当开启了硬件加速选项之后，所有的 WEB 网页内容都会使用显卡 GPU 来进行解析渲染, 当GPU性能不好时反而慢，不如直接使用CPU</p>
 <p>20210202更新 - GPU问题总结<br>shift + esc打开看到GPU Process在开hangout时cpu超100%，另外风扇响个不停(cpu温度从70多升到80多），这都是gpu性能差但chrome又强制打开了gpu硬件加速造成的，关闭gpu加速即可。</p>
+<p><a href="https://blog.csdn.net/weixin_39866974/article/details/111653530" target="_blank" rel="external">https://blog.csdn.net/weixin_39866974/article/details/111653530</a></p>
+<p>1, 打开chrome://flags/ 搜索GPU，disable掉所有和GPU相关的设置</p>
+<p>２，在/usr/share/applications/google-chrome.desktop中添加参数：–disable-gpu –disable-software-rasterizer</p>
+<p>20210224改用回到旧版本83.0.4103.116-1</p>
+<p>wget <a href="https://www.slimjet.com/chrome/download-chrome.php?file=files%2F83.0.4103.116%2Fgoogle-chrome-stable_current_amd64.deb" target="_blank" rel="external">https://www.slimjet.com/chrome/download-chrome.php?file=files%2F83.0.4103.116%2Fgoogle-chrome-stable_current_amd64.deb</a><br>apt-cache policy google-chrome-stable<br>chrome://flags/   #search ‘gpu’ then reset all setting<br>sudo rm -rf /etc/apt/sources.list.d/google-chrome.list*  #disable auto update</p>
 
           
         
