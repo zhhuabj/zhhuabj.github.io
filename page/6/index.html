@@ -1471,6 +1471,7 @@ done
 <li>设置drop_caches=1 (echo 1 &gt; /proc/sys/vm/drop_caches), ０代表不释放，１释放页缓存，２释放dentries和inodes,3释放所有缓存。注意：这个值只能及时设置，如设置它为１之后马上将会clean(已经写到磁盘)的页缓存释放。IO被缓存到页缓存后是dirty状态，被写到磁盘就变为clean状态，如sync命令只是写dirty页到磁盘。所以如果先运行sync再设置drop_caches=1是将所有内存页写到磁盘后然后全释放。</li>
 <li>将上面说的low值(watermark_scale_factor)调大一点, 这样内存及时回收，不至于在内存快完的时候或者OOM或者不响应了。/proc/ sys/vm/watermark_scale_factor默认是10，意为0.1%(10/10000)，最大可设置为1000</li>
 </ol>
+<p>rsync是可以通过nocache (<a href="https://github.com/Feh/nocache)来disable" target="_blank" rel="external">https://github.com/Feh/nocache)来disable</a> page cache的( nocache rsync -aiv –rsync-path=’nocache rsync’ /src/ host:/dest/ ), 但是nova无法配置使用它（<a href="https://github.com/openstack/nova/blob/stable/ussuri/nova/virt/libvirt/volume/remotefs.py#L312），用drop_caches=1作为workaround的话，在运行migration之前在source" target="_blank" rel="external">https://github.com/openstack/nova/blob/stable/ussuri/nova/virt/libvirt/volume/remotefs.py#L312），用drop_caches=1作为workaround的话，在运行migration之前在source</a> 与dest两台机器均应运行。</p>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a><br>[2] <a href="http://www.brendangregg.com/flamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/flamegraphs.html</a></p>
 
           
