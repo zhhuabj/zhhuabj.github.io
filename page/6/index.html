@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-27T19:22:45+08:00">
                 2020-02-27
@@ -384,7 +384,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-25T11:21:11+08:00">
                 2020-02-25
@@ -517,7 +517,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-16T23:23:50+08:00">
                 2020-02-16
@@ -641,7 +641,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-12T14:40:17+08:00">
                 2020-02-12
@@ -770,7 +770,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-13T16:42:43+08:00">
                 2020-01-13
@@ -1016,7 +1016,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-12-24T18:13:57+08:00">
                 2019-12-24
@@ -1139,7 +1139,7 @@ or apt-get install software-properties-common python-software-properties  &amp;&
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-09T13:03:23+08:00">
                 2019-11-09
@@ -1379,7 +1379,7 @@ done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-08T15:17:52+08:00">
                 2019-11-08
@@ -1472,6 +1472,19 @@ done
 <li>将上面说的low值(watermark_scale_factor)调大一点, 这样内存及时回收，不至于在内存快完的时候或者OOM或者不响应了。/proc/ sys/vm/watermark_scale_factor默认是10，意为0.1%(10/10000)，最大可设置为1000</li>
 </ol>
 <p>rsync是可以通过nocache (<a href="https://github.com/Feh/nocache)来disable" target="_blank" rel="external">https://github.com/Feh/nocache)来disable</a> page cache的( nocache rsync -aiv –rsync-path=’nocache rsync’ /src/ host:/dest/ ), 但是nova无法配置使用它（<a href="https://github.com/openstack/nova/blob/stable/ussuri/nova/virt/libvirt/volume/remotefs.py#L312），用drop_caches=1作为workaround的话，在运行migration之前在source" target="_blank" rel="external">https://github.com/openstack/nova/blob/stable/ussuri/nova/virt/libvirt/volume/remotefs.py#L312），用drop_caches=1作为workaround的话，在运行migration之前在source</a> 与dest两台机器均应运行。</p>
+<p>但是如果image比物理内存还大的话，设置drop_caches可能需要隔30秒左右就设置一次，改设置watermark_scale_factor=162，为什么是162呢？根据下列算法：<br><img src="https://img-blog.csdnimg.cn/20210302195929738.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>/proc/zoneinfo中针对normal zone有下列数据：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Node 0, zone   Normal</span><br><span class="line">  pages free     251571</span><br><span class="line">        min      121441</span><br><span class="line">        low      151801</span><br><span class="line">        high     182161</span><br><span class="line">        spanned  16252928</span><br><span class="line">        present  16252928</span><br><span class="line">        managed  15990835</span><br></pre></td></tr></table></figure></p>
+<p>上面算法中的tmp就是指min, tmp&gt;&gt;2就是除了4=30360<br> managed=15990835, 默认的watermark_scale_factor是10, 15990835<em>10/10000=15990<br> 30360与15990再取最大的就是30360<br> 那30360就是间隔，121441+30360=151801 (low), 151801+30360=182161(high)<br> 注意：zoneinfo中的单位是block(4k), 所以间隔30360</em>4K=120M</p>
+<ul>
+<li>内存低于low值时就启用kswapd进程来回收页，此时还能分配页，但如果碎片化严重也会失败（如系统有大页的时候会更严重）</li>
+<li>低于min值时就暂停所有进程kswapd进程到前台直接回收，这样进程就会在等待I/O会变得很慢系统无响应</li>
+<li><p>直接回收还收不回来，就OOM了，我们这次在内核日志里没有发现OOM错误。</p>
+<p>这个间隔30360(120M)应该调大的，按经验得1G左右，如果scp拷贝一秒拷200M也至少得撑5秒啊。这样希望kwapd在启动回收的5秒内尽量能多回收些（如果dirty页过多也无法回收）　<br>注：上面的perf数据中显示pagecache_get_page在5秒的采样在160M左右。</p>
+</li>
+</ul>
+<p>现在将间隔从30360<em>4K=120M提高到1G, 1024M/120M=8.5, 8.5</em>30360=259072 (此时tmp仍然为min是30360), 即 1590835*watermark_scale_factor/10000=259072, 所以watermark_scale_factor＝162</p>
+<p>watermark_scale_factor=165是及时清non-dirty page cache，有时也需要设置dirty_background_ratio与dirty_ratio(mm/page-writeback.c)及时回刷dirty page cache到bcache中。<br>根据文档（<a href="https://lonesysadmin.net/2013/12/22/better-linux-disk-caching-performance-vm-dirty_ratio/）设置下列两个参数，减小使用page" target="_blank" rel="external">https://lonesysadmin.net/2013/12/22/better-linux-disk-caching-performance-vm-dirty_ratio/）设置下列两个参数，减小使用page</a> cache,　dirty_background_ratio=5(default=10)意为当脏数据达到可用内存的5%时唤醒回刷进程。dirty_ratio=10(default=20)当脏数据达到可用内存的10%时，应为每一笔数据都必须同步等待。<br>vm.dirty_background_ratio = 5<br>vm.dirty_ratio = 10</p>
+<p>目前page cache里有155963个脏页等待flush，并不算多，所以这个case主要要清理non-dirty page cache<br>$ cat proc/vmstat |egrep “dirty|writeback”<br>nr_dirty 155963<br>nr_writeback 0<br>nr_writeback_temp 0<br>nr_dirty_threshold 11919167<br>nr_dirty_background_threshold 5952306</p>
+<p>bcache中可以监测有多少dirty data, 如果nvme中满了的话bcache可能会直接写HDD从页速度变慢，这样memory往bcache中写慢了会导致memory中有更多的dirty data. 可监控这个值/sys/block/<bcache id="">/bcache/cache/cache_available_percent，它之前应该是100，如果降到30就能说明nvme快用得差不多了。</bcache></p>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a><br>[2] <a href="http://www.brendangregg.com/flamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/flamegraphs.html</a></p>
 
           
@@ -1550,7 +1563,7 @@ done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-06T17:49:49+08:00">
                 2019-11-06
@@ -1694,7 +1707,7 @@ done
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-05T12:02:18+08:00">
                 2019-11-05
@@ -1853,7 +1866,7 @@ done
                 <a href="/archives/">
               
                   <span class="site-state-item-count">100</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1903,7 +1916,7 @@ done
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
