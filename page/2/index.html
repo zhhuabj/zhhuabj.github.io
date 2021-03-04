@@ -231,6 +231,155 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/25/k8s-Canal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/25/k8s-Canal/" itemprop="url">k8s Canal</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-25T16:51:16+08:00">
+                2021-01-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2021-01-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>如OpenStack中的Secrity Group可以用来在传统服务应用架构中来实现层与层这的网络访问规则，但对于容器化的服务场景，一个容器一个应用粒度更小，且主机节点的个数和 IP地址都 是快速变化的，这样分层防火墙的思路不再可行。Calico就是这样一个工具，通过修改每个节点上的iptables与路由来实现容器间数据的路由和访问控制，并通过etcd协调节点配置信息。 K8s Network Policy可使用Calico作为CNI实现隔离性，只有匹配规则的流量才能进入pod，同理只有匹配规则的流量才可以离开pod。<br>Canal是Flannel与Calico的结合，访问控制部分由Calico(calico-node -felix)实现, 网络部分仍由Flannel实现(Calico有BGP路由与IPIP隧道两种，Flannel则有Vxlan隧道)。<br>Calico的网络规则的用法可参见(<a href="https://www.open-open.com/news/view/1a7c496" target="_blank" rel="external">https://www.open-open.com/news/view/1a7c496</a>), k8s通过CNI集成Canal能使用Calico实现的网络规则部分，但用法是怎样的呢(可参见－<a href="https://www.jianshu.com/p/331235d8bcbb）：" target="_blank" rel="external">https://www.jianshu.com/p/331235d8bcbb）：</a></p>
+<ul>
+<li>通过kubectl client创建NetworkPolicy资源</li>
+<li>calico的policy-controller(calico-kube-controllers集成了calicoctl用于写policy)监听networkpolicy资源，获取到后写入calico的etcd数据库</li>
+<li>node上calico-felix从etcd数据库中获取policy资源，调用iptables做相应配置。</li>
+</ul>
+<p>Calico policy架构<br><img src="https://img-blog.csdnimg.cn/20210126153921730.png#pic_center" alt=""></p>
+<p>在node上最终生成的最终iptables如下：<br><img src="https://img-blog.csdnimg.cn/20210126153850128.png#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="测试环境信息"><a href="#测试环境信息" class="headerlink" title="测试环境信息"></a>测试环境信息</h2><p>kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1的IP如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">kubernetes-master/0*      active    idle   3        10.5.2.205      6443/tcp        Kubernetes master running.</span><br><span class="line">  canal/2*                active    idle            10.5.2.205                      Flannel subnet 10.1.49.1/24</span><br><span class="line">  containerd/2*           active    idle            10.5.2.205                      Container runtime available</span><br><span class="line">kubernetes-worker/0*      active    idle   4        10.5.3.197      80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/0                 active    idle            10.5.3.197                      Flannel subnet 10.1.94.1/24</span><br><span class="line">  containerd/0            active    idle            10.5.3.197                      Container runtime available</span><br><span class="line">kubernetes-worker/1       active    idle   5        10.5.4.4        80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/1                 active    idle            10.5.4.4                        Flannel subnet 10.1.3.1/24</span><br><span class="line">  containerd/1            active    idle            10.5.4.4                        Container runtime available</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -o wide</span><br><span class="line">NAME                            READY   STATUS    RESTARTS   AGE    IP          NODE                NOMINATED NODE   READINESS GATES</span><br><span class="line">ubuntu-debug-794979f648-4dj8w   1/1     Running   1          118m   10.1.3.14   juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">ubuntu-debug-794979f648-fwdmv   1/1     Running   1          118m   10.1.94.7   juju-11ff05-k8s-4   &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="canal中的flannel提供pod-to-pod通信"><a href="#canal中的flannel提供pod-to-pod通信" class="headerlink" title="canal中的flannel提供pod-to-pod通信"></a>canal中的flannel提供pod-to-pod通信</h2><p>flannel内的tunnel网段是10.1.0.0/16，vxlan类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 get /coreos.com/network/config</span><br><span class="line">&#123;&quot;Network&quot;: &quot;10.1.0.0/16&quot;, &quot;Backend&quot;: &#123;&quot;Type&quot;: &quot;vxlan&quot;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>flannel为kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1分配的subnet分别是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 ls /coreos.com/network/subnets/</span><br><span class="line">/coreos.com/network/subnets/10.1.94.0-24 (kubernetes-worker/0)</span><br><span class="line">/coreos.com/network/subnets/10.1.3.0-24  (kubernetes-worker/1)</span><br><span class="line">/coreos.com/network/subnets/10.1.49.0-24 (kubernetes-master/0)</span><br></pre></td></tr></table></figure></p>
+<p>flannel是根据subnet.env分配的，kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1均应有下列配置，下面只是粘出了kubernetes-worker/0上的例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# cat /run/flannel/subnet.env</span><br><span class="line">FLANNEL_NETWORK=10.1.0.0/16</span><br><span class="line">FLANNEL_SUBNET=10.1.94.1/24</span><br><span class="line">FLANNEL_MTU=8908</span><br><span class="line">FLANNEL_IPMASQ=true</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip addr show flannel.1 |grep global</span><br><span class="line">    inet 10.1.94.0/32 scope global flannel.1</span><br></pre></td></tr></table></figure></p>
+<p>防火墙应该允许该子网的流量进入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#on kubernetes-worker/0, it should ALLOW 10.1.94.0/24</span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep 10.1.94 |grep POST</span><br><span class="line">-A POSTROUTING ! -s 10.1.0.0/16 -d 10.1.94.0/24 -j RETURN</span><br><span class="line"># iptables -t nat -nvL |grep &apos;Chain POSTROUTING&apos; -A9</span><br><span class="line">Chain POSTROUTING (policy ACCEPT 1447 packets, 89820 bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line"> 1885  119K KUBE-POSTROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes postrouting rules */</span><br><span class="line">    8   460 fan-egress  all  --  *      *       252.0.0.0/8          0.0.0.0/0</span><br><span class="line">  183 11249 RETURN     all  --  *      *       10.1.0.0/16          10.1.0.0/16</span><br><span class="line">    6   360 MASQUERADE  all  --  *      *       10.1.0.0/16         !224.0.0.0/4</span><br><span class="line">    0     0 RETURN     all  --  *      *      !10.1.0.0/16          10.1.94.0/24</span><br><span class="line">    0     0 MASQUERADE  all  --  *      *      !10.1.0.0/16          10.1.0.0/16</span><br></pre></td></tr></table></figure></p>
+<p>另外，底层docker或contained也应该将etcd中为每个节点配置的subnet加载进去：</p>
+<ul>
+<li>如果使用docker, 容器内的流量会先到docker0, 然后根据下列路由到flannel.1</li>
+<li>如果使用containerd，是通过下列的/etc/cni/net.d/10-canal.conflist文件将subnet设置进flannel的。<h2 id="canal中的Calico-Felix提供网络访问规则"><a href="#canal中的Calico-Felix提供网络访问规则" class="headerlink" title="canal中的Calico/Felix提供网络访问规则"></a>canal中的Calico/Felix提供网络访问规则</h2>本来calico的felix（通过calico-node -felix运行）是运行在每个节点上负责配置路由及网络访问规则的，现在路由这块不做还是由Flannel来做，所以主要用到felix的网络访问规则。calio的felix的访问规则这块由下列iptables实现(详见Calico网络模型 - <a href="https://www.cnblogs.com/menkeyi/p/11364977.html)，但尚不清楚canal有没有作其他更改。" target="_blank" rel="external">https://www.cnblogs.com/menkeyi/p/11364977.html)，但尚不清楚canal有没有作其他更改。</a><br><img src="https://img-blog.csdnimg.cn/2021012519223249.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# route -n |grep flannel</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>接着流量会被封装成vxlan tunnel送到对方endpoint.<br>Calico如何管网络策略的还没研究清楚(我估计上节中的充许防火墙规则就是这块设置的，当然只是猜测)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# ip addr show |grep cali -A1</span><br><span class="line">6: cali8215eb6fd4a@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-262d6f97-ad60-b48b-85e1-ee180b620c30</span><br><span class="line">--</span><br><span class="line">7: cali105686d7bac@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-09304b68-97b3-c72b-2bd6-b47d9f626890</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         10.5.0.1        0.0.0.0         UG    100    0        0 ens3</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.94.6       0.0.0.0         255.255.255.255 UH    0      0        0 cali105686d7bac</span><br><span class="line">10.1.94.7       0.0.0.0         255.255.255.255 UH    0      0        0 cali8215eb6fd4a</span><br><span class="line">10.5.0.0        0.0.0.0         255.255.0.0     U     0      0        0 ens3</span><br><span class="line">169.254.169.254 10.5.0.1        255.255.255.255 UGH   100    0        0 ens3</span><br><span class="line">252.0.0.0       0.0.0.0         255.0.0.0       U     0      0        0 fan-252</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-09304b68-97b3-c72b-2bd6-b47d9f626890 route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         169.254.1.1     0.0.0.0         UG    0      0        0 eth0</span><br><span class="line">169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 eth0</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-262d6f97-ad60-b48b-85e1-ee180b620c30 route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         169.254.1.1     0.0.0.0         UG    0      0        0 eth0</span><br><span class="line">169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 eth0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ctr c ls</span><br><span class="line">CONTAINER      IMAGE                                              RUNTIME</span><br><span class="line">calico-node    rocks.canonical.com:443/cdk/calico/node:v3.10.1    io.containerd.runc.v2</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns</span><br><span class="line">cni-09304b68-97b3-c72b-2bd6-b47d9f626890 (id: 1)</span><br><span class="line">cni-262d6f97-ad60-b48b-85e1-ee180b620c30 (id: 0)</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-09304b68-97b3-c72b-2bd6-b47d9f626890 ip addr show |grep eth0</span><br><span class="line">3: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    inet 10.1.94.6/32 scope global eth0</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-262d6f97-ad60-b48b-85e1-ee180b620c30 ip addr show |grep eth0</span><br><span class="line">3: eth0@if6: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    inet 10.1.94.7/32 scope global eth0</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# cat /etc/cni/net.d/10-canal.conflist</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;cdk-canal&quot;,</span><br><span class="line">  &quot;cniVersion&quot;: &quot;0.3.0&quot;,</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;calico&quot;,</span><br><span class="line">      &quot;etcd_endpoints&quot;: &quot;https://10.5.1.44:2379&quot;,</span><br><span class="line">      &quot;etcd_key_file&quot;: &quot;/opt/calicoctl/etcd-key&quot;,</span><br><span class="line">      &quot;etcd_cert_file&quot;: &quot;/opt/calicoctl/etcd-cert&quot;,</span><br><span class="line">      &quot;etcd_ca_cert_file&quot;: &quot;/opt/calicoctl/etcd-ca&quot;,</span><br><span class="line">      &quot;log_level&quot;: &quot;info&quot;,</span><br><span class="line">      &quot;ipam&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;host-local&quot;,</span><br><span class="line">        &quot;subnet&quot;: &quot;10.1.94.1/24&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;policy&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;k8s&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;kubernetes&quot;: &#123;</span><br><span class="line">        &quot;kubeconfig&quot;: &quot;/root/cdk/kubeconfig&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;portmap&quot;,</span><br><span class="line">      &quot;capabilities&quot;: &#123;&quot;portMappings&quot;: true&#125;,</span><br><span class="line">      &quot;snat&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="iptables提供Service-to-Pod通信"><a href="#iptables提供Service-to-Pod通信" class="headerlink" title="iptables提供Service-to-Pod通信"></a>iptables提供Service-to-Pod通信</h2><p>以dashboard为例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get services -A |grep kubernetes-dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper                ClusterIP   10.152.183.92    &lt;none&gt;        8000/TCP                 3d22h</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard                     ClusterIP   10.152.183.89    &lt;none&gt;        443/TCP                  3d22h</span><br><span class="line">$ kubectl describe --namespace kubernetes-dashboard service kubernetes-dashboard |grep -E &apos;IPs|Endpoints|Port&apos;</span><br><span class="line">IPs:               10.152.183.89</span><br><span class="line">Port:              &lt;unset&gt;  443/TCP</span><br><span class="line">TargetPort:        8443/TCP</span><br><span class="line">Endpoints:         10.1.3.16:8443</span><br><span class="line">$ kubectl get pods -A -o wide |grep dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper-74757fb5b7-9rqxd                1/1     Running   1          3d22h   10.1.3.17    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard-64f87676d4-s26bs                     1/1     Running   1          3d22h   10.1.3.16    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep kubernetes-dashboard</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -s 10.1.3.17/32 -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -m tcp -j DNAT --to-destination 10.1.3.17:8000</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -s 10.1.3.16/32 -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -m tcp -j DNAT --to-destination 10.1.3.16:8443</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-SVC-Z6GDYMWE5TV2NNJN</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-SVC-CEZPIJSAUFW5MYPQ</span><br><span class="line">-A KUBE-SVC-CEZPIJSAUFW5MYPQ -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-SEP-RMJCCMAWKQ3DCGZP</span><br><span class="line">-A KUBE-SVC-Z6GDYMWE5TV2NNJN -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-SEP-LGG4MZT3C2GWQFZG</span><br></pre></td></tr></table></figure></p>
+<h2 id="相关服务"><a href="#相关服务" class="headerlink" title="相关服务"></a>相关服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status flannel</span><br><span class="line">systemctl status calico-node.service</span><br><span class="line">systemctl status snap.kubelet.daemon.service</span><br></pre></td></tr></table></figure>
+<h2 id="附录-一个客户问题"><a href="#附录-一个客户问题" class="headerlink" title="附录 - 一个客户问题"></a>附录 - 一个客户问题</h2><p>一个客户有一个k8s over vSphere managed by juju 环境，报告使用    goldpinger发现pod间网络不通。<br>先是遇到问题<a href="https://bugs.launchpad.net/juju/+bug/1831244，juju" target="_blank" rel="external">https://bugs.launchpad.net/juju/+bug/1831244，juju</a> controllers与vSphere之间存在用户名和密码的问题，这样”juju status –format yaml”能看到controller处于suspended状态（注意：只有带–format yaml才能看到得）。<br>解决1831244之后就可以正常创建新节点了，将那个失败的keycloak pod迁移到新节点，问题依然存在，’kubectl logs’看到keycloak失败原因是： ‘Caused by: java.net.UnknownHostException: postgres’<br>显然，keycloak依赖于postgres service, 存在dns问题。<br>coredns并没有从旧节新移到新节点，旧节点上存在一个问题, canal的flannel使用的subnet(/run/flannel/subnet.env)与canal的calico使用的subnet(/etc/cni/net.d/10-canal.conflist)不一致，这样导致旧节点上的iptables下列倒数第二行就弄错了，没有充许flannel的数据包。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">grep -A9 &quot;Chain POSTROUTING&quot; sos_commands/networking/iptables_-t_nat_-nvL</span><br><span class="line">Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)</span><br><span class="line">pkts bytes target prot opt in out source destination</span><br><span class="line">1411K 88M cali-POSTROUTING all -- * * 0.0.0.0/0 0.0.0.0/0 /* cali:O3lYWMrLQYEMJtB5 */</span><br><span class="line">1378K 86M CNI-HOSTPORT-MASQ all -- * * 0.0.0.0/0 0.0.0.0/0 /* CNI portfwd requiring masquerade */</span><br><span class="line">1376K 86M KUBE-POSTROUTING all -- * * 0.0.0.0/0 0.0.0.0/0 /* kubernetes postrouting rules */</span><br><span class="line">800K 50M RETURN all -- * * 172.17.240.0/20 172.17.240.0/20</span><br><span class="line">0 0 MASQUERADE all -- * * 172.17.240.0/20 !224.0.0.0/4</span><br><span class="line">0 0 RETURN all -- * * !172.17.240.0/20 172.17.247.0/24</span><br><span class="line">521K 31M MASQUERADE all -- * * !172.17.240.0/20 172.17.240.0/20</span><br></pre></td></tr></table></figure></p>
+<p>下列语句可以查询etcd中每个节点的subnet配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju run -u kubernetes-worker/&lt;N&gt; etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.1.234.195:2379,https://10.1.234.196:2379,https://10.1.234.203:2379 ls /coreos.com/network/subnets/</span><br></pre></td></tr></table></figure></p>
+<p>需要先从etcd里删除它　－　rm /coreos.com/network/subnets/172.17.247.0-24<br>然后重它systemctl restart flannel.service, 接着将 /run/flannel/subnet.env的subnet更新为正确的subnet, 之后通过“ip a s flannel.1 ”确认。最后：<br>systemctl restart calico-node.service<br>systemctl restart snap.kubelet.daemon.service</p>
+<h2 id="calicoctl测试"><a href="#calicoctl测试" class="headerlink" title="calicoctl测试"></a>calicoctl测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">juju ssh kubernetes-worker/0 -- sudo -s</span><br><span class="line">#https://docs.projectcalico.org/getting-started/clis/calicoctl/install</span><br><span class="line">curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl</span><br><span class="line">cp calicoctl /usr/bin/ &amp;&amp; chmod +x /usr/bin/calicoctl</span><br><span class="line">#copy env variable like ETCD_ENDPOINTS from the output of &apos;ps -ef |grep calicoctl&apos;</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get networkPolicy</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get globalNetworkPolicy</span><br><span class="line"></span><br><span class="line">k8s networkpolicy - https://docs.projectcalico.org/security/kubernetes-network-policy</span><br><span class="line">calico networkpolicy - https://docs.projectcalico.org/security/calico-network-policy</span><br><span class="line">cat &lt;&lt; EOF | sudo tee calicoPolicyTest.yaml</span><br><span class="line">apiVersion: projectcalico.org/v3</span><br><span class="line">kind: GlobalNetworkPolicy</span><br><span class="line">metadata:</span><br><span class="line">  name: deny-circle-blue</span><br><span class="line">spec:</span><br><span class="line">  selector: k8s-app == &apos;kubernetes-dashboard&apos;</span><br><span class="line">  ingress:</span><br><span class="line">  - action: Deny</span><br><span class="line">    protocol: TCP</span><br><span class="line">    destination:</span><br><span class="line">      ports:</span><br><span class="line">      - 22</span><br><span class="line">EOF</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get globalNetworkPolicy</span><br><span class="line">#go to the worker which dashboard pos is on (kubectl get pod -A -o wide |grep dash)</span><br><span class="line">iptables-save |grep 2222</span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20210127200046326.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://courses.academy.tigera.io/courses/course-v1:tigera+CCO-L1+CCO-L1-2020/course/" target="_blank" rel="external">https://courses.academy.tigera.io/courses/course-v1:tigera+CCO-L1+CCO-L1-2020/course/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/23/ebpf-study/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1643,196 +1792,6 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/30/Testing-OpenStack-NUMA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/30/Testing-OpenStack-NUMA/" itemprop="url">Testing OpenStack NUMA</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-30T12:13:20+08:00">
-                2020-12-30
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2016-07-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>虚机模拟NUMA硬件<br>我们可能没有NUMA硬件，但可以采用VM模拟。</p>
-<p>1,  参考链接[1]打开KVM的嵌套虚拟化功能，Ubuntu KVM默认应该是开启的。</p>
-<p>2, [可选] host机的网络如下，将仅有一块网卡eth0插到了br-phy中。</p>
-<p>auto br-phy<br>allow-ovs br-phy<br>iface br-phy inet static<br>pre-up /usr/bin/ovs-vsctl – –may-exist add-br br-phy<br>pre-up /usr/bin/ovs-vsctl – –may-exist add-port br-phy eth0<br>  address 192.168.99.125<br>  gateway 192.168.99.1<br>  network 192.168.99.0<br>  netmask 255.255.255.0<br>  broadcast 192.168.99.255<br>ovs_type OVSBridge<br>ovs_ports eth0</p>
-<p>#sudo ip -6 addr add 2001:2:3:4500:fa32:e4ff:febe:87cd/64 dev br-phy<br>iface br-phy inet6 static<br>pre-up modprobe ipv6<br>address 2001:2:3:4500:fa32:e4ff:febe:87cd<br>netmask 64<br>gateway 2001:2:3:4500::1</p>
-<p>auto eth0<br>allow-br-phy eth0<br>iface eth0 inet manual<br>ovs_bridge br-phy<br>ovs_type OVSPort</p>
-<p>然后让KVM支持Openvswitch网桥：</p>
-<p>sudo ovs-vsctl add-br br-phy<br>sudo virsh net-destroy default<br>sudo virsh net-edit default</p>
-<p><network><br>  <name>default</name><br>  <forward mode="bridge"><br>  <bridge name="br-phy"><br>  <virtualport type="openvswitch"><br></virtualport></bridge></forward></network><br>sudo virsh net-undefine default<br>sudo virsh net-autostart br-phy<br>3, 结合virt-manger安装一VM.</p>
-<p>sudo apt-get install virt-viewer openvswitch-switch qemu-kvm libvirt-bin virt-manager virtinst virt-top  python-libvirt<br>sudo virt-install \<br>   –name openstack_demo \<br>   –ram 8096 \<br>   –vcpus 8 \<br>   –file /images/kvm/openstack_demo.img \<br>   –file-size 20 \<br>   –cdrom /images/iso/ubuntu-20.04-legacy-server-amd64.iso<br>4, 一定要在VM关闭的情况下修改VM的拓扑为NUMA拓扑。</p>
-<p>sudo virsh destroy openstack_demo<br>sudo virsh edit openstack_demo</p>
-<cpu mode="host-passthrough"><br>  <numa><br>    <cell id="0" cpus="0-3" memory="4096000"><br>    <cell id="1" cpus="4-5" memory="2048000"><br>    <cell id="2" cpus="6-7" memory="2048000"><br>  </cell></cell></cell></numa><br></cpu>
-
-<p>sudo virsh start openstack_demo<br>5, VM内打开大页支持，因为openstack numa需要大页支持。</p>
-<p>hua@demo:~$ cat  /etc/default/grub |grep GRUB_CMDLINE_LINUX<br>GRUB_CMDLINE_LINUX_DEFAULT=””<br>GRUB_CMDLINE_LINUX=”transparent_hugepage=never hugepagesz=2M hugepages=512 default_hugepagesz=2M”</p>
-<h1 id="add-also-add-isolcpus-0-1-2-3"><a href="#add-also-add-isolcpus-0-1-2-3" class="headerlink" title="add also add isolcpus=0,1,2,3"></a>add also add isolcpus=0,1,2,3</h1><p>cat &lt;&lt; EOF | sudo tee -a /etc/fstab<br>nodev /mnt/huge hugetlbfs pagesize=2MB 0 0<br>EOF</p>
-<p>sudo update-grub<br>sudo mkdir -p /mnt/huge<br>sudo reboot</p>
-<p>#hua@demo:~$ sudo sysctl -w vm.nr_hugepages=512</p>
-<p>#vm.nr_hugepages = 512<br>6, 这时我们看到：</p>
-<p>ubuntu@demo:~$ numactl –hardware<br>available: 3 nodes (0-2)<br>node 0 cpus: 0 1 2 3<br>node 0 size: 3846 MB<br>node 0 free: 3115 MB<br>node 1 cpus: 4 5<br>node 1 size: 1969 MB<br>node 1 free: 1542 MB<br>node 2 cpus: 6 7<br>node 2 size: 1966 MB<br>node 2 free: 1466 MB<br>node distances:<br>node   0   1   2<br>  0:  10  20  20<br>  1:  20  10  20<br>  2:  20  20  10<br>ubuntu@demo:~$ grep Hugepagesize /proc/meminfo<br>Hugepagesize:       2048 kB<br>ubuntu@demo:~$ cat /proc/meminfo | grep Huge<br>AnonHugePages:         0 kB<br>ShmemHugePages:        0 kB<br>FileHugePages:         0 kB<br>HugePages_Total:     512<br>HugePages_Free:      512<br>HugePages_Rsvd:        0<br>HugePages_Surp:        0<br>Hugepagesize:       2048 kB<br>Hugetlb:         1048576 kB<br>ubuntu@demo:~$ sudo cat /sys/devices/system/node/node*/meminfo | grep -i huge<br>Node 0 AnonHugePages:         0 kB<br>Node 0 ShmemHugePages:        0 kB<br>Node 0 FileHugePages:        0 kB<br>Node 0 HugePages_Total:   171<br>Node 0 HugePages_Free:    171<br>Node 0 HugePages_Surp:      0<br>Node 1 AnonHugePages:         0 kB<br>Node 1 ShmemHugePages:        0 kB<br>Node 1 FileHugePages:        0 kB<br>Node 1 HugePages_Total:   171<br>Node 1 HugePages_Free:    171<br>Node 1 HugePages_Surp:      0<br>Node 2 AnonHugePages:         0 kB<br>Node 2 ShmemHugePages:        0 kB<br>Node 2 FileHugePages:        0 kB<br>Node 2 HugePages_Total:   170<br>Node 2 HugePages_Free:    170<br>Node 2 HugePages_Surp:      0<br>安装OpenStack<br>还需要配置pypi，详见：<a href="https://blog.csdn.net/quqi99/article/details/97622336" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/97622336</a></p>
-<p>git clone git://github.com/openstack-dev/devstack.git<br>cd devstack<br>cat &lt;&lt; EOF | sudo tee local.conf<br>[[local|localrc]]</p>
-<p>#OFFLINE=True<br>GIT_BASE=<a href="http://git.trystack.cn" target="_blank" rel="external">http://git.trystack.cn</a><br>NOVNC_REPO=<a href="http://git.trystack.cn/kanaka/noVNC.git" target="_blank" rel="external">http://git.trystack.cn/kanaka/noVNC.git</a><br>SPICE_REPO=<a href="http://git.trystack.cn/git/spice/sice-html5.git" target="_blank" rel="external">http://git.trystack.cn/git/spice/sice-html5.git</a><br>DEST=/home/ubuntu/openstack<br>DATA_DIR=\$DEST/data<br>SERVICE_DIR=\$DEST/status</p>
-<p>DOWNLOAD_DEFAULT_IMAGES=False<br>IMAGE_URLS=”<a href="http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img" target="_blank" rel="external">http://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img</a>“</p>
-<p>LOGFILE=\$DATA_DIR/logs/stack.log<br>VERBOSE=True</p>
-<p>disable_service n-net<br>enable_service neutron q-svc q-dhcp q-l3 q-meta q-agt</p>
-<p>MYSQL_PASSWORD=password<br>DATABASE_PASSWORD=password<br>SERVICE_TOKEN=password<br>SERVICE_PASSWORD=password<br>ADMIN_PASSWORD=password<br>RABBIT_PASSWORD=password</p>
-<p>[[post-config|$NOVA_CONF]]<br>[DEFAULT]<br>firewall_driver=nova.virt.firewall.NoopFirewallDriver</p>
-<p>[filter_scheduler]<br>enabled_filters=RamFilter,ComputeFilter,AvailabilityZoneFilter,ComputeCapabilitiesFilter,ImagePropertiesFilter,PciPassthroughFilter,NUMATopologyFilter<br>EOF</p>
-<p>FORCE=yes ./stack.sh</p>
-<p>sudo systemctl enable mysql.service<br>sudo systemctl enable rabbitmq-server.service<br>sudo systemctl enable apache2.service</p>
-<p>. openrc admin</p>
-<p>VM内安装配置OpenStack<br>1, VM内使用devstack安装OpenStack，略。但记得添加AggregateInstanceExtraSpecsFilter, NUMATopologyFilter到scheduler_default_filters （/etc/nova/nova.conf)中并重启nova-schedule进程。</p>
-<p>2, 配置aggregate</p>
-<p>nova aggregate-create hpgs-aggr<br>nova aggregate-set-metadata hpgs-aggr hpgs=true<br>nova aggregate-create normal-aggr<br>nova aggregate-set-metadata normal-aggr hpgs=false</p>
-<p>#Add one or more hosts to them:<br>nova aggregate-add-host hpgs-aggr demo<br>hua@demo:~$ nova aggregate-show hpgs-aggr<br>+—-+———–+——————-+——–+————-+<br>| Id | Name      | Availability Zone | Hosts  | Metadata    |<br>+—-+———–+——————-+——–+————-+<br>| 1  | hpgs-aggr | -                 | ‘demo’ | ‘hpgs=true’ |<br>+—-+———–+——————-+——–+————-+<br>3, 配置flavor</p>
-<p>nova flavor-create –ephemeral 0 –swap 0 –rxtx-factor 1.0 –is-public True m1.numa2nodes b8c065ce-90c2-41f9-8d50-1d47a040b494 256 1 2<br>nova flavor-key m1.numa2nodes set aggregate_instance_extra_specs:hpgs=true      #使用aggregate<br>nova flavor-key m1.numa2nodes set hw:mem_page_size=2048                         #配置大页支持</p>
-<p>#nova flavor-key m1.numa2nodes set hw:cpu_policy=’dedicated’ hw:cpu_thread_policy=’isolate’</p>
-<p>#nova flavor-key m1.numa2nodes set hw:emulator_threads_policy=’isolate’ hypervisor_type=’QEMU’</p>
-<p>nova flavor-key m1.numa2nodes set hw:numa_nodes=2                               #配置numa_nodes，若不配置下列两行就是自动模型，配置下面两行为手动模式<br>nova flavor-key m1.numa2nodes set hw:numa_mem.0=128 hw:numa_mem.1=128 hw:numa_mempolicy=strict<br>nova flavor-key m1.numa2nodes set hw:numa_cpus.0=0  hw:numa_cpus.1=1 hw:cpu_policy=dedicated</p>
-<p>hua@demo:/bak/openstack/nova$ nova flavor-show m1.numa2nodes |grep extra_specs<br>| extra_specs                | {“hw:cpu_policy”: “dedicated”, “hw:mem_page_size”: “2048”, “hw:numa_mempolicy”: “strict”, “hw:numa_mem.1”: “128”, “hw:numa_mem.0”: “128”, “hw:numa_nodes”: “2”, “aggregate_instance_extra_specs:hpgs”: “true”, “hw:numa_cpus.0”: “0”, “hw:numa_cpus.1”: “1”} |<br>4, 创建虚机</p>
-<p>NET_ID=$(neutron net-list |grep ‘private’ |awk ‘{print $2}’)<br>nova boot –image cirros-0.5.1-x86_64-disk –flavor m1.numa2nodes –nic net-id=$NET_ID i1<br>5, 创建虚机后的大页情况，可以看到在node0与node1上已经各用了171-107=64块大页</p>
-<p>hua@demo:/bak/openstack/nova$ sudo cat /sys/devices/system/node/node*/meminfo | grep -i huge<br>Node 0 AnonHugePages:         0 kB<br>Node 0 HugePages_Total:   171<br>Node 0 HugePages_Free:    107<br>Node 0 HugePages_Surp:      0<br>Node 1 AnonHugePages:         0 kB<br>Node 1 HugePages_Total:   171<br>Node 1 HugePages_Free:    107<br>Node 1 HugePages_Surp:      0<br>Node 2 AnonHugePages:         0 kB<br>Node 2 HugePages_Total:   170<br>Node 2 HugePages_Free:    170<br>Node 2 HugePages_Surp:      0<br>6, DB情况</p>
-<p>mysql&gt; select numa_topology from instance_extra;<br>{<br>  “nova_object.version”: “1.2”,<br>  “nova_object.changes”: [<br>    “cells”<br>  ],<br>  “nova_object.name”: “InstanceNUMATopology”,<br>  “nova_object.data”: {<br>    “cells”: [<br>      {<br>        “nova_object.version”: “1.3”,<br>        “nova_object.changes”: [<br>          “cpu_topology”,<br>          “pagesize”,<br>          “cpuset”,<br>          “cpu_policy”,<br>          “memory”,<br>          “cpu_pinning_raw”,<br>          “id”,<br>          “cpu_thread_policy”<br>        ],<br>        “nova_object.name”: “InstanceNUMACell”,<br>        “nova_object.data”: {<br>          “pagesize”: 2048,<br>          “cpu_topology”: {<br>            “nova_object.version”: “1.0”,<br>            “nova_object.changes”: [<br>              “cores”,<br>              “threads”,<br>              “sockets”<br>            ],<br>            “nova_object.name”: “VirtCPUTopology”,<br>            “nova_object.data”: {<br>              “cores”: 1,<br>              “threads”: 1,<br>              “sockets”: 1<br>            },<br>            “nova_object.namespace”: “nova”<br>          },<br>          “cpuset”: [<br>            0<br>          ],<br>          “cpu_policy”: “dedicated”,<br>          “memory”: 128,<br>          “cpu_pinning_raw”: {<br>            “0”: 0<br>          },<br>          “id”: 0,<br>          “cpu_thread_policy”: null<br>        },<br>        “nova_object.namespace”: “nova”<br>      },<br>      {<br>        “nova_object.version”: “1.3”,<br>        “nova_object.changes”: [<br>          “cpu_topology”,<br>          “pagesize”,<br>          “cpuset”,<br>          “cpu_policy”,<br>          “memory”,<br>          “cpu_pinning_raw”,<br>          “id”,<br>          “cpu_thread_policy”<br>        ],<br>        “nova_object.name”: “InstanceNUMACell”,<br>        “nova_object.data”: {<br>          “pagesize”: 2048,<br>          “cpu_topology”: {<br>            “nova_object.version”: “1.0”,<br>            “nova_object.changes”: [<br>              “cores”,<br>              “threads”,<br>              “sockets”<br>            ],<br>            “nova_object.name”: “VirtCPUTopology”,<br>            “nova_object.data”: {<br>              “cores”: 1,<br>              “threads”: 1,<br>              “sockets”: 1<br>            },<br>            “nova_object.namespace”: “nova”<br>          },<br>          “cpuset”: [<br>            1<br>          ],<br>          “cpu_policy”: “dedicated”,<br>          “memory”: 128,<br>          “cpu_pinning_raw”: {<br>            “1”: 4<br>          },<br>          “id”: 1,<br>          “cpu_thread_policy”: null<br>        },<br>        “nova_object.namespace”: “nova”<br>      }<br>    ]<br>  },<br>  “nova_object.namespace”: “nova”<br>}<br>其他有用信息：</p>
-<p>export MYSQL_PASSWORD=ChangeMe123<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select <em> from nova.instances where host=’juju-38b529-ovn-6.cloud.sts’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select </em> from nova.instance_extra where instance_uuid=’0761d1de-7acd-4781-ae8b-f5ba864ab6ec’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select <em> from nova.compute_nodes where hypervisor_hostname=’p2-bits-cloud-xxx.maas’ or hypervisor_hostname=’p2-bits-cloud-xxx.maas’\G\””<br>juju run –application mysql “mysql -u root -p$MYSQL_PASSWORD -e \”select </em> from nova_api.request_specs where instance_uuid=’0761d1de-7acd-4781-ae8b-f5ba864ab6ec’\G\””<br>生成的虚机配置文件</p>
-<p><domain type="kvm" id="1"><br>  <name>instance-00000001</name><br>  <uuid>3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</uuid><br>  <metadata><br>    <nova:instance xmlns:nova="http://openstack.org/xmlns/libvirt/nova/1.0"><br>      <nova:package version="14.0.0"><br>      <nova:name>i1</nova:name><br>      <nova:creationtime>2016-07-22 03:46:03</nova:creationtime><br>      <nova:flavor name="m1.numa2nodes"><br>        <nova:memory>256</nova:memory><br>        <nova:disk>1</nova:disk><br>        <nova:swap>0</nova:swap><br>        <nova:ephemeral>0</nova:ephemeral><br>        <nova:vcpus>2</nova:vcpus><br>      </nova:flavor><br>      <nova:owner><br>        <nova:user uuid="e6001bf33a174ffb9d3ad3e9ff47d059">admin</nova:user><br>        <nova:project uuid="f5a578104510494da0ecae0fb514a6f1">demo</nova:project><br>      </nova:owner><br>      <nova:root type="image" uuid="d8184047-f7b3-4622-83e1-fb9d7ede807f"><br>    </nova:root></nova:package></nova:instance><br>  </metadata><br>  <memory unit="KiB">262144</memory><br>  <currentmemory unit="KiB">262144</currentmemory><br>  <memorybacking><br>    <hugepages><br>      <page size="2048" unit="KiB" nodeset="0"><br>      <page size="2048" unit="KiB" nodeset="1"><br>    </page></page></hugepages><br>  </memorybacking><br>  <vcpu placement="static">2</vcpu><br>  <cputune><br>    <shares>2048</shares><br>    <vcpupin vcpu="0" cpuset="0"><br>    <vcpupin vcpu="1" cpuset="4"><br>    <emulatorpin cpuset="0,4"><br>  </emulatorpin></vcpupin></vcpupin></cputune><br>  <numatune><br>    <memory mode="strict" nodeset="0-1"><br>    <memnode cellid="0" mode="strict" nodeset="0"><br>    <memnode cellid="1" mode="strict" nodeset="1"><br>  </memnode></memnode></memory></numatune><br>  <resource><br>    <partition>/machine</partition><br>  </resource><br>  <sysinfo type="smbios"><br>    <system><br>      <entry name="manufacturer">OpenStack Foundation</entry><br>      <entry name="product">OpenStack Nova</entry><br>      <entry name="version">14.0.0</entry><br>      <entry name="serial">4d63962c-1942-0164-e7a7-fa97578f4e3a</entry><br>      <entry name="uuid">3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</entry><br>      <entry name="family">Virtual Machine</entry><br>    </system><br>  </sysinfo><br>  <os><br>    <type arch="x86_64" machine="pc-i440fx-wily">hvm</type><br>    <kernel>/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/kernel</kernel><br>    <initrd>/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/ramdisk</initrd><br>    <cmdline>root=/dev/vda console=tty0 console=ttyS0</cmdline><br>    <boot dev="hd"><br>    <smbios mode="sysinfo"><br>  </smbios></boot></os><br>  <features><br>    <acpi><br>    <apic><br>  </apic></acpi></features><br>  <cpu><br>    <topology sockets="2" cores="1" threads="1"><br>    <numa><br>      <cell id="0" cpus="0" memory="131072" unit="KiB" memaccess="shared"><br>      <cell id="1" cpus="1" memory="131072" unit="KiB" memaccess="shared"><br>    </cell></cell></numa><br>  </topology></cpu><br>  <clock offset="utc"><br>    <timer name="pit" tickpolicy="delay"><br>    <timer name="rtc" tickpolicy="catchup"><br>    <timer name="hpet" present="no"><br>  </timer></timer></timer></clock><br>  <on_poweroff>destroy</on_poweroff><br>  <on_reboot>restart</on_reboot><br>  <on_crash>destroy</on_crash><br>  <devices><br>    <emulator>/usr/bin/kvm-spice</emulator><br>    <disk type="file" device="disk"><br>      <driver name="qemu" type="qcow2" cache="none"><br>      <source file="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/disk"><br>      <backingstore type="file" index="1"><br>        <format type="raw"><br>        <source file="/opt/stack/data/nova/instances/_base/5b06ec6b6abd700935b24a454e8ce3461d050a9f"><br>        <backingstore><br>      </backingstore><br>      <target dev="vda" bus="virtio"><br>      <alias name="virtio-disk0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0"><br>    </address></alias></target></format></backingstore></driver></disk><br>    <disk type="file" device="cdrom"><br>      <driver name="qemu" type="raw" cache="none"><br>      <source file="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/disk.config"><br>      <backingstore><br>      <target dev="hdd" bus="ide"><br>      <readonly><br>      <alias name="ide0-1-1"><br>      <address type="drive" controller="0" bus="1" target="0" unit="1"><br>    </address></alias></readonly></target></backingstore></driver></disk><br>    <controller type="usb" index="0"><br>      <alias name="usb"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x2"><br>    </address></alias></controller><br>    <controller type="pci" index="0" model="pci-root"><br>      <alias name="pci.0"><br>    </alias></controller><br>    <controller type="ide" index="0"><br>      <alias name="ide"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x1"><br>    </address></alias></controller><br>    <interface type="bridge"><br>      <mac address="fa:16:3e:0b:52:0b"><br>      <source bridge="qbref7fef26-3e"><br>      <target dev="tapef7fef26-3e"><br>      <model type="virtio"><br>      <alias name="net0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0"><br>    </address></alias></model></target></mac></interface><br>    <serial type="file"><br>      <source path="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/console.log"><br>      <target port="0"><br>      <alias name="serial0"><br>    </alias></target></serial><br>    <serial type="pty"><br>      <source path="/dev/pts/20"><br>      <target port="1"><br>      <alias name="serial1"><br>    </alias></target></serial><br>    <console type="file"><br>      <source path="/opt/stack/data/nova/instances/3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc/console.log"><br>      <target type="serial" port="0"><br>      <alias name="serial0"><br>    </alias></target></console><br>    <memballoon model="virtio"><br>      <stats period="10"><br>      <alias name="balloon0"><br>      <address type="pci" domain="0x0000" bus="0x00" slot="0x04" function="0x0"><br>    </address></alias></stats></memballoon><br>  </devices><br>  <seclabel type="dynamic" model="apparmor" relabel="yes"><br>    <label>libvirt-3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</label><br>    <imagelabel>libvirt-3bddd8f6-ee18-4b44-a9e3-86ba2c6c25cc</imagelabel><br>  </seclabel><br></domain><br>20201208更新<br>1, create a VM with 3 numa nodes according to the doc [1]</p>
-<cpu mode="host-passthrough"><br>  <numa><br>    <cell id="0" cpus="0-3" memory="4096000"><br>    <cell id="1" cpus="4-5" memory="2048000"><br>    <cell id="2" cpus="6-7" memory="2048000"><br>  </cell></cell></cell></numa><br></cpu>
-
-<p>2, enable huge page, and use ‘isolcpus=0,1,2,3’ to just use cpu in numa0<br>注意：grub里定义isolcpus并不会让nova不使用这些cpu, nova里专门有vcpu_pin_set来做这件事。</p>
-<p>$ cat /proc/cmdline |grep isolcpu<br>BOOT_IMAGE=/boot/vmlinuz-5.4.0-26-generic root=/dev/mapper/vgdemo-root ro transparent_hugepage=never hugepagesz=2M hugepages=512 default_hugepagesz=2M isolcpus=0,1,2,3</p>
-<p>3, set up openstack test env.</p>
-<p>4, create test aggreate and flavor and test vm</p>
-<p>nova aggregate-create hpgs-aggr<br>nova aggregate-set-metadata hpgs-aggr hpgs=true<br>nova aggregate-create normal-aggr<br>nova aggregate-set-metadata normal-aggr hpgs=false<br>nova aggregate-add-host hpgs-aggr demo<br>nova aggregate-show hpgs-aggr</p>
-<p>nova flavor-create –ephemeral 0 –swap 0 –rxtx-factor 1.0 –is-public True m1.numa2nodes b8c065ce-90c2-41f9-8d50-1d47a040b494 256 1 2<br>nova flavor-key m1.numa2nodes set aggregate_instance_extra_specs:hpgs=true<br>nova flavor-key m1.numa2nodes set hw:mem_page_size=2048<br>nova flavor-key m1.numa2nodes set hw:cpu_policy=’dedicated’ hw:cpu_thread_policy=’isolate’<br>nova flavor-key m1.numa2nodes set hw:emulator_threads_policy=’isolate’ hypervisor_type=’QEMU’</p>
-<p>nova boot –image cirros-0.5.1-x86_64-disk –flavor m1.numa2nodes –nic net-id=$NET_ID i1</p>
-<p>3, This instance i1 uses cpu 0 and 1, and use cpu 2 as emulatorpin</p>
-<p>$ ps -eLo psr,args |grep qemu- |grep -v ‘grep’ |awk ‘{print $1}’ |sort -n |uniq<br>0<br>1<br>2</p>
-<p>$ sudo virsh emulatorpin instance-00000001</p>
-<h2 id="emulator-CPU-Affinity"><a href="#emulator-CPU-Affinity" class="headerlink" title="emulator: CPU Affinity"></a>emulator: CPU Affinity</h2><pre><code>*: 2
-</code></pre><p>$ sudo virsh vcpuinfo instance-00000001<br>VCPU:           0<br>CPU:            0<br>State:          running<br>CPU time:       21.2s<br>CPU Affinity:   y——-</p>
-<p>VCPU:           1<br>CPU:            1<br>State:          running<br>CPU time:       14.9s<br>CPU Affinity:   -y——</p>
-<p>$ taskset -apc <code>pidof qemu-system-x86_64</code><br>pid 15014’s current affinity list: 2<br>pid 15016’s current affinity list: 2<br>pid 15022’s current affinity list: 2<br>pid 15023’s current affinity list: 0<br>pid 15025’s current affinity list: 1<br>pid 15039’s current affinity list: 2</p>
-<p>sudo virsh dumpxml instance-00000001<br>  …<br>  <vcpu placement="static">2</vcpu><br>  <cputune><br>    <shares>2048</shares><br>    <vcpupin vcpu="0" cpuset="0"><br>    <vcpupin vcpu="1" cpuset="1"><br>    <emulatorpin cpuset="2"><br>  </emulatorpin></vcpupin></vcpupin></cputune><br>  <cpu mode="custom" match="exact" check="full"><br>    <model fallback="forbid">qemu64</model><br>    <topology sockets="2" cores="1" threads="1"><br>    <feature policy="require" name="x2apic"><br>    <feature policy="require" name="hypervisor"><br>    <feature policy="require" name="lahf_lm"><br>    <feature policy="disable" name="svm"><br>    <numa><br>      <cell id="0" cpus="0-1" memory="262144" unit="KiB" memaccess="shared"><br>    </cell></numa><br>  </feature></feature></feature></feature></topology></cpu></p>
-<p>4, host’s numa_toplogy</p>
-<p>select numa_topology from nova_cell1.compute_nodes where host=’demo’ \G;</p>
-<p>see <a href="https://paste.ubuntu.com/p/MjmMHZxS6s/" target="_blank" rel="external">https://paste.ubuntu.com/p/MjmMHZxS6s/</a></p>
-<p>5, instance’s numa_toplogy</p>
-<p>select numa_topology from instance_extra where instance_uuid in (select uuid from instances where host=’demo’) \G;</p>
-<p>see <a href="https://paste.ubuntu.com/p/CP2t2ghCfH/" target="_blank" rel="external">https://paste.ubuntu.com/p/CP2t2ghCfH/</a></p>
-<p>参考<br>[1] <a href="http://docs.openstack.org/developer/devstack/guides/devstack-with-nested-kvm.html" target="_blank" rel="external">http://docs.openstack.org/developer/devstack/guides/devstack-with-nested-kvm.html</a></p>
-<p>[2] <a href="https://docs.openstack.org/nova/rocky/contributor/testing/libvirt-numa.html" target="_blank" rel="external">https://docs.openstack.org/nova/rocky/contributor/testing/libvirt-numa.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1883,7 +1842,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

@@ -88,7 +88,7 @@
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210226184234651.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210226184251898.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20210302195929738.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
-<meta property="og:updated_time" content="2021-03-03T07:04:51.350Z">
+<meta property="og:updated_time" content="2021-03-04T12:35:01.750Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Perf火焰图">
 <meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (http://blog.csdn.net/quqi99) Perf example1234567891011121314# NOTE: 如果编译ovs时指定了libunwind/libdwarf，则可以不用安装openvswitch-dbg# 另外，perf指定dwarf时会也像core dump一样收集ca">
@@ -364,8 +364,10 @@
 </ul>
 <p>现在将间隔从30360<em>4K=120M提高到1G, 1024M/120M=8.5, 8.5</em>30360=259072 (此时tmp仍然为min是30360), 即 1590835*watermark_scale_factor/10000=259072, 所以watermark_scale_factor＝162</p>
 <p>watermark_scale_factor=165是及时清non-dirty page cache，有时也需要设置dirty_background_ratio与dirty_ratio(mm/page-writeback.c)及时回刷dirty page cache到bcache中。<br>根据文档（<a href="https://lonesysadmin.net/2013/12/22/better-linux-disk-caching-performance-vm-dirty_ratio/）设置下列两个参数，减小使用page" target="_blank" rel="external">https://lonesysadmin.net/2013/12/22/better-linux-disk-caching-performance-vm-dirty_ratio/）设置下列两个参数，减小使用page</a> cache,　dirty_background_ratio=5(default=10)意为当脏数据达到可用内存的5%时唤醒回刷进程。dirty_ratio=10(default=20)当脏数据达到可用内存的10%时，应为每一笔数据都必须同步等待。<br>vm.dirty_background_ratio = 5<br>vm.dirty_ratio = 10</p>
+<p>注意：watermark_scale_factor值的计算是针对每一个zone(Normal zone)的，上面相当是每个zone相当于减小了1G，这1G不能用，内存低到只有1G了就开始回收了.</p>
 <p>目前page cache里有155963个脏页等待flush，并不算多，所以这个case主要要清理non-dirty page cache<br>$ cat proc/vmstat |egrep “dirty|writeback”<br>nr_dirty 155963<br>nr_writeback 0<br>nr_writeback_temp 0<br>nr_dirty_threshold 11919167<br>nr_dirty_background_threshold 5952306</p>
-<p>bcache中可以监测有多少dirty data, 如果nvme中满了的话bcache可能会直接写HDD从页速度变慢，这样memory往bcache中写慢了会导致memory中有更多的dirty data. 可监控这个值/sys/block/<bcache id="">/bcache/cache/cache_available_percent，它之前应该是100，如果降到30就能说明nvme快用得差不多了。</bcache></p>
+<p>bcache中可以监测有多少dirty data, 如果nvme中满了的话bcache可能会直接写HDD从页速度变慢，这样memory往bcache中写慢了会导致memory中有更多的dirty data. 可监控这个值/sys/block/<bcache id="">/bcache/cache/cache_available_percent，它之前应该是100，如果降到30就能说明nvme快用得差不多了。- <a href="https://lkml.org/lkml/2021/1/8/110" target="_blank" rel="external">https://lkml.org/lkml/2021/1/8/110</a></bcache></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while true; do echo `date`; cat /sys/block/bcache0/bcache/cache/cache_available_percent; cat /sys/block/bcache0/bcache/dirty_data; cat /sys/block/bcache0/bcache/writeback_rate; sleep 5; done;</span><br></pre></td></tr></table></figure>
 <h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html</a><br>[2] <a href="http://www.brendangregg.com/flamegraphs.html" target="_blank" rel="external">http://www.brendangregg.com/flamegraphs.html</a></p>
 
       
@@ -480,7 +482,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

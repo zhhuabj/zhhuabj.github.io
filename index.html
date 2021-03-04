@@ -231,6 +231,175 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/04/Win10-UEFI-Ubuntu-18-04-UEFI双系统/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/03/04/Win10-UEFI-Ubuntu-18-04-UEFI双系统/" itemprop="url">Win10 UEFI + Ubuntu 18.04 UEFI双系统</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-03-04T20:31:51+08:00">
+                2021-03-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本人昨天买了一块SSD, 结果后来发现原来这块SSD存在硬件质量问题, 造成了软件上的种种诡异问题, 如U盘时而识别时而不识别, 如触摸屏左键时而抽风, 如ghost安装win10时几乎到100%的进度时忽然来一个无响应, 重启系统后出现了”To interrupt normal start up, press the blue ThinkVantage button.”, 此时键盘无反应, 既进不了系统, 也进不了BIOS. 拨CMOS电源也无效. 最后发现是这块SSD有质量问题. 估计是SSD有控制器主要是软件吧, 控制器软件有bug导致运行ghost这种软件时也能导致硬件挂住.<br>也正是因为这个问题吧, 七搞八搞, 一不小心在重试的过程中将之前的一块linux分区误删了, 于是之前打算的迁移双系统的想法泡汤(当然, 那些通过分区助手或者ghost来迁移分区的网上文章照着做没一个是成功的).<br>这样, 有机会事隔多年再一次重装双系统的机会, 但是发现世道变了, 之前百试不爽的方法现在行不通了. 后经查证, 主要原因是ubuntu 18.04开始默认采用UEFI, 而win10默认仍然是MBR. 这样会导致一系列的问题, 如报错: grub-efi-amd64-signed failed to install 18.04, 统一采用UEFI安装.</p>
+<h2 id="BIOS设置"><a href="#BIOS设置" class="headerlink" title="BIOS设置"></a>BIOS设置</h2><p>在BIOS中将Boot Mode设置为UEFI Only, 如果有Secure Boot选项还要disable它(不做这一步可能会造成按F12键之后无法找到U盘)<br>注: 改成UEFI only之后, 运行双系统, 四系统都没问题, 但后来进不了U盘的livecd, 报: couldn’t get UEFI db list, 所以只得改回Both, 但UEFI优先.</p>
+<h2 id="安装win10"><a href="#安装win10" class="headerlink" title="安装win10"></a>安装win10</h2><ul>
+<li>下载大白菜UEFI专版 - <a href="http://www.bigbaicai.com/download.html?down2" target="_blank" rel="external">http://www.bigbaicai.com/download.html?down2</a></li>
+<li>下载win10 ghost - axel -n 10 <a href="http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar" target="_blank" rel="external">http://xz.win10cjb.com/18.5/win10_64/DEEP_Win10x64_201805.rar</a></li>
+<li>制作大白菜启动U盘, 如果界面上有UEFI字眼就点上(不记得了, 有就点上), 还要注意一点, 记得点里面的格式转换, 将FAT32格式(HDD-FAT32)转换成NTFS(HDD-NTFS)转换, 否则HDD-FAT32格式不能拷贝大于4G的ghost文件哦,</li>
+<li>按F12选U盘启动进入大白菜后, 用DiskGenius工具重新分区, 必须将BIOS+MBR格式转UEFI+GPT格式. 分区表格式为GUID而不是MBR, window上管EFI分区叫ESP/MSR分区</li>
+<li><p>注意, 不要修改推荐的卷标, 这个卷就是指向的ESP/MSR分区.</p>
+<h2 id="安装win10后"><a href="#安装win10后" class="headerlink" title="安装win10后"></a>安装win10后</h2><p>安装win10后需要将禁用掉快速启动, 否则会造成按F12无法选择U盘启动. 菜单路径为: “设置 -&gt; 系统 -&gt; 电源与睡眠 -&gt; 其他电源设置 -&gt; 选择电源按钮的功能 -&gt; 更改当前不可用的设置 -&gt; 启动快速启动”</p>
+<h2 id="安装ubuntu-18-04"><a href="#安装ubuntu-18-04" class="headerlink" title="安装ubuntu 18.04"></a>安装ubuntu 18.04</h2><p>像安装win10一样, 一样要注意重要一点, 需创建大概300M左右的UEF分区, 另外, 还可以创建一个根分区和一个备份文件用的bak分区.<br>注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</p>
+<h2 id="安装win7"><a href="#安装win7" class="headerlink" title="安装win7"></a>安装win7</h2><p>win7若没有sata的驱动, 所以得先改回IDE, 装完win7之后再改回AHCI, 否则也容易挂在启动界面不动了.<br>注: 我未遇到以上问题, 可能因为我装的win7并不是原版的, 已经带了sata驱动</p>
+<h2 id="加装SSD"><a href="#加装SSD" class="headerlink" title="加装SSD"></a>加装SSD</h2><p>如果加装了SSD之后呢? 那得注意:</p>
+</li>
+<li><p>装win10时同样需要进大白菜或老毛桃后用DiskGenius在SSD上划分ESP/MSR分区</p>
+</li>
+<li>装ubuntu时, 分区处也要创建EFI分区, 同时grub设置安装在SSD上, 相当于: grub-install /dev/sdX.</li>
+<li>bios里选择哪块硬盘启动. 其实在SSD上安装grub后, 这个grub会连HDD上原先的win10与ubuntu一起放在启动列表里. 注意, windows非常霸道, 它是总修改bios里的启动顺序, 将它的”Windows boot Manager”放在”ubuntu grub”的前面, 可以在bios里锁定启动顺序</li>
+<li><p>有时候需要对ssd优化, 例如不要将swap分区放在ssd以延长寿命, 如更改i/o调度策略为noop, 如使用bcache</p>
+<h2 id="问题-1"><a href="#问题-1" class="headerlink" title="问题"></a>问题</h2><p>装完之后进入win10发现thinkpad小红点左键失灵, 再切换进ubuntu发现小红点左键正常(实际上, 5次大概有一次有问题, 只是登录界面左键与右键似乎混乱了, 登录之后就正常了. 再换PE进系统发现小红点左键依然有问题. 所以基本断定和硬件没有关系, 应该是win10上的小红点驱动有问题.<br>但搜索了很多帖子, 没一个能解决问题的, 联想的小红点win10驱动做得太烂了. 所以决定回到win7, 回到win7之后该问题解决. 另外, PE回到win7的过程中不会伤害之前SSD上安装的ubuntu系统, 也不会伤害原HDD里的双系统.</p>
+<h2 id="数据迁移"><a href="#数据迁移" class="headerlink" title="数据迁移"></a>数据迁移</h2><p>现在在笔记本x220t上装了win10, 也装了ubuntu 18.04, 但是如何将工作机t440p的根分区迁移到x220t的根分区呢? 因为我们已经在x220t上安装了ubuntu 18.04, 这样省去了采用命令划分EFI分区, 以及最后填充EFI分区的步骤. 现在将精力集中在如何快速迁移根分区上.</p>
+</li>
+<li><p>目的机x220t因为有写操作, 故要以livecd启动, 启动ssh server, 并将根分区加载到/mnt</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">apt install openssh-server</span><br><span class="line">passwd</span><br><span class="line">echo &apos;PermitRootLogin yes&apos; &gt;&gt; /etc/ssh/sshd_config</span><br><span class="line">service ssh restart</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sdb4 /mnt</span><br><span class="line"></span><br><span class="line"># backup 3 files</span><br><span class="line">/mnt/boot/grub/grub.cfg</span><br><span class="line">/mnt/etc/hostname</span><br><span class="line">/mnt/etc/fstab</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>源机t440p只有读操作故不需要以livecd启动. 但如果以livecd启动的话, 未加载根分区所依赖的分区如/bak分区, 此时如果又没挂载/bak分区的话, rsync命令迁移一些指向/bak分区的软链时会报错退出. 人工删除该软链重新运行即可.  且需要注意 rsync命令中的/mnt/后应该有/, 否则会将mnt目录迁移到根分区的mnt目录下.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk -l</span><br><span class="line">mount /dev/sda9 /mnt</span><br><span class="line"></span><br><span class="line"># rsync will now copy all files, directories, permissions and owners over to the destination machine.</span><br><span class="line"># It also skips all files and directories that are not on the root filesystem, like /dev/, /sys/, /proc/.</span><br><span class="line"># If there are filesystems that are mounted separately on the source machine and your want those copied too, use rsync again on those mountpoints too.</span><br><span class="line"># NOT USE livecd</span><br><span class="line">rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; --exclude=&apos;/nas&apos; /mnt/ root@192.168.99.128:/mnt/</span><br><span class="line"># USE livecd</span><br><span class="line">rsync -xavP --numeric-ids --exclude=&apos;tmp&apos; / root@192.168.99.128:/mnt/</span><br><span class="line"></span><br><span class="line"># then restore above 3 files</span><br><span class="line">/mnt/boot/grub/grub.cfg</span><br><span class="line">/mnt/etc/hostname</span><br><span class="line">/mnt/etc/fstab</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可选, 如果之前没有备份/mnt/boot/grub/grub.cfg, 这时也可以重新生成. 更新grub, 此时会报”canot find EFI directory”, 这样会导致这时生成grub时无法找到原HDD中的双系统, 不要紧, 只要找到目前SSD中的双系统即可. 呆会下一步再运行一下grub命令即可解决</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sdb8 /mnts</span><br><span class="line">for d in dev sys proc; do mount --bind /$d /mnt/$d; done</span><br><span class="line">chroot /mnt/ grub-install /dev/sdb   # canot find EFI directory</span><br><span class="line">chroot /mnt/ update-grub</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可选, 如果之前没有备份/mnt/etc/fstab, 这时也可以重新生成. 修复fstab, 之前运行上述迁移命令前忘了备份x220t上的fstab系统, 导致它被覆盖, OK, 我们修复它.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">blkid</span><br><span class="line">e2label /dev/sdb8 &quot;ROOT_SSD&quot;</span><br><span class="line">tee &quot;/mnt/etc/fstab&quot; &lt;&lt;EOF</span><br><span class="line">#UUID can be found via blkid command</span><br><span class="line">#LABEL=boot /boot ext2 sync 0 2</span><br><span class="line">#UUID=735b3be3-779c-4d21-a944-b033225f3ab4 none   swap    sw      0       0</span><br><span class="line">#LABEL=SWAP none swap sw 0 0</span><br><span class="line">UUID=9401-D2EA /boot/efi vfat defaults 0 2</span><br><span class="line">LABEL=ROOT_SSD / ext4 errors=remount-ro 0 1</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>这时重启系统, 就可以以grub选择启动SSD上的双系统了, 如果还想把HDD的原有的双系统也加到grub的话, 那进ubuntu系统后再执行一次update-grub命令即可.</p>
+</li>
+<li>这种迁移方式效果非常好, 一个rsync命令搞定, 各种工作软件不需要再重装了. 呵呵<h2 id="bcache"><a href="#bcache" class="headerlink" title="bcache"></a>bcache</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install bcache-tools</span><br><span class="line"># sdb is ssd, sda is hdd</span><br><span class="line"># bcache will refuse to instantiate if it looks like a filesystem already exists on the device</span><br><span class="line">sudo umount /data</span><br><span class="line">sudo umount /bak</span><br><span class="line">sudo wipefs -a /dev/sdb5</span><br><span class="line">sudo wipefs -a /dev/sda5</span><br><span class="line"># creating the bcache, --discard flag is for TRIM</span><br><span class="line">sudo make-bcache -C /dev/sdb5 -B /dev/sda5 --block 4k --discard --writeback</span><br><span class="line"># creae and mount the filesystem</span><br><span class="line">sudo mkfs.ext4 /dev/bcache0</span><br><span class="line">sudo mkdir -p /bak</span><br><span class="line"></span><br><span class="line"># remember to comment /bak and /data as well, or it will throw: Welcome to emergency mode</span><br><span class="line">vi /etc/fstab</span><br><span class="line">#UUID=85d5095b-4288-4cc3-8ac7-aae3ed8e872c /bak            ext4    defaults        0       2</span><br><span class="line">#UUID=e246b3d0-6905-4602-a3ae-2f2162f9871f /data           ext4    defaults        0       2</span><br><span class="line">/dev/bcache0 /bak           ext4    defaults        0       2</span><br><span class="line"></span><br><span class="line"># other commands</span><br><span class="line">ls -la /sys/fs/bcache/</span><br><span class="line">umount /bak</span><br><span class="line">echo 1 /sys/block/bcache0/bcache/stop</span><br><span class="line">echo f3e2ac40-5dc4-4e28-880c-4bbb6cd415e3 /sys/block/bcache0/bcache/detach</span><br><span class="line">lsblk</span><br><span class="line">cat /sys/block/bcache0/bcache/state</span><br><span class="line">cat /sys/block/bcache0/bcache/cache_mode</span><br><span class="line">cat /sys/block/bcache0/bcache/dirty_data</span><br><span class="line">bcache-super-show /dev/sda5</span><br><span class="line">bcache-super-show /dev/sdb5</span><br><span class="line">lsblk</span><br><span class="line"></span><br><span class="line">#其他, 测试虚机中ceph盘的性能</span><br><span class="line">The IO path is:</span><br><span class="line">VM -&gt; RBD -&gt; compute node -&gt; network -&gt; OSD(primary + 2 replicas) -&gt; bcache (nvme + hdd)</span><br><span class="line"></span><br><span class="line">Stage 1, exclude VM, check IO performance on RBD directly</span><br><span class="line">Create a RBD in cinder-ceph pool and run rbd bench to check IOPS</span><br><span class="line">rbd create cinder-ceph/canonical-test-rbd --size 20G</span><br><span class="line">rbd bench cinder-ceph/canonical-test-rbd --io-size=4K --io-threads=1 --io-total=10G --io-pattern=rand --io-type=write</span><br><span class="line">rbd bench cinder-ceph/canonical-test-rbd --io-size=4K --io-threads=1 --io-total=10G --io-pattern=rand --io-type=read</span><br><span class="line">rbd bench cinder-ceph/canonical-test-rbd --io-size=4M --io-threads=1 --io-total=10G --io-pattern=rand --io-type=write</span><br><span class="line">rbd bench cinder-ceph/canonical-test-rbd --io-size=4M --io-threads=1 --io-total=10G --io-pattern=rand --io-type=read</span><br><span class="line">rbd rm cinder-ceph/canonical-test-rbd</span><br><span class="line"></span><br><span class="line">Stage 2, check network between compute node and the nodes which store test RBD’s primary or replicas</span><br><span class="line">This can be done by iperf</span><br><span class="line"></span><br><span class="line">Stage 3, IO performance on OSD nodes hold the RBD’s primary and 2 replicas</span><br><span class="line">We can not test IO performance on OSD devices directly, so need to find a way to test bcache performance on OSD node, we can use /var/lib/virt/image as test</span><br><span class="line">We can possibly use this folder /var/lib/virt/images to verify IO performance, but there is ext4 built on this bcache, so file system cache could affect a bit, but we should be able to roughly see the overall performance</span><br><span class="line">dd if=/dev/zero of=/var/lib/virt/images/fiotest-image bs=1M count=10240</span><br><span class="line">fio --name=fiotest --rw=randwrite --bs=4k --runtime=30 --ioengine=libaio --iodepth=128 --numjobs=1 --filename=/var/lib/virt/images/canonical-fiotest-image --direct=1 --sync=1 --group_reporting --time_based=1 --eta-newline 1</span><br><span class="line">fio --name=fiotest --rw=randread --bs=4k --runtime=30 --ioengine=libaio --iodepth=128 --numjobs=1 --filename=/var/lib/virt/images/canonical-fiotest-image --direct=1 --sync=1 --group_reporting --time_based=1 --eta-newline 1</span><br><span class="line">fio --name=fiotest --rw=randwrite --bs=4m --runtime=30 --ioengine=libaio --iodepth=128 --numjobs=1 --filename=/var/lib/virt/images/canonical-fiotest-image --direct=1 --sync=1 --group_reporting --time_based=1 --eta-newline 1</span><br><span class="line">fio --name=fiotest --rw=randread --bs=4m --runtime=30 --ioengine=libaio --iodepth=128 --numjobs=1 --filename=/var/lib/virt/images/canonical-fiotest-image --direct=1 --sync=1 --group_reporting --time_based=1 --eta-newline 1</span><br><span class="line">rm -f /var/lib/virt/images/fiotest-image</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>两个参数：</p>
+<ul>
+<li>sequential_cutoff默认为4k, 就是大于4k的就是绕开NVME直接往HDD写, 为0就是disable这个特性。所以这个要设置为0, 不然IO性能会很差。</li>
+<li>另外bcache的cache_available_percent(/sys/block/bcache0/bcache/cache/cache_available_percent)来看bacache的ssd/cache是不是被写满了，被写满了IO(没写时是100,降到30就差不多快满了)会直接写backing HDD，这样IO会很慢。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">while true; do echo `date`; cat /sys/block/bcache0/bcache/cache/cache_available_percent; cat /sys/block/bcache0/bcache/dirty_data; cat /sys/block/bcache0/bcache/writeback_rate; sleep 5; done;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"># comes dongdong&apos;s patch - https://lkml.org/lkml/2021/1/8/110</span><br><span class="line">while true; do echo &quot;`date +%s`, `cat</span><br><span class="line">/sys/block/bcache0/bcache/dirty_data`, `cat</span><br><span class="line">/sys/block/bcache0/bcache/cache/cache_available_percent`, `cat</span><br><span class="line">/sys/block/bcache0/bcache/writeback_rate`&quot; &gt;&gt; $1; sleep 5; done;</span><br></pre></td></tr></table></figure>
+<h2 id="恢复bak分区"><a href="#恢复bak分区" class="headerlink" title="恢复bak分区"></a>恢复bak分区</h2><p>bak分区存放数据, 由bcache加速<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rsync -xavP --numeric-ids --exclude=&apos;images&apos; /bak/ root@192.168.99.128:/bak/</span><br></pre></td></tr></table></figure></p>
+<h2 id="调整分区"><a href="#调整分区" class="headerlink" title="调整分区"></a>调整分区</h2><p>一个分区不够用时, 可以使用gpartd合并相邻的空闲分区.注意一点, 要合并的分区必须是umount状态时才能合并.</p>
+<h2 id="SSD优化"><a href="#SSD优化" class="headerlink" title="SSD优化"></a>SSD优化</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"># disable scanning for btrfs filesystems when boot</span><br><span class="line">sudo apt-get purge btrfs-tools</span><br><span class="line">sudo update-initramfs -ukall</span><br><span class="line"></span><br><span class="line"># enable TRIM feature by adding discard option</span><br><span class="line"># what&apos;s TRIM - https://blog.csdn.net/quqi99/article/details/50963308</span><br><span class="line"># the option noatime is used to disable access time for a file</span><br><span class="line">sudo hdparm -I /dev/sdb |grep TRIM</span><br><span class="line">vi /etc/fstab</span><br><span class="line">LABEL=ROOT_SSD /               ext4    noatime,discard,errors=remount-ro 0       1</span><br><span class="line">sudo mount -o remount /dev/sdb8</span><br><span class="line">sudo mount |grep sdb8 |grep discard</span><br><span class="line"></span><br><span class="line"># Try not to use swap space unless it&apos;s running out of memory.</span><br><span class="line">echo 1 &gt; /proc/sys/vm/swappiness</span><br><span class="line"></span><br><span class="line"># avoid visiting ssd by using ramdisk for /tmp instead of tmpfs</span><br><span class="line">vim /etc/fstab</span><br><span class="line">tmpfs /tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/tmp tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">tmpfs /var/log tmpfs defaults,noatime,mode=1777 0 0</span><br><span class="line">sudo mount -o remount /</span><br><span class="line"></span><br><span class="line"># Set chrome to use ramdisk cache</span><br><span class="line">cd ~/.cache/google-chrome/Default</span><br><span class="line">rm -rf Cache</span><br><span class="line">sudo ln -s /tmp Cache</span><br><span class="line">rm -rf Media\ Cache/</span><br><span class="line">sudo ln -s /tmp Media\ Cache</span><br><span class="line"></span><br><span class="line"># Use noop for I/O elevator</span><br><span class="line">cat /sys/block/sda/queue/scheduler</span><br><span class="line">sudo vi /etc/default/grub</span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;elevator=noop&quot;</span><br><span class="line">sudo update-grub</span><br><span class="line"></span><br><span class="line"># Test SSD speed</span><br><span class="line">$ sudo hdparm -Tt /dev/sdb</span><br><span class="line">/dev/sdb:</span><br><span class="line"> Timing cached reads:   9128 MB in  2.00 seconds = 4569.28 MB/sec</span><br><span class="line"> Timing buffered disk reads: 818 MB in  3.01 seconds = 272.07 MB/sec</span><br><span class="line"></span><br><span class="line"># Make sure 4K align</span><br><span class="line">$ sudo fdisk -lu |grep sdb |grep sectors</span><br><span class="line">Disk /dev/sdb: 232.9 GiB, 250059350016 bytes, 488397168 sectors</span><br><span class="line"></span><br><span class="line"># Health check</span><br><span class="line">$ sudo smartctl -s on -a /dev/sdb |grep PASSED</span><br><span class="line">SMART overall-health self-assessment test result: PASSED</span><br></pre></td></tr></table></figure>
+<h2 id="20200808更新"><a href="#20200808更新" class="headerlink" title="20200808更新"></a>20200808更新</h2><p>为什么新电脑think x1 yoga这次又要安装双系统，那是因为win10上的cmder似乎丢失键盘按键, 见：<a href="https://github.com/cmderdev/cmder/issues/258" target="_blank" rel="external">https://github.com/cmderdev/cmder/issues/258</a><br>与：　<a href="https://blog.csdn.net/quqi99/article/details/105598417" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/105598417</a><br>需关闭win10上的硬盘加密功能：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">manage-bde -status</span><br><span class="line">manage-bde -?</span><br><span class="line">manage-bde -off c:</span><br><span class="line">manage-bde -off d:</span><br></pre></td></tr></table></figure></p>
+<p>另外，用ubuntu上的Startup Disk Creation创建u盘启动盘时总不好使，后来证明是U盘质量问题．<br>目前ubuntu 20.4还遇到一个尚未解决的问题，锁屏时敲密码hang在那儿，日志似乎是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Aug  8 18:34:03 x1 gsd-power[2533]: Error setting property &apos;PowerSaveMode&apos; on interface org.gnome.Mutter.DisplayConfig: Timeout was reached (g-io-error-quark, 24)</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/04/dive-into-openstack-ovn/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1760,155 +1929,6 @@ multiple TCP/UDP ports per iptables rule using multiport module
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/25/k8s-Canal/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/25/k8s-Canal/" itemprop="url">k8s Canal</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-25T16:51:16+08:00">
-                2021-01-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2021-01-25<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>如OpenStack中的Secrity Group可以用来在传统服务应用架构中来实现层与层这的网络访问规则，但对于容器化的服务场景，一个容器一个应用粒度更小，且主机节点的个数和 IP地址都 是快速变化的，这样分层防火墙的思路不再可行。Calico就是这样一个工具，通过修改每个节点上的iptables与路由来实现容器间数据的路由和访问控制，并通过etcd协调节点配置信息。 K8s Network Policy可使用Calico作为CNI实现隔离性，只有匹配规则的流量才能进入pod，同理只有匹配规则的流量才可以离开pod。<br>Canal是Flannel与Calico的结合，访问控制部分由Calico(calico-node -felix)实现, 网络部分仍由Flannel实现(Calico有BGP路由与IPIP隧道两种，Flannel则有Vxlan隧道)。<br>Calico的网络规则的用法可参见(<a href="https://www.open-open.com/news/view/1a7c496" target="_blank" rel="external">https://www.open-open.com/news/view/1a7c496</a>), k8s通过CNI集成Canal能使用Calico实现的网络规则部分，但用法是怎样的呢(可参见－<a href="https://www.jianshu.com/p/331235d8bcbb）：" target="_blank" rel="external">https://www.jianshu.com/p/331235d8bcbb）：</a></p>
-<ul>
-<li>通过kubectl client创建NetworkPolicy资源</li>
-<li>calico的policy-controller(calico-kube-controllers集成了calicoctl用于写policy)监听networkpolicy资源，获取到后写入calico的etcd数据库</li>
-<li>node上calico-felix从etcd数据库中获取policy资源，调用iptables做相应配置。</li>
-</ul>
-<p>Calico policy架构<br><img src="https://img-blog.csdnimg.cn/20210126153921730.png#pic_center" alt=""></p>
-<p>在node上最终生成的最终iptables如下：<br><img src="https://img-blog.csdnimg.cn/20210126153850128.png#pic_center" alt="在这里插入图片描述"></p>
-<h2 id="测试环境信息"><a href="#测试环境信息" class="headerlink" title="测试环境信息"></a>测试环境信息</h2><p>kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1的IP如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">kubernetes-master/0*      active    idle   3        10.5.2.205      6443/tcp        Kubernetes master running.</span><br><span class="line">  canal/2*                active    idle            10.5.2.205                      Flannel subnet 10.1.49.1/24</span><br><span class="line">  containerd/2*           active    idle            10.5.2.205                      Container runtime available</span><br><span class="line">kubernetes-worker/0*      active    idle   4        10.5.3.197      80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/0                 active    idle            10.5.3.197                      Flannel subnet 10.1.94.1/24</span><br><span class="line">  containerd/0            active    idle            10.5.3.197                      Container runtime available</span><br><span class="line">kubernetes-worker/1       active    idle   5        10.5.4.4        80/tcp,443/tcp  Kubernetes worker running.</span><br><span class="line">  canal/1                 active    idle            10.5.4.4                        Flannel subnet 10.1.3.1/24</span><br><span class="line">  containerd/1            active    idle            10.5.4.4                        Container runtime available</span><br><span class="line"></span><br><span class="line">$ kubectl get pods -o wide</span><br><span class="line">NAME                            READY   STATUS    RESTARTS   AGE    IP          NODE                NOMINATED NODE   READINESS GATES</span><br><span class="line">ubuntu-debug-794979f648-4dj8w   1/1     Running   1          118m   10.1.3.14   juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">ubuntu-debug-794979f648-fwdmv   1/1     Running   1          118m   10.1.94.7   juju-11ff05-k8s-4   &lt;none&gt;           &lt;none&gt;</span><br></pre></td></tr></table></figure></p>
-<h2 id="canal中的flannel提供pod-to-pod通信"><a href="#canal中的flannel提供pod-to-pod通信" class="headerlink" title="canal中的flannel提供pod-to-pod通信"></a>canal中的flannel提供pod-to-pod通信</h2><p>flannel内的tunnel网段是10.1.0.0/16，vxlan类型：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 get /coreos.com/network/config</span><br><span class="line">&#123;&quot;Network&quot;: &quot;10.1.0.0/16&quot;, &quot;Backend&quot;: &#123;&quot;Type&quot;: &quot;vxlan&quot;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
-<p>flannel为kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1分配的subnet分别是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.5.1.44:2379 ls /coreos.com/network/subnets/</span><br><span class="line">/coreos.com/network/subnets/10.1.94.0-24 (kubernetes-worker/0)</span><br><span class="line">/coreos.com/network/subnets/10.1.3.0-24  (kubernetes-worker/1)</span><br><span class="line">/coreos.com/network/subnets/10.1.49.0-24 (kubernetes-master/0)</span><br></pre></td></tr></table></figure></p>
-<p>flannel是根据subnet.env分配的，kubernetes-master/0, kubernetes-worker/0, kubernetes-worker/1均应有下列配置，下面只是粘出了kubernetes-worker/0上的例子：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# cat /run/flannel/subnet.env</span><br><span class="line">FLANNEL_NETWORK=10.1.0.0/16</span><br><span class="line">FLANNEL_SUBNET=10.1.94.1/24</span><br><span class="line">FLANNEL_MTU=8908</span><br><span class="line">FLANNEL_IPMASQ=true</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip addr show flannel.1 |grep global</span><br><span class="line">    inet 10.1.94.0/32 scope global flannel.1</span><br></pre></td></tr></table></figure></p>
-<p>防火墙应该允许该子网的流量进入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#on kubernetes-worker/0, it should ALLOW 10.1.94.0/24</span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep 10.1.94 |grep POST</span><br><span class="line">-A POSTROUTING ! -s 10.1.0.0/16 -d 10.1.94.0/24 -j RETURN</span><br><span class="line"># iptables -t nat -nvL |grep &apos;Chain POSTROUTING&apos; -A9</span><br><span class="line">Chain POSTROUTING (policy ACCEPT 1447 packets, 89820 bytes)</span><br><span class="line"> pkts bytes target     prot opt in     out     source               destination</span><br><span class="line"> 1885  119K KUBE-POSTROUTING  all  --  *      *       0.0.0.0/0            0.0.0.0/0            /* kubernetes postrouting rules */</span><br><span class="line">    8   460 fan-egress  all  --  *      *       252.0.0.0/8          0.0.0.0/0</span><br><span class="line">  183 11249 RETURN     all  --  *      *       10.1.0.0/16          10.1.0.0/16</span><br><span class="line">    6   360 MASQUERADE  all  --  *      *       10.1.0.0/16         !224.0.0.0/4</span><br><span class="line">    0     0 RETURN     all  --  *      *      !10.1.0.0/16          10.1.94.0/24</span><br><span class="line">    0     0 MASQUERADE  all  --  *      *      !10.1.0.0/16          10.1.0.0/16</span><br></pre></td></tr></table></figure></p>
-<p>另外，底层docker或contained也应该将etcd中为每个节点配置的subnet加载进去：</p>
-<ul>
-<li>如果使用docker, 容器内的流量会先到docker0, 然后根据下列路由到flannel.1</li>
-<li>如果使用containerd，是通过下列的/etc/cni/net.d/10-canal.conflist文件将subnet设置进flannel的。<h2 id="canal中的Calico-Felix提供网络访问规则"><a href="#canal中的Calico-Felix提供网络访问规则" class="headerlink" title="canal中的Calico/Felix提供网络访问规则"></a>canal中的Calico/Felix提供网络访问规则</h2>本来calico的felix（通过calico-node -felix运行）是运行在每个节点上负责配置路由及网络访问规则的，现在路由这块不做还是由Flannel来做，所以主要用到felix的网络访问规则。calio的felix的访问规则这块由下列iptables实现(详见Calico网络模型 - <a href="https://www.cnblogs.com/menkeyi/p/11364977.html)，但尚不清楚canal有没有作其他更改。" target="_blank" rel="external">https://www.cnblogs.com/menkeyi/p/11364977.html)，但尚不清楚canal有没有作其他更改。</a><br><img src="https://img-blog.csdnimg.cn/2021012519223249.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# route -n |grep flannel</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>接着流量会被封装成vxlan tunnel送到对方endpoint.<br>Calico如何管网络策略的还没研究清楚(我估计上节中的充许防火墙规则就是这块设置的，当然只是猜测)。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">root@juju-11ff05-k8s-4:~# ip addr show |grep cali -A1</span><br><span class="line">6: cali8215eb6fd4a@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-262d6f97-ad60-b48b-85e1-ee180b620c30</span><br><span class="line">--</span><br><span class="line">7: cali105686d7bac@if3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    link/ether ee:ee:ee:ee:ee:ee brd ff:ff:ff:ff:ff:ff link-netns cni-09304b68-97b3-c72b-2bd6-b47d9f626890</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         10.5.0.1        0.0.0.0         UG    100    0        0 ens3</span><br><span class="line">10.1.3.0        10.1.3.0        255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.49.0       10.1.49.0       255.255.255.0   UG    0      0        0 flannel.1</span><br><span class="line">10.1.94.6       0.0.0.0         255.255.255.255 UH    0      0        0 cali105686d7bac</span><br><span class="line">10.1.94.7       0.0.0.0         255.255.255.255 UH    0      0        0 cali8215eb6fd4a</span><br><span class="line">10.5.0.0        0.0.0.0         255.255.0.0     U     0      0        0 ens3</span><br><span class="line">169.254.169.254 10.5.0.1        255.255.255.255 UGH   100    0        0 ens3</span><br><span class="line">252.0.0.0       0.0.0.0         255.0.0.0       U     0      0        0 fan-252</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-09304b68-97b3-c72b-2bd6-b47d9f626890 route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         169.254.1.1     0.0.0.0         UG    0      0        0 eth0</span><br><span class="line">169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 eth0</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-262d6f97-ad60-b48b-85e1-ee180b620c30 route -n</span><br><span class="line">Kernel IP routing table</span><br><span class="line">Destination     Gateway         Genmask         Flags Metric Ref    Use Iface</span><br><span class="line">0.0.0.0         169.254.1.1     0.0.0.0         UG    0      0        0 eth0</span><br><span class="line">169.254.1.1     0.0.0.0         255.255.255.255 UH    0      0        0 eth0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ctr c ls</span><br><span class="line">CONTAINER      IMAGE                                              RUNTIME</span><br><span class="line">calico-node    rocks.canonical.com:443/cdk/calico/node:v3.10.1    io.containerd.runc.v2</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns</span><br><span class="line">cni-09304b68-97b3-c72b-2bd6-b47d9f626890 (id: 1)</span><br><span class="line">cni-262d6f97-ad60-b48b-85e1-ee180b620c30 (id: 0)</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-09304b68-97b3-c72b-2bd6-b47d9f626890 ip addr show |grep eth0</span><br><span class="line">3: eth0@if7: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    inet 10.1.94.6/32 scope global eth0</span><br><span class="line">root@juju-11ff05-k8s-4:~# ip netns exec cni-262d6f97-ad60-b48b-85e1-ee180b620c30 ip addr show |grep eth0</span><br><span class="line">3: eth0@if6: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc noqueue state UP group default</span><br><span class="line">    inet 10.1.94.7/32 scope global eth0</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# cat /etc/cni/net.d/10-canal.conflist</span><br><span class="line">&#123;</span><br><span class="line">  &quot;name&quot;: &quot;cdk-canal&quot;,</span><br><span class="line">  &quot;cniVersion&quot;: &quot;0.3.0&quot;,</span><br><span class="line">  &quot;plugins&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;calico&quot;,</span><br><span class="line">      &quot;etcd_endpoints&quot;: &quot;https://10.5.1.44:2379&quot;,</span><br><span class="line">      &quot;etcd_key_file&quot;: &quot;/opt/calicoctl/etcd-key&quot;,</span><br><span class="line">      &quot;etcd_cert_file&quot;: &quot;/opt/calicoctl/etcd-cert&quot;,</span><br><span class="line">      &quot;etcd_ca_cert_file&quot;: &quot;/opt/calicoctl/etcd-ca&quot;,</span><br><span class="line">      &quot;log_level&quot;: &quot;info&quot;,</span><br><span class="line">      &quot;ipam&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;host-local&quot;,</span><br><span class="line">        &quot;subnet&quot;: &quot;10.1.94.1/24&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;policy&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;k8s&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;kubernetes&quot;: &#123;</span><br><span class="line">        &quot;kubeconfig&quot;: &quot;/root/cdk/kubeconfig&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;type&quot;: &quot;portmap&quot;,</span><br><span class="line">      &quot;capabilities&quot;: &#123;&quot;portMappings&quot;: true&#125;,</span><br><span class="line">      &quot;snat&quot;: true</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="iptables提供Service-to-Pod通信"><a href="#iptables提供Service-to-Pod通信" class="headerlink" title="iptables提供Service-to-Pod通信"></a>iptables提供Service-to-Pod通信</h2><p>以dashboard为例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">$ kubectl get services -A |grep kubernetes-dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper                ClusterIP   10.152.183.92    &lt;none&gt;        8000/TCP                 3d22h</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard                     ClusterIP   10.152.183.89    &lt;none&gt;        443/TCP                  3d22h</span><br><span class="line">$ kubectl describe --namespace kubernetes-dashboard service kubernetes-dashboard |grep -E &apos;IPs|Endpoints|Port&apos;</span><br><span class="line">IPs:               10.152.183.89</span><br><span class="line">Port:              &lt;unset&gt;  443/TCP</span><br><span class="line">TargetPort:        8443/TCP</span><br><span class="line">Endpoints:         10.1.3.16:8443</span><br><span class="line">$ kubectl get pods -A -o wide |grep dashboard</span><br><span class="line">kubernetes-dashboard              dashboard-metrics-scraper-74757fb5b7-9rqxd                1/1     Running   1          3d22h   10.1.3.17    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line">kubernetes-dashboard              kubernetes-dashboard-64f87676d4-s26bs                     1/1     Running   1          3d22h   10.1.3.16    juju-11ff05-k8s-5   &lt;none&gt;           &lt;none&gt;</span><br><span class="line"></span><br><span class="line">root@juju-11ff05-k8s-4:~# iptables-save |grep kubernetes-dashboard</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -s 10.1.3.17/32 -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-LGG4MZT3C2GWQFZG -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -m tcp -j DNAT --to-destination 10.1.3.17:8000</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -s 10.1.3.16/32 -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SEP-RMJCCMAWKQ3DCGZP -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -m tcp -j DNAT --to-destination 10.1.3.16:8443</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.92/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper cluster IP&quot; -m tcp --dport 8000 -j KUBE-SVC-Z6GDYMWE5TV2NNJN</span><br><span class="line">-A KUBE-SERVICES ! -s 10.1.0.0/16 -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-MARK-MASQ</span><br><span class="line">-A KUBE-SERVICES -d 10.152.183.89/32 -p tcp -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard cluster IP&quot; -m tcp --dport 443 -j KUBE-SVC-CEZPIJSAUFW5MYPQ</span><br><span class="line">-A KUBE-SVC-CEZPIJSAUFW5MYPQ -m comment --comment &quot;kubernetes-dashboard/kubernetes-dashboard&quot; -j KUBE-SEP-RMJCCMAWKQ3DCGZP</span><br><span class="line">-A KUBE-SVC-Z6GDYMWE5TV2NNJN -m comment --comment &quot;kubernetes-dashboard/dashboard-metrics-scraper&quot; -j KUBE-SEP-LGG4MZT3C2GWQFZG</span><br></pre></td></tr></table></figure></p>
-<h2 id="相关服务"><a href="#相关服务" class="headerlink" title="相关服务"></a>相关服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl status flannel</span><br><span class="line">systemctl status calico-node.service</span><br><span class="line">systemctl status snap.kubelet.daemon.service</span><br></pre></td></tr></table></figure>
-<h2 id="附录-一个客户问题"><a href="#附录-一个客户问题" class="headerlink" title="附录 - 一个客户问题"></a>附录 - 一个客户问题</h2><p>一个客户有一个k8s over vSphere managed by juju 环境，报告使用    goldpinger发现pod间网络不通。<br>先是遇到问题<a href="https://bugs.launchpad.net/juju/+bug/1831244，juju" target="_blank" rel="external">https://bugs.launchpad.net/juju/+bug/1831244，juju</a> controllers与vSphere之间存在用户名和密码的问题，这样”juju status –format yaml”能看到controller处于suspended状态（注意：只有带–format yaml才能看到得）。<br>解决1831244之后就可以正常创建新节点了，将那个失败的keycloak pod迁移到新节点，问题依然存在，’kubectl logs’看到keycloak失败原因是： ‘Caused by: java.net.UnknownHostException: postgres’<br>显然，keycloak依赖于postgres service, 存在dns问题。<br>coredns并没有从旧节新移到新节点，旧节点上存在一个问题, canal的flannel使用的subnet(/run/flannel/subnet.env)与canal的calico使用的subnet(/etc/cni/net.d/10-canal.conflist)不一致，这样导致旧节点上的iptables下列倒数第二行就弄错了，没有充许flannel的数据包。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">grep -A9 &quot;Chain POSTROUTING&quot; sos_commands/networking/iptables_-t_nat_-nvL</span><br><span class="line">Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)</span><br><span class="line">pkts bytes target prot opt in out source destination</span><br><span class="line">1411K 88M cali-POSTROUTING all -- * * 0.0.0.0/0 0.0.0.0/0 /* cali:O3lYWMrLQYEMJtB5 */</span><br><span class="line">1378K 86M CNI-HOSTPORT-MASQ all -- * * 0.0.0.0/0 0.0.0.0/0 /* CNI portfwd requiring masquerade */</span><br><span class="line">1376K 86M KUBE-POSTROUTING all -- * * 0.0.0.0/0 0.0.0.0/0 /* kubernetes postrouting rules */</span><br><span class="line">800K 50M RETURN all -- * * 172.17.240.0/20 172.17.240.0/20</span><br><span class="line">0 0 MASQUERADE all -- * * 172.17.240.0/20 !224.0.0.0/4</span><br><span class="line">0 0 RETURN all -- * * !172.17.240.0/20 172.17.247.0/24</span><br><span class="line">521K 31M MASQUERADE all -- * * !172.17.240.0/20 172.17.240.0/20</span><br></pre></td></tr></table></figure></p>
-<p>下列语句可以查询etcd中每个节点的subnet配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju run -u kubernetes-worker/&lt;N&gt; etcdctl --cert-file /etc/ssl/flannel/client-cert.pem --key-file /etc/ssl/flannel/client-key.pem --ca-file /etc/ssl/flannel/client-ca.pem -endpoints=https://10.1.234.195:2379,https://10.1.234.196:2379,https://10.1.234.203:2379 ls /coreos.com/network/subnets/</span><br></pre></td></tr></table></figure></p>
-<p>需要先从etcd里删除它　－　rm /coreos.com/network/subnets/172.17.247.0-24<br>然后重它systemctl restart flannel.service, 接着将 /run/flannel/subnet.env的subnet更新为正确的subnet, 之后通过“ip a s flannel.1 ”确认。最后：<br>systemctl restart calico-node.service<br>systemctl restart snap.kubelet.daemon.service</p>
-<h2 id="calicoctl测试"><a href="#calicoctl测试" class="headerlink" title="calicoctl测试"></a>calicoctl测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">juju ssh kubernetes-worker/0 -- sudo -s</span><br><span class="line">#https://docs.projectcalico.org/getting-started/clis/calicoctl/install</span><br><span class="line">curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl</span><br><span class="line">cp calicoctl /usr/bin/ &amp;&amp; chmod +x /usr/bin/calicoctl</span><br><span class="line">#copy env variable like ETCD_ENDPOINTS from the output of &apos;ps -ef |grep calicoctl&apos;</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get networkPolicy</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get globalNetworkPolicy</span><br><span class="line"></span><br><span class="line">k8s networkpolicy - https://docs.projectcalico.org/security/kubernetes-network-policy</span><br><span class="line">calico networkpolicy - https://docs.projectcalico.org/security/calico-network-policy</span><br><span class="line">cat &lt;&lt; EOF | sudo tee calicoPolicyTest.yaml</span><br><span class="line">apiVersion: projectcalico.org/v3</span><br><span class="line">kind: GlobalNetworkPolicy</span><br><span class="line">metadata:</span><br><span class="line">  name: deny-circle-blue</span><br><span class="line">spec:</span><br><span class="line">  selector: k8s-app == &apos;kubernetes-dashboard&apos;</span><br><span class="line">  ingress:</span><br><span class="line">  - action: Deny</span><br><span class="line">    protocol: TCP</span><br><span class="line">    destination:</span><br><span class="line">      ports:</span><br><span class="line">      - 22</span><br><span class="line">EOF</span><br><span class="line">ETCD_ENDPOINTS=https://10.5.0.131:2379 ETCD_CA_CERT_FILE=/opt/calicoctl/etcd-ca ETCD_CERT_FILE=/opt/calicoctl/etcd-cert ETCD_KEY_FILE=/opt/calicoctl/etcd-key calicoctl get globalNetworkPolicy</span><br><span class="line">#go to the worker which dashboard pos is on (kubectl get pod -A -o wide |grep dash)</span><br><span class="line">iptables-save |grep 2222</span><br></pre></td></tr></table></figure>
-<p><img src="https://img-blog.csdnimg.cn/20210127200046326.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p>[1] <a href="https://courses.academy.tigera.io/courses/course-v1:tigera+CCO-L1+CCO-L1-2020/course/" target="_blank" rel="external">https://courses.academy.tigera.io/courses/course-v1:tigera+CCO-L1+CCO-L1-2020/course/</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1959,7 +1979,7 @@ multiple TCP/UDP ports per iptables rule using multiport module
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
