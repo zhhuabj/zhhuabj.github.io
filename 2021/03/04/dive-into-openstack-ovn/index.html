@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华 发表于：2021-03-04版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 前一篇基础是：Play with OVN - https://blog.csdn.net/quqi99/article/details/103194137这一篇将主要讲openstack如何来使用ovn的。 测试环境下面将搭建一下类似的测试环境。1234567891011">
+<meta property="og:type" content="article">
+<meta property="og:title" content="dive into openstack ovn">
+<meta property="og:url" content="http://yoursite.com/2021/03/04/dive-into-openstack-ovn/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华 发表于：2021-03-04版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 前一篇基础是：Play with OVN - https://blog.csdn.net/quqi99/article/details/103194137这一篇将主要讲openstack如何来使用ovn的。 测试环境下面将搭建一下类似的测试环境。1234567891011">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20210304190448273.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20210304190524530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2021030419364960.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:updated_time" content="2021-03-04T12:09:01.578Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="dive into openstack ovn">
+<meta name="twitter:description" content="作者：张华 发表于：2021-03-04版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 前一篇基础是：Play with OVN - https://blog.csdn.net/quqi99/article/details/103194137这一篇将主要讲openstack如何来使用ovn的。 测试环境下面将搭建一下类似的测试环境。1234567891011">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20210304190448273.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/03/04/dive-into-openstack-ovn/"/>
+
+
+
+
+
+  <title>dive into openstack ovn | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/04/dive-into-openstack-ovn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">dive into openstack ovn</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-03-04T20:08:53+08:00">
+                2021-03-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>作者：张华 发表于：2021-03-04<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>前一篇基础是：Play with OVN - <a href="https://blog.csdn.net/quqi99/article/details/103194137" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/103194137</a><br>这一篇将主要讲openstack如何来使用ovn的。<br><img src="https://img-blog.csdnimg.cn/20210304190448273.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="测试环境"><a href="#测试环境" class="headerlink" title="测试环境"></a>测试环境</h2><p>下面将搭建一下类似的测试环境。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh --name ovn --series bionic --release ussuri --ovn --vault --create-model --run</span><br><span class="line">juju add-unit nova-compute</span><br><span class="line">./configure</span><br><span class="line">source novarc</span><br><span class="line"></span><br><span class="line">neutron net-create private2 --provider:network_type geneve --provider:segmentation_id 1012</span><br><span class="line">neutron subnet-create --gateway 192.168.22.1 private2 192.168.22.0/24 --enable_dhcp=True --name private_subnet2</span><br><span class="line">ROUTER_ID=$(neutron router-list |grep &apos; provider-router &apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">SUBNET_ID=$(neutron subnet-list |grep &apos;192.168.22.0/24&apos; |awk &apos;&#123;print $2&#125;&apos;)</span><br><span class="line">neutron router-interface-add $ROUTER_ID $SUBNET_ID</span><br><span class="line">nova hypervisor-list</span><br><span class="line">openstack server create --wait --image bionic --flavor m1.small --key-name testkey --nic net-id=$(openstack net show private -f value -c id) --availability-zone=nova:juju-c40d4b-ovn-13.cloud.sts i1</span><br><span class="line">./tools/float_all.sh</span><br><span class="line">./tools/sec_groups.sh</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name testkey --nic net-id=$(openstack net show private -f value -c id) --availability-zone=nova:juju-c40d4b-ovn-6.cloud.sts i2</span><br><span class="line">openstack server create --wait --image cirros2 --flavor m1.small --key-name testkey --nic net-id=$(openstack net show private2 -f value -c id) --availability-zone=nova:juju-c40d4b-ovn-6.cloud.sts i3</span><br><span class="line"></span><br><span class="line">$ nova list</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+--------------------------------------+</span><br><span class="line">| ID                                   | Name | Status | Task State | Power State | Networks                             |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+--------------------------------------+</span><br><span class="line">| 82c89129-0335-4e33-b117-be940a7020d4 | i1   | ACTIVE | -          | Running     | private=192.168.21.161, 10.5.150.115 |</span><br><span class="line">| 74641e74-3401-44f9-8d7d-bef3ea0fdb92 | i2   | ACTIVE | -          | Running     | private=192.168.21.3                 |</span><br><span class="line">| 37f7c5c0-844c-4d8d-ad95-aa29b7418dc0 | i3   | ACTIVE | -          | Running     | private2=192.168.22.47               |</span><br><span class="line">+--------------------------------------+------+--------+------------+-------------+--------------------------------------+</span><br></pre></td></tr></table></figure></p>
+<h2 id="OVN-Northbound-DB与Neutron的概念映射"><a href="#OVN-Northbound-DB与Neutron的概念映射" class="headerlink" title="OVN Northbound DB与Neutron的概念映射"></a>OVN Northbound DB与Neutron的概念映射</h2><p>Neutron中有Network, Subnet, Router, Port的概念，OVN Northbound DB中也有对应的逻辑概念: Switch=Neutron Subnet, Port=Neutron Port, Distributed Router=Neutron DVR Router, Gateway Router=Neutron Centralized L3, Port=Neutron Port</p>
+<h2 id="举例查看OVN-Northbound-DB中和L3-NAT相关的数据"><a href="#举例查看OVN-Northbound-DB中和L3-NAT相关的数据" class="headerlink" title="举例查看OVN Northbound DB中和L3 NAT相关的数据"></a>举例查看OVN Northbound DB中和L3 NAT相关的数据</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line">#run in compute node</span><br><span class="line"># ovs-vsctl get open . external_ids</span><br><span class="line">&#123;hostname=juju-c40d4b-ovn-6.cloud.sts, ovn-bridge-mappings=&quot;physnet1:br-data&quot;, ovn-cms-options=enable-chassis-as-gw, ovn-encap-ip=&quot;10.5.0.178&quot;, ovn-encap-type=geneve, ovn-remote=&quot;ssl:10.5.2.178:6642,ssl:10.5.1.220:6642,ssl:10.5.1.157:6642&quot;, rundir=&quot;/var/run/openvswitch&quot;, system-id=juju-c40d4b-ovn-6.cloud.sts&#125;</span><br><span class="line">export SB=$(sudo ovs-vsctl get open . external_ids:ovn-remote | sed -e &apos;s/\&quot;//g&apos;)</span><br><span class="line">export NB=$(sudo ovs-vsctl get open . external_ids:ovn-remote | sed -e &apos;s/\&quot;//g&apos; | sed -e &apos;s/6642/6641/g&apos;)</span><br><span class="line"></span><br><span class="line">#从所有计算节点上的ovn-controller中所出用于中心化l3的那个(搜索enable-chassis-as-gw得知是juju-c40d4b-ovn-6.cloud.sts(uuid=f8004279-14d2-48fd-8b6a-f025706fa8a8)</span><br><span class="line">#run in ovnnb_db master and ovnsb_db master</span><br><span class="line">juju ssh ovn-central/1 -- sudo -s</span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-sbctl list chassis</span><br><span class="line">_uuid               : add1028c-e19c-4f23-8795-a0c64f16fdcd</span><br><span class="line">encaps              : [7417dd02-d2d5-45bb-88b9-3dafe07c92c6]</span><br><span class="line">external_ids        : &#123;datapath-type=system, iface-types=&quot;erspan,geneve,gre,internal,ip6erspan,ip6gre,lisp,patch,stt,system,tap,vxlan&quot;, is-interconn=&quot;false&quot;, neutron-metadata-proxy-networks=&quot;d0382b73-eb07-4314-a803-b957662f618c&quot;, &quot;neutron:liveness_check_at&quot;=&quot;2021-03-04T10:34:37.869388+00:00&quot;, &quot;neutron:metadata_liveness_check_at&quot;=&quot;2021-03-04T10:34:38.163481+00:00&quot;, &quot;neutron:ovn-metadata-id&quot;=&quot;4849b5a6-3134-4ca2-9fea-38c24aef6121&quot;, &quot;neutron:ovn-metadata-sb-cfg&quot;=&quot;578&quot;, ovn-bridge-mappings=&quot;&quot;, ovn-chassis-mac-mappings=&quot;&quot;, ovn-cms-options=&quot;&quot;&#125;</span><br><span class="line">hostname            : juju-c40d4b-ovn-13.cloud.sts</span><br><span class="line">name                : juju-c40d4b-ovn-13.cloud.sts</span><br><span class="line">nb_cfg              : 578</span><br><span class="line">transport_zones     : []</span><br><span class="line">vtep_logical_switches: []</span><br><span class="line">_uuid               : f8004279-14d2-48fd-8b6a-f025706fa8a8</span><br><span class="line">encaps              : [50fde256-2d20-4e4d-aa6e-c7838edee407]</span><br><span class="line">external_ids        : &#123;datapath-type=system, iface-types=&quot;erspan,geneve,gre,internal,ip6erspan,ip6gre,lisp,patch,stt,system,tap,vxlan&quot;, is-interconn=&quot;false&quot;, neutron-metadata-proxy-networks=&quot;d0382b73-eb07-4314-a803-b957662f618c,f1b85533-3f78-4f44-9785-996e725bb3bf&quot;, &quot;neutron:liveness_check_at&quot;=&quot;2021-03-04T10:34:37.322922+00:00&quot;, &quot;neutron:metadata_liveness_check_at&quot;=&quot;2021-03-04T10:34:37.602977+00:00&quot;, &quot;neutron:ovn-metadata-id&quot;=&quot;9dd62f6d-c41b-42e2-b424-7d0bbf0902ea&quot;, &quot;neutron:ovn-metadata-sb-cfg&quot;=&quot;578&quot;, ovn-bridge-mappings=&quot;physnet1:br-data&quot;, ovn-chassis-mac-mappings=&quot;&quot;, ovn-cms-options=enable-chassis-as-gw&#125;</span><br><span class="line">hostname            : juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">name                : juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">nb_cfg              : 578</span><br><span class="line">transport_zones     : []</span><br><span class="line">vtep_logical_switches: []</span><br><span class="line"></span><br><span class="line">#或者直接找到它l3 ovn-controller</span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl list Gateway_Chassis</span><br><span class="line">_uuid               : 5de561d4-77e5-467d-8b69-ec064e949d8c</span><br><span class="line">chassis_name        : juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">external_ids        : &#123;&#125;</span><br><span class="line">name                : lrp-304cfe5a-d25c-41aa-bfbe-9ba60c7248c2_juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">options             : &#123;&#125;</span><br><span class="line">priority            : 1</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#找到neutron router的external_gateway_info和routerid=1a4bf8d2-c885-4af8-8b9c-061c7b27fa69</span><br><span class="line">$ openstack router show provider-router --fit-width |grep external_gateway_info</span><br><span class="line">| external_gateway_info   | &#123;&quot;network_id&quot;: &quot;1d7749fd-90c9-4f31-ada4-50f1845ca32e&quot;, &quot;external_fixed_ips&quot;: [&#123;&quot;subnet_id&quot;: &quot;4009f18b-eb09-4b74-a0ac-ce29537838a3&quot;, &quot;ip_address&quot;: &quot;10.5.152.46&quot;&#125;], &quot;enable_snat&quot;: true&#125;</span><br><span class="line"></span><br><span class="line">#找到与此neutron router对应的ovn router</span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl find Logical_Router name=neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69</span><br><span class="line">_uuid               : 89a12d3b-28ad-466b-97d6-971c669aee44</span><br><span class="line">enabled             : true</span><br><span class="line">external_ids        : &#123;&quot;neutron:availability_zone_hints&quot;=&quot;&quot;, &quot;neutron:gw_port_id&quot;=&quot;304cfe5a-d25c-41aa-bfbe-9ba60c7248c2&quot;, &quot;neutron:revision_number&quot;=&quot;5&quot;, &quot;neutron:router_name&quot;=provider-router&#125;</span><br><span class="line">load_balancer       : []</span><br><span class="line">name                : neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69</span><br><span class="line">nat                 : [6196ba5f-568b-486e-b7d6-add825d2f8f9, b1e5878e-95f0-45f7-b3a2-232b550be281, cb82abf5-55b5-4731-aa24-b993ac4621d9]</span><br><span class="line">options             : &#123;&#125;</span><br><span class="line">policies            : []</span><br><span class="line">ports               : [3aa3c7ce-ec0f-4d3e-9a3b-15ae7f750622, f964314d-ac73-4dda-a940-9c6910850b34, fb90ec4c-ac5e-4415-96e8-28ea18e53205]</span><br><span class="line">static_routes       : [cd814869-e8a0-4dde-9730-362d5d83a1d0]</span><br><span class="line"></span><br><span class="line">#从OVN NAT northbound表中验证SNAT</span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl find NAT type=snat</span><br><span class="line">_uuid               : b1e5878e-95f0-45f7-b3a2-232b550be281</span><br><span class="line">external_ids        : &#123;&#125;</span><br><span class="line">external_ip         : &quot;10.5.152.46&quot;</span><br><span class="line">external_mac        : []</span><br><span class="line">logical_ip          : &quot;192.168.22.0/24&quot;</span><br><span class="line">logical_port        : []</span><br><span class="line">options             : &#123;&#125;</span><br><span class="line">type                : snat</span><br><span class="line">_uuid               : 6196ba5f-568b-486e-b7d6-add825d2f8f9</span><br><span class="line">external_ids        : &#123;&#125;</span><br><span class="line">external_ip         : &quot;10.5.152.46&quot;</span><br><span class="line">external_mac        : []</span><br><span class="line">logical_ip          : &quot;192.168.21.0/24&quot;</span><br><span class="line">logical_port        : []</span><br><span class="line">options             : &#123;&#125;</span><br><span class="line">type                : snat</span><br><span class="line"></span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl find NAT type=dnat_and_snat</span><br><span class="line">_uuid               : cb82abf5-55b5-4731-aa24-b993ac4621d9</span><br><span class="line">external_ids        : &#123;&quot;neutron:fip_external_mac&quot;=&quot;fa:16:3e:b6:11:c5&quot;, &quot;neutron:fip_id&quot;=&quot;9bf3a29c-e7fe-4dca-8c59-a8809ae87db9&quot;, &quot;neutron:fip_port_id&quot;=&quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot;, &quot;neutron:revision_number&quot;=&quot;2&quot;, &quot;neutron:router_name&quot;=neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69&#125;</span><br><span class="line">external_ip         : &quot;10.5.150.115&quot;</span><br><span class="line">external_mac        : []</span><br><span class="line">logical_ip          : &quot;192.168.21.161&quot;</span><br><span class="line">logical_port        : &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot;</span><br><span class="line">options             : &#123;&#125;</span><br><span class="line">type                : dnat_and_snat</span><br><span class="line"></span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl lr-nat-list neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69</span><br><span class="line">TYPE             EXTERNAL_IP        LOGICAL_IP            EXTERNAL_MAC         LOGICAL_PORT</span><br><span class="line">dnat_and_snat    10.5.150.115       192.168.21.161</span><br><span class="line">snat             10.5.152.46        192.168.21.0/24</span><br><span class="line">snat             10.5.152.46        192.168.22.0/24</span><br></pre></td></tr></table></figure>
+<h2 id="OVN-Southbound-DB-L2-Logical-Flow-同网段大二层"><a href="#OVN-Southbound-DB-L2-Logical-Flow-同网段大二层" class="headerlink" title="OVN Southbound DB - L2 Logical Flow (同网段大二层)"></a>OVN Southbound DB - L2 Logical Flow (同网段大二层)</h2><p><img src="https://img-blog.csdnimg.cn/20210304190524530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ openstack port list</span><br><span class="line">+--------------------------------------+------+-------------------+-------------------------------------------------------------------------------+--------+</span><br><span class="line">| ID                                   | Name | MAC Address       | Fixed IP Addresses                                                            | Status |</span><br><span class="line">+--------------------------------------+------+-------------------+-------------------------------------------------------------------------------+--------+</span><br><span class="line">| 0a2c4125-791c-4824-837a-1a940e78673a |      | fa:16:3e:2d:ce:27 | ip_address=&apos;192.168.21.2&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos;   | DOWN   |</span><br><span class="line">| 13d0a59c-e25d-48f5-af68-ca18dbbf139d |      | fa:16:3e:54:36:ad | ip_address=&apos;192.168.21.161&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos; | ACTIVE |</span><br><span class="line">| 1ba6b6f4-140b-4bb7-a0fd-6d880cda47ff |      | fa:16:3e:d2:1d:ec | ip_address=&apos;192.168.22.47&apos;, subnet_id=&apos;450d6660-b862-4908-b501-4c8533211b23&apos;  | ACTIVE |</span><br><span class="line">| 304cfe5a-d25c-41aa-bfbe-9ba60c7248c2 |      | fa:16:3e:50:aa:2a | ip_address=&apos;10.5.152.46&apos;, subnet_id=&apos;4009f18b-eb09-4b74-a0ac-ce29537838a3&apos;    | ACTIVE |</span><br><span class="line">| 3999ba6e-7f80-499b-8dd8-fa87d0f4a63e |      | fa:16:3e:76:aa:1e | ip_address=&apos;192.168.22.2&apos;, subnet_id=&apos;450d6660-b862-4908-b501-4c8533211b23&apos;   | DOWN   |</span><br><span class="line">| 7a9ae9c2-3dd5-498b-9c4d-09a101fc3120 |      | fa:16:3e:b0:67:15 |                                                                               | DOWN   |</span><br><span class="line">| abe38147-7909-4708-ad02-d478e62e7ff1 |      | fa:16:3e:22:d6:67 | ip_address=&apos;192.168.21.1&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos;   | ACTIVE |</span><br><span class="line">| b236113a-86e2-4d69-8de8-f1086cc17a7b |      | fa:16:3e:93:b1:62 | ip_address=&apos;192.168.22.1&apos;, subnet_id=&apos;450d6660-b862-4908-b501-4c8533211b23&apos;   | ACTIVE |</span><br><span class="line">| cd9fefdb-00f0-4efd-950b-84ba32788571 |      | fa:16:3e:78:2f:34 | ip_address=&apos;192.168.21.3&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos;   | ACTIVE |</span><br><span class="line">| eb40953f-28f3-46f4-a28a-50786d1090b5 |      | fa:16:3e:b6:11:c5 | ip_address=&apos;10.5.150.115&apos;, subnet_id=&apos;4009f18b-eb09-4b74-a0ac-ce29537838a3&apos;   | N/A    |</span><br><span class="line">+--------------------------------------+------+-------------------+-------------------------------------------------------------------------------+--------+</span><br></pre></td></tr></table></figure>
+<p>对于vm1=i1(192.168.21.161)访问vm3=i3(192.168.21.3)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ openstack port list |grep -E &apos;192.168.21.3|192.168.21.161&apos;</span><br><span class="line">| 13d0a59c-e25d-48f5-af68-ca18dbbf139d |      | fa:16:3e:54:36:ad | ip_address=&apos;192.168.21.161&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos; | ACTIVE |</span><br><span class="line">| cd9fefdb-00f0-4efd-950b-84ba32788571 |      | fa:16:3e:78:2f:34 | ip_address=&apos;192.168.21.3&apos;, subnet_id=&apos;a1607cfe-3fa8-40a1-891e-776801f90342&apos;   | ACTIVE |</span><br></pre></td></tr></table></figure></p>
+<p>1, port security只是对从虚机进来的包检查它的IP与MAC是否对应<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-sbctl lflow-list |grep inport |grep 13d0a59c-e25d-48f5-af68-ca18dbbf139d |grep -E &apos;table=0&apos;</span><br><span class="line">  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot; &amp;&amp; eth.src == &#123;fa:16:3e:54:36:ad&#125;), action=(next;)</span><br></pre></td></tr></table></figure></p>
+<p>2,</p>
+<p>接下来的看这篇文章 -<br>OpenStack SDN With OVN (Part 2) - Network Engineering Analysis<br> <a href="https://networkop.co.uk/blog/2016/12/10/ovn-part2/" target="_blank" rel="external">https://networkop.co.uk/blog/2016/12/10/ovn-part2/</a></p>
+<h2 id="OVN-Southbound-DB-L3-Logical-Flow-南北"><a href="#OVN-Southbound-DB-L3-Logical-Flow-南北" class="headerlink" title="OVN Southbound DB - L3 Logical Flow(南北)"></a>OVN Southbound DB - L3 Logical Flow(南北)</h2><p><img src="https://img-blog.csdnimg.cn/2021030419364960.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>见　－　 <a href="https://networkop.co.uk/blog/2016/12/10/ovn-part2/" target="_blank" rel="external">https://networkop.co.uk/blog/2016/12/10/ovn-part2/</a></p>
+<h2 id="OVN-Southbound-DB-ovn-controller-Logical-Flow-不同网段东西"><a href="#OVN-Southbound-DB-ovn-controller-Logical-Flow-不同网段东西" class="headerlink" title="OVN Southbound DB - ovn controller Logical Flow (不同网段东西)"></a>OVN Southbound DB - ovn controller Logical Flow (不同网段东西)</h2><h2 id="通过ovn-trace调试OVN-Sourthbound-DB逻辑流"><a href="#通过ovn-trace调试OVN-Sourthbound-DB逻辑流" class="headerlink" title="通过ovn-trace调试OVN Sourthbound DB逻辑流"></a>通过ovn-trace调试OVN Sourthbound DB逻辑流</h2><p>ovn-trace能用来帮助调试或者理解上面的ovn南向逻辑流<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-sbctl lflow-list |grep -i datapath</span><br><span class="line">Datapath: &quot;neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69&quot; aka &quot;provider-router&quot; (587cfb5a-2797-405f-83f0-385211e2ad78)  Pipeline: ingress</span><br><span class="line">Datapath: &quot;neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69&quot; aka &quot;provider-router&quot; (587cfb5a-2797-405f-83f0-385211e2ad78)  Pipeline: egress</span><br><span class="line">Datapath: &quot;neutron-1d7749fd-90c9-4f31-ada4-50f1845ca32e&quot; aka &quot;ext_net&quot; (74359f20-4009-4c7e-afd8-3f3dd2423b77)  Pipeline: ingress</span><br><span class="line">Datapath: &quot;neutron-1d7749fd-90c9-4f31-ada4-50f1845ca32e&quot; aka &quot;ext_net&quot; (74359f20-4009-4c7e-afd8-3f3dd2423b77)  Pipeline: egress</span><br><span class="line">Datapath: &quot;neutron-b2f023b1-4a05-4443-b334-cf47e90a1567&quot; aka &quot;private&quot; (d0382b73-eb07-4314-a803-b957662f618c)  Pipeline: ingress</span><br><span class="line">Datapath: &quot;neutron-b2f023b1-4a05-4443-b334-cf47e90a1567&quot; aka &quot;private&quot; (d0382b73-eb07-4314-a803-b957662f618c)  Pipeline: egress</span><br><span class="line">Datapath: &quot;neutron-1c537bdd-5633-4263-a364-b14cecd4e92d&quot; aka &quot;private2&quot; (f1b85533-3f78-4f44-9785-996e725bb3bf)  Pipeline: ingress</span><br><span class="line">Datapath: &quot;neutron-1c537bdd-5633-4263-a364-b14cecd4e92d&quot; aka &quot;private2&quot; (f1b85533-3f78-4f44-9785-996e725bb3bf)  Pipeline: egress</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl show c6cc6d66-91af-4613-87aa-cbd770d8040d</span><br><span class="line">switch c6cc6d66-91af-4613-87aa-cbd770d8040d (neutron-b2f023b1-4a05-4443-b334-cf47e90a1567) (aka private)</span><br><span class="line">    port abe38147-7909-4708-ad02-d478e62e7ff1</span><br><span class="line">        type: router</span><br><span class="line">        router-port: lrp-abe38147-7909-4708-ad02-d478e62e7ff1</span><br><span class="line">    port 13d0a59c-e25d-48f5-af68-ca18dbbf139d</span><br><span class="line">        addresses: [&quot;fa:16:3e:54:36:ad 192.168.21.161&quot;]</span><br><span class="line">    port 0a2c4125-791c-4824-837a-1a940e78673a</span><br><span class="line">        type: localport</span><br><span class="line">        addresses: [&quot;fa:16:3e:2d:ce:27 192.168.21.2&quot;]</span><br><span class="line">    port cd9fefdb-00f0-4efd-950b-84ba32788571</span><br><span class="line">        addresses: [&quot;fa:16:3e:78:2f:34 192.168.21.3&quot;]</span><br></pre></td></tr></table></figure>
+<p>例如上面的192.168.21.161如何访问192.168.21.3的.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-trace --minimal neutron-b2f023b1-4a05-4443-b334-cf47e90a1567 &apos;inport == &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot; &amp;&amp; eth.src == fa:16:3e:54:36:ad &amp;&amp; eth.dst == fa:16:3e:78:2f:34&apos;</span><br><span class="line"># reg14=0x3,vlan_tci=0x0000,dl_src=fa:16:3e:54:36:ad,dl_dst=fa:16:3e:78:2f:34,dl_type=0x0000</span><br><span class="line">output(&quot;cd9fef&quot;);</span><br><span class="line"></span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-trace  neutron-b2f023b1-4a05-4443-b334-cf47e90a1567 &apos;inport == &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot; &amp;&amp; eth.src == fa:16:3e:54:36:ad &amp;&amp; eth.dst == fa:16:3e:78:2f:34&apos;</span><br><span class="line"># reg14=0x3,vlan_tci=0x0000,dl_src=fa:16:3e:54:36:ad,dl_dst=fa:16:3e:78:2f:34,dl_type=0x0000</span><br><span class="line"></span><br><span class="line">ingress(dp=&quot;private&quot;, inport=&quot;13d0a5&quot;)</span><br><span class="line">--------------------------------------</span><br><span class="line"> 0. ls_in_port_sec_l2 (ovn-northd.c:4516): inport == &quot;13d0a5&quot; &amp;&amp; eth.src == &#123;fa:16:3e:54:36:ad&#125;, priority 50, uuid 620c23f4</span><br><span class="line">    next;</span><br><span class="line">19. ls_in_l2_lkup (ovn-northd.c:6779): eth.dst == fa:16:3e:78:2f:34, priority 50, uuid cdf396b9</span><br><span class="line">    outport = &quot;cd9fef&quot;;</span><br><span class="line">    output;</span><br><span class="line"></span><br><span class="line">egress(dp=&quot;private&quot;, inport=&quot;13d0a5&quot;, outport=&quot;cd9fef&quot;)</span><br><span class="line">-------------------------------------------------------</span><br><span class="line"> 9. ls_out_port_sec_l2 (ovn-northd.c:4582): outport == &quot;cd9fef&quot; &amp;&amp; eth.dst == &#123;fa:16:3e:78:2f:34&#125;, priority 50, uuid b48eb374</span><br><span class="line">    output;</span><br><span class="line">    /* output to &quot;cd9fef&quot;, type &quot;&quot; */</span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-trace --summary neutron-b2f023b1-4a05-4443-b334-cf47e90a1567 &apos;inport == &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot; &amp;&amp; eth.src == fa:16:3e:54:36:ad &amp;&amp; eth.dst == fa:16:3e:78:2f:34&apos;</span><br><span class="line"># reg14=0x3,vlan_tci=0x0000,dl_src=fa:16:3e:54:36:ad,dl_dst=fa:16:3e:78:2f:34,dl_type=0x0000</span><br><span class="line">ingress(dp=&quot;private&quot;, inport=&quot;13d0a5&quot;) &#123;</span><br><span class="line">    next;</span><br><span class="line">    outport = &quot;cd9fef&quot;;</span><br><span class="line">    output;</span><br><span class="line">    egress(dp=&quot;private&quot;, inport=&quot;13d0a5&quot;, outport=&quot;cd9fef&quot;) &#123;</span><br><span class="line">        output;</span><br><span class="line">        /* output to &quot;cd9fef&quot;, type &quot;&quot; */;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>再例如如何访问8.8.8.8</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-trace --detail neutron-b2f023b1-4a05-4443-b334-cf47e90a1567 &apos;inport == &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot; &amp;&amp; eth.src == fa:16:3e:54:36:ad &amp;&amp; ip4.dst == 8.8.8.8&apos;</span><br><span class="line"># ip,reg14=0x3,vlan_tci=0x0000,dl_src=fa:16:3e:54:36:ad,dl_dst=00:00:00:00:00:00,nw_src=0.0.0.0,nw_dst=8.8.8.8,nw_proto=0,nw_tos=0,nw_ecn=0,nw_ttl=0</span><br><span class="line"></span><br><span class="line">ingress(dp=&quot;private&quot;, inport=&quot;13d0a5&quot;)</span><br><span class="line">--------------------------------------</span><br><span class="line"> 0. ls_in_port_sec_l2 (ovn-northd.c:4516): inport == &quot;13d0a5&quot; &amp;&amp; eth.src == &#123;fa:16:3e:54:36:ad&#125;, priority 50, uuid 620c23f4</span><br><span class="line">    next;</span><br><span class="line"> 1. ls_in_port_sec_ip (ovn-northd.c:4225): inport == &quot;13d0a5&quot; &amp;&amp; eth.src == fa:16:3e:54:36:ad &amp;&amp; ip, priority 80, uuid 47d5e0e8</span><br><span class="line">    drop;</span><br></pre></td></tr></table></figure>
+<h2 id="计算节点上的openflow-flow"><a href="#计算节点上的openflow-flow" class="headerlink" title="计算节点上的openflow flow"></a>计算节点上的openflow flow</h2><p>上面的都是OVN南向DB的逻辑流，直接到计算节点上的openflow通过“ovs-ofctl dump-flows br-int”查看，可通过“ovs-appctl ofproto/trace”来调试(ovn Logical Flow流过ovn-trace调试)，见：<a href="https://blog.russellbryant.net/2016/11/11/ovn-logical-flows-and-ovn-trace/" target="_blank" rel="external">https://blog.russellbryant.net/2016/11/11/ovn-logical-flows-and-ovn-trace/</a></p>
+<p>如：<br>sudo ovs-appctl ofproto/trace br-int in_port=6,arp,arp_spa=192.168.21.7,dl_src=fa:16:3e:c4:58:9c<br>可使用ovs-stat snap工具来方便生成ovs-appctl辅助命令，见：　<a href="https://blog.csdn.net/quqi99/article/details/111831695" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/111831695</a></p>
+<h2 id="附录-NB与SB表"><a href="#附录-NB与SB表" class="headerlink" title="附录 - NB与SB表"></a>附录 - NB与SB表</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">root@juju-c40d4b-ovn-8:~# ovn-nbctl show</span><br><span class="line">switch 38364b40-19f0-473f-8878-da50b652cc67 (neutron-1d7749fd-90c9-4f31-ada4-50f1845ca32e) (aka ext_net)</span><br><span class="line">    port 7a9ae9c2-3dd5-498b-9c4d-09a101fc3120</span><br><span class="line">        type: localport</span><br><span class="line">        addresses: [&quot;fa:16:3e:b0:67:15&quot;]</span><br><span class="line">    port 304cfe5a-d25c-41aa-bfbe-9ba60c7248c2</span><br><span class="line">        type: router</span><br><span class="line">        router-port: lrp-304cfe5a-d25c-41aa-bfbe-9ba60c7248c2</span><br><span class="line">    port provnet-5a77e708-5c1f-48dc-acdf-21e66d8e3be7</span><br><span class="line">        type: localnet</span><br><span class="line">        addresses: [&quot;unknown&quot;]</span><br><span class="line">switch c6cc6d66-91af-4613-87aa-cbd770d8040d (neutron-b2f023b1-4a05-4443-b334-cf47e90a1567) (aka private)</span><br><span class="line">    port abe38147-7909-4708-ad02-d478e62e7ff1</span><br><span class="line">        type: router</span><br><span class="line">        router-port: lrp-abe38147-7909-4708-ad02-d478e62e7ff1</span><br><span class="line">    port 13d0a59c-e25d-48f5-af68-ca18dbbf139d</span><br><span class="line">        addresses: [&quot;fa:16:3e:54:36:ad 192.168.21.161&quot;]</span><br><span class="line">    port 0a2c4125-791c-4824-837a-1a940e78673a</span><br><span class="line">        type: localport</span><br><span class="line">        addresses: [&quot;fa:16:3e:2d:ce:27 192.168.21.2&quot;]</span><br><span class="line">    port cd9fefdb-00f0-4efd-950b-84ba32788571</span><br><span class="line">        addresses: [&quot;fa:16:3e:78:2f:34 192.168.21.3&quot;]</span><br><span class="line">switch c53d2b6f-6721-4b97-bb8e-c62df9bd952b (neutron-1c537bdd-5633-4263-a364-b14cecd4e92d) (aka private2)</span><br><span class="line">    port 1ba6b6f4-140b-4bb7-a0fd-6d880cda47ff</span><br><span class="line">        addresses: [&quot;fa:16:3e:d2:1d:ec 192.168.22.47&quot;]</span><br><span class="line">    port b236113a-86e2-4d69-8de8-f1086cc17a7b</span><br><span class="line">        type: router</span><br><span class="line">        router-port: lrp-b236113a-86e2-4d69-8de8-f1086cc17a7b</span><br><span class="line">    port 3999ba6e-7f80-499b-8dd8-fa87d0f4a63e</span><br><span class="line">        type: localport</span><br><span class="line">        addresses: [&quot;fa:16:3e:76:aa:1e 192.168.22.2&quot;]</span><br><span class="line">router 89a12d3b-28ad-466b-97d6-971c669aee44 (neutron-1a4bf8d2-c885-4af8-8b9c-061c7b27fa69) (aka provider-router)</span><br><span class="line">    port lrp-abe38147-7909-4708-ad02-d478e62e7ff1</span><br><span class="line">        mac: &quot;fa:16:3e:22:d6:67&quot;</span><br><span class="line">        networks: [&quot;192.168.21.1/24&quot;]</span><br><span class="line">    port lrp-b236113a-86e2-4d69-8de8-f1086cc17a7b</span><br><span class="line">        mac: &quot;fa:16:3e:93:b1:62&quot;</span><br><span class="line">        networks: [&quot;192.168.22.1/24&quot;]</span><br><span class="line">    port lrp-304cfe5a-d25c-41aa-bfbe-9ba60c7248c2</span><br><span class="line">        mac: &quot;fa:16:3e:50:aa:2a&quot;</span><br><span class="line">        networks: [&quot;10.5.152.46/16&quot;]</span><br><span class="line">        gateway chassis: [juju-c40d4b-ovn-6.cloud.sts]</span><br><span class="line">    nat 6196ba5f-568b-486e-b7d6-add825d2f8f9</span><br><span class="line">        external ip: &quot;10.5.152.46&quot;</span><br><span class="line">        logical ip: &quot;192.168.21.0/24&quot;</span><br><span class="line">        type: &quot;snat&quot;</span><br><span class="line">    nat b1e5878e-95f0-45f7-b3a2-232b550be281</span><br><span class="line">        external ip: &quot;10.5.152.46&quot;</span><br><span class="line">        logical ip: &quot;192.168.22.0/24&quot;</span><br><span class="line">    nat cb82abf5-55b5-4731-aa24-b993ac4621d9</span><br><span class="line">        external ip: &quot;10.5.150.115&quot;</span><br><span class="line">        logical ip: &quot;192.168.21.161&quot;</span><br><span class="line">        type: &quot;dnat_and_snat&quot;</span><br><span class="line"></span><br><span class="line">root@juju-c40d4b-ovn-8:~# ovn-sbctl show</span><br><span class="line">Chassis juju-c40d4b-ovn-13.cloud.sts</span><br><span class="line">    hostname: juju-c40d4b-ovn-13.cloud.sts</span><br><span class="line">    Encap geneve</span><br><span class="line">        ip: &quot;10.5.0.191&quot;</span><br><span class="line">        options: &#123;csum=&quot;true&quot;&#125;</span><br><span class="line">    Port_Binding &quot;13d0a59c-e25d-48f5-af68-ca18dbbf139d&quot;</span><br><span class="line">Chassis juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">    hostname: juju-c40d4b-ovn-6.cloud.sts</span><br><span class="line">    Encap geneve</span><br><span class="line">        ip: &quot;10.5.0.178&quot;</span><br><span class="line">        options: &#123;csum=&quot;true&quot;&#125;</span><br><span class="line">    Port_Binding cr-lrp-304cfe5a-d25c-41aa-bfbe-9ba60c7248c2</span><br><span class="line">    Port_Binding &quot;cd9fefdb-00f0-4efd-950b-84ba32788571&quot;</span><br><span class="line">    Port_Binding &quot;1ba6b6f4-140b-4bb7-a0fd-6d880cda47ff&quot;</span><br></pre></td></tr></table></figure>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://networkop.co.uk/blog/2016/12/10/ovn-part2/" target="_blank" rel="external">https://networkop.co.uk/blog/2016/12/10/ovn-part2/</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/02/02/Fixing-thinkpad-bluetooth-keyboard/" rel="next" title="Fixing thinkpad bluetooth keyboard">
+                <i class="fa fa-chevron-left"></i> Fixing thinkpad bluetooth keyboard
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#测试环境"><span class="nav-number">1.</span> <span class="nav-text">测试环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-Northbound-DB与Neutron的概念映射"><span class="nav-number">2.</span> <span class="nav-text">OVN Northbound DB与Neutron的概念映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#举例查看OVN-Northbound-DB中和L3-NAT相关的数据"><span class="nav-number">3.</span> <span class="nav-text">举例查看OVN Northbound DB中和L3 NAT相关的数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-Southbound-DB-L2-Logical-Flow-同网段大二层"><span class="nav-number">4.</span> <span class="nav-text">OVN Southbound DB - L2 Logical Flow (同网段大二层)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-Southbound-DB-L3-Logical-Flow-南北"><span class="nav-number">5.</span> <span class="nav-text">OVN Southbound DB - L3 Logical Flow(南北)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVN-Southbound-DB-ovn-controller-Logical-Flow-不同网段东西"><span class="nav-number">6.</span> <span class="nav-text">OVN Southbound DB - ovn controller Logical Flow (不同网段东西)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过ovn-trace调试OVN-Sourthbound-DB逻辑流"><span class="nav-number">7.</span> <span class="nav-text">通过ovn-trace调试OVN Sourthbound DB逻辑流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算节点上的openflow-flow"><span class="nav-number">8.</span> <span class="nav-text">计算节点上的openflow flow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录-NB与SB表"><span class="nav-number">9.</span> <span class="nav-text">附录 - NB与SB表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reference"><span class="nav-number">10.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -217,6 +217,156 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/23/ebpf-study/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/23/ebpf-study/" itemprop="url">ebpf study</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-23T09:38:20+08:00">
+                2021-01-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2020-01-13<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<h2 id="动态追踪工具比较"><a href="#动态追踪工具比较" class="headerlink" title="动态追踪工具比较"></a>动态追踪工具比较</h2><p>为了追踪内核或用户空间的事件，Dtrace和SystemTap都会把用户传入的追踪处理函数（一般称为 Action），关联到被称为探针的检测点上。这些探针，实际上也就是各种动态追踪技术所依赖的事件源。<br>在这些探针的基础上，Linux 也提供了一系列的动态追踪机制，比如内核内的ftrace、perf、eBPF等。内核外的SystemTap等。</p>
+<ul>
+<li>ftrace，侧重于函数跟踪，但最早用于函数跟踪，现在又扩展支持了各种事件跟踪功能。ftrace通过debugfs以普通文件的形式，向用户空间提供访问接口。这样，不需要额外的工具，你就可以通过挂载点（通常为/sys/kernel/debug/tracing 目录）内的文件读写，来跟 ftrace 交互，跟踪内核或者应用程序的运行事件。</li>
+<li>perf,侧重于性能分析，是一种最简单的静态跟踪机制。通过perf，应用程序可以利用PMU、tracepoint和内核中的计数器来进行性能统计。</li>
+<li>eBPF则在BPFBerkeley Packet Filter）的基础上扩展而来，不仅支持事件跟踪机制，还可以通过自定义的 BPF代码（使用 C 语言）来自由扩展。所以，eBPF实际上就是常驻于内核的运行时，可以说就是Linux版的DTrace。</li>
+<li>SystemTap不像Dtrace并没有常驻内核的运行时，它需要先把脚本编译为内核模块，然后再插入到内核中执行。这也导致SystemTap启动比较缓慢，并且依赖于完整的调试符号表。ftrace和perf的功能已经比较丰富了，不过，它们有一个共同的缺陷，那就是它们只是DSL不够灵活，没法像DTrace那样通过脚本自由扩展。eBPF就是Linux版的 DTrace，可以通过C语言自由扩展（这些扩展通过 LLVM 转换为 BPF字节码后，加载到内核中执行）。</li>
+<li>SystemTap, 在eBPF出现之前，SystemTap是最接近DTrace的动态追踪机制，不过在很长时间都游离于内核之外，且是以内核模块运行。</li>
+<li>sysdig，主要用于容器的动态追踪，sysdig = strace + tcpdump + htop + iftop + lsof + docker inspect + ebpf<h2 id="常用动态追踪场景和工具"><a href="#常用动态追踪场景和工具" class="headerlink" title="常用动态追踪场景和工具"></a>常用动态追踪场景和工具</h2></li>
+<li>内核函数跟踪: ftrace, trace-cmd</li>
+<li>CPU性能分析和堆栈解析： perf, 火焰图</li>
+<li>4.x内核跟踪内核或应用程序函数或事件： ebpf, bcctools, systemtap</li>
+<li>Docker容器应用性能分析: sysdig</li>
+</ul>
+<h2 id="libbcc"><a href="#libbcc" class="headerlink" title="libbcc"></a>libbcc</h2><p>libbcc(sudo apt install bpfcc-tools)和libbpf库是bcc的前身, 这两个库提供了使用BPF程序对事件进行观测的函数. bpftrace是另一个基于DSL的前端工具。<br><img src="https://img-blog.csdnimg.cn/2021012309290472.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>且BCC源代码库中提供了70多个BPF现成工具:</p>
+<p><img src="https://img-blog.csdnimg.cn/20210123092923580.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"><br>例如（详见 - <a href="https://www.howtoing.com/bcc-best-linux-performance-monitoring-tools/" target="_blank" rel="external">https://www.howtoing.com/bcc-best-linux-performance-monitoring-tools/</a> )：</p>
+<ul>
+<li>execsnoop -t 通过跟踪execve系统调用可以知道一个程序正在调用其他哪些进程。</li>
+<li>statsnoop, 跟踪stat系统调用</li>
+<li>biotop, biosnoop</li>
+<li>tcpconnect, 跟踪tcp连接.</li>
+</ul>
+<h2 id="BPFTool"><a href="#BPFTool" class="headerlink" title="BPFTool"></a>BPFTool</h2><p>BPFTool是一个管理BPF程序和映射的内核工具。下面讲解如何安装它。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">#install hwe kernel</span><br><span class="line">sudo add-apt-repository ppa:canonical-kernel-team/ppa</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt install linux-image-generic-hwe-20.04</span><br><span class="line">sudo reboot</span><br><span class="line"></span><br><span class="line">#install bcc-tools - on bionic</span><br><span class="line">sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD</span><br><span class="line">echo &quot;deb https://repo.iovisor.org/apt/$(lsb_release -cs) $(lsb_release -cs) main&quot; | sudo tee /etc/apt/sources.list.d/iovisor.list</span><br><span class="line">sudo apt update</span><br><span class="line">sudo apt install bcc-tools libbcc-examples python3-bcc</span><br><span class="line">ls /usr/share/bcc/tools</span><br><span class="line"></span><br><span class="line"># install bcc-tools - on focal, at the moment the iovisor doesn’t have a release for focal, so you have to use bionic</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/bcc-lua_0.10.0-34.git.6836168f_all.deb</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/bcc-tools_0.10.0-34.git.6836168f_all.deb</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/python-bcc_0.10.0-34.git.6836168f_all.deb</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/python3-bcc_0.10.0-34.git.6836168f_all.deb</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/libbcc-examples_0.10.0-34.git.6836168f_amd64.deb</span><br><span class="line">wget https://repo.iovisor.org/apt/bionic/pool/main/b/bcc/libbcc_0.10.0-34.git.6836168f_all.deb</span><br><span class="line">sudo apt install ./libbcc_0.10.0-34.git.6836168f_all.deb -y</span><br><span class="line">sudo apt install ./python-bcc_0.10.0-34.git.6836168f_all.deb -y</span><br><span class="line">sudo apt install ./bcc-tools_0.10.0-34.git.6836168f_all.deb -y</span><br><span class="line">sudo apt install ./bcc-lua_0.10.0-34.git.6836168f_all.deb -y</span><br><span class="line">sudo apt install ./libbcc-examples_0.10.0-34.git.6836168f_amd64.deb -y</span><br><span class="line"></span><br><span class="line">sudo apt install linux-headers-$(uname -r) linux-tools-$(uname -r) -y</span><br><span class="line"></span><br><span class="line">#install hwe kernel source linux-source-5.4.0 and build bpftool (bpftool is for viewing and manipulating BPF objects)</span><br><span class="line">sudo apt install build-essential binutils-dev libelf-dev -y</span><br><span class="line">#unment deb-src line in /etc/apt/sources.list.d/canonical-kernel-team-ubuntu-ppa-bionic.list</span><br><span class="line">VER=$(uname -r |awk -F &quot;-&quot; &apos;&#123;print $1&#125;&apos;)</span><br><span class="line">sudo apt-cache policy linux-source-$VER</span><br><span class="line">sudo apt install linux-source-$VER  #linux-source-5.4.0</span><br><span class="line">mkdir -p /bak/build/hwe &amp;&amp; cd /bak/build/hwe</span><br><span class="line">cp /usr/src/linux-source-$&#123;VER&#125;/linux-source-$&#123;VER&#125;.tar.bz2 .</span><br><span class="line">tar vxf linux-source-$&#123;VER&#125;.tar.bz2</span><br><span class="line">make -C ./linux-source-$&#123;VER&#125;/tools/bpf/bpftool</span><br><span class="line">sudo cp ./linux-source-$&#123;VER&#125;/tools/bpf/bpftool/bpftool /usr/local/bin/</span><br><span class="line">bpftool --version</span><br><span class="line"></span><br><span class="line">#DEMO</span><br><span class="line">#The perf subcommand shows BPF programs attached via perf_event_open()</span><br><span class="line">sudo bpftool perf</span><br><span class="line">#The prog show subcommand lists all programs (not just those that are perf_event_open() based)</span><br><span class="line">sudo bpftool prog show</span><br><span class="line">#Each BPF program can be printed/dumped via it&apos;s ID</span><br><span class="line">#the xlated mode prints the BPF instructions translated to assembly, linum mode can used to included source file num info.</span><br><span class="line">#opcodes modifier can be used to include the BPF instruction opcodes</span><br><span class="line">#visual modifier can be used to emit control flow graph info in DOT/GraphViz format (dot -Tpng -Elen=2.5 xx.dot -o xx.png)</span><br><span class="line">sudo bpftool prog dump xlated id &lt;ID&gt; linum</span><br><span class="line">#jited subcommand shows the machine code for the processor that is executed</span><br><span class="line">sudo bpftool prog dump jited id &lt;ID&gt;</span><br><span class="line">#while tcpdump can emit BPF instructions with -d, bpftrace can do the same thing with -v</span><br><span class="line">sudo tcpdump -nni eth0 &apos;tcp port 80&apos; -d &gt; test.bt</span><br><span class="line">#this file must be saved at home dir to avoid &apos;No such file or directory&apos; when using snap</span><br><span class="line">sudo /snap/bin/bpftrace -v test.bt</span><br></pre></td></tr></table></figure></p>
+<h2 id="Running-ebpf-examples-and-writing-the-pure-C-ebpf"><a href="#Running-ebpf-examples-and-writing-the-pure-C-ebpf" class="headerlink" title="Running ebpf examples and writing the pure C ebpf"></a>Running ebpf examples and writing the pure C ebpf</h2><p>ebpf是bpf的扩展，相比bpf添加了更多的寄存器，特别充许通过mapping将事件/数据(FD)从内核态往用户态或在ebpf程序之前共享从而扩大的bpf的使用场景。<br><img src="https://img-blog.csdnimg.cn/20210123093623710.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">#good doc - https://www.ebpf.top/post/ebpf_c_env/</span><br><span class="line">sudo apt install libncurses5-dev build-essential git make libelf-dev clang llvm strace tar bpfcc-tools linux-headers-$(uname -r) gcc-multilib  flex  bison libssl-dev binutils-dev -y</span><br><span class="line">VER=$(uname -r |awk -F &quot;-&quot; &apos;&#123;print $1&#125;&apos;)</span><br><span class="line">mkdir -p /bak/build/kernel &amp;&amp; cd /bak/build/kernel</span><br><span class="line">cp /usr/src/linux-source-$&#123;VER&#125;/linux-source-$&#123;VER&#125;.tar.bz2 .</span><br><span class="line">tar vxf linux-source-$&#123;VER&#125;.tar.bz2</span><br><span class="line">cd linux-source-$&#123;VER&#125;</span><br><span class="line">#make defconfig &amp;&amp; make menuconfig</span><br><span class="line">cp -v /boot/config-$(uname -r) .config</span><br><span class="line">make headers_install</span><br><span class="line">make scripts  #fix the error &apos;scripts/mod/modpost: not found&apos;</span><br><span class="line"># for the error &apos;./include/linux/spinlock.h:60:10: fatal error: &apos;asm/mmiowb.h&apos; file not found&apos;</span><br><span class="line">sudo find / -name &apos;mmiowb.h&apos;</span><br><span class="line">#mkdir -p include/asm</span><br><span class="line">#sudo cp /usr/src/linux-headers-5.4.0-60-generic/arch/x86/include/generated/asm/* include/asm</span><br><span class="line">#compile bpf exmaple</span><br><span class="line">#make oldconfig &amp;&amp; make prepare</span><br><span class="line">#make M=samples/bpf clean</span><br><span class="line">make M=samples/bpf</span><br><span class="line">ls samples/bpf/</span><br><span class="line"></span><br><span class="line">cd /bak/build/kernel/linux-source-5.4.0/samples/bpf</span><br><span class="line">cat &lt;&lt; EOF | sudo tee hello_kern.c</span><br><span class="line">#include &lt;linux/bpf.h&gt;</span><br><span class="line">#define SEC(NAME) __attribute__((section(NAME), used))</span><br><span class="line"></span><br><span class="line">SEC(&quot;tracepoint/syscalls/sys_enter_execve&quot;)</span><br><span class="line">int bpf_prog(void *ctx)&#123;</span><br><span class="line">	char msg[] = &quot;Hello BPF!\n&quot;;</span><br><span class="line">	bpf_trace_printk(msg, sizeof(msg));</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">char _license[] SEC(&quot;license&quot;) = &quot;GPL&quot;;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF | sudo tee hello_user.c</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &quot;bpf_load.h&quot;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv)&#123;</span><br><span class="line">	if(load_bpf_file(&quot;hello_kern.o&quot;)!=0)&#123;</span><br><span class="line">		printf(&quot;The kernel didn&apos;t load BPF program\n&quot;);</span><br><span class="line">		return -1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	read_trace_pipe();</span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">#use Makefile to compile them</span><br><span class="line">vim /bak/build/kernel/linux-source-5.4.0/samples/bpf/Makefile</span><br><span class="line">hostprogs-y += hello</span><br><span class="line">hello-objs := bpf_load.o hello_user.o</span><br><span class="line">always += hello_kern.o</span><br><span class="line"></span><br><span class="line">cd ../../ &amp;&amp; make M=samples/bpf V=1</span><br><span class="line">llvm-objdump -S -no-show-raw-insn hello_kern.o</span><br><span class="line">cd sample/bfp &amp;&amp; ./hello</span><br><span class="line">hua@node1:/bak/build/kernel/linux-source-5.4.0$ ls samples/bpf/hello*</span><br><span class="line">samples/bpf/hello  samples/bpf/hello_kern.c  samples/bpf/hello_kern.o  samples/bpf/hello_user.c  samples/bpf/hello_user.o</span><br><span class="line"></span><br><span class="line">#or use clang and gcc to compile instead of Makefile</span><br><span class="line">clang -I/usr/src/linux-headers-$(uname -r)/include -I/usr/include/x86_64-linux-gnu \</span><br><span class="line">-O2 -target bpf  -c hello_kern.c -o hello_kern.o</span><br><span class="line">gcc \</span><br><span class="line">    -I /usr/include/x86_64-linux-gnu \</span><br><span class="line">    -I /usr/src/linux-headers-$(uname -r)/arch/x86/include/generated \</span><br><span class="line">    -I /usr/src/linux-headers-$(uname -r)/include \</span><br><span class="line">    -I /usr/src/linux-headers-$(uname -r)/arch/x86/include  \</span><br><span class="line">    -O2 -Wall -g -lelf -lbpf \</span><br><span class="line">    -o hello_user hello_user.c bpf_load.c</span><br></pre></td></tr></table></figure>
+<h2 id="Using-BPF-USDT-to-trace-Python-OpenStack"><a href="#Using-BPF-USDT-to-trace-Python-OpenStack" class="headerlink" title="Using BPF USDT to trace Python/OpenStack"></a>Using BPF USDT to trace Python/OpenStack</h2><p>see <a href="https://zhhuabj.blog.csdn.net/article/details/112633898" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/112633898</a></p>
+<h2 id="BPFTrace-example-bcache-debug"><a href="#BPFTrace-example-bcache-debug" class="headerlink" title="BPFTrace example - bcache debug"></a>BPFTrace example - bcache debug</h2><p><img src="https://img-blog.csdnimg.cn/20210123093257219.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<p>详见：<a href="https://blog.csdn.net/loy_184548/article/details/104624854" target="_blank" rel="external">https://blog.csdn.net/loy_184548/article/details/104624854</a><br>BPFTrace充许你使用DSL编写BPF程序，是一个类似于DTrace的替代品，与用C语言或其他工具直接编写BPF程序相比，使用BPFTrace的优势之一是它提供了很多内置功能，无须自己实现，比如聚合信息和创建直方图。另一方面，它的编程能力有限。<br>下面的@代表映射<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; EOF | sudo tee bcache_io_lat.bt</span><br><span class="line">#include &lt;linux/bio.h&gt;</span><br><span class="line"></span><br><span class="line">kprobe:cached_dev_make_request</span><br><span class="line">&#123;</span><br><span class="line">   @start[arg1] = nsecs;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">kprobe:bio_endio /@start[arg0]/</span><br><span class="line">&#123;</span><br><span class="line"> if(((struct bio *)arg0)-&gt;bi_opf &amp; 1) &#123;</span><br><span class="line">    @write = hist(nsecs - @start[arg0]); delete(@start[arg0]);</span><br><span class="line"> &#125;</span><br><span class="line"> else &#123;</span><br><span class="line">    @read = hist(nsecs - @start[arg0]); delete(@start[arg0]);</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line">sudo systemctl restart apparmor</span><br><span class="line">sudo dpkg-reconfigure apparmor</span><br><span class="line">sudo snap install bpftrace --devmode</span><br><span class="line">sudo snap connect bpftrace:system-trace</span><br><span class="line">#this file must be saved at home dir to avoid &apos;No such file or directory&apos; when using snap</span><br><span class="line">sudo /snap/bin/bpftrace bcache_io_lat.bt</span><br></pre></td></tr></table></figure></p>
+<h2 id="XDP"><a href="#XDP" class="headerlink" title="XDP"></a>XDP</h2><p>XDP使用于ACL，在网络包进入网卡还未进行内核前就判断是ACCEPT还是TROP还是REDIRECT.<br><img src="https://img-blog.csdnimg.cn/2021012309374782.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3F1cWk5OQ==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<h2 id="sysdig"><a href="#sysdig" class="headerlink" title="sysdig"></a>sysdig</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#https://sysdig.com/blog/let-light-sysdig-adds-container-visibility/</span><br><span class="line">#https://sysdig.com/blog/digging-into-kubernetes-with-sysdig/</span><br><span class="line">sudo apt install linux-headers-$(uname -r) sysdig -y</span><br><span class="line">sudo sysdig -c lscontainers</span><br><span class="line">sudo sysdig -c topcontainers_cpu -pc  #cpu</span><br><span class="line">sudo sysdig -c topprocs_net -pc       #net</span><br><span class="line">sudo sysdig -pc -c topconns           #socket</span><br><span class="line">sudo sysdig -c topcontainers_file     #disk</span><br><span class="line">sudo sysdig -pc -c topprocs_file      #disk io</span><br><span class="line">#new connection on container calico-node (sudo ctr c ls)</span><br><span class="line">sudo sysdig -p&quot;%fd.name&quot; container.name=calico-node and evt.type=accept</span><br><span class="line">#send and receive data on 80 port of container calico-node</span><br><span class="line">sudo sysdig -A -cecho_fds container.name=calico-node and fd.port=80</span><br><span class="line">#view the activity of a file (regardless of which container it belongs to)</span><br><span class="line">sudo sysdig -pc -c echo_fds &quot;fd.name=/etc/passwd&quot;</span><br><span class="line">#io spectrogram</span><br><span class="line">sudo sysdig -c spectrogram fd.type=file and container.name=calico-node</span><br><span class="line">#data traffic between containers</span><br><span class="line">#kubectl exec -ti ubuntu-debug-794979f648-4dj8w ping 10.1.94.7</span><br><span class="line">sudo sysdig -pc -A -c echo_fds &quot;fd.ip=10.1.3.14 and fd.ip=10.1.94.7&quot;</span><br><span class="line"></span><br><span class="line">sysdig -l | grep k8s</span><br><span class="line">sudo modprobe sysdig-probe &amp;&amp; ls /dev/sysdig0</span><br><span class="line">sudo sysdig -k https://10.5.0.104:443 -chttptop k8s.svc.name=postgresql</span><br></pre></td></tr></table></figure>
+<h2 id="appedix-trace-cmd-check-if-sequential-cutoff-was-hit"><a href="#appedix-trace-cmd-check-if-sequential-cutoff-was-hit" class="headerlink" title="appedix - trace-cmd - check if sequential_cutoff was hit"></a>appedix - trace-cmd - check if sequential_cutoff was hit</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo trace-cmd record -e bcache:bcache_bypass_sequential</span><br><span class="line">sudo trace-cmd report &gt; output.file</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -260,7 +410,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-21T14:57:58+08:00">
                 2021-01-21
@@ -385,7 +535,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:58:40+08:00">
                 2021-01-16
@@ -643,7 +793,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:57:18+08:00">
                 2021-01-16
@@ -766,7 +916,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:56:00+08:00">
                 2021-01-16
@@ -902,7 +1052,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:54:49+08:00">
                 2021-01-16
@@ -1082,7 +1232,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-16T18:45:24+08:00">
                 2021-01-16
@@ -1237,7 +1387,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-15T19:11:40+08:00">
                 2021-01-15
@@ -1394,7 +1544,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-14T20:22:20+08:00">
                 2021-01-14
@@ -1535,7 +1685,7 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-30T12:13:20+08:00">
                 2020-12-30
@@ -1683,169 +1833,11 @@ ffff881f136edfb8:  00000000026029c0 0000000002603e80   .)</code>……&gt;`…..
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/28/回忆pdb基础/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/28/回忆pdb基础/" itemprop="url">回忆pdb基础</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-12-28T10:06:02+08:00">
-                2020-12-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>作者：张华  发表于：2015-05-05<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>人啊，总要不断地与记忆作斗争。</p>
-<p>1, 加-g参数编译可执行性文件, 如果没有-g，你将看不见程序的函数名、变量名，所代替的全是运行时的内存地址。<br>   cc -g test.c -o test<br>   静态检查程序错误，splint test.c<br>   单元测试可使用CUnit, gcc -o test.o -I /usr/local/include/CUnit -L /usr/local/lib/ -g testcase.c -l cunit ./test.o</p>
-<p>   若是要调试master可以下载源码用./configure前加上CFLAGS=”-Wall -O2 -g”即可编译。若是ubuntu repo里已经有的package，则直接安装dbg即可编译(没有dbg包时可次优选择dbgsym包）。<br>2, 启动gdb, gdb test<br>   启动GDB的方法有以下几种：<br>    a、gdb <program><br>       program也就是你的执行文件，一般在当然目录下。<br>    b、gdb <program> core<br>       用gdb同时调试一个运行程序和core文件，core是程序非法执行后core dump后产生的文件。<br>       如果产生coredump呢？ 需要执ulimit -c unlimited才可以(缺省是coredump文件大小是0字节所以它不生成）。<br>       并不是所有的异常都会生成coredump文件，附录1是一个运行异常时会产生coredump文件的例子。<br>       运行后coredump文件产生在当前文件夹的core文件中。分析它： gdb ./test ./core, 如下显示了是哪一句出了错误：<br>       (gdb) bt</program></program></p>
-<pre><code>   #0  0x000000000040054d in core_dump () at test.c:5
-   #1  0x0000000000400585 in main () at test.c:10
-c、gdb &lt;program&gt; &lt;PID&gt;
-   通过sudo gdb启动gdb后直接attach &lt;PID&gt;可以attach到正在运行的程序，当然程序得加-g参数编译的。
-</code></pre><p>3, 一些常用gdb命令<br>   l, 列出源代码</p>
-<p>   break 16, 第16行设置断点<br>   b fn1 if a&gt;b, 条件设置断点<br>   break func, 在函数的入口处设置断点<br>   delete/disable/enable/clear 16, 删除第16个断点<br>   delete breakpoints，清除所有断点<br>   info break, 查看断点<br>   r, 运行程序，到断点处处时会停止运行等待用户输入（run), 在gdb中正常结束的程序也可以用此命令重新运行<br>   n, 单步执行(next)<br>   s, 进入函数(step)<br>   c, 继续运行(continue), 到下一个断点处<br>   p <variable>, 打印变量的值<br>   set var i=1, 修改变量的值<br>   info registers, 查看寄存器<br>   bt, 查看函数堆栈<br>   call 函数(参数),调用程序中可见的函数，并传递“参数”，如：call gdb_test(55)<br>   display 表达式：在单步运行时将非常有用，它将在每次单步进行指令后，紧接着输出被设置的表达式及值。如： display a<br>   watch 表达式：设置一个监视点，一旦被监视的“表达式”的值改变，gdb将强行终止正在被调试的程序。如：watch a<br>   q, 退出<br>4, 使用GDB调试多进程程序, <a href="https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/" target="_blank" rel="external">https://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/</a></variable></p>
-<p>5, 使用cgdb可以很方便的查看代码。<br>6, 性能分析, 比如哪个函数调用了多少次，被谁调用了， 平均每次调用花费多少时间等。这时候要用gprof,gprof是分析profile输出的。<br>   要想执行时输出profile文件编译时要加-pg选项, gcc -o helloworld.o -pg -g helloworld.c<br>   执行上面语句后会在当前目录下生成gmon.out文件, 然后用gprof去读取并显示出来，gprof -b -A -p -q helloworld.o gmon.out &gt;prof_info.txt </p>
-<p>7, gdb也可以调试go语言的程序，采用”go build -gcflags “-N -l” test.go“编译，再’gdb test”即可。可能相比于C会多出一个‘info goroutines’命令。</p>
-<p>附录1, 产生coredump文件的例子</p>
-<p>#include <stdio.h><br>int core_dump() {<br>    int i;<br>    for (i = 5; i &gt;= 0; i–) {<br>        printf(“(%d, %d)\n”, i, 100 / i);<br>    }<br>    return 0;<br>}<br>int main() {<br>    core_dump();<br>    return 0;<br>}</stdio.h></p>
-<p>附录2, 如何分析CoreDump文件</p>
-<p>1, 安装dbgsym，注意安装的是librados2-dbg librbd1-dbg， 而不是librados2-dbgsym librbd1-dbgsym. （注意：有dbg内建包时优先安装dbg包，没有时才安装dbgsym非内建包，这点异常重要，否则会造成gdb调试时缺失符号表，这个网页有解释： <a href="https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）" target="_blank" rel="external">https://wiki.ubuntu.com/DebuggingProgramCrash#Debug_Symbol_Packages）</a><br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs) main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>echo “deb <a href="http://ddebs.ubuntu.com" target="_blank" rel="external">http://ddebs.ubuntu.com</a> $(lsb_release -cs)-updates main restricted universe multiverse” | sudo tee -a /etc/apt/sources.list.d/debuginfo_debs.list<br>sudo apt-key adv –keyserver keyserver.ubuntu.com –recv-keys C8CAB6595FDFF622<br>sudo apt update<br>sudo apt-get install qemu-system-x86-dbgsym librados2-dbg librbd1-dbg</p>
-<p>For example: /usr/lib/x86_64-linux-gnu/libstdc++.so.6 and the debugging version is at /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6</p>
-<p>(gdb) set debug-file-directory /usr/lib/x86_64-linux-gnu/debug/</p>
-<p>(gdb) directory /xxx/qemu/qemu-2.5+dfsg     #sometimes directory doesn’t take effect, so use the following line</p>
-<p>(gdb) set substitute-path /build/qemu-e2kucK/qemu-2.5+dfsg /xxx/qemu/qemu-2.5+dfsg</p>
-<p>(gdb) l</p>
-<p>(gdb) info sharedlibrary</p>
-<p>2, 解压 - apport-unpack _usr_bin_qemu-system-x86_64.64055.crash ./tmp/</p>
-<p>3, 分析CoreDump (确保/usr/bin/qemu-system-x86_64与版本与之一致）<br>   gdb /usr/bin/qemu-system-x86_64 ./tmp/CoreDump</p>
-<p>4, 查看堆栈<br>(gdb) bt 1</p>
-<p>#0  malloc_consolidate (av=av@entry=0x7fa810000020) at malloc.c:4175</p>
-<p>5, 查看汇编，上面的malloc.c:4175可能由于编译器优化和源代码对不上，所以仍然需要通过编译代码一一比对<br>(gdb) p $rip<br>$5 = (void (*)()) 0x7fa84c275470 <malloc_consolidate+336><br>(gdb) x/2gi $rip<br>   0x7fa84c275320 <malloc_consolidate>: cmpq   $0x0,0x3484d0(%rip)        # 0x7fa84c5bd7f8 <global_max_fast><br>   0x7fa84c275328 <malloc_consolidate+8>: je     0x7fa84c275a8b <malloc_consolidate+1899></malloc_consolidate+1899></malloc_consolidate+8></global_max_fast></malloc_consolidate></malloc_consolidate+336></p>
-<p>6, 采用汇编理解出错代码，结合源代码辅助分析（因为编译器会优化代码，所以不能完全相信CoreDump中的行号）</p>
-<p>注：UCA缺乏debug symbol，例如为trusty上的mitaka uca的qemu包构建debug symbol，因为都是ppa编译的其编译器版本及设置都差不多这样编译出的debug symbol还可以近似地去用。<br>1, PPA中有”Build debug symbols”的选项（<a href="https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在" target="_blank" rel="external">https://launchpad.net/~zhhuabj/+archive/ubuntu/trusty-mitaka-sru/+edit），再在</a> “Add PPA dependency”里添加”~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging”</p>
-<p>2, 进这个页面(<a href="https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View" target="_blank" rel="external">https://launchpad.net/~ubuntu-cloud-archive/+archive/ubuntu/mitaka-staging），点击&quot;View</a> package details” -&gt; “copy packages”，在搜索框输入qemu并同时将其后的下拉列表从Published改为Superseded这样就可以选择客户所用的qemu版本。</p>
-<h1 id="trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging"><a href="#trusty-doesn’t-support-mitaka-uca-sudo-add-apt-repository-cloud-archive-mitaka-but-it-supports-mitaka-staging" class="headerlink" title="trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging"></a>trusty doesn’t support mitaka uca (sudo add-apt-repository cloud-archive:mitaka), but it supports mitaka-staging</h1><p>sudo add-apt-repository ppa:ubuntu-cloud-archive/mitaka-staging</p>
-<p>sudo add-apt-repository ppa:xxxx</p>
-<p>sudo apt update</p>
-<p>sudo apt install qemu-system-x86=1:2.5+dfsg-5ubuntu10.16~cloud0</p>
-<h1 id="seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget"><a href="#seems-can’t-use-‘apt-cache’-to-qeury-dbgsym-in-PPA-so-change-to-use-wget" class="headerlink" title="seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget"></a>seems can’t use ‘apt-cache’ to qeury dbgsym in PPA, so change to use wget</h1><p>wget <a href="http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb" target="_blank" rel="external">http://ppa.launchpad.net/xxx/sf177500/ubuntu/pool/main/q/qemu/qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb</a><br>sudo dpkg -i qemu-system-x86-dbgsym_2.5+dfsg-5ubuntu10.16~cloud0_amd64.ddeb<br>sudo apt install qemu-system-x86-dbgsym=1:2.5+dfsg-5ubuntu10.16~cloud0<br>gdb /usr/bin/qemu-system-x86_64 10Apr18-instance-000a2f60-qemu-system-x86_64.core.2003745</p>
-<p>#GDB调试<br>sysctl kernel.core_pattern<br>sudo service apport start force_start=1 enabled=1<br>grep enabled /etc/default/apport<br>sudo killall -SIGSEGV ovs-vswitchd<br>sudo cat /var/log/apport.log<br>sudo apt install openvswitch-dbg cgdb</p>
-<p>#cgdb $(which ovs-vswitchd) $(pidof ovs-vswitchd)<br>cgdb ovs-vswitchd /var/crash/_usr_lib_openvswitch-switch_ovs-vswitchd.0.crash</p>
-<p>但是上面killall生成coredump的方法会让ovs停掉，下面的不会：</p>
-<p>sudo apt install gdb openvswitch-dbg -y<br>sudo gcore <code>pidof ovs-vswitchd</code><br>sudo gdb –core ./core.16524 /usr/sbin/ovs-vswitchd</p>
-<p>sudo tail -f /var/log/openvswitch/ovs-vswitchd.log | awk ‘/blocked 1000 ms waiting for main to quiesce/ {system(“sudo /usr/bin/gcore <code>pidof ovs-vswitchd</code>“)}’<br>thread apply all bt<br>info proc mapping   #query all sysbol tables</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1891,8 +1883,8 @@ c、gdb &lt;program&gt; &lt;PID&gt;
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1942,7 +1934,7 @@ c、gdb &lt;program&gt; &lt;PID&gt;
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

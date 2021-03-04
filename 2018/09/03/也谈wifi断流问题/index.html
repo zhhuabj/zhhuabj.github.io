@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/09/03/也谈wifi断流问题/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
-<meta property="og:updated_time" content="2019-04-26T01:50:40.698Z">
+<meta property="og:updated_time" content="2021-03-04T10:24:37.857Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="也谈wifi断流问题">
 <meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-03T12:02:42+08:00">
                 2018-09-03
@@ -299,7 +299,7 @@
 
       
         <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong></p>
-<h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a>导言</h2><p>现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置(iptables -t mangle -A POSTROUTING -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu)也失效, 这样tcp访问某些特定mtu值不一致的网站时就会出现各种莫名其妙的问题.<br>另一方面, 对于udp, 因为无连接, 所以无法协商mss, 这样有些网络设备(eg: Nokia7)会设置禁止pmtud协商(disable DF bit in the IP header of the sender, ip_no_pmtu_disc=1), 从而也会反过来造成路由器中的clamp-mss-to-pmtu失效.</p>
+<h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a>导言</h2><p>现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置(iptables -t mangle -A POSTROUTING -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu)也失效, 这样tcp访问某些特定mtu值不一致的网站时就会出现各种莫名其妙的问题.<br>另一方面, 对于udp, 因为无连接, 所以无法协商mss, 这样有些网络设备(eg: Nokia7)会设置禁止pmtud协商(disable DF bit in the IP header of the sender, ip_no_pmtu_disc=1), 从而也会反过来造成路由器中的clamp-mss-to-pmtu失效.<br>注: 我家wan mtu=1484 (注意: 自从openwrt上游又接tplink router之后, openwrt wan mtu=1500, tplink wan mtu=1480, 需要将openwrt上的mss相关的iptables去掉吗?)</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:</p>
 <ul>
 <li>排除法测试, 使用京东APP搜索商品时说找不着网络, 但使用京东APP的其他功能没有问题, 并且使用京东以外的其他APP也没问题</li>
@@ -336,7 +336,7 @@
 <p>只有再添加下列默认路由之后, DVR qrouter-xxx’s才能将ICMP error发出去, 这样才可能去使用mss,</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@maas-node02:~# ip -n qrouter-1752c73a-be9f-4326-97cc-99dbe0988b3c route add default via 169.254.106.115 dev rfp-1752c73a-b</span><br></pre></td></tr></table></figure>
 <p>所以这样造成的问题就是, non-DVR虚机上运行docker container没问题, 而DVR虚机上运行docker container有问题. 解决办法有三个:</p>
-<p>1, 修改docker0的mtu=1450, 我们不能修改bridge的mtu, 但可以往docker0里再添加一个tap, 这样bridge的mtu将取决于tap mtu的最小值.<br>2, 计算节点上运行:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t mangle -A FORWARD -o ens3 -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1400:65495 -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure></p>
+<p>1, 修改docker0的mtu=1450,  直接修改在docker0上和container关联的tap的mtu（sudo ip link set vetha35eae9 mtu 1492），这样也就自动一并修改了docker0的mtu, 并且这个1492这个值要和这个docker0所在虚机里的出口物理网关的mtu一模一样，大了不了，小了也不行的。<br>2, 计算节点上运行:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t mangle -A FORWARD -o ens3 -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1400:65495 -j TCPMSS --clamp-mss-to-pmtu</span><br></pre></td></tr></table></figure></p>
 <p>3, to increase the global-physnet-mtu to 1550 to allow the real tenant network MTU to be 1500.<br>注: 沿路的交换机也要配置相应的MTU, 特别是如果交换机配置的MTU过小, 那么ICMP error直接就没有提示就被drop( 千万注意: 过来的包的MTU如果大于设备的MTU值才会分片分段, 如果是小于的话直接就DROP掉了, 这个参数net.ipv4.tcp_mtu_probing也可以探测这种情况)了这样导致MTU没配对之后也无法利用MSS, 这种问题更不好查. 另外, 也发现IPv6情况下的ICMPv6没有被ip6table rule允许的情况.</p>
 <h2 id="另一个问题-ssh连接时不时中断"><a href="#另一个问题-ssh连接时不时中断" class="headerlink" title="另一个问题 - ssh连接时不时中断"></a>另一个问题 - ssh连接时不时中断</h2><p>我的mtu是1484=1456+28(IP header is 20 byptes, ICMP header is 8 bytes), gavin的mtu是1492. 这个网页(<a href="https://ubuntuforums.org/showthread.php?t=2341699)说" target="_blank" rel="external">https://ubuntuforums.org/showthread.php?t=2341699)说</a>:<br>we are using a PPPoE connection the highest MTU we can get is 1492. And your ISP might not even go that high. The highest I could get mine was 1484. 这个网页(<a href="https://www.gargoyle-router.com/phpbb/viewtopic.php?t=8787)也提到了pppoe-wan口的mtu有时总比设置的要少8" target="_blank" rel="external">https://www.gargoyle-router.com/phpbb/viewtopic.php?t=8787)也提到了pppoe-wan口的mtu有时总比设置的要少8</a> byptes.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">root@OpenWrt:~# ip addr show pppoe-wan | grep mtu</span><br><span class="line">608: pppoe-wan: &lt;POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP&gt; mtu 1484 qdisc fq_codel state UNKNOWN group default qlen 3</span><br><span class="line"></span><br><span class="line">hua@t440p:~$ ping -M do -i 1 -c 2 -s 1456 vps</span><br><span class="line">1464 bytes from vps (xx.xx.xx.xx.xx): icmp_seq=1 ttl=57 time=209 ms</span><br><span class="line">hua@t440p:~$ ping -M do -i 1 -c 2 -s 1457 vps</span><br><span class="line">ping: local error: Message too long, mtu=1484</span><br><span class="line"></span><br><span class="line">ubuntu@gavin-P70:~$ ping -M do -i 1 -c 2 -s 1464 vps</span><br><span class="line">1472 bytes from xx.xx.xx.xx.xx: icmp_seq=1 ttl=58 time=48.5 ms</span><br><span class="line">ubuntu@gavin-P70:~$ ping -M do -i 1 -c 2 -s 1465 vps</span><br><span class="line">ping: local error: Message too long, mtu=1492</span><br></pre></td></tr></table></figure></p>
 <p>抓包看到的gavin的mss值是1452(1492-40), 我的mss值却是1460.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ sudo tcpdump -s0 -p -ni eth0 src host 192.168.99.135 and dst host xx.xx.xx.xx and dst port 22 and &apos;(ip and ip[20+13] &amp; tcp-syn != 0)&apos;</span><br><span class="line">08:00:45.771287 IP 192.168.99.135.35172 &gt; xx.xx.xx.xx.22: Flags [S], seq 1056384328, win 29200, options [mss 1460,sackOK,TS val 92453102 ecr 0,nop,wscale 7], length 0</span><br><span class="line"></span><br><span class="line">hua@t440p:~$ sudo tcpdump -s0 -p -ni eth0 src host xx.xx.xx.xx and &apos;(ip and ip[20+13] &amp; tcp-syn != 0)&apos;</span><br><span class="line">08:01:31.252313 IP xx.xx.xx.xx.22 &gt; 192.168.99.135.35182: Flags [S.], seq 1913298511, ack 4239124226, win 28960, options [mss 1452,sackOK,TS val 3432015413 ecr 92498502,nop,wscale 7], length 0</span><br></pre></td></tr></table></figure></p>
@@ -358,6 +358,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># https://blog.cloudflare.com/path-mtu-discovery-in-practice/</span><br><span class="line"># sudo ip route change default via &lt;&gt; advmss 1400</span><br><span class="line"># sudo iptables -t mangle -A OUTPUT -p tcp --dport 22 -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1444</span><br><span class="line">hua@t440p:~$ sudo iptables-save |grep mss</span><br><span class="line">-A OUTPUT -p tcp -m tcp --dport 22 -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1444</span><br><span class="line"></span><br><span class="line">hua@t440p:~$ sudo tcpdump -s0 -p -ni eth0 src host 192.168.99.135 and dst host xxx and dst port 22 and &apos;(ip and ip[20+13] &amp; tcp-syn != 0)&apos;</span><br><span class="line">tcpdump: verbose output suppressed, use -v or -vv for full protocol decode</span><br><span class="line">listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes</span><br><span class="line">22:05:34.295036 IP 192.168.99.135.55502 &gt; xxx.22: Flags [S], seq 2332107979, win 29200, options [mss 1444,sackOK,TS val 56741396 ecr 0,nop,wscale 7], length 0</span><br></pre></td></tr></table></figure>
 <p>Enable smart MTU black hole detection. RFC4821 proposes a mechanism to detect ICMP black holes and tries to adjust the path MTU in a smart way. To enable this on Linux type:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/net/ipv4/tcp_mtu_probing</span><br><span class="line">echo 1024 &gt; /proc/sys/net/ipv4/tcp_base_mss</span><br></pre></td></tr></table></figure></p>
 <p>检测丢包(使用ping不准的):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hua@t440p:~$ netstat -s -p|grep -i segments</span><br><span class="line">    11519400 segments received</span><br><span class="line">    11624725 segments sent out</span><br><span class="line">    84339 segments retransmitted</span><br><span class="line">    980 bad segments received</span><br></pre></td></tr></table></figure></p>
+<h2 id="20200316更新"><a href="#20200316更新" class="headerlink" title="20200316更新"></a>20200316更新</h2><p>ssh总断不是上面mtu的原因, 是因为使用白名单模式时没有将这些要ssh的ip排除RETURN.</p>
 
       
     </div>
@@ -448,10 +449,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -471,8 +472,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">100</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">101</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -508,7 +509,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#导言"><span class="nav-number">1.</span> <span class="nav-text">导言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决"><span class="nav-number">3.</span> <span class="nav-text">解决</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个案例"><span class="nav-number">5.</span> <span class="nav-text">另一个案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个问题-ssh连接时不时中断"><span class="nav-number">6.</span> <span class="nav-text">另一个问题 - ssh连接时不时中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20190426更新"><span class="nav-number">7.</span> <span class="nav-text">20190426更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">8.</span> <span class="nav-text">其他</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#导言"><span class="nav-number">1.</span> <span class="nav-text">导言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决"><span class="nav-number">3.</span> <span class="nav-text">解决</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个案例"><span class="nav-number">5.</span> <span class="nav-text">另一个案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个问题-ssh连接时不时中断"><span class="nav-number">6.</span> <span class="nav-text">另一个问题 - ssh连接时不时中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20190426更新"><span class="nav-number">7.</span> <span class="nav-text">20190426更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">8.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20200316更新"><span class="nav-number">9.</span> <span class="nav-text">20200316更新</span></a></li></ol></div>
             
 
           </div>
@@ -538,7 +539,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
