@@ -231,6 +231,146 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/09/Libvirt支持的三种CPU模式与热迁移-by-Joshua/" itemprop="url">Libvirt支持的三种CPU模式与热迁移(by Joshua)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:42:14+08:00">
+                2018-03-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-03-09)</strong></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>原始的nova配置(cpu_mode=”host-passthrough”)导致无法热迁移，改成(cpu_mode=”custom”, cpu_model=”kvm64”)之后解决了热迁移问题但是嵌套虚拟化又不好便了，接着又改成(cpu_mode=’host-model’)但热迁移仍然失败。有两全其美的方法吗？</p>
+<h2 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">1, working solution was to create a custom CPU definition in /usr/share/libvirt/cpu_map.xml called SandyBridge-vmx, which contained the full feature flags for that CPU, not just the subset that differs from Westmere/etc., and includes the needed &apos;vmx&apos; feature for nested kvm</span><br><span class="line">&lt;model name=&apos;SandyBridge-vmx&apos;&gt;</span><br><span class="line">&lt;vendor name=&apos;Intel&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;aes&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;avx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;clflush&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cmov&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx16&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;cx8&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;de&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fpu&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;fxsr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lahf_lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;lm&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mca&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mce&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mmx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;msr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;mtrr&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;nx&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pae&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pat&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pclmuldq&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pge&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pni&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;popcnt&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;pse36&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;rdtscp&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sep&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.1&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;sse4.2&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;ssse3&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;syscall&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;tsc-deadline&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;x2apic&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;xsave&apos;/&gt;</span><br><span class="line">&lt;feature name=&apos;vmx&apos;/&gt;</span><br><span class="line">&lt;/model&gt;</span><br><span class="line"></span><br><span class="line">2, And in /etc/nova/nova.conf, we use:</span><br><span class="line">$ sudo grep ^cpu_m /etc/nova/nova.conf</span><br><span class="line">cpu_mode = custom</span><br><span class="line">cpu_model = SandyBridge-vmx</span><br></pre></td></tr></table></figure>
+<h2 id="理论"><a href="#理论" class="headerlink" title="理论"></a>理论</h2><p>Libvirt主要支持三种 CPU mode：</p>
+<ol>
+<li>host-passthrough: libvirt 令 KVM 把宿主机的 CPU 指令集全部透传给虚拟机。因此虚拟机能够最大限度的使用宿主机 CPU 指令集，故性能是最好的。但是在热迁移时，它要求目的节点的 CPU 和源节点的一致。</li>
+<li>host-model: libvirt 根据当前宿主机 CPU 指令集从配置文件 /usr/share/libvirt/cpu_map.xml 选择一种最相配的 CPU 型号。在这种 mode 下，虚拟机的指令集往往比宿主机少，性能相对 host-passthrough 要差一点，但是热迁移时，它允许目的节点 CPU 和源节点的存在一定的差异。</li>
+<li>custom: 这种模式下虚拟机 CPU 指令集数最少，故性能相对最差，但是它在热迁移时跨不同型号 CPU 的能力最强。此外，custom 模式下支持用户添加额外的指令集。</li>
+<li>三种mode的性能排序是：host-passthrough &gt; host-model &gt; custom</li>
+<li>三种mode的热迁移通用性是： custom &gt; host-model &gt; host-passthrough</li>
+</ol>
+<p>实际环境中多采用Intel E5系列的CPU，但是该系列的CPU也有多种型号，常见的有Xeon，Haswell，IvyBridge，SandyBridge等等。即使是host-model，在这些不同型号的CPU之间热迁移虚拟机也可能失败。所以从热迁移的角度，在选择 host-mode时：</p>
+<ul>
+<li>需要充分考虑既有宿主机类型，以后采购扩容时，也需要考虑相同问题</li>
+<li>除非不存在热迁移的场景，否则不应用选择host-passthrough</li>
+<li><p>host-model下不同型号的 CPU 最好能以aggregate hosts划分，在迁移时可以使用aggregate filter来匹配相同型号的物理机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">openstack aggregate create Broadwell</span><br><span class="line">openstack aggregate create Haswell</span><br><span class="line">openstack aggregate set --property cpu=broadwell Broadwell</span><br><span class="line">openstack aggregate set --property cpu=haswell Haswell</span><br><span class="line">opentack aggregate add host &lt;host1&gt; Haswell</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=broadwell &lt;flavor1&gt;</span><br><span class="line">openstack flavor set --property aggregate_instance_extra_specs:cpu=haswell &lt;flavor2&gt;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果CPU型号过多，且不便用aggregate hosts划分，建议使用custom mode</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/07/OpenStack-SSL/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1492,135 +1632,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/12/02/OpenWRT与QNAP上通过PXE安装Xenial/" itemprop="url">OpenWRT与QNAP上通过PXE安装Xenial</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-12-02T20:04:42+08:00">
-                2017-12-02
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a>)</strong></p>
-<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>本文将打开OpenWRT dnsmasq上的PXE支持并设置和QNAP上的tftp关联，然后根据preseed自动安装Ubuntu 16.04 (注：kickstart是Redhat用于自动安装的机制）。</p>
-<h2 id="Set-up-tftp-on-QNAP"><a href="#Set-up-tftp-on-QNAP" class="headerlink" title="Set up tftp on QNAP"></a>Set up tftp on QNAP</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># NOTE: We need to configure PXE dir and authority to /Public/tftpboot in QNPA GUI, then use &apos;tftp 192.168.99.122&apos; to test</span><br><span class="line"># /etc/init.d/opentftp.sh restart</span><br><span class="line"># [/share/HDA_DATA/Public/tftpboot] # ps |grep tftp</span><br><span class="line"># 15861 admin      1016 S   /usr/sbin/opentftpd -i /etc/opentftpd.ini -l /share/HDA_DATA/Public/tftpboot/opentftpd.log</span><br><span class="line">sudo mount -o loop /bak/images/ubuntu-16.04.2-server-amd64.iso /mnt/</span><br><span class="line">mkdir /tmp/tftpboot &amp;&amp; sudo cp -r /mnt/install/netboot/* /tmp/tftpboot/</span><br><span class="line">sudo bash -c &apos;cat &gt; /tmp/tftpboot/pxelinux.cfg/default &lt;&lt; EOF</span><br><span class="line">default linux </span><br><span class="line">label linux</span><br><span class="line">    kernel ubuntu-installer/amd64/linux</span><br><span class="line">    append vga=normal initrd=ubuntu-installer/amd64/initrd.gz --</span><br><span class="line">EOF&apos;</span><br><span class="line">scp -r /tmp/tftpboot/* admin@192.168.99.122:/share/HDA_DATA/Public/tftpboot/</span><br></pre></td></tr></table></figure>
-<h2 id="Configure-dnsmasq-on-OpenWRT-to-use-external-tftp-server"><a href="#Configure-dnsmasq-on-OpenWRT-to-use-external-tftp-server" class="headerlink" title="Configure dnsmasq on OpenWRT to use external tftp server"></a>Configure dnsmasq on OpenWRT to use external tftp server</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt; /etc/dnsmasq.conf &lt;&lt; EOF</span><br><span class="line">enable-tftp</span><br><span class="line">dhcp-boot=pxelinux.0,pxeboot,192.168.99.122</span><br><span class="line">EOF</span><br><span class="line">/etc/init.d/dnsmasq restart</span><br></pre></td></tr></table></figure>
-<h2 id="Create-Preseed-file-on-QNAP"><a href="#Create-Preseed-file-on-QNAP" class="headerlink" title="Create Preseed file on QNAP"></a>Create Preseed file on QNAP</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; /home/httpd/ubuntu-auto.seed &lt;&lt; EOF</span><br><span class="line">##https://help.ubuntu.com/16.04/installation-guide/example-preseed.txt</span><br><span class="line">##https://gist.github.com/eldondev/33366c2842df9d1b4a0e</span><br><span class="line">## Options to set on the command line</span><br><span class="line">d-i debian-installer/locale string en_US.UTF-8</span><br><span class="line">d-i console-setup/ask_detect boolean false</span><br><span class="line">d-i console-setup/layout string us</span><br><span class="line"></span><br><span class="line">d-i netcfg/get_hostname string ubuntu</span><br><span class="line">d-i netcfg/get_domain string local</span><br><span class="line"></span><br><span class="line">### Clock and time zone setup</span><br><span class="line">d-i time/zone string UTC</span><br><span class="line">d-i clock-setup/utc boolean true</span><br><span class="line">d-i clock-setup/ntp boolean false</span><br><span class="line"></span><br><span class="line">d-i kbd-chooser/method select us</span><br><span class="line"></span><br><span class="line">d-i mirror/country string manual</span><br><span class="line">d-i mirror/http/hostname string nova.clouds.archive.ubuntu.com</span><br><span class="line">d-i mirror/http/directory string /ubuntu</span><br><span class="line">d-i mirror/http/proxy string</span><br><span class="line"></span><br><span class="line">d-i partman-auto/choose_recipe select root</span><br><span class="line">d-i partman-auto/disk string /dev/[sv]da</span><br><span class="line">d-i partman-auto/method string regular</span><br><span class="line">d-i partman-auto/expert_recipe string root :: \</span><br><span class="line">500 10000 1000000 ext4 \</span><br><span class="line">          $primary&#123; &#125; \</span><br><span class="line">          $bootable&#123; &#125; \</span><br><span class="line">          method&#123; format &#125; \</span><br><span class="line">          format&#123; &#125; \</span><br><span class="line">          use_filesystem&#123; &#125; \</span><br><span class="line">          filesystem&#123; ext4 &#125; \</span><br><span class="line">          mountpoint&#123; / &#125; .</span><br><span class="line"></span><br><span class="line">d-i partman-basicfilesystems/no_swap boolean false</span><br><span class="line">d-i partman-partitioning/confirm_write_new_label boolean true</span><br><span class="line">d-i partman/choose_partition select finish</span><br><span class="line">d-i partman/confirm boolean true</span><br><span class="line">d-i partman/confirm_nooverwrite boolean true</span><br><span class="line"></span><br><span class="line">d-i base-installer/kernel/image string linux-virtual</span><br><span class="line">d-i debian-installer/quiet  boolean false</span><br><span class="line">d-i debian-installer/splash boolean false</span><br><span class="line"></span><br><span class="line">d-i tasksel/first select openssh-server</span><br><span class="line">d-i pkgsel/include string openssh-server ntp python sudo</span><br><span class="line">d-i pkgsel/install-language-support boolean false</span><br><span class="line">d-i pkgsel/upgrade select none</span><br><span class="line">d-i pkgsel/update-policy select none</span><br><span class="line">d-i pkgsel/updatedb boolean true</span><br><span class="line"></span><br><span class="line"># Account setup</span><br><span class="line">d-i passwd/root-login boolean true</span><br><span class="line">d-i passwd/root-password password password</span><br><span class="line">d-i passwd/root-password-again password password</span><br><span class="line">d-i passwd/make-user boolean false</span><br><span class="line">d-i user-setup/password-weak boolean true</span><br><span class="line">d-i user-setup/allow-password-weak boolean true</span><br><span class="line">d-i user-setup/encrypt-home boolean false</span><br><span class="line"></span><br><span class="line"># Disable WEP dialog</span><br><span class="line">d-i netcfg/wireless_wep string</span><br><span class="line"></span><br><span class="line"># Security</span><br><span class="line">d-i apt-setup/services-select multiselect security</span><br><span class="line">d-i apt-setup/security_host string archive.ubuntu.com</span><br><span class="line">d-i apt-setup/security_path string /ubuntu</span><br><span class="line"></span><br><span class="line"># No multiarch by default</span><br><span class="line">d-i apt-setup/multiarch string</span><br><span class="line"></span><br><span class="line">d-i grub-installer/only_debian boolean true</span><br><span class="line">d-i grub-installer/with_other_os boolean true</span><br><span class="line"></span><br><span class="line">d-i finish-install/reboot_in_progress note</span><br><span class="line"></span><br><span class="line">d-i debian-installer/exit/halt boolean false</span><br><span class="line">d-i debian-installer/exit/poweroff boolean false</span><br><span class="line"></span><br><span class="line"># Late command for Packer to auth as root with password</span><br><span class="line">d-i preseed/late_command string \</span><br><span class="line">    sed -i -e &apos;s/^#\?PasswordAuthentication.*/PasswordAuthentication yes/g&apos; /target/etc/ssh/sshd_config;\</span><br><span class="line">    sed -i -e &apos;s/^#\?PermitRootLogin.*/PermitRootLogin yes/g&apos; /target/etc/ssh/sshd_config</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-<h2 id="Use-preseed"><a href="#Use-preseed" class="headerlink" title="Use preseed"></a>Use preseed</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">## Modify the file /share/HDA_DATA/Public</span><br><span class="line">#https://help.ubuntu.com/lts/installation-guide/armhf/apbs02.html</span><br><span class="line">/tftpbootdefault linux</span><br><span class="line">label linux</span><br><span class="line">    kernel ubuntu-installer/amd64/linux</span><br><span class="line">    append vga=normal initrd=ubuntu-installer/amd64/initrd.gz locale=en_US keyboard-configuration/layoutcode=us ipv6.disable=1 hostname=maas auto url=http://192.168.99.122:8080/ubuntu-auto.seed --</span><br></pre></td></tr></table></figure>
-<p>注意：Ubuntu只要preseed即可。kickstart是Redhat自动安装的机制，如果要同时安装Ubuntu和Redhat，可以二者都设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">append ks=http://192.168.99.122:8080/ks.cfg preseed/url=http://192.168.99.122:8080/ubuntu-auto.seed vga=normal initrd=ubuntu-installer/amd64/initrd.gz --</span><br></pre></td></tr></table></figure></p>
-<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">images_root=/bak/images</span><br><span class="line">rootdisk=$images_root/test.img</span><br><span class="line">domain_xml=test.xml</span><br><span class="line">dpkg -s virtinst &amp;&gt;/dev/null || sudo apt install virtinst -y</span><br><span class="line">if ! [ -e &quot;$rootdisk&quot; ]; then</span><br><span class="line">    qemu-img create -f qcow2 $rootdisk 20G</span><br><span class="line">fi</span><br><span class="line">sudo bash -c &apos;cat &gt;&gt; /etc/network/interfaces &lt;&lt; EOF</span><br><span class="line">auto enp0s25</span><br><span class="line">iface enp0s25 inet manual</span><br><span class="line">    mtu 1500</span><br><span class="line">auto br-enp0s25</span><br><span class="line">iface br-enp0s25 inet static</span><br><span class="line">    address 192.168.99.135/24</span><br><span class="line">    gateway 192.168.99.1</span><br><span class="line">    bridge_ports enp0s25</span><br><span class="line">EOF&apos;</span><br><span class="line">ifup br-enp0s25</span><br><span class="line">sudo virt-install \</span><br><span class="line">    --name=bootstrap \</span><br><span class="line">    --connect=qemu:///system --ram=2048 --vcpus=1 --hvm \</span><br><span class="line">    --virt-type=kvm \</span><br><span class="line">    --pxe --boot network,hd \</span><br><span class="line">    --graphics vnc --noautoconsole --os-type=linux --accelerate \</span><br><span class="line">    --disk=$&#123;rootdisk&#125;,bus=virtio,format=qcow2 \</span><br><span class="line">    --network=bridge=juju-vm-br,model=virtio \</span><br><span class="line">    --print-xml 2 &gt; $domain_xml</span><br><span class="line">echo &quot;test domain definition is now available at $domain_xml&quot;</span><br></pre></td></tr></table></figure>
-<h2 id="相关日志"><a href="#相关日志" class="headerlink" title="相关日志"></a>相关日志</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[/home/httpd] # tail -f /share/HDA_DATA/Public/tftpboot/opentftpd.log           </span><br><span class="line">[02-Dec-17 19:54:25] Client 192.168.99.150:49162 /share/HDA_DATA/Public/tftpboot/pxelinux.cfg/default, 2 Blocks Served</span><br><span class="line">[02-Dec-17 19:54:44] Client 192.168.99.150:49163 /share/HDA_DATA/Public/tftpboot/ubuntu-installer/amd64/linux, 5025 Blocks Served</span><br><span class="line">[02-Dec-17 19:56:30] Client 192.168.99.150:49164 /share/HDA_DATA/Public/tftpboot/ubuntu-installer/amd64/initrd.gz, 28718 Blocks Served</span><br><span class="line">[02-Dec-17 20:20:44] Client 192.168.99.136:59249 /share/HDA_DATA/Public/tftpboot/pxelinux.0, 31 Blocks Served</span><br><span class="line">[02-Dec-17 20:20:45] Client 192.168.99.136:49152 /share/HDA_DATA/Public/tftpboot/ldlinux.c32, 84 Blocks Served</span><br><span class="line">[02-Dec-17 20:20:45] Client 192.168.99.136:49163 /share/HDA_DATA/Public/tftpboot/pxelinux.cfg/default, 2 Blocks Served</span><br><span class="line">[02-Dec-17 20:21:01] Client 192.168.99.136:49164 /share/HDA_DATA/Public/tftpboot/ubuntu-installer/amd64/linux, 5025 Blocks Served</span><br><span class="line">[02-Dec-17 20:22:44] Client 192.168.99.136:49165 /share/HDA_DATA/Public/tftpboot/ubuntu-installer/amd64/initrd.gz, 28718 Blocks Served</span><br></pre></td></tr></table></figure>
-<h2 id="附录-一个KickStart的例子"><a href="#附录-一个KickStart的例子" class="headerlink" title="附录 - 一个KickStart的例子"></a>附录 - 一个KickStart的例子</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"># then can visit via - http://192.168.99.122:8080/ks.cfg, so the key line is &apos;url --url http://192.168.99.122:8080&apos;</span><br><span class="line">cat &gt; /home/httpd/ks.cfg &lt;&lt; EOF</span><br><span class="line">#Generated by Kickstart Configurator</span><br><span class="line">#platform=AMD64 or Intel EM64T</span><br><span class="line">#System language</span><br><span class="line">lang en_US</span><br><span class="line">#Language modules to install</span><br><span class="line">langsupport en_US</span><br><span class="line">#System keyboard</span><br><span class="line">keyboard us</span><br><span class="line">#System mouse</span><br><span class="line">mouse</span><br><span class="line">#System timezone</span><br><span class="line">timezone Asia/Chongqing</span><br><span class="line">#Root password</span><br><span class="line">rootpw --disabled</span><br><span class="line">#Initial user</span><br><span class="line">user hua --fullname hua --password password</span><br><span class="line">#Reboot after installation</span><br><span class="line">reboot</span><br><span class="line">#Use text mode install</span><br><span class="line">text</span><br><span class="line">#Install OS instead of upgrade</span><br><span class="line">install</span><br><span class="line">#Use Web installation media</span><br><span class="line">url --url http://192.168.99.122:8080</span><br><span class="line">#System bootloader configuration</span><br><span class="line">bootloader --location=mbr </span><br><span class="line">#Clear the Master Boot Record</span><br><span class="line">zerombr yes</span><br><span class="line">#Partition clearing information</span><br><span class="line">clearpart --all --initlabel </span><br><span class="line">#Disk partitioning information</span><br><span class="line">part swap --size 2048 </span><br><span class="line">part /boot --fstype ext4 --size 512 </span><br><span class="line">part / --fstype ext4 --size 1 --grow </span><br><span class="line">#System authorization infomation</span><br><span class="line">auth  --useshadow  --enablemd5 </span><br><span class="line">#Network information</span><br><span class="line">network --bootproto=dhcp --device=eth0</span><br><span class="line">#network --bootproto=static--ip=192.168.5.168 --netmask=255.255.255.0 --gateway=192.168.100.1--nameserver=8.8.8.8 --device=eth0</span><br><span class="line">#Firewall configuration</span><br><span class="line">firewall --disabled </span><br><span class="line">#Do not configure the X Window System</span><br><span class="line">skipx</span><br><span class="line"># Additional packages to install</span><br><span class="line">%packages</span><br><span class="line">ca-certificates</span><br><span class="line">openssl</span><br><span class="line">python</span><br><span class="line">openssh-server</span><br><span class="line">vim</span><br><span class="line">ubuntu-desktop</span><br><span class="line">unity</span><br><span class="line"># Add your custom post installation script here</span><br><span class="line">%post</span><br><span class="line"># Add post installation script to /usr/local/bin/ directory</span><br><span class="line">ls .</span><br><span class="line"># Fix locale</span><br><span class="line">echo &apos;LANG=&quot;en_US.UTF-8&quot;&apos; &gt; /etc/default/locale</span><br><span class="line">echo &apos;LANGUAGE=&quot;en_US:en&quot;&apos; &gt;&gt; /etc/default/locale</span><br><span class="line">echo &apos;LC_ALL=&quot;en_US.UTF-8&quot;&apos; &gt;&gt; /etc/default/locale</span><br><span class="line"># Clean</span><br><span class="line">apt-get -f -y install</span><br><span class="line">apt-get -y autoremove</span><br><span class="line">apt-get clean</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1671,7 +1682,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">103</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>

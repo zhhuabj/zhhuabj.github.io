@@ -231,6 +231,156 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/06/docker-host-net-mtu/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/03/06/docker-host-net-mtu/" itemprop="url">docker host net mtu</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-03-06T11:48:55+08:00">
+                2021-03-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>作者：张华 发表于：2021-03-06<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
+<p>在一个gre虚机上创建一个docker container，显然网络不通是由mtu造成的。但是如果host=net创建的网络为什么也是不行呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run --rm --net=host --privileged --name=nginx -v /sys/fs/cgroup:/sys/fs/cgroup -d -ti nginx</span><br><span class="line">sudo docker exec -ti nginx bash</span><br></pre></td></tr></table></figure></p>
+<p>测试了UDP与TCP都是时而可以时而不可以。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#TCP</span><br><span class="line">nc -tlp 8888</span><br><span class="line">nc -vtz 10.5.0.178 8888</span><br><span class="line"></span><br><span class="line">#UDP</span><br><span class="line">nc -ulp 8888</span><br><span class="line">nc -vuz 10.5.0.178 8888</span><br></pre></td></tr></table></figure>
+<h2 id="测试结果"><a href="#测试结果" class="headerlink" title="测试结果"></a>测试结果</h2><ul>
+<li>使用tcp时，tcp server每测试一遍会自动断，重新运行’nc -tlp 8888’每次均没有问题</li>
+<li><p>使用udp时，udp server每测试一遍不会自动断，每次重新运行”nc -ulp 8888”不会有问题，但不重新运行server时就报refused错误了</p>
+<p>上面其实都是正常的，但客户那里报的错如下，这也是正常的，至于“inverse host lookup failed: Unknown host”是查不到host, nc上添加”-n”参数即可解决。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> # nc -uvz xxx 5093</span><br><span class="line">xxx: inverse host lookup failed: Unknown host</span><br><span class="line">(UNKNOWN) [xxx] 5093 (?) open</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>但客户tcpdump抓到了如下mtu问题，这才是真正的错误所在</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">07:19:55.096224 IP 10.30.50.189.33473 &gt; xxx.5093: UDP, bad length 1432 &gt; 1408</span><br></pre></td></tr></table></figure>
+<p>所以用nc测试能看到“5093 (?) open”说明网络是通的，但存在mtu问题。</p>
+<h2 id="tcp可以时的抓包"><a href="#tcp可以时的抓包" class="headerlink" title="tcp可以时的抓包"></a>tcp可以时的抓包</h2><p>在虚机上的抓包数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@i1:~$ sudo tcpdump -ei ens2 -s 0 port 8888</span><br><span class="line">02:06:28.513860 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 74: i1.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [S], seq 3310591319, win 65340, options [mss 1452,sackOK,TS val 2788776170 ecr 0,nop,wscale 7], length 0</span><br><span class="line">02:06:28.515634 fa:16:3e:22:d6:67 (oui Unknown) &gt; fa:16:3e:54:36:ad (oui Unknown), ethertype IPv4 (0x0800), length 74: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; i1.38146: Flags [S.], seq 432497099, ack 3310591320, win 62342, options [mss 8918,sackOK,TS val 3043405881 ecr 2788776170,nop,wscale 7], length 0</span><br><span class="line">02:06:28.515689 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 66: i1.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [.], ack 1, win 511, options [nop,nop,TS val 2788776172 ecr 3043405881], length 0</span><br><span class="line">02:06:28.515907 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 66: i1.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [F.], seq 1, ack 1, win 511, options [nop,nop,TS val 2788776172 ecr 3043405881], length 0</span><br><span class="line">02:06:28.517663 fa:16:3e:22:d6:67 (oui Unknown) &gt; fa:16:3e:54:36:ad (oui Unknown), ethertype IPv4 (0x0800), length 68: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; i1.38146: Flags [P.], seq 1:3, ack 2, win 488, options [nop,nop,TS val 3043405882 ecr 2788776172], length 2</span><br><span class="line">02:06:28.517723 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 54: i1.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [R], seq 3310591321, win 0, length 0</span><br><span class="line">02:06:28.517860 fa:16:3e:22:d6:67 (oui Unknown) &gt; fa:16:3e:54:36:ad (oui Unknown), ethertype IPv4 (0x0800), length 66: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; i1.38146: Flags [F.], seq 3, ack 2, win 488, options [nop,nop,TS val 3043405882 ecr 2788776172], length 0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">ubuntu@i1:~$ ip addr show ens2</span><br><span class="line">2: ens2: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1492 qdisc fq_codel state UP group default qlen 1000</span><br><span class="line">    link/ether fa:16:3e:54:36:ad brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 192.168.21.161/24 brd 192.168.21.255 scope global dynamic ens2</span><br></pre></td></tr></table></figure>
+<p>在物理机上的抓包数据：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">02:06:28.514218 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 74: 10.5.150.115.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [S], seq 3310591319, win 65340, options [mss 1452,sackOK,TS val 2788776170 ecr 0,nop,wscale 7], length 0</span><br><span class="line">02:06:28.514272 fa:16:3e:64:80:50 (oui Unknown) &gt; fa:16:3e:50:aa:2a (oui Unknown), ethertype IPv4 (0x0800), length 74: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; 10.5.150.115.38146: Flags [S.], seq 432497099, ack 3310591320, win 62342, options [mss 8918,sackOK,TS val 3043405881 ecr 2788776170,nop,wscale 7], length 0</span><br><span class="line">02:06:28.515805 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 66: 10.5.150.115.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [.], ack 1, win 511, options [nop,nop,TS val 2788776172 ecr 3043405881], length 0</span><br><span class="line">02:06:28.515848 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 66: 10.5.150.115.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [F.], seq 1, ack 1, win 511, options [nop,nop,TS val 2788776172 ecr 3043405881], length 0</span><br><span class="line">02:06:28.516053 fa:16:3e:64:80:50 (oui Unknown) &gt; fa:16:3e:50:aa:2a (oui Unknown), ethertype IPv4 (0x0800), length 68: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; 10.5.150.115.38146: Flags [P.], seq 1:3, ack 2, win 488, options [nop,nop,TS val 3043405882 ecr 2788776172], length 2</span><br><span class="line">02:06:28.516071 fa:16:3e:64:80:50 (oui Unknown) &gt; fa:16:3e:50:aa:2a (oui Unknown), ethertype IPv4 (0x0800), length 66: juju-c40d4b-ovn-6.cloud.sts.8888 &gt; 10.5.150.115.38146: Flags [F.], seq 3, ack 2, win 488, options [nop,nop,TS val 3043405882 ecr 2788776172], length 0</span><br><span class="line">02:06:28.517335 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 54: 10.5.150.115.38146 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: Flags [R], seq 3310591321, win 0, length 0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">root@juju-c40d4b-ovn-6:~# ip addr show ens3</span><br><span class="line">2: ens3: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 8958 qdisc fq_codel state UP group default qlen 1000</span><br><span class="line">    link/ether fa:16:3e:64:80:50 brd ff:ff:ff:ff:ff:ff</span><br><span class="line">    inet 10.5.0.178/16 brd 10.5.255.255 scope global dynamic ens3</span><br></pre></td></tr></table></figure>
+<h2 id="udp可以时的抓包"><a href="#udp可以时的抓包" class="headerlink" title="udp可以时的抓包"></a>udp可以时的抓包</h2><p>虚机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">02:15:12.943389 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 43: i1.39709 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br><span class="line">02:15:12.946069 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 43: i1.39709 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br><span class="line"></span><br><span class="line">ubuntu@i1:~$ sudo tcpdump -i ens2 udp port 8888 -A -nn</span><br><span class="line">02:46:17.724481 IP 192.168.21.161.50757 &gt; 10.5.0.178.8888: UDP, length 1</span><br><span class="line">E...#.@.@.6.....</span><br><span class="line">....E&quot;..        ...</span><br><span class="line">02:46:17.728605 IP 192.168.21.161.50757 &gt; 10.5.0.178.8888: UDP, length 1</span><br><span class="line">E...#.@.@.6.....</span><br><span class="line">....E&quot;..        ...</span><br></pre></td></tr></table></figure>
+<p>物理机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">02:15:12.942802 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 43: 10.5.150.115.39709 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br><span class="line">02:15:12.944746 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 43: 10.5.150.115.39709 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br></pre></td></tr></table></figure>
+<h2 id="udp不可以时的抓包数据-这也是正常的，server要重启"><a href="#udp不可以时的抓包数据-这也是正常的，server要重启" class="headerlink" title="udp不可以时的抓包数据(这也是正常的，server要重启)"></a>udp不可以时的抓包数据(这也是正常的，server要重启)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@10:/# nc -vuz 10.5.0.178 8888</span><br><span class="line">juju-c40d4b-ovn-6.cloud.sts [10.5.0.178] 8888 (?) : Connection refused</span><br></pre></td></tr></table></figure>
+<p>虚机</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">02:16:28.016397 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 43: i1.55573 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br></pre></td></tr></table></figure>
+<p>物理机<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">02:16:28.014916 fa:16:3e:50:aa:2a (oui Unknown) &gt; fa:16:3e:64:80:50 (oui Unknown), ethertype IPv4 (0x0800), length 43: 10.5.150.115.55573 &gt; juju-c40d4b-ovn-6.cloud.sts.8888: UDP, length 1</span><br></pre></td></tr></table></figure></p>
+<h2 id="UDP-bad-length-1432-gt-1408"><a href="#UDP-bad-length-1432-gt-1408" class="headerlink" title="UDP, bad length 1432 &gt; 1408"></a>UDP, bad length 1432 &gt; 1408</h2><p>错误”UDP, bad length 1432 &gt; 1408”意为UDP包长度大于UDP有效负载长度(The tcpdump error message you get is due to IP fragmentation which happens because the multicast datagram length &gt; MTU - <a href="https://github.com/the-tcpdump-group/tcpdump/blob/tcpdump-4.7.4/print-udp.c#L694)，客户的ens3的mtu是1442" target="_blank" rel="external">https://github.com/the-tcpdump-group/tcpdump/blob/tcpdump-4.7.4/print-udp.c#L694)，客户的ens3的mtu是1442</a>, 这个1442是怎么来的。</p>
+<p>以太网帧为46到1500节字之间，IPv4的IP包头是20，IP报文体是1480字节。UDP头(源端口，目标端口，UDP长度，UDP校验和）是8字节，所以UDP包长度是1472字节。还有GRE头也是8字节。<br>所以 1442 - 20(IP头) - 8 (UDP头) - 8 (ICMP头）　＝　1408<br>GRE/Vxlan的包头大小见　－　<a href="https://tonydeng.github.io/sdn-handbook/basic/overlay.html" target="_blank" rel="external">https://tonydeng.github.io/sdn-handbook/basic/overlay.html</a></p>
+<p>可用下列命令测试mtu (1442 - 28 = 1414)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ping -c 2 -s 1414 -M do 10.5.0.178</span><br><span class="line"></span><br><span class="line">root@10:/# traceroute --mtu 10.5.0.178</span><br><span class="line">traceroute to 10.5.0.178 (10.5.0.178), 30 hops max, 65000 byte packets</span><br><span class="line"> 1  * F=1492 * *</span><br><span class="line"> 2  juju-c40d4b-ovn-6.cloud.sts (10.5.0.178)  2.859 ms  2.169 ms  0.671 ms</span><br></pre></td></tr></table></figure></p>
+<p>对于udp, 因为无连接, 所以无法协商mss<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/sys/net/ipv4/ip_no_pmtu_disc</span><br><span class="line">0</span><br></pre></td></tr></table></figure></p>
+<p>见 - <a href="https://zhhuabj.blog.csdn.net/article/details/82346840" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/82346840</a><br>根据这篇文章（<a href="https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp" target="_blank" rel="external">https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp</a> server处设置ip_no_pmtu_disc=1(docker中如何设置-<a href="https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp" target="_blank" rel="external">https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp</a> server发出来的包会带有禁止分片DF=1, 这样当udp client收到这种DF=1且udp包大小&gt;mtu时（也见－<a href="https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。</a><br>另一种办法可以是提高虚机与容器的mtu到(1432+ 28=1460), 为什么现在是1442这么低。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/04/Win10-UEFI-Ubuntu-18-04-UEFI双系统/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1640,296 +1790,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/28/OpenStack中的防火墙/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/28/OpenStack中的防火墙/" itemprop="url">OpenStack中的防火墙</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-28T12:37:28+08:00">
-                2021-01-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <pre><code>OpenStack中的防火墙 ( by quqi99 )
-</code></pre><p>作者：张华  发表于：2012-4-10<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
-<p>iptables提供了全面的协议状态跟踪、数据包的应用层检查、速率限制、过滤策略。</p>
-<p>iptables策略是由一组有序的规则建立的，它告诉内核该如何处理数据包。而规则应用于表中的一个链，链是一个规则集。</p>
-<p>iptable 的概念从大到小是：iptables &gt; tables &gt; chains &gt; rules</p>
-<p>表，表描述了iptables的功用大类，共有4个内置表：filter,nat, mangle,raw。</p>
-<p>filter, 默认表，有三个重要的内置链：INPUT, OUTPUT, FORWARD</p>
-<p>nat，网络地址转换表，三个链，PREROUTING (DNAT), POSTROUTING（SNAT)，OUTPUT（用于本地包的NAT)</p>
-<p>mangle, 用于包的修改，　PREOUTING, OUTPUT, FORWARD, INPUT, POSTROUTING</p>
-<p>raw, 用于配置免除, PREROUTING, OUTPUT</p>
-<p>下图显示了这些内置链的关系:</p>
-<p>iptables包处理流程图如下：</p>
-<p>例如：openstack中的floating-ips就是根据SNAT与DNAT规则实现的：</p>
-<p>iptables -t nat -A POSTROUTING -s 172.16.1.0/24 -o eth0 -j SNAT –to-source 9.123.25.13<br>iptables -t nat -A PREROUTING -d 9.123.25.13 -j DNAT –to-destination 172.16.1.2</p>
-<p><a href="http://blog.csdn.net/bill_lee_sh_cn/article/details/4401896" target="_blank" rel="external">http://blog.csdn.net/bill_lee_sh_cn/article/details/4401896</a></p>
-<p>匹配，即条件，每个iptables规则都包含一级匹配以及一个目标，后者告诉ipatables对于符合规则的数据包应该采取什么动作。最重要的iptables匹配如下：</p>
-<p>–source (-s ), 配置源IP地址或网络</p>
-<p>–destination (-d), 匹配目标IP或网络</p>
-<p>–protocol (-p), 匹配IP值</p>
-<p>–in-interface (-i), 流入接口（如,eth0)</p>
-<p>–out-interface (-o), 输出接口</p>
-<p>–state，匹配一组连接状态</p>
-<p>–string, 匹配应用层数据字节序列</p>
-<p>–comment,在内核内存中为一个规则关联多达256个节字的注释数据</p>
-<p>目标，即动作，它们用于在数据包匹配一条规则时触发的一个动作。如下：</p>
-<p>ACCEPT, 充许数据包通过</p>
-<p>DROP，丢弃数据包，不响应报文</p>
-<p>REJECT, 丢弃数据包，响应报文</p>
-<p>LOG，记录数据包信息到syslog</p>
-<p>RETURN，在调用链中继续处理数据包</p>
-<p>除了内置链以外，还可以自定义链表，自定义链表的一般过程是：</p>
-<p>1, 创建一个新链表，iptables-t filter -N newchain</p>
-<p>2, 往新链表中添加rules，iptables-t filter -A newchain -s 192.168.75.129 -j DROP</p>
-<p>3, 通过-j参数使用自定义的链，iptables-A INPUT -j newchain</p>
-<p>Neutron使用了自定义链，分包装链与非包装链两类，区别在于是否对链表添加组件名重新包装</p>
-<p>(这样定名的目的是为了不和系统中其他应用设置的防火墙规则混淆）：</p>
-<p>１）包装链，链名需要通过组件名重新包装，如neutron-l3-agent组件定义的OUTPUT链叫neutron-l3-agent-OUTPUT，也意味着，Neutron不会用内置链OUTPUT，它必须跳转到对应的包装链（iptables-t filter OUTPUT -j neutron-l3-agent-OUTPUT）</p>
-<p>２）非包装链，链名没有用组件名包装，例如，neutron-filter-top就是位于FOWARD和OUTPUT顶部的非包装链，用于在不同OpenStack组件共享的链，</p>
-<p>neutron-filter-top链的内容是：</p>
-<p>iptables -t filter -N neutron-filter-top</p>
-<p>iptables -t filter -A FORWARD -jneutron-filter-top</p>
-<p>iptables -t filter -A OUTPUT -j neutron-filter-top</p>
-<p>再添加一个包装链neutron-l3-agent-local，接管非包装链neutron-filter-top</p>
-<p>iptables -t filter -N neutron-l3-agent-local</p>
-<p>iptables -t filter -A neutron-filter-top -jneutron-l3-agent-local</p>
-<p>对于IPv4,IPv6，Neutron为filter和nat两张表里的INPUT,FORWARD, OUTPUT三个内置链都定义了相应的包装链：</p>
-<p>iptables -t filter -A INPUT -jneutron-l3-agent-INPUT</p>
-<p>iptables -t filter -A FORWARD -jneutron-l3-agent-FORWARD</p>
-<p>iptables -t filter -A OUTPUT -jneutron-l3-agent-OUTPUT</p>
-<p>iptables -t nat -A INPUT -j neutron-l3-agent-INPUT</p>
-<p>iptables -t nat -A FORWARD -jneutron-l3-agent-FORWARD</p>
-<p>iptables -t nat -A OUTPUT -jneutron-l3-agent-OUTPUT</p>
-<p>还定义了一个名为neutron-postrouting-bottom的非包装类，用于POSTOURING链之后：</p>
-<p>iptables -t filter -N neutron-postrouting-bottom</p>
-<p>iptables -t filter -A POSTROUTING -jneutron-postrouting-bottom</p>
-<p>在neutron-postrouting-bottom链后再定义两个snat(neutron-l3-agent-snat）的包装类：</p>
-<p>iptables -t filter -N neutron-l3-agent-snat</p>
-<p>iptables -t filter -A neutron-postrouting-bottom-j neutron-l3-agent-snat</p>
-<p>iptables -t filter -N neutron-l3-agent-float-snat</p>
-<p>iptables -t filter -A neutron-postrouting-bottom-j neutron-l3-agent-float-snat</p>
-<p>最后定义sg-fallback包装链</p>
-<p>iptables -t filter -N neutron-l3-agent-sg-fallback</p>
-<p>iptables -t filter -Aneutron-l3-agent-sg-fallback -j DROP</p>
-<p>所以这些初始化链的关系是：</p>
-<p>OpenStack为我们准备好了上面的包装链与非包装链，再添加添加防火墙规则的时候，就不要再往内置链上添加了，而是直接添加到包装链与非包装链上，我们来看一下怎么用吧（这些内容来自永生的博客，写得真不错，做笔记到这里了，<a href="http://www.ibm.com/developerworks/cn/cloud/library/cl-openstack-network/index.html" target="_blank" rel="external">http://www.ibm.com/developerworks/cn/cloud/library/cl-openstack-network/index.html</a> )</p>
-<p>１）元数据，</p>
-<p>VM首先访问l3-agent节点上的网关，而l3-agent节点（dhcp-agent节点也会干这事）会在9697端口上启动neutron-ns-metadata-proxy代理，下面的iptables rules保证包通过(注意:　如果存在命名空间这些规则就在命名空间里)。</p>
-<p>cirros$ ip route get 169.254.169.254<br>169.254.169.254 via 10.0.1.1 dev eth0  src 10.0.1.3</p>
-<p>sudo ip netns exec qrouter-b0d4cbde-84c8-4883-a953-1d11bcc3c99b iptables-save | grep 169.254<br>-A neutron-vpn-agen-inbound -s 169.254.169.254/32 -j ACCEPT<br>-A neutron-vpn-agen-outbound -d 169.254.169.254/32 -j ACCEPT<br>-A neutron-vpn-agen-PREROUTING -d 169.254.169.254/32 -p tcp -m tcp –dport 80 -j REDIRECT –to-ports 9697  #对于dhcp-agent的metdata代理没有这一条语句，直接使用80端口<br>169.254.169.254/32 -p tcp -m tcp –dport 80 -j REDIRECT –to-ports 9697  #对于dhcp-agent的metdata代理没有这一条语句，直接使用80端口</p>
-<p>ubuntu@neutron-gateway:~$ sudo ip netns exec qrouter-02c71d17-8186-4fde-8bfc-ee0bea0d44ba ss -sl4tp  | grep 9697<br>LISTEN     0      128                     <em>:9697                     </em>:<em>        users:((“neutron-ns-meta”,58682,6))<br>9697                     </em>:*        users:((“neutron-ns-meta”,58682,6))</p>
-<p>ubuntu@neutron-gateway:~$ sudo ip netns exec qrouter-02c71d17-8186-4fde-8bfc-ee0bea0d44ba ps -f –pid 58682 | fold -w82 -s<br>UID        PID  PPID  C STIME TTY          TIME CMD<br>neutron  58682     1  0 Jun18 ?        00:00:48 /usr/bin/python<br>/usr/bin/neutron-ns-metadata-proxy<br>–pid_file=/var/lib/neutron/external/pids/02c71d17-8186-4fde-8bfc-ee0bea0d44ba.pid<br> –metadata_proxy_socket=/var/lib/neutron/metadata_proxy<br>–router_id=02c71d17-8186-4fde-8bfc-ee0bea0d44ba –state_path=/var/lib/neutron<br>–metadata_port=9697 –metadata_proxy_user=109 –metadata_proxy_group=113<br>–log-file=neutron-ns-metadata-proxy-02c71d17-8186-4fde-8bfc-ee0bea0d44ba.log<br>–log-dir=/var/log/neutron<br>9697 –metadata_proxy_user=109 –metadata_proxy_group=113<br>–log-file=neutron-ns-metadata-proxy-02c71d17-8186-4fde-8bfc-ee0bea0d44ba.log<br>–log-dir=/var/log/neutron</p>
-<p>ubuntu@neutron-gateway:~$ ps -f –pid 26859 | fold -w 80 -s<br>UID        PID  PPID  C STIME TTY          TIME CMD<br>neutron  26859 26747  2 Jun16 ?        2-23:44:43 /usr/bin/python<br>/usr/bin/neutron-metadata-agent –config-file=/etc/neutron/neutron.conf<br>–config-file=/etc/neutron/metadata_agent.ini<br>–log-file=/var/log/neutron/neutron-metadata-agent.log<br>/var/log/neutron/neutron-metadata-agent.log<br>ubuntu@neutron-gateway:~$ sudo ss -slxp | grep metadata_proxy<br>u_str  LISTEN     0      128    /var/lib/neutron/metadata_proxy 1460916               * 0<br>  users:((“neutron-metadat”,26859,5),(“neutron-metadat”,26858,5),(“neutron-metadat”,26857,5),(“neutron-metadat”,26856,5),<br>(“neutron-metadat”,26855,5),(“neutron-metadat”,26854,5),(“neutron-metadat”,26853,5),(“neutron-metadat”,26852,5),<br>(“neutron-metadat”,26747,5))<br>26859,5),(“neutron-metadat”,26858,5),(“neutron-metadat”,26857,5),(“neutron-metadat”,26856,5),<br>(“neutron-metadat”,26855,5),(“neutron-metadat”,26854,5),(“neutron-metadat”,26853,5),(“neutron-metadat”,26852,5),<br>(“neutron-metadat”,26747,5))</p>
-<p>然后neutron-ns-metadata-proxy代理会通过http协议访问neutron metadata-agent，所以169.254.169.254应该是配置在metadata-agent节点的lo口上。且neutron metadata-agent的机器上应该将169.254.169.254 DNAT到实际布置metadata service的机器nova_metadata_ip (/etc/neutron/meatadata_agent.ini)上，如172.16.1.122 。（所以当nova-api与metadata agent不在同一机器上时，在metadata agent机器上应该配置metadata_host配置）</p>
-<p>同时，在nova-api机器上要放行这类包。</p>
-<p>-A nova-network-POSTROUTING -s 10.0.0.0/8 -d 172.16.1.122/32 -j ACCEPT</p>
-<p>l3-agent上会为每一个namespace下的router创建一个neutron-ns-metadata-proxy进程(虚机和nova-api的路由不同才需要代理),  将请求元数据服务VM的源IP通过设置X-Forwarded-For, X-Neutron-Router-ID, X-Neutron-Network-ID 传给metadata_agent从而解决识别不同namespace下虚机的问题, 然后metadata-agent根据源IP找到port的相关信息(调用nova-api时需要这个port-id之类的信息来识别虚机, X-Forwarded-For , X-Instance-ID, X-Tenant-ID, X-Instance-ID-Signature). neutron-ns-metadata-proxy通过本地的unix-socket再交给本机的metadata-agent, 本机的metadata-agent再通过配置文件中的nova-metadata_host找到本机的nova-metadata-api.</p>
-<p>如果使用外部网关，要使用metadata也应该启动dhcp-agent, 即： </p>
-<p>/etc/neutron/dhcp_agent.ini:<br>  enable_metadata_network = True<br>  enable_isolated_metadata = True</p>
-<p>/neutron/l3_agent.ini:<br>  enable_metadata_proxy = False<br>有时候还要在nova.conf中设置use_forwarded_for = True. 这样虚机里会通过dhcp static host特性自动添加一条路由（ip route add 169.254.169.254/32 via 10.20.0.5  ）， 然后在dhcp节点的qdhcp-XXX名空间的dhcp port应该同时具有两个IP （例如一个10.20.0.5, 一个是169.254.169.254），它会启动neutron-ns-metadata-proxy(它是隔离网络，此时的metadata_port是80,不是9697,不需要9697的那条iptables rule), 后面neutron-metadata-agent的部分和前面一样。</p>
-<h1 id="ps-f-–pid-27409-fold-s-w-82-pid可通过ip-netns-exec-qdhcp-XXX-netstat-4-anpt-命令查看"><a href="#ps-f-–pid-27409-fold-s-w-82-pid可通过ip-netns-exec-qdhcp-XXX-netstat-4-anpt-命令查看" class="headerlink" title="ps -f –pid 27409 | fold -s -w 82        #pid可通过ip netns exec qdhcp-XXX netstat -4 -anpt 命令查看"></a>ps -f –pid 27409 | fold -s -w 82        #pid可通过ip netns exec qdhcp-XXX netstat -4 -anpt 命令查看</h1><p>UID PID PPID C STIME TTY TIME CMD<br>root 27409 1 0 17:47 ? 00:00:00 python<br>/usr/bin/neutron-ns-metadata-proxy<br>–pid_file=/var/lib/neutron/external/pids/01cce415-8e2b-4096-92b5-7acc67163d79.pid<br>–network_id=01cce415-8e2b-4096-92b5-7acc67163d79 –state_path=/var/lib/neutron<br>–metadata_port=80 –debug –verbose<br>–log-file=neutron-ns-metadata-proxy01cce415-8e2b-4096-92b5-7acc67163d79.log<br>–log-dir=/var/log/neutron </p>
-<p>所以使用dhcp-agent的metadata代理时，必须是隔离网络（neutron subnet-create net1 172.17.17.0/24 –no-gateway –name=sub1），如果不是隔离网络可以考虑设置force_metadata=True.</p>
-<p>有时候即想用物理路由器，还不想使用dhcp-agent，并且还想使用metadata那该怎么办？ 好说，那必须启动l3-agent（如它的IP是10.0.0.1），那么物理路由器的IP必须是不同的IP如10.0.0.254。这样用下列静态路由将到169.254.169.254的走l3-agent上的namespace metadata proxy，其他流量走物理路由器。具体见： <a href="https://kimizhang.wordpress.com/2014/11/11/how-to-use-meta-data-service-for-vm-with-provider-network/" target="_blank" rel="external">https://kimizhang.wordpress.com/2014/11/11/how-to-use-meta-data-service-for-vm-with-provider-network/</a></p>
-<p>neutron subnet-create –name test-subnet –gateway 10.0.0.1  \<br>–host-route destination=169.254.169.254/32,nexthop=10.0.0.1 \<br>–host-route destination=0.0.0.0/0,nexthop=10.0.0.254 test-net 10.0.0.0/24</p>
-<p>默认的security group会为每个port产生嗅探规则(即只允许匹配的ip, mac对的流量通过, 对于负载均衡或者 SLAC IPv6地址的port, 可能一个port(只有一个mac)但有多个IP, 所以可以通过allowed-address-pairs这个扩展来允许任何源IP的流量通过. 那我们可以用ipv6的本地链路地址LLAddr来查询上面的port呢, 于是有了BP, <a href="https://blueprints.launchpad.net/neutron/+spec/metadata-find-instance-by-lladdr" target="_blank" rel="external">https://blueprints.launchpad.net/neutron/+spec/metadata-find-instance-by-lladdr</a> ,  但是又有一种情况, 不同namespace下可能允许出现相关的mac地址的(overlapping mac), 这样根据mac地址将查询出两个port出来,</p>
-<p>用源IP及network_id (不同的tenant下是可以存在的subnet的）去查询port可能会有一个问题(找port是为了找到虚机的device_id和tenant_id信息）, 如纯IPv6环境（一个同MAC的port会有多个IPv6地址)，如虚机从外部获取IP时IP根本就不在port的fixed_ip字段里, 这样就会造成找不到port从而找不着device_id从而造成metadata服务不可用。(当然,可以通过allowed-address-pairs扩展将169.254.0.0/16加入虚机的port security里). 这种情况是不是可以用config-driver这种离线的元数据配置服务去代替在线的metadata服务. 或者搞一个所谓的serial port配置在fixed_ip list的源IP专门去读在线的metadata服务.</p>
-<p>config-driver虚机注入见: <a href="http://niusmallnan.github.io/_build/html/_templates/openstack/vm_first_boot_fast.html" target="_blank" rel="external">http://niusmallnan.github.io/_build/html/_templates/openstack/vm_first_boot_fast.html</a>, 即把nova boot传来的元数据写到iso中, 虚机启动时自动挂载iso, 然后init-cloud从光驱里读元数据并设置</p>
-<p>cat &lt;&lt; EOF &gt; user-data </p>
-<p>#cloud-config<br>user: ubuntu<br>password: ubuntu<br>chpasswd: { expire: False }<br>EOF<br>openstack server create –wait –image <image name=""> –flavor m1.medium –key-name <keynam> –nic net-id=<net-id> testvm –user-data ./user-data –config-drive true </net-id></keynam></image></p>
-<p>allowed-address-pairs见： <a href="http://blog.csdn.net/matt_mao/article/details/19417451" target="_blank" rel="external">http://blog.csdn.net/matt_mao/article/details/19417451</a></p>
-<p>默认为每一个虚机生成的反欺骗规则如下，这样VM的流量才能出去与外界通信。同样，metadata服务响应的流量要出来其源IP是169.254.0.0/16，也应为其添加allowed-address-pairs后流量才能出去。</p>
-<p>对于ipv6同样会有一个port有多个ipv6地址的情况，所以_select_ra_ips_for_network_ids方法就是使用ipv6的本地链路地址去为做网关的虚机生成默认的反欺骗规则从而允许其他虚机发过来的RA广播进来。</p>
-<p>arget          prot    opt    in     out          source           destination</p>
-<p>RETURN     all     –      <em>        </em>          <vm-ip>           0.0.0.0/0           MAC FA:16:3E:38:38:90<br>DROP          all     –      <em>        </em>          0.0.0.0/0            0.0.0.0/0</vm-ip></p>
-<p>2)访问dmz规则，FLAGS.dmz_cidr定义了一个dmz列表,虚机应该能访问它，例本例的dmz列表为:10.0.128.0/24</p>
-<p>-Anova-network-POSTROUTING -s 10.0.0.0/8 -d 10.0.128.0/24 -j ACCEPT</p>
-<p>3)两个虚机互通，从一个子网且不是DNAT的连接放行。</p>
-<p>-Anova-network-POSTROUTING -s 10.0.0.0/8 -d 10.0.0.0/8 -m conntrack !–ctstate DNAT</p>
-<p>-j ACCEPT</p>
-<p>４）SNAT规则，例如从10.0.0.0/8虚机内网网络出去的包将源目址修改为外网IP9.123.1.12</p>
-<p>-A nova-network-snat -s10.0.0.0/8 -j SNAT –to-source 9.123.1.122</p>
-<p>5)创建网桥要做的事</p>
-<p>1，网络节点，转发流量，充当网关</p>
-<p>-A nova-network-FORWARD -i br100 -j ACCEPT<br>-A nova-network-FORWARD -o br100 -j ACCEPT<br>2, 若是计算节点要允许虚机与网络节点以及其他计算节点上的虚机相连<br>-A nova-compute-FORWARD -i br100 -j ACCEPT<br>-A nova-compute-FORWARD -o br100 -j ACCEPT<br>若是计算节点要允许虚机与网络节点以及其他计算节点上的虚机相连<br>-A nova-compute-FORWARD -i br100 -j ACCEPT<br>-A nova-compute-FORWARD -o br100 -j ACCEPT<br>３,支持dhcp(67)和dns(53)</p>
-<p>-A nova-network-INPUT -i br100 -p udp -m udp –dport 67 -j ACCEPT<br>-A nova-network-INPUT -i br100 -p tcp -m tcp –dport 67 -j ACCEPT<br>-A nova-network-INPUT -i br100 -p udp -m udp –dport 53 -j ACCEPT<br>-A nova-network-INPUT -i br100 -p tcp -m tcp –dport 53 -j ACCEPT<br>４，所以每个虚机的链和规则如下图：</p>
-<p>４，所以每个虚机的链和规则如下图：</p>
-<p>相应的, neutron l2 agent上的规则如下：</p>
-<p>neutron l2 agent上的iptables设置，当它发现有新增tap设备时，就会从DB中取出和tap设备关联的port信息来设置vlan及security group（调用plugin的security_group_rules_for_devices方法获取port的安全组规则信息，规则信息里面已经考虑了允许dhcp, address_pair等）相关设置。每个port对应两条链(iX-XXXX和oX-XXXX), 下面只显示iX-XXXX的作为例子，oX-XXXX的依此类推。实现了这些功能：</p>
-<pre><code>prepares, updates, removes firewall filters （准备、更新和删除防火墙过滤器）
-drops all packets by default （默认丢弃所有包）
-prevents IP spoofing based on port&apos;s mac address (compatible with allowed_address_pairs extension) （防 IP 欺骗）
-allows incoming DHCP and ICMPv6 RA （允许进入虚机的 DHCP 包和 ICMPV6 RA）
-blocks outgoing DHCP （禁止出虚机的 DHCP 包）
-drops INVALID packets （丢弃无效状态的包）
-allows stateful, established connections （允许有状态的并且已建立的连接，比如允许进来的 ICMP 的时候，从外面 ping 虚机时虚机的响应包是可以返回的）
-converts security group rules to iptables rules (IPv4, IPv6, TCP, UDP, ICMP, ICMPv6) （将用户配置的规则转化为 iptables 规则）
-multiple TCP/UDP ports per iptables rule using multiport module
-支持 IPV4 和 IPV6
-</code></pre><p>相应的链如下：</p>
-<p>-N neutron-filter-top<br>-N neutron-openvswi-FORWARD #neutorn 定义的 FORWARD 链<br>-N neutron-openvswi-INPUT   #Neutron 定义的 INPUT 链<br>-N neutron-openvswi-OUTPUT  #Neutron 定义的 OUTPUT 链<br>-N neutron-openvswi-i6e3f2eda-3 #处理进入该虚机的网络包<br>-N neutron-openvswi-local<br>-N neutron-openvswi-o6e3f2eda-3 #处理出该虚机的网络包<br>-N neutron-openvswi-s6e3f2eda-3 #处理出该虚机的网络包的防IP欺骗<br>-N neutron-openvswi-sg-chain<br>-N neutron-openvswi-sg-fallback<br>-A INPUT -j neutron-openvswi-INPUT #将 INPUT 链转到 neutron 的 INPUT 链<br>-A FORWARD -j neutron-filter-top<br>-A FORWARD -j neutron-openvswi-FORWARD #将 FORWARD 链转到 neutorn 的 forward 链<br>-A OUTPUT -j neutron-filter-top<br>-A OUTPUT -j neutron-openvswi-OUTPUT   #将 OUTPUT 链转到 neutron 的 output 链<br>-A neutron-filter-top -j neutron-openvswi-local</p>
-<p>-A neutron-openvswi-FORWARD -m physdev –physdev-out tap6e3f2eda-32 –physdev-is-bridged -j neutron-openvswi-sg-chain #处理进入虚机的数据包<br>-A neutron-openvswi-FORWARD -m physdev –physdev-in tap6e3f2eda-32 –physdev-is-bridged -j neutron-openvswi-sg-chain  #处理出虚机的数据包<br>-A neutron-openvswi-INPUT -m physdev –physdev-in tap6e3f2eda-32 –physdev-is-bridged -j neutron-openvswi-o6e3f2eda-3 #处理出虚机的数据包</p>
-<p>#处理进虚机的包<br>-A neutron-openvswi-i6e3f2eda-3 -m state –state INVALID -j DROP                               #丢弃无效连接<br>-A neutron-openvswi-i6e3f2eda-3 -m state –state RELATED,ESTABLISHED -j RETURN                 #允许已建立的连接<br>-A neutron-openvswi-i6e3f2eda-3 -s 10.0.0.7/32 -p udp -m udp –sport 67 –dport 68 -j RETURN #允许 DHCP 服务器 10.0.0.3 的返回包<br>-A neutron-openvswi-i6e3f2eda-3 -s 10.0.0.2/32 -p udp -m udp –sport 67 –dport 68 -j RETURN #允许 DHCP 服务器 10.0.0.2 的返回包<br>-A neutron-openvswi-i6e3f2eda-3 -j neutron-openvswi-sg-fallback                                #其余包交给 fallback 链处理     </p>
-<p>#处理出虚机的包<br>-A neutron-openvswi-o6e3f2eda-3 -p udp -m udp –sport 68 –dport 67 -j RETURN   #允许 DHCP 访问<br>-A neutron-openvswi-o6e3f2eda-3 -j neutron-openvswi-s6e3f2eda-3                 #防止 IP 欺骗<br>-A neutron-openvswi-o6e3f2eda-3 -p udp -m udp –sport 67 –dport 68 -j DROP     #不允许对外提供 DHCP 服务<br>-A neutron-openvswi-o6e3f2eda-3 -m state –state INVALID -j DROP                #禁止无效连接<br>-A neutron-openvswi-o6e3f2eda-3 -m state –state RELATED,ESTABLISHED -j RETURN  #允许已建立的连接<br>-A neutron-openvswi-o6e3f2eda-3 -j neutron-openvswi-sg-fallback                 #其余交给 fallback 链处理</p>
-<p>#防 IP 欺骗规则：防止该虚机被利用来做 IP 欺骗攻击。<br>-A neutron-openvswi-s6e3f2eda-3 -s 10.0.0.14/32 -m mac –mac-source FA:16:3E:F3:1E:C0 -j RETURN #允许从虚机发出的MAC 和IP 同虚机的 MAC 和 IP 的包<br>-A neutron-openvswi-s6e3f2eda-3 -j DROP                                                           #禁止其余包</p>
-<p>-A neutron-openvswi-sg-chain -m physdev –physdev-out tap6e3f2eda-32 –physdev-is-bridged -j neutron-openvswi-i6e3f2eda-3 #处理进入虚机的包<br>-A neutron-openvswi-sg-chain -m physdev –physdev-in tap6e3f2eda-32 –physdev-is-bridged -j neutron-openvswi-o6e3f2eda-3  #处理出虚机的包</p>
-<p>-A neutron-openvswi-sg-chain -j ACCEPT<br>-A neutron-openvswi-sg-fallback -j DROP #丢弃其它包</p>
-<p>l3-agent 上FWaaS 相关设置：</p>
-<p>-A neutron-l3-agent-iv4XXXXXXXX-XXXX -m state –state INVALID -j DROP<br>-A neutron-l3-agent-iv4XXXXXXXX-XXXX -m state –state ESTABLISHED,RELATED -j ACCEPT<br>-A neutron-l3-agent-iv4XXXXXXXX-XXXX … -j ACCEPT/DROP</p>
-<p>-A neutron-l3-agent-ov4XXXXXXXX-XXXX -m state –state INVALID -j DROP<br>-A neutron-l3-agent-ov4XXXXXXXX-XXXX -m state –state ESTABLISHED,RELATED -j ACCEPT<br>-A neutron-l3-agent-ov4XXXXXXXX-XXXX … -j ACCEPT/DROP</p>
-<p>-A neutron-l3-agent-FORWARD -i qr-+ -j neutron-l3-agent-iv4XXXXXXXX-XXXX<br>-A neutron-l3-agent-FORWARD -o qr-+ -j neutron-l3-agent-ov4XXXXXXXX-XXXX<br>-A neutron-l3-agent-FORWARD -o qr-+ -j neutron-l3-agent-fwaas-default-policy<br>-A neutron-l3-agent-FORWARD -i qr-+ -j neutron-l3-agent-fwaas-default-policy</p>
-<p>5,nova-api一开始会在filter表内创建一个规则允许他人能访问它（如nova-api的ip是：　172.16.1.122)</p>
-<p>-A nova-api-INPUT -d 172.16.1.122/32 -p tcp -m tcp –dport 8775 -j ACCEPT<br>6, 浮动ip即外网ip设置在网络节点的外网网卡上<br>nova-manage floating create –ip_range=192.168.1.232/30<br>Nova floating-ip-create<br>nova add-floating-ip 8f773639-c04f-4885-9349-ac7d6a799843 192.168.1.233</p>
-<p>-A nova-network-OUTPUT -d 192.168.1.233/32 -j DNAT –to-destination 10.10.10.2<br>-A nova-network-PREROUTING -d 192.168.1.233/32 -j DNAT –to-destination 10.10.10.2<br>-A nova-network-float-snat -s 10.10.10.2/32 -j SNAT –to-source 192.168.1.233<br>6，如果想ping一个虚机的话，需设置一个安全组规则（nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0），它将产生如下防炎墙rules. 请记住，在此 nova-compute 主机上，针对每个实例必须有一个特定链；其内的规则只允许来自固定子集内的 IP 的流量。<br>-A nova-compute-inst-1 -p icmp -j ACCEPT<br>浮动ip即外网ip设置在网络节点的外网网卡上<br>nova-manage floating create –ip_range=192.168.1.232/30<br>Nova floating-ip-create<br>nova add-floating-ip 8f773639-c04f-4885-9349-ac7d6a799843 192.168.1.233</p>
-<p>-A nova-network-OUTPUT -d 192.168.1.233/32 -j DNAT –to-destination 10.10.10.2<br>-A nova-network-PREROUTING -d 192.168.1.233/32 -j DNAT –to-destination 10.10.10.2<br>-A nova-network-float-snat -s 10.10.10.2/32 -j SNAT –to-source 192.168.1.233<br>6，如果想ping一个虚机的话，需设置一个安全组规则（nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0），它将产生如下防炎墙rules. 请记住，在此 nova-compute 主机上，针对每个实例必须有一个特定链；其内的规则只允许来自固定子集内的 IP 的流量。<br>-A nova-compute-inst-1 -p icmp -j ACCEPT</p>
-<p>Neutron防火墙的定义位于：</p>
-<p>vi/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini</p>
-<p>[securitygroup]</p>
-<p>firewall_driver =neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver</p>
-<p>既然neutron的OVSHybridIptablesFirewallDriver接管了计算节点上的防火墙，所以应该确保nova-compute的nova.conf配置：</p>
-<p>[DEFAULT]</p>
-<p>firewall_driver =nova.virt.firewall.NoopFirewallDriver</p>
-<p>查看Neutron中定义防火墙信息命令如下：</p>
-<p>[hua@laptop devstack]$ ip netns list</p>
-<p>qrouter-a4a3f113-4c61-4f74-adb6-ea3b6855a7e7</p>
-<p>qdhcp-8779fa7c-d8ea-4827-a15d-3c7f56cb3ac0</p>
-<p>[hua@laptop devstack]$ sudo ip netns execqrouter-a4a3f113-4c61-4f74-adb6-ea3b6855a7e7 iptables-save</p>
-<p>[hua@laptop devstack]$ sudo ip netns execqrouter-a4a3f113-4c61-4f74-adb6-ea3b6855a7e7 iptables-restore</p>
-<p>下面是这篇文章《利用raw表实现iptables调试》<a href="http://blog.youlingman.info/debugging-iptables-with-raw-table/" target="_blank" rel="external">http://blog.youlingman.info/debugging-iptables-with-raw-table/</a> 中的内容。</p>
-<p>关于上面的这个图，先要说一个很重要的说法，上图显示，netfilter实际上既可以在L2层过滤，也可以在L3层过滤的。</p>
-<p>所以在网桥中一般会有下面的参数，即要求iptables不对bridge的数据进行处理：</p>
-<h1 id="cat-gt-gt-etc-sysctl-conf-lt-lt-EOF"><a href="#cat-gt-gt-etc-sysctl-conf-lt-lt-EOF" class="headerlink" title="cat &gt;&gt; /etc/sysctl.conf &lt;&lt;EOF"></a>cat &gt;&gt; /etc/sysctl.conf &lt;&lt;EOF</h1><p>  net.bridge.bridge-nf-call-ip6tables = 0<br>  net.bridge.bridge-nf-call-iptables = 0<br>  net.bridge.bridge-nf-call-arptables = 0<br>  EOF</p>
-<h1 id="sysctl-p-etc-sysctl-conf"><a href="#sysctl-p-etc-sysctl-conf" class="headerlink" title="sysctl -p /etc/sysctl.conf"></a>sysctl -p /etc/sysctl.conf</h1><p>或者改用下面的方法解决：</p>
-<p> iptables -t raw -I PREROUTING -i BRIDGE -s x.x.x.x -j NOTRACK.</p>
-<p>如果net.bridge.bridge-nf-call-iptables＝1，也就意味着二层的网桥在转发包时也会被iptables的FORWARD规则所过滤，这样就会出现L3层的iptables rules去过滤L2的帧的问题（packets don’t cross nat table twice, In the bridging process, you don’t know the outgoing interface so the previous rule doesn’t work. He needs the interface because he’s using MASQUERADE. In the routing process, the packets go to iptables but they never cross NAT tables because the packet already crossed the table in the bridging process.<a href="http://www.woitasen.com.ar/2011/09/confusion-using-iptables-nat-and-bridge/），所以涉及一些dnat" target="_blank" rel="external">http://www.woitasen.com.ar/2011/09/confusion-using-iptables-nat-and-bridge/），所以涉及一些dnat</a>, snat就不生效了，举个例子，具体表现在openstack中就是metadata服务不好使了。这个说法可参见：<a href="https://bugzilla.redhat.com/show_bug.cgi?id=512206" target="_blank" rel="external">https://bugzilla.redhat.com/show_bug.cgi?id=512206</a></p>
-<p>所以这样下面的规则也就失效了，所以<a href="http://blog.youlingman.info/debugging-iptables-with-raw-table/这个文章上的作者调试iptables的方法挺好，但实际上网络为什么不通的问题实质没有找准。" target="_blank" rel="external">http://blog.youlingman.info/debugging-iptables-with-raw-table/这个文章上的作者调试iptables的方法挺好，但实际上网络为什么不通的问题实质没有找准。</a></p>
-<p>-A quantum-l3-agent-POSTROUTING ! -i qg-91757ded-c4 ! -o qg-91757ded-c4 -m conntrack ! –ctstate DNAT -j ACCEPT</p>
-<p>还有一种等价于上面bridge-nf-call-iptables的做法，即iptables允许bridge上的数据直接转发</p>
-<h1 id="iptables-I-FORWARD-m-physdev-–physdev-is-bridged-j-ACCEPT"><a href="#iptables-I-FORWARD-m-physdev-–physdev-is-bridged-j-ACCEPT" class="headerlink" title="iptables -I FORWARD -m physdev –physdev-is-bridged -j ACCEPT"></a>iptables -I FORWARD -m physdev –physdev-is-bridged -j ACCEPT</h1><h1 id="service-iptables-save"><a href="#service-iptables-save" class="headerlink" title="service iptables save"></a>service iptables save</h1><h1 id="service-iptables-restart"><a href="#service-iptables-restart" class="headerlink" title="service iptables restart"></a>service iptables restart</h1><p>physdev是二层的东西，三层的接口用-i来匹配，但二层的需要用physdev模块的physdev-in这个match了。</p>
-<p>下列配置抓取所有经过本机的ICMP包：</p>
-<p>iptables -t raw -A OUTPUT -p icmp -j TRACE<br>iptables -t raw -A PREROUTING -p icmp -j TRACE<br>modprobe ipt_LOG<br>调试信息记录在/var/log/message文件中</p>
-<p>其他：</p>
-<p>打开一个端口：</p>
-<p>iptables -I INPUT -i eth0 -p tcp –dport 16509 -j ACCEPT<br>iptables  -I OUTPUT -o eth0 -p tcp –sport 16509 -j ACCEPT<br>sudo iptables-save &gt; /tmp/ipt.save<br>cat /tmp/ipt.save | sudo iptables-restore<br>lsof -i:16509</p>
-<p>2014-04-25添加：</p>
-<p>如果使用neutron中的security group的话，配置如下：</p>
-<p>1, /etc/nova/nova.conf:<br>libvirt_vif_driver = nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver<br>linuxnet_interface_driver =nova.network.linux_net.LinuxOVSInterfaceDriver<br>security_group_api = neutron<br>firewall_driver = nova.virt.firewall.NoopFirewallDriver<br>2, /etc/neutron/ovs_neutron_plugin.ini:<br>firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver</p>
-<p>Allowed Address Pairs Extenstion, 除了默认的防火墙, 还有其他什么ip可以穿过, 这样实例就可以用任意的源IP来访问外部网络</p>
-<p>资料：</p>
-<p>Linux网络路由表处理及钩子（Iptables and Ebtables） <a href="http://blog.chinaunix.net/uid-23741326-id-3573470.html" target="_blank" rel="external">http://blog.chinaunix.net/uid-23741326-id-3573470.html</a></p>
-<p>metadata, <a href="http://techbackground.blogspot.jp/2013/06/metadata-via-quantum-router.html" target="_blank" rel="external">http://techbackground.blogspot.jp/2013/06/metadata-via-quantum-router.html</a></p>
-<p><a href="https://vietstack.wordpress.com/2014/09/27/introduction-of-metadata-service-in-openstack/" target="_blank" rel="external">https://vietstack.wordpress.com/2014/09/27/introduction-of-metadata-service-in-openstack/</a></p>
-<p><a href="http://techbackground.blogspot.ie/2013/06/metadata-via-quantum-router.html" target="_blank" rel="external">http://techbackground.blogspot.ie/2013/06/metadata-via-quantum-router.html</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1980,7 +1840,7 @@ multiple TCP/UDP ports per iptables rule using multiport module
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">102</span>
+                  <span class="site-state-item-count">103</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
