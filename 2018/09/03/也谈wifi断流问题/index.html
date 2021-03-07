@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
+<meta name="description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 20210307更新见 - https://zhhuabj.blog.csdn.net/article/details/114434188 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误">
 <meta property="og:type" content="article">
 <meta property="og:title" content="也谈wifi断流问题">
 <meta property="og:url" content="http://yoursite.com/2018/09/03/也谈wifi断流问题/index.html">
 <meta property="og:site_name" content="技术并艺术着">
-<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
-<meta property="og:updated_time" content="2021-03-06T03:49:41.967Z">
+<meta property="og:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 20210307更新见 - https://zhhuabj.blog.csdn.net/article/details/114434188 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误">
+<meta property="og:updated_time" content="2021-03-07T08:26:08.798Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="也谈wifi断流问题">
-<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置">
+<meta name="twitter:description" content="版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03) 20210307更新见 - https://zhhuabj.blog.csdn.net/article/details/114434188 导言现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误">
 
 
 
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-03T12:02:42+08:00">
                 2018-09-03
@@ -299,6 +299,7 @@
 
       
         <p><strong>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 (作者：张华 发表于：2018-09-03)</strong></p>
+<h2 id="20210307更新"><a href="#20210307更新" class="headerlink" title="20210307更新"></a>20210307更新</h2><p>见 - <a href="https://zhhuabj.blog.csdn.net/article/details/114434188" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/114434188</a></p>
 <h2 id="导言"><a href="#导言" class="headerlink" title="导言"></a>导言</h2><p>现实生活中的悖论真多, 本来pmtud是设计用来在mtu不一致的情况下协商mss值的, 结果很多服务端或者中间路由器会错误地禁用掉icmp-type=3或者icmp=type=4, 于是ptmud不可用, 于是很多路由器中的clamp-mss-to-pmtu设置(iptables -t mangle -A POSTROUTING -p tcp –tcp-flags SYN,RST SYN -j TCPMSS –clamp-mss-to-pmtu)也失效, 这样tcp访问某些特定mtu值不一致的网站时就会出现各种莫名其妙的问题.<br>另一方面, 对于udp, 因为无连接, 所以无法协商mss, 这样有些网络设备(eg: Nokia7)会设置禁止pmtud协商(disable DF bit in the IP header of the sender, ip_no_pmtu_disc=1), 从而也会反过来造成路由器中的clamp-mss-to-pmtu失效.<br>注: 我家wan mtu=1484 (注意: 自从openwrt上游又接tplink router之后, openwrt wan mtu=1500, tplink wan mtu=1480, 需要将openwrt上的mss相关的iptables去掉吗?)</p>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>笔者最近应该是遇到了常听大家说起的wifi断流问题, 新入一款安卓原生系统手机, 但是在使用wifi上网时会感觉到某些APP上网不流畅, 尤其是使用京东APP搜索商品时会总说找不着网络, 但此时显然是有网络的. 为此, 笔者先做了一系统排除性实验:</p>
 <ul>
@@ -468,10 +469,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Inhaltsverzeichnis
+            Table of Contents
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Übersicht
+            Overview
           </li>
         </ul>
       
@@ -492,7 +493,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">103</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -528,7 +529,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#导言"><span class="nav-number">1.</span> <span class="nav-text">导言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决"><span class="nav-number">3.</span> <span class="nav-text">解决</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个案例"><span class="nav-number">5.</span> <span class="nav-text">另一个案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个问题-ssh连接时不时中断"><span class="nav-number">6.</span> <span class="nav-text">另一个问题 - ssh连接时不时中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20190426更新"><span class="nav-number">7.</span> <span class="nav-text">20190426更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">8.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20200316更新"><span class="nav-number">9.</span> <span class="nav-text">20200316更新</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#20210307更新"><span class="nav-number">1.</span> <span class="nav-text">20210307更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#导言"><span class="nav-number">2.</span> <span class="nav-text">导言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">3.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决"><span class="nav-number">4.</span> <span class="nav-text">解决</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个案例"><span class="nav-number">6.</span> <span class="nav-text">另一个案例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一个问题-ssh连接时不时中断"><span class="nav-number">7.</span> <span class="nav-text">另一个问题 - ssh连接时不时中断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20190426更新"><span class="nav-number">8.</span> <span class="nav-text">20190426更新</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他"><span class="nav-number">9.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#20200316更新"><span class="nav-number">10.</span> <span class="nav-text">20200316更新</span></a></li></ol></div>
             
 
           </div>
@@ -558,7 +559,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

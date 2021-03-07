@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2021/03/06/docker-host-net-mtu/index.html">
 <meta property="og:site_name" content="技术并艺术着">
 <meta property="og:description" content="作者：张华 发表于：2021-03-06版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 在一个gre虚机上创建一个docker container，显然网络不通是由mtu造成的。但是如果host=net创建的网络为什么也是不行呢？12sudo docker run --rm --net=host --privileged --name=nginx -v /s">
-<meta property="og:updated_time" content="2021-03-06T03:49:06.103Z">
+<meta property="og:updated_time" content="2021-03-07T08:25:13.342Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="docker host net mtu">
 <meta name="twitter:description" content="作者：张华 发表于：2021-03-06版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明 在一个gre虚机上创建一个docker container，显然网络不通是由mtu造成的。但是如果host=net创建的网络为什么也是不行呢？12sudo docker run --rm --net=host --privileged --name=nginx -v /s">
@@ -184,7 +184,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -194,7 +194,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -258,7 +258,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-03-06T11:48:55+08:00">
                 2021-03-06
@@ -328,7 +328,23 @@
 <p>以太网帧为46到1500节字之间，IPv4的IP包头是20，IP报文体是1480字节。UDP头(源端口，目标端口，UDP长度，UDP校验和）是8字节，所以UDP包长度是1472字节。还有GRE头也是8字节。<br>所以 1442 - 20(IP头) - 8 (UDP头) - 8 (ICMP头）　＝　1408<br>GRE/Vxlan的包头大小见　－　<a href="https://tonydeng.github.io/sdn-handbook/basic/overlay.html" target="_blank" rel="external">https://tonydeng.github.io/sdn-handbook/basic/overlay.html</a></p>
 <p>可用下列命令测试mtu (1442 - 28 = 1414)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ping -c 2 -s 1414 -M do 10.5.0.178</span><br><span class="line"></span><br><span class="line">root@10:/# traceroute --mtu 10.5.0.178</span><br><span class="line">traceroute to 10.5.0.178 (10.5.0.178), 30 hops max, 65000 byte packets</span><br><span class="line"> 1  * F=1492 * *</span><br><span class="line"> 2  juju-c40d4b-ovn-6.cloud.sts (10.5.0.178)  2.859 ms  2.169 ms  0.671 ms</span><br></pre></td></tr></table></figure></p>
 <p>对于udp, 因为无连接, 所以无法协商mss<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/sys/net/ipv4/ip_no_pmtu_disc</span><br><span class="line">0</span><br></pre></td></tr></table></figure></p>
-<p>见 - <a href="https://zhhuabj.blog.csdn.net/article/details/82346840" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/82346840</a><br>根据这篇文章（<a href="https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp" target="_blank" rel="external">https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp</a> server处设置ip_no_pmtu_disc=1(docker中如何设置-<a href="https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp" target="_blank" rel="external">https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp</a> server发出来的包会带有禁止分片DF=1, 这样当udp client收到这种DF=1且udp包大小&gt;mtu时（也见－<a href="https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。</a><br>另一种办法可以是提高虚机与容器的mtu到(1432+ 28=1460), 为什么现在是1442这么低。</p>
+<p>见 - <a href="https://zhhuabj.blog.csdn.net/article/details/82346840" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/82346840</a><br>根据这篇文章（<a href="https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp" target="_blank" rel="external">https://blog.csdn.net/sinat_20184565/article/details/80326262），对于udp，在udp</a> server处设置ip_no_pmtu_disc=1(docker中如何设置-<a href="https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp" target="_blank" rel="external">https://github.com/hwdsl2/docker-ipsec-vpn-server)后，udp</a> server发出来的包会带有禁止分片DF=1, 这样当udp client收到这种DF=1且udp包大小&gt;mtu时（也见－<a href="https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。因为一般udp分片都是关的，所以需要在server端的应用层先分好。" target="_blank" rel="external">https://zhhuabj.blog.csdn.net/article/details/114434188）就会向server返回实际的mtu大小，然后server端将包先按mtu分好。因为一般udp分片都是关的，所以需要在server端的应用层先分好。</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@i1:~$ ethtool -k ens2 |grep udp-fragmentation-offload</span><br><span class="line">udp-fragmentation-offload: off</span><br></pre></td></tr></table></figure></p>
+<p>另一种办法可以是提高虚机与容器的mtu到(1432+ 28=1460), 为什么现在是1442这么低。</p>
+<h2 id="重现问题"><a href="#重现问题" class="headerlink" title="重现问题"></a>重现问题</h2><p>perf相比nc有一个-l参数，可以指定udp包大小(在服务端不指定大小，在客户端指定大小1432, 这样得出1432是发包，所以可以很容易重现问题。<br>在容器里运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iperf -c 10.5.0.178 -u -l 1432</span><br></pre></td></tr></table></figure></p>
+<p>在物理机上运行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iperf -s -u</span><br></pre></td></tr></table></figure></p>
+<p>容器里抓包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ubuntu@i1:~$ sudo tcpdump -ei ens2 -s 0 port 5001</span><br><span class="line">04:06:53.401372 fa:16:3e:54:36:ad (oui Unknown) &gt; fa:16:3e:22:d6:67 (oui Unknown), ethertype IPv4 (0x0800), length 1450: i1.54000 &gt; juju-c40d4b-ovn-6.cloud.sts.5001: UDP, bad length 1432 &gt; 1408</span><br></pre></td></tr></table></figure></p>
+<p>换成下列UDP代码无问题, 但将里面的server与client的行（msgFromServer       = “Hello UDP Client”）改成（msgFromServer       = “Hello UDP Client” * 100 )就重现问题了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">cat &lt;&lt; EOF | sudo tee -a udp_server.py</span><br><span class="line">import socket</span><br><span class="line">localIP     = &quot;0.0.0.0&quot;</span><br><span class="line">localPort   = 5001</span><br><span class="line">bufferSize  = 1024</span><br><span class="line">msgFromServer       = &quot;Hello UDP Client&quot;</span><br><span class="line">bytesToSend         = str.encode(msgFromServer)</span><br><span class="line"># Create a datagram socket</span><br><span class="line">UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)</span><br><span class="line"># Bind to address and ip</span><br><span class="line">UDPServerSocket.bind((localIP, localPort))</span><br><span class="line">print(&quot;UDP server up and listening&quot;)</span><br><span class="line"># Listen for incoming datagrams</span><br><span class="line">while(True):</span><br><span class="line">    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)</span><br><span class="line">    message = bytesAddressPair[0]</span><br><span class="line">    address = bytesAddressPair[1]</span><br><span class="line">    clientMsg = &quot;Message from Client:&#123;&#125;&quot;.format(message)</span><br><span class="line">    clientIP  = &quot;Client IP Address:&#123;&#125;&quot;.format(address)</span><br><span class="line">    print(clientMsg)</span><br><span class="line">    print(clientIP)</span><br><span class="line">    # Sending a reply to client</span><br><span class="line">    UDPServerSocket.sendto(bytesToSend, address)</span><br><span class="line">EOF</span><br><span class="line">python3 udp_server.py</span><br><span class="line"></span><br><span class="line">cat &lt;&lt; EOF | sudo tee -a udp_client.py</span><br><span class="line">import socket</span><br><span class="line">msgFromClient       = &quot;Hello UDP Server&quot;</span><br><span class="line">bytesToSend         = str.encode(msgFromClient)</span><br><span class="line">serverAddressPort   = (&quot;192.168.2.139&quot;, 5001)</span><br><span class="line">bufferSize          = 1024</span><br><span class="line"># Create a UDP socket at client side</span><br><span class="line">UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)</span><br><span class="line"># Send to server using created UDP socket</span><br><span class="line">UDPClientSocket.sendto(bytesToSend, serverAddressPort)</span><br><span class="line">msgFromServer = UDPClientSocket.recvfrom(bufferSize)</span><br><span class="line">msg = &quot;Message from Server &#123;&#125;&quot;.format(msgFromServer[0])</span><br><span class="line">print(msg)</span><br><span class="line">EOF</span><br><span class="line">python3 udp_client.py</span><br></pre></td></tr></table></figure></p>
+<h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>这个udp包的大小是由udp应用自己指定的。</p>
+<ul>
+<li>iperf遇到这种udp包比mss还大的情况（<a href="https://github.com/esnet/iperf/issues/604）就提醒人们注意了" target="_blank" rel="external">https://github.com/esnet/iperf/issues/604）就提醒人们注意了</a> - <a href="https://github.com/esnet/iperf/commit/6663be4144873b2751e7ae48b0161663ecf78d00" target="_blank" rel="external">https://github.com/esnet/iperf/commit/6663be4144873b2751e7ae48b0161663ecf78d00</a></li>
+<li>有一些软件会在udp发送端(server与client都有可能成为发送端设置“echo 1 &gt;/proc/sys/net/ipv4/ip_no_pmtu_disc”，这样不再充许pmtu协商 (这当然也会破坏tcp的mss协商)，这相当于是 disable the Don’t Fragment (DF) ( DF置位时才能pmtu协商），这样这种软件自己实现了IP分片。见: <a href="https://www.zeitgeist.se/2013/11/26/mtu-woes-in-ipsec-tunnels-how-to-fix/" target="_blank" rel="external">https://www.zeitgeist.se/2013/11/26/mtu-woes-in-ipsec-tunnels-how-to-fix/</a></li>
+</ul>
+<p>所以对于这个问题的解决：</p>
+<ul>
+<li>要么udp软件中自己改小udp包大小。</li>
+<li>要求提高虚机的mtu (这也得改底层openstack的mtu)</li>
+</ul>
+<p>也这是为什么一些网站如京东用到了udp不好使的原因　－　见：　<a href="https://blog.csdn.net/quqi99/article/details/82346840" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/82346840</a></p>
 
       
     </div>
@@ -415,10 +431,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Inhaltsverzeichnis
+            Table of Contents
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Übersicht
+            Overview
           </li>
         </ul>
       
@@ -439,7 +455,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">103</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -475,7 +491,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#测试结果"><span class="nav-number">1.</span> <span class="nav-text">测试结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp可以时的抓包"><span class="nav-number">2.</span> <span class="nav-text">tcp可以时的抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#udp可以时的抓包"><span class="nav-number">3.</span> <span class="nav-text">udp可以时的抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#udp不可以时的抓包数据-这也是正常的，server要重启"><span class="nav-number">4.</span> <span class="nav-text">udp不可以时的抓包数据(这也是正常的，server要重启)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP-bad-length-1432-gt-1408"><span class="nav-number">5.</span> <span class="nav-text">UDP, bad length 1432 > 1408</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#测试结果"><span class="nav-number">1.</span> <span class="nav-text">测试结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp可以时的抓包"><span class="nav-number">2.</span> <span class="nav-text">tcp可以时的抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#udp可以时的抓包"><span class="nav-number">3.</span> <span class="nav-text">udp可以时的抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#udp不可以时的抓包数据-这也是正常的，server要重启"><span class="nav-number">4.</span> <span class="nav-text">udp不可以时的抓包数据(这也是正常的，server要重启)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP-bad-length-1432-gt-1408"><span class="nav-number">5.</span> <span class="nav-text">UDP, bad length 1432 > 1408</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重现问题"><span class="nav-number">6.</span> <span class="nav-text">重现问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方案"><span class="nav-number">7.</span> <span class="nav-text">解决方案</span></a></li></ol></div>
             
 
           </div>
@@ -505,7 +521,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
