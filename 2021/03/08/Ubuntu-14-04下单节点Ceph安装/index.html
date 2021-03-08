@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作者：张华  发表于：2014-06-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Ceph理论    见我的博客：http://blog.csdn.net/quqi99/article/details/32939509 注意点：   a, 一个ceph cluster至少需要1个mon节点和2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu 14.04下单节点Ceph安装">
+<meta property="og:url" content="http://yoursite.com/2021/03/08/Ubuntu-14-04下单节点Ceph安装/index.html">
+<meta property="og:site_name" content="技术并艺术着">
+<meta property="og:description" content="作者：张华  发表于：2014-06-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Ceph理论    见我的博客：http://blog.csdn.net/quqi99/article/details/32939509 注意点：   a, 一个ceph cluster至少需要1个mon节点和2">
+<meta property="og:updated_time" content="2021-03-08T02:35:33.319Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ubuntu 14.04下单节点Ceph安装">
+<meta name="twitter:description" content="作者：张华  发表于：2014-06-23版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明(http://blog.csdn.net/quqi99 )Ceph理论    见我的博客：http://blog.csdn.net/quqi99/article/details/32939509 注意点：   a, 一个ceph cluster至少需要1个mon节点和2">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2021/03/08/Ubuntu-14-04下单节点Ceph安装/"/>
+
+
+
+
+
+  <title>Ubuntu 14.04下单节点Ceph安装 | 技术并艺术着</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术并艺术着</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">张华的技术博客 - blog.csdn.net/quqi99</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/08/Ubuntu-14-04下单节点Ceph安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Ubuntu 14.04下单节点Ceph安装</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-03-08T10:34:38+08:00">
+                2021-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作者：张华  发表于：2014-06-23<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>(<a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>Ceph理论<br>    见我的博客：<a href="http://blog.csdn.net/quqi99/article/details/32939509" target="_blank" rel="external">http://blog.csdn.net/quqi99/article/details/32939509</a></p>
+<pre><code>注意点：
+
+ a, 一个ceph cluster至少需要1个mon节点和2个osd节点才能达到active + clean状态(故osd pool default size得&gt;=2, 注意：如果不想复制的话，弄一个osd节点也是可以的，只需要将复制的备份数由默认3改为1即可，即sudo ceph osd pool set data min_size 1)，meta节点只有运行ceph文件系统时才需要。
+
+    所以如果只有一个单节点的话，需要在ceph deploy new命令之后紧接着执行下列命令修改ceph.conf配置：
+
+    echo &quot;osd crush chooseleaf type = 0&quot; &gt;&gt; ceph.conf
+    echo &quot;osd pool default size = 1&quot; &gt;&gt; ceph.conf
+
+    osd crush chooseleaf type参数很重要，解释见：https://ceph.com/docs/master/rados/configuration/ceph-conf/
+
+ b, 多个网卡的话，可在ceph.conf的[global]段中添加public network = {cidr}参数
+
+ c, 一个osd块设备最好大于5G，不然创建日志系统时会空间太小, 或修改：
+
+    echo &quot;osd journal size = 100&quot; &gt;&gt; ceph.conf
+
+ d, 测试时不想那么涉及权限那么麻烦，可以
+
+   echo &quot;auth cluster required = none&quot; &gt;&gt; ceph.conf
+   echo &quot;auth service required = none&quot; &gt;&gt; ceph.conf
+   echo &quot;auth client required = none&quot; &gt;&gt; ceph.conf
+
+ e, 想使用权限的话，步骤如下：
+</code></pre><p>一旦 cephx 启用， ceph 会在默认的搜索路径寻找 keyring ， 像 /etc/ceph/ceph.$name.keyring 。可以的 ceph 配置文件的 [global] 段，加入 keyring 配置指定这个路径。但不推荐这样做。<br>创建 client.admin key ， 并在你的 client host 上保存一份<br>$ ceph auth get-or-create client.admin mon ‘allow <em>‘ mds ‘allow </em>‘ osd ‘allow *’ -o /etc/ceph/ceph.client.admin.keyring<br>注意 ： 此命令会毁坏己有的 /etc/ceph/ceph.client.admin.keyring 。</p>
+<p>为你的 cluster 创建一个 keyring ，创建一个 monitor 安全 key<br>$ ceph-authtool –create-keyring /tmp/ceph.mon.keyring –gen-key -n mon. –cap mon ‘allow *’<br>复制上面创建的 monitor keyring 到所有 monitor 的 mon data 目录，并命名为 ceph.mon.keyring 。例如，复制它到 cluster ceph 的 mon.a monitor<br>$ cp /tmp/ceph.mon.keyring /var/lib/ceph/mon/ceph-$(hostname)/keyring<br>为所有 OSD 生成安全 key ， {$id} 指 OSD number</p>
+<p>$ ceph auth get-or-create osd.{$id} mon ‘allow rwx’ osd ‘allow *’ -o /var/lib/ceph/osd/ceph-{$id}/keyring<br>为所有 MDS 生成安全 key , {$id} 指 MDS letter</p>
+<p>$ ceph auth get-or-create mds.{$id} mon ‘allow rwx’ osd ‘allow <em>‘ mds ‘allow </em>‘ -o /var/lib/ceph/mds/ceph-{$id}/keyring<br>为 0.51 版本以上的 ceph 启动 cephx 认证，在配置文件的 [global] 段加入</p>
+<p>auth cluster required = cephx<br>auth service required = cephx<br>auth client required = cephx</p>
+<p> 环境准备<br>    单节点node1上同时安装osd(一块块设备/dev/ceph-volumes/lv-ceph0），mds, mon, client与admin。<br>    1, 确保/etc/hosts, 例: 本例中的hostname叫node1, 如果不是node1请换成别的</p>
+<p>local_host=”<code>hostname --fqdn</code>“<br>local_ip=<code>host $local_host 2&gt;/dev/null | awk &#39;{print $NF}&#39; |head -n 1</code><br>sudo bash -c ‘cat &gt;&gt; /etc/hosts’ &lt;&lt; EOF<br><code>echo $local_ip</code>   <code>echo $local_host</code><br>EOF<br>sudo sed -i “/$local_host/“d /etc/hosts<br>ssh-copy-id -i ~/.ssh/id_rsa.pub $local_ip #run multiple times if there are mutliple nodes<br>ping -c 1 $local_ip</p>
+<pre><code>2, 确保安装ceph-deply的机器和其它所有节点的ssh免密码访问(ssh-keygen &amp;&amp; ssh-copy-id othernode)
+</code></pre><p>安装步骤(注意，下面所有的操作均在admin节点进行）<br>1, 准备两块块设备（块设备可以是硬盘，也可以是LVM卷），我们这里使用文件裸设备模拟. 若想直接使用裸设备的话，直接用losetup加载即可： sudo losetup –show -f /images/ceph-volumes.img</p>
+<p>sudo mkdir -p /images &amp;&amp; sudo chown $(whoami) /images<br>dd if=/dev/zero of=/images/ceph-volumes.img bs=1M count=8192 oflag=direct<br>sudo losetup -d /dev/loop0 &gt; /dev/null 2&gt;&amp;1<br>sudo vgremove -y ceph-volumes &gt; /dev/null 2&gt;&amp;1<br>sudo vgcreate ceph-volumes $(sudo losetup –show -f /images/ceph-volumes.img)<br>sudo lvcreate -L2G -nceph0 ceph-volumes<br>sudo lvcreate -L2G -nceph1 ceph-volumes<br>sudo mkfs.xfs -f /dev/ceph-volumes/ceph0<br>sudo mkfs.xfs -f /dev/ceph-volumes/ceph1<br>sudo mkdir -p /srv/ceph/{osd0,osd1,mon0,mds0} &amp;&amp; sudo chown -R $(whoami) /srv<br>sudo mount /dev/ceph-volumes/ceph0 /srv/ceph/osd0<br>sudo mount /dev/ceph-volumes/ceph1 /srv/ceph/osd1</p>
+<p>2, 找一个工作目录创建集群, ceph-deploy new {ceph-node} {ceph-other-node}，它将部署新的monitor节点</p>
+<p>   sudo apt-get -y install ceph ceph-deploy<br>   mkdir ceph-cluster &amp;&amp; cd ceph-cluster<br>   ceph-deploy new node1 #如果是多节点，就将节点都列在后面</p>
+<p>   hua@node1:/bak/work/ceph-cluster$ ls .<br>     ceph.conf  ceph-deploy-ceph.log  ceph.mon.keyring</p>
+<p>   它将在当前目录生成ceph.conf及ceph.mon.keyring (这个相当于人工执行： ceph-authtool –create-keyring ceph.mon.keyring –gen-key -n mon. –cap mon “allow *’ )</p>
+<pre><code> 如果只有一个节点，还需要执行：
+
+    echo &quot;osd crush chooseleaf type = 0&quot; &gt;&gt; ceph.conf
+    echo &quot;osd pool default size = 1&quot; &gt;&gt; ceph.conf
+
+    echo &quot;osd journal size = 100&quot; &gt;&gt; ceph.conf
+
+    echo &quot;rbd_default_features = 1&quot; &gt;&gt; ceph.conf
+
+最终ceph.conf的内容如下：
+</code></pre><p>[global]<br>fsid = f1245211-c764-49d3-81cd-b289ca82a96d<br>mon_initial_members = node1<br>mon_host = 192.168.99.124<br>auth_cluster_required = cephx<br>auth_service_required = cephx<br>auth_client_required = cephx<br>filestore_xattr_use_omap = true<br>osd crush chooseleaf type = 0<br>osd pool default size = 1<br>osd journal size = 100</p>
+<p>rbd_default_features = 1</p>
+<p>也可继续为ceph指定网络，下面两个参数可配置在每个段之中：</p>
+<p>cluster network = 10.0.0.0/8<br>public network = 192.168.5.0/24</p>
+<p>3, 安装Ceph基本库到各节点(ceph, ceph-common, ceph-fs-common, ceph-mds, gdisk)， ceph-deploy install {ceph-node}[{ceph-node} …]</p>
+<p>   ceph-deploy purgedata node1</p>
+<p>   ceph-deploy forgetkeys<br>   ceph-deploy install node1  #如果是多节点，就将节点都列在后面</p>
+<p>   它会执行，sudo env DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical apt-get -q -o Dpkg::Options::=–force-confnew –no-install-recommends –assume-yes install – ceph ceph-mds ceph-common ceph-fs-common gdisk</p>
+<p>4, 增加一个集群监视器, ceph-deploy mon create {ceph-node}</p>
+<p>   sudo chown -R hua:root /var/run/ceph/<br>   sudo chown -R hua:root /var/lib/ceph/<br>   ceph-deploy –overwrite-conf mon create node1   #如果是多节点就将节点都列在后面</p>
+<pre><code>相当于：
+
+sudo ceph-authtool /var/lib/ceph/tmp/keyring.mon.$(hostname) --create-keyring --name=mon. --add-
+</code></pre><p>key=$(ceph-authtool –gen-print-key) –cap mon ‘allow *’</p>
+<pre><code>sudo ceph-mon -c /etc/ceph/ceph.conf --mkfs -i $(hostname) --keyring /var/lib/ceph/tmp/keyring.mon
+</code></pre><p>.$(hostname)</p>
+<p>   sudo initctl emit ceph-mon id=$(hostname)</p>
+<p>5, 获取密钥，会在my-cluster目录下生成几个key</p>
+<p>   ceph-deploy mon create-initial</p>
+<p>hua@node1:/bak/work/ceph-cluster$ ls<br>ceph.bootstrap-mds.keyring  ceph.bootstrap-rgw.keyring  ceph.conf             ceph.mon.keyring<br>ceph.bootstrap-osd.keyring  ceph.client.admin.keyring   ceph-deploy-ceph.log</p>
+<p>6, 增加osd, ceph-deploy osd prepare {ceph-node}:/path/to/directory<br>   ceph-deploy osd prepare node1:/srv/ceph/osd0<br>   ceph-deploy osd prepare node1:/srv/ceph/osd1</p>
+<pre><code>若使用了cephx权限的话，可以：
+</code></pre><p>   OSD_ID=$(sudo ceph -c /etc/ceph/ceph.conf osd create)<br>   sudo ceph -c /etc/ceph/ceph.conf auth get-or-create osd.${OSD_ID} mon ‘allow profile osd ‘ osd<br> ‘allow *’ | sudo tee ${CEPH_DATA_DIR}/osd/ceph-${OSD_ID}/keyring</p>
+<p>7, 激活OSD, ceph-deploy osd activate {ceph-node}:/path/to/directory</p>
+<p>   sudo chmod 777 /srv/ceph/osd0<br>   sudo chmod 777 /srv/ceph/osd1<br>   sudo ceph-deploy osd activate node1:/srv/ceph/osd0</p>
+<p>   sudo ceph-deploy osd activate node1:/srv/ceph/osd1<br>   若出现错误ceph-disk: Error: No cluster conf found，那是需要清空/src/ceph/osd0</p>
+<p>8, 复制 admin 密钥到其他节点, 复制 ceph.conf, ceph.client.admin.keyring 到 ceph{1,2,3}:/etc/ceph<br>   ceph-deploy admin node1</p>
+<p>   ssh node1 ls /etc/ceph/ceph.conf</p>
+<p>9, 验证<br>   sudo ceph -s<br>   sudo ceph osd tree </p>
+<p>hua@node1:/bak/work/ceph-cluster$ sudo ceph -s<br>    cluster 333a8495-601f-4237-9b60-c07e13b80b5b<br>     health HEALTH_OK<br>     monmap e1: 1 mons at {node1=192.168.99.124:6789/0}<br>            election epoch 3, quorum 0 node1<br>     osdmap e9: 2 osds: 2 up, 2 in<br>            flags sortbitwise,require_jewel_osds<br>      pgmap v27: 64 pgs, 1 pools, 0 bytes data, 0 objects<br>            269 MB used, 3806 MB / 4076 MB avail<br>                  64 active+clean</p>
+<p>hua@node1:/bak/work/ceph-cluster$ sudo ceph osd tree<br>ID WEIGHT  TYPE NAME      UP/DOWN REWEIGHT PRIMARY-AFFINITY<br>-1 0.00378 root default<br>-2 0.00378     host node1<br> 0 0.00189         osd.0       up  1.00000          1.00000<br> 1 0.00189         osd.1       up  1.00000          1.00000 </p>
+<p>10, 添加新的mon<br>   多个mon可以高可用，<br>   1）修改/etc/ceph/ceph.conf文件，如修改：mon_initial_members = node1 node2<br>   2) 同步配置到其它节点，ceph-deploy –overwrite-conf config push node1 node2<br>   3) 创建mon, ceph-deploy node1 node2<br>11, 添加新mds, 只有文件系统只需要mds,目前官方只推荐在生产环境中使用一个 mds。<br>12, 作为文件系统使用直接mount即可，mount -t ceph node1:6789:/ /mnt -o name=admin,secret=<keyring><br>13, 作为块设备使用：<br>    sudo modprobe rbd</keyring></p>
+<pre><code>sudo rados mkpool data
+sudo ceph osd pool set data min_size 1  
+sudo rbd create --size 1 -p data test1 
+sudo rbd map test1 --pool data
+
+rbd list -p data
+
+rbd info test1 -p data
+</code></pre><p>hua@node1:/bak/work/ceph-cluster$ sudo rados -p data ls<br>rbd_object_map.102174b0dc51<br>rbd_id.test1<br>rbd_directory<br>rbd_header.102174b0dc51</p>
+<p>hua@node1:/bak/work/ceph-cluster$ rbd list -p data<br>test1</p>
+<p>hua@node1:/bak/work/ceph-cluster$ rbd info test1 -p data<br>rbd image ‘test1’:<br>size 1024 kB in 1 objects<br>order 22 (4096 kB objects)<br>block_name_prefix: rbd_data.102174b0dc51<br>format: 2<br>features: layering, exclusive-lock, object-map, fast-diff, deep-flatten<br>flags:</p>
+<p>接着要map设设备到操作系统，但却报如下的错：</p>
+<p>hua@node1:/bak/work/ceph-cluster$ sudo rbd map test1 -p data<br>rbd: sysfs write failed<br>RBD image feature set mismatch. You can disable features unsupported by the kernel with “rbd feature disable”.<br>In some cases useful info is found in syslog - try “dmesg | tail” or so.<br>rbd: map failed: (6) No such device or address</p>
+<p>这是因为rbd镜像的一些特性，kernel并不支持，所以映射失败，需要disable掉不支持的特性。可在ceph.conf中添加“rbd_default_features = 1”解决。</p>
+<p>hua@node1:/bak/work/ceph-cluster$ rbd info test1 -p data |grep feature<br>features: layering, exclusive-lock, object-map, fast-diff, deep-flatten</p>
+<p>hua@node1:/bak/work/ceph-cluster$ sudo rbd map test1 -p data<br>/dev/rbd0</p>
+<p>hua@node1:/bak/work/ceph-cluster$ rbd showmapped<br>id pool image snap device<br>0  data test2 -    /dev/rbd0</p>
+<p>接着格式化并使用它:</p>
+<p>sudo mkfs.ext4 /dev/rbd0</p>
+<p>mkdir test &amp;&amp; sudo mount /dev/rbd0 test</p>
+<p>hua@node1:/bak/work/ceph-cluster$ mount |grep test<br>/dev/rbd0 on /bak/work/ceph-cluster/test type ext4 (rw,relatime,block_validity,delalloc,barrier,user_xattr,acl,stripe=4096)</p>
+<p>14, 命令操作<br>   1)默认有3个池<br>     $ sudo rados lspools<br>      data<br>      metadata<br>      rbd<br>      创建池：$ sudo rados mkpool nova<br>   2)将data池的文件副本数设为2, 此值是副本数（总共有2个osd, 如果只有一个osd的话就设置为1),如果不设置这个就命令一直不返回<br>     $ sudo ceph osd pool set data min_size 2<br>       set pool 0 min_size to 1<br>   3)上传一个文件，$ sudo rados put test.txt ./test.txt –pool=data<br>   4)查看文件，<br>     $ sudo rados -p data ls<br>       test.txt<br>   5)查看对象位置<br>     $ sudo ceph osd map data test.txt<br>       osdmap e9 pool ‘data’ (0) object ‘test.txt’ -&gt; pg 0.8b0b6108 (0.8) -&gt; up ([0], p0) acting ([0], p0)<br>     $ cat /srv/ceph/osd0/current/0.8_head/test.txt<strong>head_8B0B6108</strong>0<br>       test<br>   6)添加一个新osd后，可以用“sudo ceph -w”命令看到对象在群体内迁移<br>16, Ceph与Cinder集成, 见：<a href="http://ceph.com/docs/master/rbd/rbd-openstack/" target="_blank" rel="external">http://ceph.com/docs/master/rbd/rbd-openstack/</a><br>   1) 集建池<br>      sudo ceph osd pool create volumes 8<br>      sudo ceph osd pool create images 8<br>      sudo ceph osd pool set volumes min_size 2<br>      sudo ceph osd pool set images min_size 2<br>   2) 配置glance-api, cinder-volume, nova-compute的节点作为ceph client，因为我的全部是一台机器就不需要执行下列步骤<br>      a, 都需要ceph.conf, ssh {openstack-server} sudo tee /etc/ceph/ceph.conf &lt; /etc/ceph/ceph.conf<br>      b, 都需要安装ceph client, sudo apt-get install python-ceph ceph-common<br>      c, 为images池创建cinder用户，为images创建glance用户，并给用户赋予权限<br>         sudo ceph auth get-or-create client.cinder mon ‘allow r’ osd ‘allow class-read object_prefixrbd_children,allow rwx pool=volumes,allow rx pool=images’<br>         sudo ceph auth get-or-create client.glance mon ‘allow r’ osd ‘allow class-read object_prefixrbd_children,allow rwx pool=images’\</p>
+<pre><code>     如果涉及了权限的话，命令看起来像这样：
+
+     ceph --name mon. --keyring /var/lib/ceph/mon/ceph-p01-storage-a1-e1c7g8/keyring auth get-or-create client.nova-compute mon allow rw osd allow rwx
+  d, 为cinder和glance生成密钥（ceph.client.cinder.keyring与ceph.client.glance.keyring）
+
+     sudo chown -R hua:root /etc/ceph
+     ceph auth get-or-create client.glance | ssh {glance-api-server} sudo tee /etc/ceph/ceph.client.glance.keyring
+     ssh {glance-api-server} sudo chown hua:root /etc/ceph/ceph.client.glance.keyring
+     ceph auth get-or-create client.cinder | ssh {volume-server} sudo tee /etc/ceph/ceph.client.cinder.keyring
+    ssh {cinder-volume-server} sudo chown hua:root /etc/ceph/ceph.client.cinder.keyring
+
+  e, 配置glance, /etc/glance/glance-api.conf，注意，是追加，放在后面
+
+  default_store=rbd
+ rbd_store_user=glance
+ rbd_store_pool=images
+ show_image_direct_url=True
+  f, 为nova-compute的libvirt进程也生成它所需要的ceph密钥client.cinder.key
+    sudo ceph auth get-key client.cinder | ssh {compute-node} tee /etc/ceph/client.cinder.key
+    $ sudo ceph auth get-key client.cinder | ssh node1 tee /etc/ceph/client.cinder.key
+      AQAXe6dTsCEkBRAA7MbJdRruSmW9XEYy/3WgQA==
+    $ uuidgen
+      e896efb2-1602-42cc-8a0c-c032831eef17
+$ cat &gt; secret.xml &lt;&lt;EOF
+&lt;secret ephemeral=&apos;no&apos; private=&apos;no&apos;&gt;
+  &lt;uuid&gt;e896efb2-1602-42cc-8a0c-c032831eef17&lt;/uuid&gt;
+  &lt;usage type=&apos;ceph&apos;&gt;
+    &lt;name&gt;client.cinder secret&lt;/name&gt;
+  &lt;/usage&gt;
+&lt;/secret&gt;
+EOF
+   $ sudo virsh secret-define --file secret.xml
+     Secret e896efb2-1602-42cc-8a0c-c032831eef17 created
+   $ sudo virsh secret-set-value --secret e896efb2-1602-42cc-8a0c-c032831eef17 --base64 $(cat /etc/ceph/client.cinder.key)
+   $ rm client.cinder.key secret.xml
+</code></pre><p>vi /etc/nova/nova.conf</p>
+<p>libvirt_images_type=rbd<br>libvirt_images_rbd_pool=volumes<br>libvirt_images_rbd_ceph_conf=/etc/ceph/ceph.conf<br>rbd_user=cinder<br>rbd_secret_uuid=e896efb2-1602-42cc-8a0c-c032831eef17<br>libvirt_inject_password=false<br>libvirt_inject_key=false<br>libvirt_inject_partition=-2</p>
+<p>并重启nova-compute服务后在计算节点可以执行：</p>
+<p>sudo rbd –keyring /etc/ceph/client.cinder.key –id nova-compute -p cinder ls </p>
+<pre><code>f,配置cinder.conf并重启cinder-volume,
+</code></pre><p>sudo apt-get install librados-dev librados2 librbd-dev python-ceph radosgw radosgw-agent</p>
+<p>cinder-volume –config-file /etc/cinder/cinder.conf<br>    volume_driver =cinder.volume.drivers.rbd.RBDDriver<br>    rbd_pool=volumes<br>    glance_api_version= 2<br>    rbd_user = cinder<br>    rbd_secret_uuid = e896efb2-1602-42cc-8a0c-c032831eef17<br>    rbd_ceph_conf=/etc/ceph/ceph.conf</p>
+<p>17, 运行一个实例</p>
+<p>wget <a href="http://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img" target="_blank" rel="external">http://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img</a></p>
+<p>qemu-img convert -f qcow2 -O raw cirros-0.3.2-x86_64-disk.img cirros-0.3.2-x86_64-disk.raw</p>
+<p>glance image-create –name cirros –disk-format raw –container-format ovf –file cirros-0.3.2-x86_64-disk.raw –is-public True</p>
+<p>$ glance index<br>ID                                   Name                           Disk Format          Container Format     Size          </p>
+<hr>
+<p>dbc2b04d-7bf7-4f78-bdc0-859a8a588122 cirros                        raw                  ovf                        41126400</p>
+<p>$ rados -p images ls<br>rbd_id.dbc2b04d-7bf7-4f78-bdc0-859a8a588122</p>
+<p>cinder create –image-id dbc2b04d-7bf7-4f78-bdc0-859a8a588122 –display-name storage1 1</p>
+<p>cinder list</p>
+<p>18, Destroying a cluster</p>
+<pre><code>cd /bak/work/ceph/ceph-cluster/
+
+ceph-deploy purge node1
+
+ ceph-deploy purgedata node1
+ rm -rf /bak/work/ceph/ceph-cluster/*
+ sudo umount /srv/ceph/osd0
+
+ sudo umount /srv/ceph/osd1
+ mkdir -p /srv/ceph/{osd0,mon0,mds0}
+</code></pre><p>devstack对ceph的支持见：<a href="https://review.openstack.org/#/c/65113/" target="_blank" rel="external">https://review.openstack.org/#/c/65113/</a></p>
+<p>一些调试经验：</p>
+<p>收集数据<br>ceph status –format=json-pretty, 提供健康状态，monitors, osds和placement groups的状态，当前的epoch<br>ceph health detail –format=json-pretty, 提供像monitors，placement groups的错误和警告信息等<br>ceph osd tree –format=json-pretty, 提供了osd的状态，以及osd在哪个cluster上</p>
+<p>问诊Placement Groups<br>ceph health detail<br>ceph pg dump_stuck –format=json-pretty<br>ceph pg map <pgnum><br>ceph pg <pgnum><br>ceph -w<br>例如：pg 4.63 is stuck unclean for 2303.828665, current state active+degraded, last acting [2,1]<br>它说明4.63这个placement groups位于pool 4, stuck了2303.828665秒，这个pg里的[2, 1]这些osd受到了影响<br>a, inactive状态，一般是osd是down状态的，’ceph pg <pgnum>‘<br>b, unclean状态，意味着object没有复制到期望的备份数量，这一般是recovery有问题<br>c, Degraded状态，复制数量多于osd数量时可能出现这种情况，’ceph -w’可查看复制过程<br>d, Undersized状态，意味着placement groups和pgnum不匹配，一般是配置错误，像池的pgnum配置的太多, cluster’s crush map, 或者osd没空间了。总之，是有什么情况阻止了crush算法为pg选择osd<br>e, Stale状态，pg内没有osd报告状态时是这样的，可能osd离线了，重启osd去重建PG</pgnum></pgnum></pgnum></p>
+<p>替换出错的osd或磁盘<br>见：<a href="http://ceph.com/docs/master/rados/operations/add-or-rm-osds/" target="_blank" rel="external">http://ceph.com/docs/master/rados/operations/add-or-rm-osds/</a><br>总得来说：<br>Remove the OSD<br>1, Mark the OSD as out of the cluster<br>2, Wait for the data migration throughout the cluster (ceph -w)<br>3, Stop the OSD<br>4, Remove the OSD from the crushmap (ceph osd crush remove <osd.name>)<br>5, Delete the OSD’s authentication (ceph auth del <osd.num>)<br>6, Remove the OSD entry from any of the ceph.conf files.<br>Adding the OSD<br>1, Create the new OSD (ceph osd create <cluster-uuid> [osd_num]<br>2, Create a filesystem on the OSD<br>3, Mount the disk to the OSD directory<br>4, Initialize the OSD directory &amp; create auth key<br>5, Allow the auth key to have access to the cluster<br>6, Add the OSD to the crushmap<br>7, Start the OSD</cluster-uuid></osd.num></osd.name></p>
+<p>磁盘Hung了无法unmount<br>echo offline &gt; /sys/block/$DISK/device/state<br>echo 1 &gt; /sys/block/$DISK/device/delete</p>
+<p>恢复incomplete PGs<br>在ceph集群中，如果有的节点没有空间的话容易造成incomplete PGs，恢复起来很困难，可以采用osd_find_best_info_ignore_history_les这招(在ceph.conf中设置osd_find_best_info_ignore_history_les选项后， PG peering进程将忽略last epoch，从头在历史日志中找到和此PG相关的信息回放）。可以采用reweight-by-utilization参数控制不要发生一个节点空间不够的情况。</p>
+<p>贴一些输出数据帮助感性理解</p>
+<p>Pool和Rule关联决定如何复制，Rule再和CRUSH结构关联决定在物理设备中的复制策略</p>
+<p>#Create a pool, and associate pool and rule<br>ceph osd pool create SSD 128 128<br>ceph osd pool set SSD crush_ruleset <rule_id></rule_id></p>
+<p>ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph osd tree<br>ID WEIGHT  TYPE NAME                                 UP/DOWN REWEIGHT PRIMARY-AFFINITY<br>-1 0.08487 root default<br>-2 0.02829     host juju-864213-xenial-mitaka-ceph-0<br> 0 0.02829         osd.0                                  up  1.00000          1.00000<br>-3 0.02829     host juju-864213-xenial-mitaka-ceph-1<br> 1 0.02829         osd.1                                  up  1.00000          1.00000<br>-4 0.02829     host juju-864213-xenial-mitaka-ceph-2<br> 2 0.02829         osd.2                                  up  1.00000          1.00000</p>
+<p>ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph osd getcrushmap -o mycrushmap<br>got crush map from osdmap epoch 23<br>ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ crushtool -d mycrushmap &gt; mycrushmap.txt</p>
+<p>ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ cat mycrushmap.txt</p>
+<h1 id="begin-crush-map"><a href="#begin-crush-map" class="headerlink" title="begin crush map"></a>begin crush map</h1><p>tunable choose_local_tries 0<br>tunable choose_local_fallback_tries 0<br>tunable choose_total_tries 50<br>tunable chooseleaf_descend_once 1<br>tunable chooseleaf_vary_r 1<br>tunable straw_calc_version 1</p>
+<h1 id="devices"><a href="#devices" class="headerlink" title="devices"></a>devices</h1><p>device 0 osd.0<br>device 1 osd.1<br>device 2 osd.2</p>
+<h1 id="types"><a href="#types" class="headerlink" title="types"></a>types</h1><p>type 0 osd<br>type 1 host<br>type 2 chassis<br>type 3 rack<br>type 4 row<br>type 5 pdu<br>type 6 pod<br>type 7 room<br>type 8 datacenter<br>type 9 region<br>type 10 root</p>
+<h1 id="buckets"><a href="#buckets" class="headerlink" title="buckets"></a>buckets</h1><p>host juju-864213-xenial-mitaka-ceph-0 {<br>        id -2           # do not change unnecessarily</p>
+<pre><code># weight 0.028
+alg straw
+hash 0  # rjenkins1
+item osd.0 weight 0.028
+</code></pre><p>}<br>host juju-864213-xenial-mitaka-ceph-1 {<br>        id -3           # do not change unnecessarily</p>
+<pre><code># weight 0.028
+alg straw
+hash 0  # rjenkins1
+item osd.1 weight 0.028
+</code></pre><p>}<br>host juju-864213-xenial-mitaka-ceph-2 {<br>        id -4           # do not change unnecessarily</p>
+<pre><code># weight 0.028
+alg straw
+hash 0  # rjenkins1
+item osd.2 weight 0.028
+</code></pre><p>}<br>root default {<br>        id -1           # do not change unnecessarily</p>
+<pre><code># weight 0.085
+alg straw
+hash 0  # rjenkins1
+item juju-864213-xenial-mitaka-ceph-0 weight 0.028
+item juju-864213-xenial-mitaka-ceph-1 weight 0.028
+item juju-864213-xenial-mitaka-ceph-2 weight 0.028
+</code></pre><p>}</p>
+<h1 id="rules"><a href="#rules" class="headerlink" title="rules"></a>rules</h1><p>rule replicated_ruleset {<br>        ruleset 0<br>        type replicated<br>        min_size 1<br>        max_size 10<br>        step take default<br>        step chooseleaf firstn 0 type host<br>        step emit<br>}</p>
+<h1 id="end-crush-map"><a href="#end-crush-map" class="headerlink" title="end crush map"></a>end crush map</h1><p>ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph osd crush rule dump<br>[<br>    {<br>        “rule_id”: 0,<br>        “rule_name”: “replicated_ruleset”,<br>        “ruleset”: 0,<br>        “type”: 1,<br>        “min_size”: 1,<br>        “max_size”: 10,<br>        “steps”: [<br>            {<br>                “op”: “take”,<br>                “item”: -1,<br>                “item_name”: “default”<br>            },<br>            {<br>                “op”: “chooseleaf_firstn”,<br>                “num”: 0,<br>                “type”: “host”<br>            },<br>            {<br>                “op”: “emit”<br>            }<br>        ]<br>    }<br>]</p>
+<p>恢复元数据的实例</p>
+<p>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph ls<br>rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74<br>rbd_directory<br>rbd_header.47d0caaedb0<br>rbd_object_map.47d0caaedb0</p>
+<p>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph get rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 -|strings<br>47d0caaedb0</p>
+<p>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph listomapvals rbd_header.47d0caaedb0<br>features<br>value (8 bytes) :<br>00000000  3d 00 00 00 00 00 00 00                           |=…….|<br>00000008</p>
+<p>object_prefix<br>value (24 bytes) :<br>00000000  14 00 00 00 72 62 64 5f  64 61 74 61 2e 34 37 64  |….rbd_data.47d|<br>00000010  30 63 61 61 65 64 62 30                           |0caaedb0|<br>00000018</p>
+<p>order<br>value (1 bytes) :<br>00000000  16                                                |.|<br>00000001</p>
+<p>size<br>value (8 bytes) :<br>00000000  00 00 00 40 00 00 00 00                           |…@….|<br>00000008</p>
+<p>snap_seq<br>value (8 bytes) :<br>00000000  00 00 00 00 00 00 00 00                           |……..|<br>00000008</p>
+<p>root@juju-864213-xenial-mitaka-ceph-3:~# rbd -p cinder-ceph info volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74<br>rbd image ‘volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74’:<br>        size 1024 MB in 256 objects<br>        order 22 (4096 kB objects)<br>        block_name_prefix: rbd_data.47d0caaedb0<br>        format: 2<br>        features: layering, exclusive-lock, object-map, fast-diff, deep-flatten<br>        flags:</p>
+<p>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph rm rbd_header.47d0caaedb0<br>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph listomapvals rbd_header.47d0caaedb0<br>error getting omap keys cinder-ceph/rbd_header.47d0caaedb0: (2) No such file or directory<br>root@juju-864213-xenial-mitaka-ceph-3:~# rbd -p cinder-ceph info volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74<br>2017-12-01 08:22:28.725851 7f80c55fd700 -1 librbd::image::OpenRequest: failed to retreive immutable metadata: (2) No such file or directory<br>rbd: error opening image volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74: (2) No such file or directory</p>
+<p>echo -en \x3d\x00\x00\x00\x00\x00\x00\x00 | sudo rados -p cinder-ceph setomapval rbd_header.47d0caaedb0 features<br>echo -en \x14\x00\x00\x00rbd_data.47d0caaedb0 | sudo rados -p cinder-ceph setomapval rbd_header.47d0caaedb0 object_prefix<br>echo -en \x16 | sudo rados -p cinder-ceph setomapval rbd_header.47d0caaedb0 order<br>echo -en \x00\x00\x00\x40\x00\x00\x00\x00 | sudo rados -p cinder-ceph setomapval rbd_header.47d0caaedb0 size<br>echo -en \x00\x00\x00\x00\x00\x00\x00\x00 | sudo rados -p cinder-ceph setomapval rbd_header.47d0caaedb0 snap_seq<br>root@juju-864213-xenial-mitaka-ceph-3:~# rados -p cinder-ceph listomapvals rbd_header.47d0caaedb0<br>features<br>value (8 bytes) :<br>00000000  3d 00 00 00 00 00 00 00                           |=…….|<br>00000008<br>object_prefix<br>value (24 bytes) :<br>00000000  14 00 00 00 72 62 64 5f  64 61 74 61 2e 34 37 64  |….rbd_data.47d|<br>00000010  30 63 61 61 65 64 62 30                           |0caaedb0|<br>00000018<br>order<br>value (1 bytes) :<br>00000000  16                                                |.|<br>00000001<br>size<br>value (8 bytes) :<br>00000000  00 00 00 40 00 00 00 00                           |…@….|<br>00000008<br>snap_seq<br>value (8 bytes) :<br>00000000  00 00 00 00 00 00 00 00                           |……..|<br>00000008<br>root@juju-864213-xenial-mitaka-ceph-3:~# rbd -p cinder-ceph info volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74<br>rbd image ‘volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74’:<br>        size 1024 MB in 256 objects<br>        order 22 (4096 kB objects)<br>        block_name_prefix: rbd_data.47d0caaedb0<br>        format: 2<br>        features: layering, exclusive-lock, object-map, fast-diff, deep-flatten<br>        flags:</p>
+<p>基他数据<br><a href="http://paste.ubuntu.com/26213468/" target="_blank" rel="external">http://paste.ubuntu.com/26213468/</a><br>基他数据<br><a href="http://paste.ubuntu.com/26213468/" target="_blank" rel="external">http://paste.ubuntu.com/26213468/</a><br>1, ceph status ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph -s cluster 6547bd3e-1397-11e2-82e5-53567c8d32dc health HEALTH_OK monmap e2: 3 mons at {juju-864213-xenial-mitaka-ceph-0=10.5.0.26:6789/0,juju-864213-xenial-mitaka-ceph-1=10.5.0.20:6789/0,juju-864213-xenial-mitaka-ceph-2=10.5.0.23:6789/0} election epoch 10, quorum 0,1,2 juju-864213-xenial-mitaka-ceph-1,juju-864213-xenial-mitaka-ceph-2,juju-864213-xenial-mitaka-ceph-0 osdmap e25: 3 osds: 3 up, 3 in flags sortbitwise,require_jewel_osds pgmap v31559: 132 pgs, 4 pools, 277 MB data, 48 objects 948 MB used, 88093 MB / 89041 MB avail 132 active+clean 2, mon status ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph mon_status | python -mjson.tool { “election_epoch”: 10, “extra_probe_peers”: [], “monmap”: { “created”: “2017-11-07 09:00:10.987037”, “epoch”: 2, “fsid”: “6547bd3e-1397-11e2-82e5-53567c8d32dc”, “modified”: “2017-11-07 09:00:32.839271”, “mons”: [ { “addr”: “10.5.0.20:6789/0”, “name”: “juju-864213-xenial-mitaka-ceph-1”, “rank”: 0 }, { “addr”: “10.5.0.23:6789/0”, “name”: “juju-864213-xenial-mitaka-ceph-2”, “rank”: 1 }, { “addr”: “10.5.0.26:6789/0”, “name”: “juju-864213-xenial-mitaka-ceph-0”, “rank”: 2 } ] }, “name”: “juju-864213-xenial-mitaka-ceph-0”, “outside_quorum”: [], “quorum”: [ 0, 1, 2 ], “rank”: 2, “state”: “peon”, “sync_provider”: [] } 3, osd status/dump ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph osd stat osdmap e25: 3 osds: 3 up, 3 in flags sortbitwise,require_jewel_osds ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph osd dump epoch 25 fsid 6547bd3e-1397-11e2-82e5-53567c8d32dc created 2017-11-07 09:00:25.412066 modified 2017-12-01 07:51:02.498448 flags sortbitwise,require_jewel_osds pool 0 ‘rbd’ replicated size 3 min_size 2 crush_ruleset 0 object_hash rjenkins pg_num 64 pgp_num 64 last_change 25 flags hashpspool stripe_width 0 removed_snaps [1~3] pool 1 ‘cinder-ceph’ replicated size 3 min_size 2 crush_ruleset 0 object_hash rjenkins pg_num 32 pgp_num 32 last_change 21 flags hashpspool stripe_width 0 removed_snaps [1~3] pool 2 ‘glance’ replicated size 3 min_size 2 crush_ruleset 0 object_hash rjenkins pg_num 4 pgp_num 4 last_change 19 flags hashpspool stripe_width 0 removed_snaps [1~3] pool 3 ‘nova’ replicated size 3 min_size 2 crush_ruleset 0 object_hash rjenkins pg_num 32 pgp_num 32 last_change 23 flags hashpspool stripe_width 0 max_osd 3 osd.0 up in weight 1 up_from 4 up_thru 22 down_at 0 last_clean_interval [0,0) 10.5.0.26:6800/27459 10.5.0.26:6801/27459 10.5.0.26:6802/27459 10.5.0.26:6803/27459 exists,up 33594674-62e3-4502-9247-5108f6feef7c osd.1 up in weight 1 up_from 9 up_thru 22 down_at 0 last_clean_interval [0,0) 10.5.0.20:6800/27653 10.5.0.20:6801/27653 10.5.0.20:6802/27653 10.5.0.20:6803/27653 exists,up 0a2d39e3-89da-4272-bcb8-b4b6e60137df osd.2 up in weight 1 up_from 10 up_thru 22 down_at 0 last_clean_interval [0,0) 10.5.0.23:6800/27260 10.5.0.23:6801/27260 10.5.0.23:6802/27260 10.5.0.23:6803/27260 exists,up 204e8baa-8aa7-4e90-beaf-d129276501ec 4, pd status/dump ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph pg stat v31561: 132 pgs: 132 active+clean; 277 MB data, 948 MB used, 88093 MB / 89041 MB avail ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph pg dump dumped all in format plain version 31561 stamp 2017-12-19 06:45:57.860391 last_osdmap_epoch 25 last_pg_scan 25 full_ratio 0.95 nearfull_ratio 0.85 pg_stat objects mip degr misp unf bytes log disklog state state_stamp v reported up up_primary acting acting_primary last_scrub scrub_stamp last_deep_scrub deep_scrub_stamp 0.39 1 0 0 0 0 17 2 2 active+clean 2017-12-19 01:40:23.607006 25’2 25:86 [1,0,2]1 [1,0,2] 1 25’2 2017-12-19 01:40:23.606906 25’2 2017-12-15 16:16:44.422399 0.38 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:14:05.701416 0’0 25:79 [1,0,2]1 [1,0,2] 1 0’0 2017-12-19 05:14:05.701274 0’0 2017-12-15 15:48:31.555886 0.37 0 0 0 0 0 0 0 0 active+clean 2017-12-19 02:15:10.894036 0’0 25:83 [1,0,2]1 [1,0,2] 1 0’0 2017-12-19 02:15:10.893913 0’0 2017-12-16 07:33:06.968661 0.36 0 0 0 0 0 0 0 0 active+clean 2017-12-18 09:22:34.899211 0’0 25:83 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 09:22:34.899099 0’0 2017-12-16 04:57:08.214820 0.35 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:07:32.312624 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 04:07:32.312208 0’0 2017-12-16 21:17:29.353034 0.34 0 0 0 0 0 0 0 0 active+clean 2017-12-18 02:05:08.439211 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 02:05:08.438806 0’0 2017-12-15 12:38:34.056387 0.33 0 0 0 0 0 0 0 0 active+clean 2017-12-18 08:53:52.040008 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 08:53:52.039899 0’0 2017-12-16 21:17:37.364792 0.32 0 0 0 0 0 0 0 0 active+clean 2017-12-18 01:16:11.175607 0’0 25:88 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 01:16:11.175475 0’0 2017-12-11 09:32:40.466977 3.0 0 0 0 0 0 0 0 0 active+clean 2017-12-17 23:42:20.803783 0’0 25:70 [1,2,0]1 [1,2,0] 1 0’0 2017-12-17 23:42:20.803362 0’0 2017-12-15 14:20:48.927411 2.1 11 0 0 0 0 72482875 12 12 active+clean 2017-12-19 05:44:09.159924 19’12 25:88 [0,1,2] 0 [0,1,2] 0 19’12 2017-12-19 05:44:09.159809 19’12 2017-12-18 04:35:02.140422 0.3 0 0 0 0 0 0 0 0 active+clean 2017-12-18 07:13:26.367448 0’0 25:81 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 07:13:26.367279 0’0 2017-12-18 07:13:26.367279 1.2 1 0 0 0 0 15 2 2 active+clean 2017-12-19 02:44:20.841572 21’2 25:94 [1,2,0]1 [1,2,0] 1 21’2 2017-12-19 02:44:20.841455 21’2 2017-12-13 15:07:02.013739 0.2e 0 0 0 0 0 0 0 0 active+clean 2017-12-18 14:16:04.153210 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 14:16:04.153113 0’0 2017-12-17 05:53:35.522242 0.2d 1 0 0 0 0 0 2 2 active+clean 2017-12-18 14:11:03.439214 25’2 25:89 [1,2,0]1 [1,2,0] 1 25’2 2017-12-18 14:11:03.438830 25’2 2017-12-14 21:14:36.695147 0.2c 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:59:07.652903 0’0 25:77 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 05:59:07.652803 0’0 2017-12-16 13:41:53.858535 0.2b 0 0 0 0 0 0 0 0 active+clean 2017-12-19 06:00:03.866870 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 06:00:03.866730 0’0 2017-12-16 15:46:25.399077 0.2a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 18:19:23.627293 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 18:19:23.627185 0’0 2017-12-16 09:54:17.956801 0.29 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:53:48.331532 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 05:53:48.331444 0’0 2017-12-19 05:53:48.331444 0.28 0 0 0 0 0 0 0 0 active+clean 2017-12-18 10:50:27.843478 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 10:50:27.843327 0’0 2017-12-15 18:59:45.769231 0.27 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:11:19.718171 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 04:11:19.717407 0’0 2017-12-12 11:23:47.089204 0.26 0 0 0 0 0 0 0 0 active+clean 2017-12-18 23:10:29.139623 0’0 25:84 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 23:10:29.139497 0’0 2017-12-16 06:54:22.131937 0.25 0 0 0 0 0 0 0 0 active+clean 2017-12-18 10:45:29.725866 0’0 25:81 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 10:45:29.725674 0’0 2017-12-18 10:45:29.725674 0.24 0 0 0 0 0 0 0 0 active+clean 2017-12-18 09:39:27.366211 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 09:39:27.366081 0’0 2017-12-14 07:46:16.059058 0.23 0 0 0 0 0 0 0 0 active+clean 2017-12-19 04:00:18.727236 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 04:00:18.727071 0’0 2017-12-12 20:55:22.902938 3.16 0 0 0 0 0 0 0 0 active+clean 2017-12-19 03:24:44.373066 0’0 25:72 [0,1,2]0 [0,1,2] 0 0’0 2017-12-19 03:24:44.372735 0’0 2017-12-17 20:29:01.002908 0.15 0 0 0 0 0 0 0 0 active+clean 2017-12-19 03:55:52.394801 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-19 03:55:52.394684 0’0 2017-12-16 19:48:46.609011 1.14 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:05:52.126333 0’0 25:79 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 05:05:52.126215 0’0 2017-12-12 18:49:33.002680 3.17 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:26:57.831069 0’0 25:70 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 15:26:57.830869 0’0 2017-12-14 19:08:54.589399 0.14 0 0 0 0 0 0 0 0 active+clean 2017-12-18 02:47:24.423329 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 02:47:24.423223 0’0 2017-12-11 09:58:48.889005 1.15 0 0 0 0 0 0 0 0 active+clean 2017-12-18 20:11:49.580004 0’0 25:77 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 20:11:49.579500 0’0 2017-12-16 06:06:43.052406 3.10 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:30:16.983013 0’0 25:68 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 15:30:16.982742 0’0 2017-12-14 10:55:39.640017 0.13 0 0 0 0 0 0 0 0 active+clean 2017-12-17 23:33:50.282655 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-17 23:33:50.282458 0’0 2017-12-11 09:27:00.573991 1.12 1 0 0 0 0 0 6 6 active+clean 2017-12-18 10:04:00.709872 25’6 25:81 [0,1,2]0 [0,1,2] 0 25’6 2017-12-18 10:04:00.709750 25’6 2017-12-18 10:04:00.709750 3.11 0 0 0 0 0 0 0 0 active+clean 2017-12-19 04:39:13.688279 0’0 25:72 [2,1,0]2 [2,1,0] 2 0’0 2017-12-19 04:39:13.688192 0’0 2017-12-15 04:23:45.933640 0.12 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:28:15.717046 0’0 25:83 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 05:28:15.716921 0’0 2017-12-19 05:28:15.716921 1.13 0 0 0 0 0 0 0 0 active+clean 2017-12-18 13:45:45.848497 0’0 25:75 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 13:45:45.848358 0’0 2017-12-18 13:45:45.848358 3.15 0 0 0 0 0 0 0 0 active+clean 2017-12-17 23:15:20.318545 0’0 25:68 [2,1,0]2 [2,1,0] 2 0’0 2017-12-17 23:15:20.318459 0’0 2017-12-16 11:58:09.469155 0.16 0 0 0 0 0 0 0 0 active+clean 2017-12-17 23:55:35.756278 0’0 25:73 [2,1,0]2 [2,1,0] 2 0’0 2017-12-17 23:55:35.756099 0’0 2017-12-14 00:05:46.725428 1.17 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:53:40.119153 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 21:53:40.118945 0’0 2017-12-18 21:53:40.118945 0.2f 0 0 0 0 0 0 0 0 active+clean 2017-12-18 01:16:44.889379 0’0 25:73 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 01:16:44.888999 0’0 2017-12-18 01:16:44.888999 3.3 0 0 0 0 0 0 0 0 active+clean 2017-12-18 05:13:59.611677 0’0 25:70 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 05:13:59.611555 0’0 2017-12-18 05:13:59.611555 2.2 10 0 0 0 0 75497515 83 83 active+clean 2017-12-18 05:16:35.846337 19’83 25:159[0,1,2] 0 [0,1,2] 0 19’83 2017-12-18 05:16:35.846000 19’83 2017-12-15 18:21:04.972135 0.0 0 0 0 0 0 0 0 0 active+clean 2017-12-18 14:25:22.788930 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 14:25:22.785405 0’0 2017-12-17 04:55:51.913445 1.1 0 0 0 0 0 0 0 0 active+clean 2017-12-18 17:30:09.530773 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 17:30:09.530603 0’0 2017-12-13 05:43:09.146223 3.14 0 0 0 0 0 0 0 0 active+clean 2017-12-19 02:26:04.397183 0’0 25:70 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 02:26:04.397023 0’0 2017-12-16 14:50:42.319029 0.17 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:38:01.467210 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 15:38:01.467081 0’0 2017-12-16 00:12:41.509078 1.16 0 0 0 0 0 0 0 0 active+clean 2017-12-18 12:28:23.822722 0’0 25:75 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 12:28:23.822620 0’0 2017-12-18 12:28:23.822620 0.30 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:58:47.472513 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 21:58:47.472404 0’0 2017-12-12 12:42:04.016321 3.2 0 0 0 0 0 0 0 0 active+clean 2017-12-18 08:00:22.561183 0’0 25:70 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 08:00:22.561066 0’0 2017-12-13 02:14:03.411923 2.3 5 0 0 0 0 33554432 51 51 active+clean 2017-12-18 07:26:08.230120 23’51 25:126[2,0,1] 2 [2,0,1] 2 23’51 2017-12-18 07:26:08.230026 23’51 2017-12-18 07:26:08.230026 0.1 0 0 0 0 0 0 0 0 active+clean 2017-12-18 20:09:27.994306 0’0 25:79 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 20:09:27.994195 0’0 2017-12-17 15:59:37.177068 1.0 0 0 0 0 0 0 0 0 active+clean 2017-12-18 07:10:50.151193 0’0 25:75 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 07:10:50.150984 0’0 2017-12-11 16:41:13.834816 3.1b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 01:00:21.188763 0’0 25:68 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 01:00:21.188504 0’0 2017-12-12 07:30:14.931021 0.18 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:19:25.218443 0’0 25:71 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 04:19:25.218285 0’0 2017-12-15 12:35:08.459074 1.19 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:55:29.382654 0’0 25:75 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 15:55:29.378857 0’0 2017-12-17 05:24:36.296344 3.13 0 0 0 0 0 0 0 0 active+clean 2017-12-18 07:46:40.623587 0’0 25:70 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 07:46:40.623502 0’0 2017-12-13 07:08:04.935165 0.10 0 0 0 0 0 0 0 0 active+clean 2017-12-18 18:55:28.237924 0’0 25:84 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 18:55:28.232992 0’0 2017-12-17 14:34:08.085013 1.11 0 0 0 0 0 0 0 0 active+clean 2017-12-18 14:08:13.234638 0’0 25:77 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 14:08:13.234525 0’0 2017-12-13 20:05:09.727370 3.12 0 0 0 0 0 0 0 0 active+clean 2017-12-17 20:00:56.145750 0’0 25:68 [1,2,0]1 [1,2,0] 1 0’0 2017-12-17 20:00:56.145614 0’0 2017-12-16 14:17:21.742100 0.11 0 0 0 0 0 0 0 0 active+clean 2017-12-18 01:59:54.111143 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 01:59:54.111031 0’0 2017-12-14 04:19:15.303528 1.10 0 0 0 0 0 0 0 0 active+clean 2017-12-18 03:36:39.368684 0’0 25:77 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 03:36:39.368509 0’0 2017-12-16 23:46:49.778409 3.1a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:26:58.470656 0’0 25:70 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 21:26:58.470494 0’0 2017-12-18 21:26:58.470494 0.19 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:11:16.743839 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 04:11:16.743689 0’0 2017-12-18 04:11:16.743689 1.18 0 0 0 0 0 0 0 0 active+clean 2017-12-19 03:13:26.304029 0’0 25:77 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 03:13:26.303836 0’0 2017-12-14 02:16:50.494347 0.31 0 0 0 0 0 0 0 0 active+clean 2017-12-18 09:07:46.905181 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 09:07:46.905081 0’0 2017-12-12 07:17:27.453352 3.1 0 0 0 0 0 0 0 0 active+clean 2017-12-17 21:38:44.661316 0’0 25:68 [1,0,2]1 [1,0,2] 1 0’0 2017-12-17 21:38:44.661151 0’0 2017-12-16 17:14:23.983676 2.0 14 0 0 0 0 109051904 15 15 active+clean 2017-12-18 23:16:24.507965 23’15 25:91 [0,2,1] 0 [0,2,1] 0 23’15 2017-12-18 23:16:24.507629 23’15 2017-12-13 00:41:58.376080 0.2 0 0 0 0 0 0 0 0 active+clean 2017-12-18 19:18:56.808939 0’0 25:79 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 19:18:56.808785 0’0 2017-12-18 19:18:56.808785 1.3 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:39:32.910285 0’0 25:75 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 21:39:32.910107 0’0 2017-12-16 10:24:36.847816 3.19 0 0 0 0 0 0 0 0 active+clean 2017-12-18 05:09:03.314289 0’0 25:70 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 05:09:03.313978 0’0 2017-12-12 19:06:29.077744 0.1a 0 0 0 0 0 0 2 2 active+clean 2017-12-18 15:08:12.270866 25’2 25:82 [1,0,2]1 [1,0,2] 1 25’2 2017-12-18 15:08:12.270382 25’2 2017-12-13 15:44:52.423465 1.1b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 18:52:10.695149 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 18:52:10.695014 0’0 2017-12-15 02:09:58.688027 3.18 0 0 0 0 0 0 0 0 active+clean 2017-12-18 07:03:06.646577 0’0 25:68 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 07:03:06.646450 0’0 2017-12-18 07:03:06.646450 0.1b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 10:53:40.332204 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 10:53:40.332044 0’0 2017-12-16 23:10:30.422172 1.1a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 14:32:00.826929 0’0 25:75 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 14:32:00.826804 0’0 2017-12-13 06:56:44.934621 3.1f 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:55:10.694973 0’0 25:72 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 00:55:10.694812 0’0 2017-12-17 17:11:03.530971 0.1c 1 0 0 0 0 0 2 2 active+clean 2017-12-17 23:07:09.564023 25’2 25:83 [1,2,0]1 [1,2,0] 1 25’2 2017-12-17 23:07:09.563939 25’2 2017-12-15 03:03:48.357577 1.1d 0 0 0 0 0 0 0 0 active+clean 2017-12-18 06:21:56.896449 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 06:21:56.896362 0’0 2017-12-17 04:38:29.625922 3.1e 0 0 0 0 0 0 0 0 active+clean 2017-12-18 02:43:01.868155 0’0 25:70 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 02:43:01.868013 0’0 2017-12-13 02:25:10.797527 0.1d 0 0 0 0 0 0 0 0 active+clean 2017-12-18 00:42:05.953583 0’0 25:79 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 00:42:05.953424 0’0 2017-12-15 09:19:26.023068 1.1c 1 0 0 0 0 0 2 2 active+clean 2017-12-18 09:59:51.673737 23’2 25:81 [2,1,0]2 [2,1,0] 2 23’2 2017-12-18 09:59:51.673609 23’2 2017-12-13 04:32:32.734026 3.1d 0 0 0 0 0 0 0 0 active+clean 2017-12-18 12:55:27.110427 0’0 25:70 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 12:55:27.110061 0’0 2017-12-14 12:30:31.232459 0.1e 0 0 0 0 0 0 0 0 active+clean 2017-12-18 20:05:19.738426 0’0 25:81 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 20:05:19.738328 0’0 2017-12-16 11:00:48.200157 1.1f 1 0 0 0 0 98 1 1 active+clean 2017-12-18 18:53:35.770168 21’1 25:76 [2,1,0]2 [2,1,0] 2 21’1 2017-12-18 18:53:35.770077 21’1 2017-12-13 19:03:13.642323 3.1c 0 0 0 0 0 0 0 0 active+clean 2017-12-18 19:54:28.057688 0’0 25:70 [1,0,2]1 [1,0,2] 1 0’0 2017-12-18 19:54:28.057521 0’0 2017-12-18 19:54:28.057521 0.1f 0 0 0 0 0 0 0 0 active+clean 2017-12-19 05:01:46.031689 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 05:01:46.031556 0’0 2017-12-19 05:01:46.031556 1.1e 1 0 0 0 0 0 10 10 active+clean 2017-12-18 07:42:29.235179 25’10 25:5201 [1,2,0]1 [1,2,0] 1 25’10 2017-12-18 07:42:29.235077 25’10 2017-12-14 11:33:55.725980 0.20 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:09:28.879241 0’0 25:81 [1,0,2]1 [1,0,2] 1 0’0 2017-12-19 00:09:28.879090 0’0 2017-12-12 10:02:45.990082 0.21 0 0 0 0 0 0 0 0 active+clean 2017-12-18 10:26:23.348959 0’0 25:83 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 10:26:23.348810 0’0 2017-12-13 21:42:36.788814 0.22 0 0 0 0 0 0 0 0 active+clean 2017-12-18 09:13:58.759944 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 09:13:58.759790 0’0 2017-12-15 22:25:25.959063 0.3a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 05:15:47.811645 0’0 25:84 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 05:15:47.810786 0’0 2017-12-15 16:57:15.632503 0.3b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 13:38:48.856584 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 13:38:48.856434 0’0 2017-12-16 01:56:39.239797 0.3c 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:12:25.076586 0’0 25:81 [1,0,2]1 [1,0,2] 1 0’0 2017-12-19 00:12:25.075865 0’0 2017-12-17 13:13:19.705717 0.3d 0 0 0 0 0 0 0 0 active+clean 2017-12-18 08:42:10.275657 0’0 25:84 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 08:42:10.275546 0’0 2017-12-13 01:40:35.739284 0.3e 0 0 0 0 0 0 0 0 active+clean 2017-12-19 06:36:42.943023 0’0 25:77 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 06:36:42.942896 0’0 2017-12-13 11:52:09.318495 0.3f 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:20:26.177081 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 21:20:26.176839 0’0 2017-12-16 14:13:47.056217 3.7 0 0 0 0 0 0 0 0 active+clean 2017-12-18 06:54:01.846660 0’0 25:70 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 06:54:01.846563 0’0 2017-12-15 22:17:39.553949 0.4 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:15:57.308559 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 00:15:57.303061 0’0 2017-12-19 00:15:57.303061 1.5 0 0 0 0 0 0 0 0 active+clean 2017-12-18 16:05:28.050259 0’0 25:75 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 16:05:28.049939 0’0 2017-12-13 08:44:47.095183 3.6 0 0 0 0 0 0 0 0 active+clean 2017-12-18 08:09:41.132762 0’0 25:68 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 08:09:41.132619 0’0 2017-12-18 08:09:41.132619 0.5 0 0 0 0 0 0 0 0 active+clean 2017-12-19 02:38:20.126701 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 02:38:20.126592 0’0 2017-12-13 14:45:05.054828 1.4 0 0 0 0 0 0 0 0 active+clean 2017-12-18 13:39:33.879784 0’0 25:75 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 13:39:33.879663 0’0 2017-12-16 06:42:32.387889 3.5 0 0 0 0 0 0 0 0 active+clean 2017-12-18 19:28:24.970257 0’0 25:70 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 19:28:24.970108 0’0 2017-12-11 20:46:56.439037 0.6 0 0 0 0 0 0 0 0 active+clean 2017-12-18 20:50:34.289462 0’0 25:86 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 20:50:34.289316 0’0 2017-12-16 09:32:54.146238 1.7 0 0 0 0 0 0 0 0 active+clean 2017-12-18 11:33:39.585225 0’0 25:75 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 11:33:39.585106 0’0 2017-12-14 08:53:30.456251 3.4 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:10:24.930916 0’0 25:70 [1,2,0]1 [1,2,0] 1 0’0 2017-12-19 00:10:24.930800 0’0 2017-12-16 12:01:45.111268 0.7 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:11:57.668625 0’0 25:88 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 21:11:57.668438 0’0 2017-12-13 15:41:44.444720 1.6 0 0 0 0 0 0 0 0 active+clean 2017-12-18 21:08:32.302123 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 21:08:32.302011 0’0 2017-12-18 21:08:32.302011 3.b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:49:13.034736 0’0 25:68 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 04:49:13.034626 0’0 2017-12-13 06:44:54.008291 0.8 0 0 0 0 0 0 0 0 active+clean 2017-12-18 23:01:43.406282 0’0 25:83 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 23:01:43.406157 0’0 2017-12-16 14:29:48.534565 1.9 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:58:35.767965 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 15:58:35.767763 0’0 2017-12-17 13:01:45.054352 3.a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 16:35:26.143666 0’0 25:70 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 16:35:26.143413 0’0 2017-12-13 06:56:03.706565 0.9 0 0 0 0 0 0 0 0 active+clean 2017-12-18 03:19:11.400996 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 03:19:11.400629 0’0 2017-12-18 03:19:11.400629 1.8 0 0 0 0 0 0 0 0 active+clean 2017-12-19 02:31:13.671306 0’0 25:75 [2,0,1]2 [2,0,1] 2 0’0 2017-12-19 02:31:13.670967 0’0 2017-12-17 20:02:31.243782 3.9 0 0 0 0 0 0 0 0 active+clean 2017-12-18 06:42:12.627425 0’0 25:70 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 06:42:12.627221 0’0 2017-12-18 06:42:12.627221 0.a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 16:04:29.144733 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 16:04:29.144543 0’0 2017-12-12 05:03:07.503116 1.b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 14:48:40.371345 0’0 25:75 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 14:48:40.371194 0’0 2017-12-16 02:40:42.962114 3.8 0 0 0 0 0 0 0 0 active+clean 2017-12-19 00:31:31.237095 0’0 25:72 [2,1,0]2 [2,1,0] 2 0’0 2017-12-19 00:31:31.236939 0’0 2017-12-16 06:51:33.686165 0.b 0 0 0 0 0 0 0 0 active+clean 2017-12-18 15:10:42.820528 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 15:10:42.820244 0’0 2017-12-14 03:21:43.959388 1.a 0 0 0 0 0 0 0 0 active+clean 2017-12-18 06:13:53.677627 0’0 25:75 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 06:13:53.677460 0’0 2017-12-15 20:30:07.455919 3.f 0 0 0 0 0 0 0 0 active+clean 2017-12-18 02:39:39.997741 0’0 25:70 [2,0,1]2 [2,0,1] 2 0’0 2017-12-18 02:39:39.997575 0’0 2017-12-18 02:39:39.997575 0.c 0 0 0 0 0 0 0 0 active+clean 2017-12-18 20:42:57.126892 0’0 25:81 [1,2,0]1 [1,2,0] 1 0’0 2017-12-18 20:42:57.123346 0’0 2017-12-13 19:54:34.094834 1.d 0 0 0 0 0 0 0 0 active+clean 2017-12-17 22:54:11.005970 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-17 22:54:11.005860 0’0 2017-12-16 17:27:50.758077 3.e 0 0 0 0 0 0 0 0 active+clean 2017-12-18 16:33:25.064795 0’0 25:70 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 16:33:25.064689 0’0 2017-12-14 13:43:48.430894 0.d 0 0 0 0 0 0 0 0 active+clean 2017-12-19 04:34:53.481599 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-19 04:34:53.481437 0’0 2017-12-12 13:45:11.646604 1.c 0 0 0 0 0 0 0 0 active+clean 2017-12-18 04:57:39.570521 0’0 25:73 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 04:57:39.570297 0’0 2017-12-17 04:43:58.906482 3.d 0 0 0 0 0 0 0 0 active+clean 2017-12-18 11:33:46.608958 0’0 25:70 [0,1,2]0 [0,1,2] 0 0’0 2017-12-18 11:33:46.608846 0’0 2017-12-14 11:33:07.764667 0.e 0 0 0 0 0 0 0 0 active+clean 2017-12-17 21:50:58.197440 0’0 25:86 [0,1,2]0 [0,1,2] 0 0’0 2017-12-17 21:50:58.197298 0’0 2017-12-16 19:27:05.193424 1.f 0 0 0 0 0 0 0 0 active+clean 2017-12-18 19:05:21.513225 0’0 25:75 [2,1,0]2 [2,1,0] 2 0’0 2017-12-18 19:05:21.513127 0’0 2017-12-16 06:59:47.193849 3.c 0 0 0 0 0 0 0 0 active+clean 2017-12-19 02:58:16.330075 0’0 25:72 [2,1,0]2 [2,1,0] 2 0’0 2017-12-19 02:58:16.329948 0’0 2017-12-16 15:37:38.187042 0.f 0 0 0 0 0 0 0 0 active+clean 2017-12-18 09:37:12.908961 0’0 25:84 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 09:37:12.908852 0’0 2017-12-15 18:48:43.037117 1.e 0 0 0 0 0 0 0 0 active+clean 2017-12-18 02:58:11.041477 0’0 25:73 [0,2,1]0 [0,2,1] 0 0’0 2017-12-18 02:58:11.041386 0’0 2017-12-13 21:34:26.514865 pool 3 0 0 0 0 0 0 0 0 pool 2 40 0 0 0 0 290586726 161 161 pool 1 5 0 0 0 0 113 21 21 pool 0 3 0 0 0 0 17 8 8 sum 48 0 0 0 0 290586856 190 190 osdstat kbused kbavail kb hb in hb out 2 323496 30069320 30392816 [0,1] [] 1 323596 30069220 30392816 [0,2] [] 0 323928 30068888 30392816 [1,2] [] sum 971020 90207428 91178448 5, mds stat/dump ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph mds stat e1: ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo ceph mds dump dumped fsmap epoch 1 fs_name cephfs epoch 1 flags 0 created 0.000000 modified 0.000000 tableserver 0 root 0 session_timeout 0 session_autoclose 0 max_file_size 0 last_failure 0 last_failure_osd_epoch 0 compat compat={},rocompat={},incompat={} max_mds 0 in up {} failed damaged stopped data_pools metadata_pool 0 inline_data disabled 6, object ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo rados lspools rbd cinder-ceph glance nova ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo rbd -p cinder-ceph list volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo rbd -p cinder-ceph info volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 rbd image ‘volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74’: size 1024 MB in 256 objects order 22 (4096 kB objects) block_name_prefix: rbd_data.47d0caaedb0 format: 2 features: layering, exclusive-lock, object-map, fast-diff, deep-flatten flags: ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo rbd info -p cinder-ceph volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 rbd image ‘volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74’: size 1024 MB in 256 objects order 22 (4096 kB objects) block_name_prefix: rbd_data.47d0caaedb0 format: 2 features: layering, exclusive-lock, object-map, fast-diff, deep-flatten flags: ubuntu@juju-864213-xenial-mitaka-ceph-3:~$ sudo rbd info -p cinder-ceph volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 –debug-rbd=20 –debug-ms=5 2017-12-19 06:45:57.694357 7fb21f07a100 1 – :/0 messenger.start 2017-12-19 06:45:57.695076 7fb21f07a100 1 – :/973500521 –&gt; 10.5.0.20:6789/0 – auth(proto 0 36 bytes epoch 0) v1 – ?+0 0x564f49a68920 con 0x564f49a679a0 2017-12-19 06:45:57.697651 7fb21f06d700 1 – 10.5.0.27:0/973500521 learned my addr 10.5.0.27:0/973500521 2017-12-19 06:45:57.699831 7fb201b21700 2 – 10.5.0.27:0/973500521 &gt;&gt; 10.5.0.20:6789/0 pipe(0x564f49a666c0 sd=3 :54264 s=2 pgs=59511 cs=1 l=1 c=0x564f49a679a0).reader got KEEPALIVE_ACK 2017-12-19 06:45:57.700204 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 1 ==== mon_map magic: 0 v1 ==== 566+0+0 (156923887 0 0) 0x7fb1f8000d30 con 0x564f49a679a0 2017-12-19 06:45:57.703912 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 2 ==== auth_reply(proto 2 0 (0) Success) v1 ==== 33+0+0 (1990328902 0 0) 0x7fb1f8000a20 con 0x564f49a679a0 2017-12-19 06:45:57.704081 7fb204326700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6789/0 – auth(proto 2 32 bytes epoch 0) v1 – ?+0 0x7fb1ec0019f0 con 0x564f49a679a0 2017-12-19 06:45:57.705277 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 3 ==== auth_reply(proto 2 0 (0) Success) v1 ==== 222+0+0 (1622389239 0 0) 0x7fb1f8000a20 con 0x564f49a679a0 2017-12-19 06:45:57.705502 7fb204326700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6789/0 – auth(proto 2 181 bytes epoch 0) v1 – ?+0 0x7fb1ec003560 con 0x564f49a679a0 2017-12-19 06:45:57.706542 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 4 ==== auth_reply(proto 2 0 (0) Success) v1 ==== 425+0+0 (2988836998 0 0) 0x7fb1f8001120 con 0x564f49a679a0 2017-12-19 06:45:57.706636 7fb204326700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6789/0 – mon_subscribe({monmap=0+}) v2 – ?+0 0x564f49a6c970 con 0x564f49a679a0 2017-12-19 06:45:57.706875 7fb21f07a100 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6789/0 – mon_subscribe({osdmap=0}) v2 – ?+0 0x564f49a68920 con 0x564f49a679a0 2017-12-19 06:45:57.707991 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 5 ==== mon_map magic: 0 v1 ==== 566+0+0 (156923887 0 0) 0x7fb1f80012b0 con 0x564f49a679a0 2017-12-19 06:45:57.708216 7fb204326700 1 – 10.5.0.27:0/973500521 &lt;== mon.0 10.5.0.20:6789/0 6 ==== osd_map(25..25 src has 1..25) v3 ==== 3778+0+0 (1591735250 0 0) 0x7fb1f8001f40 con 0x564f49a679a0 2017-12-19 06:45:57.708540 7fb21f07a100 5 librbd::AioImageRequestWQ: 0x564f49a6dac0 : ictx=0x564f49a6cc80 2017-12-19 06:45:57.708549 7fb21f07a100 20 librbd::ImageState: 0x564f49a68e00 open 2017-12-19 06:45:57.708556 7fb21f07a100 10 librbd::ImageState: 0x564f49a68e00 0x564f49a68e00 send_open_unlock 2017-12-19 06:45:57.708562 7fb21f07a100 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_v2_detect_header 2017-12-19 06:45:57.708686 7fb21f07a100 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:1 1.58bd2a22 rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 [stat] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x564f49a719f0 con 0x564f49a70610 2017-12-19 06:45:57.716215 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 1 ==== osd_op_reply(1 rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 [stat] v0’0 uv2 ondisk = 0) v7 ==== 170+0+16 (226874884 0 1116245864) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.716420 7fb20121f700 10 librbd::image::OpenRequest: handle_v2_detect_header: r=0 2017-12-19 06:45:57.716432 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_v2_get_id 2017-12-19 06:45:57.716480 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:2 1.58bd2a22 rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 [call rbd.get_id] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc002390 con 0x564f49a70610 2017-12-19 06:45:57.717316 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 2 ==== osd_op_reply(2 rbd_id.volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74 [call] v0’0 uv2 ondisk = 0) v7 ==== 170+0+15 (1931867352 0 3569059384) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.717466 7fb20121f700 10 librbd::image::OpenRequest: handle_v2_get_id: r=0 2017-12-19 06:45:57.717474 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_v2_get_immutable_metadata 2017-12-19 06:45:57.717518 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:3 1.b3d94e1e rbd_header.47d0caaedb0 [call rbd.get_size,call rbd.get_object_prefix] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc004da0 con 0x564f49a70610 2017-12-19 06:45:57.718771 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 3 ==== osd_op_reply(3 rbd_header.47d0caaedb0 [call,call] v0’0 uv9 ondisk = 0) v7 ==== 184+0+33 (1658043623 0 3400148178) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.719104 7fb20121f700 10 librbd::image::OpenRequest: handle_v2_get_immutable_metadata: r=0 2017-12-19 06:45:57.719114 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_v2_get_stripe_unit_count 2017-12-19 06:45:57.719138 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:4 1.b3d94e1e rbd_header.47d0caaedb0 [call rbd.get_stripe_unit_count] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc002f10 con 0x564f49a70610 2017-12-19 06:45:57.720014 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 4 ==== osd_op_reply(4 rbd_header.47d0caaedb0 [call] v0’0 uv0 ondisk = -8 ((8) Exec format error)) v7 ==== 142+0+0 (779763376 0 0) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.720197 7fb20121f700 10 librbd::image::OpenRequest: handle_v2_get_stripe_unit_count: r=-8 2017-12-19 06:45:57.720210 7fb20121f700 10 librbd::ImageCtx: init_layout stripe_unit 4194304 stripe_count 1 object_size 4194304 prefix rbd_data.47d0caaedb0 format rbd_data.47d0caaedb0.%016llx 2017-12-19 06:45:57.720213 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_v2_apply_metadata: start<em>key=conf</em> 2017-12-19 06:45:57.720250 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:5 1.b3d94e1e rbd_header.47d0caaedb0 [call rbd.metadata_list] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc004500 con 0x564f49a70610 2017-12-19 06:45:57.721015 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 5 ==== osd_op_reply(5 rbd_header.47d0caaedb0 [call] v0’0 uv9 ondisk = 0) v7 ==== 142+0+4 (1982410784 0 0) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.721153 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 handle_v2_apply_metadata: r=0 2017-12-19 06:45:57.721205 7fb20121f700 20 librbd::ImageCtx: apply_metadata 2017-12-19 06:45:57.721413 7fb20121f700 20 librbd::ImageCtx: enabling caching… 2017-12-19 06:45:57.721414 7fb20121f700 20 librbd::ImageCtx: Initial cache settings: size=33554432 num_objects=10 max_dirty=25165824 target_dirty=16777216 max_dirty_age=1 2017-12-19 06:45:57.722163 7fb20121f700 10 librbd::ImageCtx: cache bytes 33554432 -&gt; about 855 objects 2017-12-19 06:45:57.722200 7fb20121f700 10 librbd::image::OpenRequest: 0x564f49a6e1a0 send_refresh 2017-12-19 06:45:57.722204 7fb20121f700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 send_v2_get_mutable_metadata 2017-12-19 06:45:57.722710 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:6 1.b3d94e1e rbd_header.47d0caaedb0 [call rbd.get_size,call rbd.get_features,call rbd.get_snapcontext,call rbd.get_parent,call lock.get_info] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc00ed30 con 0x564f49a70610 2017-12-19 06:45:57.728240 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 6 ==== osd_op_reply(6 rbd_header.47d0caaedb0 [call,call,call,call,call] v0’0 uv9 ondisk = 0) v7 ==== 310+0+80 (4053120443 0 4203826074) 0x7fb1e8000b70 con 0x564f49a70610 2017-12-19 06:45:57.728410 7fb20121f700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 handle_v2_get_mutable_metadata: r=0 2017-12-19 06:45:57.728422 7fb20121f700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 send_v2_get_flags 2017-12-19 06:45:57.728449 7fb20121f700 1 – 10.5.0.27:0/973500521 –&gt; 10.5.0.20:6800/27653 – osd_op(client.192363.0:7 1.b3d94e1e rbd_header.47d0caaedb0 [call rbd.get_flags] snapc 0=[] ack+read+known_if_redirected e25) v7 – ?+0 0x7fb1dc007400 con 0x564f49a70610 2017-12-19 06:45:57.729286 7fb20011c700 1 – 10.5.0.27:0/973500521 &lt;== osd.1 10.5.0.20:6800/27653 7 ==== osd_op_reply(7 rbd_header.47d0caaedb0 [call] v0’0 uv9 ondisk = 0) v7 ==== 142+0+8 (381355293 0 0) 0x7fb1e8000b70 con 0x564f49a70610 rbd image ‘volume-4bb84842-24fb-42ff-bfa1-a4d73fae0f74’: size 1024 MB in 256 objects order 22 (4096 kB objects) block_name_prefix: rbd_data.47d0caaedb0 format: 2 features: layering, exclusive-lock, object-map, fast-diff, deep-flatten flags: 2017-12-19 06:45:57.729432 7fb20121f700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 handle_v2_get_flags: r=0 2017-12-19 06:45:57.729446 7fb20121f700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 send_v2_apply 2017-12-19 06:45:57.729459 7fb200a1e700 10 librbd::image::RefreshRequest: 0x7fb1dc004ae0 handle_v2_apply 2017-12-19 06:45:57.729460 7fb200a1e700 20 librbd::image::RefreshRequest: 0x7fb1dc004ae0 apply 2017-12-19 06:45:57.729470 7fb200a1e700 10 librbd::image::OpenRequest: handle_refresh: r=0 2017-12-19 06:45:57.729474 7fb200a1e700 10 librbd::ImageState: 0x564f49a68e00 0x564f49a68e00 handle_open: r=0 2017-12-19 06:45:57.729527 7fb21f07a100 20 librbd: info 0x564f49a6cc80 2017-12-19 06:45:57.729652 7fb21f07a100 20 librbd::ImageState: 0x564f49a68e00 close 2017-12-19 06:45:57.729656 7fb21f07a100 10 librbd::ImageState: 0x564f49a68e00 0x564f49a68e00 send_close_unlock 2017-12-19 06:45:57.729658 7fb21f07a100 10 librbd::image::CloseRequest: 0x564f49a71c60 send_shut_down_update_watchers 2017-12-19 06:45:57.729660 7fb21f07a100 20 librbd::ImageState: 0x564f49a68e00 shut_down_update_watchers 2017-12-19 06:45:57.729661 7fb21f07a100 20 librbd::ImageState: 0x564f49a6c9f0 ImageUpdateWatchers::shut_down 2017-12-19 06:45:57.729663 7fb21f07a100 20 librbd::ImageState: 0x564f49a6c9f0 ImageUpdateWatchers::shut_down: completing shut down 2017-12-19 06:45:57.729686 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_shut_down_update_watchers: r=0 2017-12-19 06:45:57.729709 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 send_shut_down_aio_queue 2017-12-19 06:45:57.729711 7fb200a1e700 5 librbd::AioImageRequestWQ: shut_down: in_flight=0 2017-12-19 06:45:57.729717 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_shut_down_aio_queue: r=0 2017-12-19 06:45:57.729720 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 send_flush 2017-12-19 06:45:57.729723 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_flush: r=0 2017-12-19 06:45:57.729724 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 send_flush_readahead 2017-12-19 06:45:57.729727 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_flush_readahead: r=0 2017-12-19 06:45:57.729728 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 send_shut_down_cache 2017-12-19 06:45:57.730112 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_shut_down_cache: r=0 2017-12-19 06:45:57.730121 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 send_flush_op_work_queue 2017-12-19 06:45:57.730125 7fb200a1e700 10 librbd::image::CloseRequest: 0x564f49a71c60 handle_flush_op_work_queue: r=0 2017-12-19 06:45:57.730149 7fb200a1e700 10 librbd::ImageState: 0x564f49a68e00 0x564f49a68e00 handle_close: r=0 2017-12-19 06:45:57.730761 7fb21f07a100 1 – 10.5.0.27:0/973500521 mark_down 0x564f49a70610 – 0x564f49a6f330 2017-12-19 06:45:57.730831 7fb21f07a100 1 – 10.5.0.27:0/973500521 mark_down 0x564f49a679a0 – 0x564f49a666c0 2017-12-19 06:45:57.730882 7fb201b21700 2 – 10.5.0.27:0/973500521 &gt;&gt; 10.5.0.20:6789/0 pipe(0x564f49a666c0 sd=3 :54264 s=4 pgs=59511 cs=1 l=1 c=0x564f49a679a0).reader couldn’t read tag, (0) Success 2017-12-19 06:45:57.730901 7fb201b21700 2 – 10.5.0.27:0/973500521 &gt;&gt; 10.5.0.20:6789/0 pipe(0x564f49a666c0 sd=3 :54264 s=4 pgs=59511 cs=1 l=1 c=0x564f49a679a0).fault (0) Success 2017-12-19 06:45:57.731141 7fb21f07a100 1 – 10.5.0.27:0/973500521 mark_down_all 2017-12-19 06:45:57.731376 7fb20011c700 2 – 10.5.0.27:0/973500521 &gt;&gt; 10.5.0.20:6800/27653 pipe(0x564f49a6f330 sd=4 :53226 s=4 pgs=1847 cs=1 l=1 c=0x564f49a70610).reader couldn’t read tag, (0) Success 2017-12-19 06:45:57.731491 7fb20011c700 2 – 10.5.0.27:0/973500521 &gt;&gt; 10.5.0.20:6800/27653 pipe(0x564f49a6f330 sd=4 :53226 s=4 pgs=1847 cs=1 l=1 c=0x564f49a70610).fault (0) Success 2017-12-19 06:45:57.731618 7fb21f07a100 1 – 10.5.0.27:0/973500521 shutdown complete.<br>换硬盘后backfill不停止的实例</p>
+<p>1, ./sos_commands/ceph/ceph_osd_tree<br>osd.12 weight -0</p>
+<p>2,./sos_commands/ceph/ceph_health_detail, two inactive PGs can stop backfill<br>pg 88.9 is stuck inactive for 53999.758365, current state creating, last acting []<br>pg 20.ae3 is stuck unclean for 419743.607751, current state stale+active+undersized+degraded+remapped, last acting [68]<br>osd.160 is near full at 87%</p>
+<p>ceph pg 88.9 query - stuck without output</p>
+<p>pg 19.ff7 is stuck unclean for 234078.474055, current state active+undersized+degraded, last acting [105,126]<br>ceph pg 19.ff7 query</p>
+<p>3, ./sos_commands/ceph/ceph_osd_tree<br>four host-cap without pgs mapped to them, all osds inside them are almost empty.<br>host-cap zag0t1a-sto199cz3543kpf1-hr<br>host-cap zag0t1b-sto200cz3543kpf3-hr<br>host-cap zag0t1b-sto200cz3543kpf3-hr<br>host-cap zag0t1a-sto199cz3543kpf1-hr</p>
+<p>./sos_commands/ceph/ceph_osd_df_tree<br>-10 36.37000 - 37241G 448G 36792G 1.21 0.02 0 host-cap zag0t1a-sto199cz3543kpf1-hr<br>116 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.116<br>167 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.167<br>170 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.170<br>168 3.63699 1.00000 3724G 27237M 3697G 0.71 0.01 0 osd.168<br>169 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.169<br>131 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.131<br>111 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.111<br>117 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.117<br>121 3.63699 1.00000 3724G 210G 3513G 5.66 0.11 0 osd.121<br>171 3.63699 1.00000 3724G 27055M 3697G 0.71 0.01 0 osd.171</p>
+<p>4, This two hosts was moved from host-cap to host-std in crush rule 1<br>host-cap zag0t1b-sto200cz3543kpf3-hr<br>host-cap zag0t1a-sto199cz3543kpf1-hr</p>
+<p>“rule_id”: 1,<br>       “steps”: [{ “op”: “take”, “item”: -48, “item_name”: “root-std-g”},<br>                 {“op”: “choose_firstn”, “num”: -1, “type”: “rack-std”},</p>
+<p>the failure domain is supposed to be rack-std ? so one rack should have one replica. but you only have 2 rack with type “host-std” which are rack199-std and rack200-std. were you supposed to have 3 rack ? or am i missing somthing here.</p>
+<p>they added two host to the rack-std, but didn’t change those two host’s type to host-std from rack-std</p>
+<p>They are currently trying to fix their crush map, and once this is fixed, those backfill too full osds should be able to continue to do the backfill.</p>
+<p>get the pgs mapped to those two machines. so that your backfill_toofull issue and nearfull issue can be solved.<br>附件 - juju</p>
+<p>bash -c ‘cat &gt; cephtest.yaml’ &lt;&lt; EOF<br>series: bionic<br>machines:<br>  “0”: {}<br>  “1”: {}<br>  “2”: {}<br>applications:<br>  ceph-osd:<br>    charm: cs:ceph-osd-275<br>    num_units: 3<br>    options:<br>      aa-profile-mode: complain<br>    storage:<br>      osd-devices: “cinder,10G”<br>    to:</p>
+<pre><code>- &apos;0&apos;
+- &apos;1&apos;
+- &apos;2&apos;
+</code></pre><p>  ceph-mon:<br>    charm: cs:ceph-mon<br>    num_units: 3<br>    to:</p>
+<pre><code>- lxd:0
+- lxd:1
+- lxd:2
+</code></pre><p>relations:</p>
+<ul>
+<li>[ ceph-osd, ceph-mon ]<br>EOF<br>juju deploy ./cephtest.yaml<br>juju scp  ~/.local/share/juju/ssh/juju_id_rsa* ceph-osd/0:/home/ubuntu/<br>juju ssh ceph-osd/0 – ssh -i ./juju_id_rsa ubuntu@252.0.16.231</li>
+</ul>
+<p>参考：<br>1, <a href="http://blog.scsorlando.com/post/2013/11/21/Ceph-Install-and-Deployment-in-a-production-environment.aspx" target="_blank" rel="external">http://blog.scsorlando.com/post/2013/11/21/Ceph-Install-and-Deployment-in-a-production-environment.aspx</a><br>2, <a href="http://mathslinux.org/?p=441" target="_blank" rel="external">http://mathslinux.org/?p=441</a><br>3, <a href="http://blog.zhaw.ch/icclab/deploy-ceph-and-start-using-it-end-to-end-tutorial-installation-part-13/" target="_blank" rel="external">http://blog.zhaw.ch/icclab/deploy-ceph-and-start-using-it-end-to-end-tutorial-installation-part-13/</a><br>4, <a href="http://dachary.org/?p=1971" target="_blank" rel="external">http://dachary.org/?p=1971</a><br>5, <a href="http://blog.csdn.net/EricGogh/article/details/24348127" target="_blank" rel="external">http://blog.csdn.net/EricGogh/article/details/24348127</a><br>6, <a href="https://wiki.debian.org/OpenStackCephHowto" target="_blank" rel="external">https://wiki.debian.org/OpenStackCephHowto</a><br>7, <a href="http://ceph.com/docs/master/rbd/rbd-openstack/#configure-openstack-to-use-ceph" target="_blank" rel="external">http://ceph.com/docs/master/rbd/rbd-openstack/#configure-openstack-to-use-ceph</a><br>8, <a href="http://openstack.redhat.com/Using_Ceph_for_Cinder_with_RDO_Havana" target="_blank" rel="external">http://openstack.redhat.com/Using_Ceph_for_Cinder_with_RDO_Havana</a></p>
+<p>9, <a href="http://dachary.org/?p=2374" target="_blank" rel="external">http://dachary.org/?p=2374</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/03/06/docker-host-net-mtu/" rel="next" title="docker host net mtu">
+                <i class="fa fa-chevron-left"></i> docker host net mtu
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/03/08/ZFS-Cow-and-Ceph-CoW-and-CSI/" rel="prev" title="ZFS Cow and Ceph CoW and CSI">
+                ZFS Cow and Ceph CoW and CSI <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">张华</p>
+              <p class="site-description motion-element" itemprop="description">blog.csdn.net/quqi99</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">105</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#begin-crush-map"><span class="nav-number">1.</span> <span class="nav-text">begin crush map</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#devices"><span class="nav-number">2.</span> <span class="nav-text">devices</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#types"><span class="nav-number">3.</span> <span class="nav-text">types</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#buckets"><span class="nav-number">4.</span> <span class="nav-text">buckets</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#rules"><span class="nav-number">5.</span> <span class="nav-text">rules</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#end-crush-map"><span class="nav-number">6.</span> <span class="nav-text">end crush map</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">张华</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

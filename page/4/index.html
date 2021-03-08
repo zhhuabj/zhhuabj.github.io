@@ -231,6 +231,299 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/12/SSH连接总是定期断掉的解决办法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/12/SSH连接总是定期断掉的解决办法/" itemprop="url">SSH连接总是定期断掉的解决办法</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-12T10:04:27+08:00">
+                2020-11-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2016-05-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</p>
+<p>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )</p>
+<p>SSH连接总是隔一段时间没有输入时就断开，解决办法如下：</p>
+<p>服务端配置<br>sudo vi /etc/ssh/sshd_config<br>ClientAliveInterval 60     #服务端主动向客户端请求响应的间隔<br>ClientAliveCountMax 10    #服务器发出请求后客户端没有响应的次数达到一定值就自动断开<br>sudo restart ssh</p>
+<p>客户端配置<br>sudo vi /etc/ssh/ssh_config  #或~/.ssh/config</p>
+<pre><code>TCPKeepAlive yes
+ServerAliveInterval 15
+ServerAliveCountMax 6
+StrictHostKeyChecking no
+ForwardAgent yes
+Compression yes
+
+ IPQoS throughput
+</code></pre><p>或</p>
+<p>ssh -i <key-file> IPQoS=throughput -o StrictHostKeyChecking=no -o TCPKeepAlive=yes -o ServerAliveInterval=30 ubuntu@<ip></ip></key-file></p>
+<p>上面方式任选一种，我选客户端配置方式。</p>
+<p>20200316更新, 如果ssh总是断时也得考虑使用白名单模式时是否将某些IP排除了.</p>
+<p>20200902更新, 如果使用Compression yes会被墙看上, 会时不时ssh断掉, 去掉Compression即可.</p>
+<p>20201016更新, 到国外的ssh连接总断, 除了ISP QoS外, 还试试在sshd.conf中添加:</p>
+<p>UseDNS no</p>
+<p>GSSAPIAuthentication no</p>
+<p>20201028更新，</p>
+<p>这次应该是找到了ssh总断的根源，因为bastion上安装了devstack所以在并行运行’opestack image set”时ssh会中断．所以习惯很重要，不能乱安装东西．</p>
+<p>#openstack image set –property $p=${props[$p]} $img_name</p>
+<p>openstack image set –property $p=${props[$p]} $img_name &amp;</p>
+<p>另外，使用压缩传输数据：</p>
+<p>#strings /usr/sbin/sshd |egrep “chacha|aes”<br>scp -p -C -o ‘IPQoS throughput’  -c chacha20-poly1305@openssh.com win10.img hua@node1:/images/</p>
+<p>20201112更新</p>
+<p>ssh总断的原因是因为机器上为反复重启virtualbox导致chrome会通过fast.com测速变得只有十几K, virutalbox改成了kvm现在观察了几天似乎这个问题消失了。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/09/在KVM中运行win10虚机/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="张华">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术并艺术着">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/11/09/在KVM中运行win10虚机/" itemprop="url">在KVM中运行win10虚机</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-11-09T09:55:35+08:00">
+                2020-11-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>作者：张华  发表于：2015-12-22<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明<br>( <a href="http://blog.csdn.net/quqi99" target="_blank" rel="external">http://blog.csdn.net/quqi99</a> )<br>KVM默认不支持windows 10，需要做一些设置：<br>1, sudo usermod -a -G vboxusers hua<br>2, 修改下列配置使KVM支持windows 10所需的PAE、NX、SSE2特性。PAE支持32位处理器可以访问4GB以上物理内存功能版本的Windows，并且它是NX的先决条件。NX可让处理器帮助保护电脑免受恶意软件的攻击。SSE2（一项使用已久的关于处理器的标准）是一套由越来越多的第三方应用和驱动程序使用的指令集。<br>   cpu model: core2duo<br>   cpu features: nx=require<br>   nic: rtl8139 to e1000</p>
+<p>在ubuntu上制作win 10 usb启动盘的工具：</p>
+<p>sudo add-apt-repository ppa:gezakovacs/ppa<br>sudo apt-get update<br>sudo apt-get install unetbootin</p>
+<p>后续的工作是采用SR-IOV与USB直通，待续。</p>
+<p>20200603更新　－　virtualbox中安装win10</p>
+<p>立刻仅支持windows所以需要一个windows虚机，ubuntu 20.04上的kvm安装win10报错一时半会解不了，换成virtualbox</p>
+<p>安装　－　<a href="https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack" target="_blank" rel="external">https://www.oracle.com/virtualization/technologies/vm/downloads/virtualbox-downloads.html#extpack</a></p>
+<p>在虚机中若想使用host上的摄像头，还得安装上面链接中的ExtPack, 这样在启动虚机之后在devices -&gt; webcams菜单就能使用host的摄像头了．</p>
+<p>在虚机中若想使用host上的麦克风和音箱怎么办？　在’devices -&gt; audio”菜单中将’audio output’与’audio input’都选上即可．</p>
+<p>鼠标在虚机与host机上无缝切换，　在’devices -&gt; insert guest cd’然后在虚机里打开cd安装驱动即可．</p>
+<p>全屏切换　host + F,  host是指right ctrl键，进入全屏退出全屏都是它．</p>
+<p>20201109更新 - kvm安装win10<br>之前virtualbox安装的win10在开关多次之后，会造成这样一个问题，在chrome上使用fast.com测速时会降到几十K到12M之间，</p>
+<p>而同时在firefox上测速能达到69M左右，在重启机器之后chrome上的测速又能恢复到92M。</p>
+<p>所以不敢再继续使用virtualbox了，改用KVM吧。</p>
+<p>1, 直接将之前的virtualbox镜像转成kvm的 -　qemu-img convert -p -f vdi -O raw win10.vdi win10.img</p>
+<p>2, 导入镜像创建虚机时注意一点，在”Choose the operating system you are installing”处输入win搜索windows时没有win10的版本，需勾选”Include end of life operating systems“才出来。</p>
+<p>3, 第一次默认安装对硬盘和网卡均使用默认驱动。</p>
+<ol>
+<li>安装完启动win10后在里面下载安装virtualbox驱动 - <a href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso" target="_blank" rel="external">https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/stable-virtio/virtio-win.iso</a></li>
+</ol>
+<p>5, 此时只能将网卡驱动改为virtio(也可以改成mapvtap + virtio)重启机器可以进win10</p>
+<p>6, 但此时若将硬盘也改为virtio驱动会报错的。因为硬盘里还根本没有iscsi-virtio驱动啊。解决办法是在硬盘默认驱动进入win10后，</p>
+<p>   再添加第二块virtio驱动这样iscsi-virtio就装在硬盘了。这时再重启就可以了。见：　<a href="https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio" target="_blank" rel="external">https://superuser.com/questions/1057959/windows-10-in-kvm-change-boot-disk-to-virtio</a></p>
+<p>7, 使用spice这样声音和麦克就都用了。注：如果不将网络与硬盘改为virtio驱动，在likeshuo使用音频会有延时听不清楚。</p>
+<p>8, 可使用spice redirect usb特性将集成视频卡加到虚机，注意：选错usb可能造成蓝牙键盘失去连接。</p>
+<p>９，”rsync -avztur –progress /bak/* /mnt/share/“, /mnt/share是一块iscis盘，bak缺空间，第１步转换后的win10硬盘在iscsi盘上，但之前加了–delete参数导制被删除转了两遍。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/11/08/使用iSCSI挂载QNAP存储/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1394,311 +1687,6 @@ set_state done
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/18/引入nova-placement之后对调度的影响/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/18/引入nova-placement之后对调度的影响/" itemprop="url">引入nova placement之后对调度的影响</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-18T15:33:22+08:00">
-                2020-09-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-17<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<h2 id="nova-cell-v2"><a href="#nova-cell-v2" class="headerlink" title="nova cell v2"></a>nova cell v2</h2><p>nova cell v2将nova db分成了3个(nova, nova_api, nova_cell0，虚机信息只存储在所在的cell中，公共数据存储在nova_api库中), nova_api中的3个表(nova_api.host_mappings, nova_api.instance_mappings, nova_api.cell_mappings可以直接从instance找到cell_id进而找到DB与MQ的信息，这样nova-api直接就可以操作该cell之类的DB与MQ从而可以让nova-compute可以水平扩展到更多的物理节点，另一方面，nova-api节点也不再需要nova-cell服务，要有nova-api与nova-scheduler两个服务即可．</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; pager less -S</span><br><span class="line">PAGER set to &apos;less -S&apos;</span><br><span class="line">mysql&gt; show tables;</span><br><span class="line">mysql&gt; select instance_uuid,cell_id from instance_mappings;</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| instance_uuid                        | cell_id |</span><br><span class="line">+--------------------------------------+---------+</span><br><span class="line">| 4039ed4e-d0a1-46ba-99a5-68bc84421b42 |       2 |</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from host_mappings;</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| created_at          | updated_at | id | cell_id | host                                |</span><br><span class="line">+---------------------+------------+----+---------+-------------------------------------+</span><br><span class="line">| 2020-09-16 06:18:26 | NULL       |  1 |       2 | juju-3ba760-ceilometer-15.cloud.sts |</span><br><span class="line"></span><br><span class="line">mysql&gt; select transport_url,name,database_connection from cell_mappings;</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| transport_url                                                                                            | name  | database_connection                                                         |</span><br><span class="line">+----------------------------------------------------------------------------------------------------------+-------+-----------------------------------------------------------------------------+</span><br><span class="line">| none:///                                                                                                 | cell0 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova_cell0 |</span><br><span class="line">| rabbit://nova:wSz5LjscfBqKnhVWKBZnrXdwS5Kz6TByz9jKfm2xKHbCRYPPSbcnqFwPTnCp8VpP@10.5.0.199:5672/openstack | cell1 | mysql+pymysql://nova:4Hjrdj5yMTkG6V9nxNpqrfVdhtJ5Tnww@10.5.0.103/nova       |</span><br></pre></td></tr></table></figure>
-<p>所以当遇到这种错误时:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br><span class="line">No server with a name or ID of 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo nova-manage cell_v2 list_cells</span><br><span class="line">sudo nova-manage cell_v2 map_instances --cell_uuid &lt;cell-id-from-above&gt;</span><br><span class="line">openstack server delete 2ebf1b2d-f679-4265-9c4b-71420dace71a</span><br></pre></td></tr></table></figure>
-<h2 id="nova-placement-API"><a href="#nova-placement-API" class="headerlink" title="nova placement API"></a>nova placement API</h2><p>nova placement API在Newton被引入, nova-scheduler调用placement-api用于调度. 主要用于跟踪记录Resource Provider(compute-node, external storage-pool, external ip-allocation-pool etc)的Inventory和Usage.自Pike版本, 必须启用Placement API来辅助nova-scheduler service进行compute node调度，并以此替代之前的RAMFilter、CoreFilter和DiskFilter。概念对象如下:</p>
-<ul>
-<li>Resource Class, 资源种类, placement api默认实现了DISK_GB, MEMORY_MB,VCPU三种标准resource classes, 也提供了custom resource classes的接口.</li>
-<li>Resource Providers：资源提供者，实际提供资源的对象，例如：compute node、storage pool</li>
-<li>Inventory：资源清单，资源提供者所拥有的资源清单，例如：compute node 拥有的vCPU、Disk、RAM 等 inventories</li>
-<li>Resource Allocations：资源分配状况，包含了Resource Class、Resource Provider以及Consumer 的映射关系。记录消费者使用了多少该类型的资源数量</li>
-<li>Provider Aggregate：资源聚合，类似 HostAggregate 的概念</li>
-<li>Traits：资源特征，不同资源提供者可能会具有不同的资源特征。Traits 作为资源提供者特征的描述，它不能够被消费，但在某些Workflow 或者会需要这些信息。例如：标识可用的Disk是一个SSD，可以帮助Scheduler更好的匹配 instance boot请求。</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from resource_providers;</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| created_at          | updated_at          | id | uuid                                 | name                                | generation | can_host | root_provider_id | parent_provider_id |</span><br><span class="line">+---------------------+---------------------+----+--------------------------------------+-------------------------------------+------------+----------+------------------+--------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | 2020-09-16 10:19:33 |  1 | a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |     NULL |                1 |               NULL |</span><br><span class="line"></span><br><span class="line"># for the field resource_class_id, 0 means VCPU, 1 means MEMORY_MB, 2 means DISK_GB</span><br><span class="line">mysql&gt; select * from inventories;</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | resource_class_id | total | reserved | min_unit | max_unit | step_size | allocation_ratio |</span><br><span class="line">+---------------------+------------+----+----------------------+-------------------+-------+----------+----------+----------+-----------+------------------+</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  1 |                    1 |                 0 |     2 |        0 |        1 |        2 |         1 |               16 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  2 |                    1 |                 1 |  3944 |      512 |        1 |     3944 |         1 |              1.5 |</span><br><span class="line">| 2020-09-16 06:18:15 | NULL       |  3 |                    1 |                 2 |    38 |        0 |        1 |       38 |         1 |                1 |</span><br><span class="line">mysql&gt; select * from allocations;</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| created_at          | updated_at | id | resource_provider_id | consumer_id                          | resource_class_id | used |</span><br><span class="line">+---------------------+------------+----+----------------------+--------------------------------------+-------------------+------+</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 16 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 2 |    1 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 17 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 1 |   64 |</span><br><span class="line">| 2020-09-16 08:45:44 | NULL       | 18 |                    1 | 64cb10fd-246f-4864-b06d-687d59c47c2c |                 0 |    1 |</span><br></pre></td></tr></table></figure>
-<h2 id="Placement-CLI"><a href="#Placement-CLI" class="headerlink" title="Placement CLI"></a>Placement CLI</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install python3-osc-placement -y</span><br><span class="line"></span><br><span class="line">$ openstack resource provider list</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| uuid                                 | name                                | generation |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line">| a7081054-ee03-44b8-ae21-f20e0535cfc1 | juju-3ba760-ceilometer-15.cloud.sts |         19 |</span><br><span class="line">+--------------------------------------+-------------------------------------+------------+</span><br><span class="line"></span><br><span class="line">$  openstack resource provider inventory list a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| resource_class | allocation_ratio | min_unit | max_unit | reserved | step_size | total |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line">| VCPU           |             16.0 |        1 |        2 |        0 |         1 |     2 |</span><br><span class="line">| MEMORY_MB      |              1.5 |        1 |     3944 |      512 |         1 |  3944 |</span><br><span class="line">| DISK_GB        |              1.0 |        1 |       38 |        0 |         1 |    38 |</span><br><span class="line">+----------------+------------------+----------+----------+----------+-----------+-------+</span><br><span class="line"></span><br><span class="line">$ openstack resource provider usage show a7081054-ee03-44b8-ae21-f20e0535cfc1</span><br><span class="line">+----------------+-------+</span><br><span class="line">| resource_class | usage |</span><br><span class="line">+----------------+-------+</span><br><span class="line">| VCPU           |     3 |</span><br><span class="line">| MEMORY_MB      |   192 |</span><br><span class="line">| DISK_GB        |     3 |</span><br><span class="line">+----------------+-------+</span><br></pre></td></tr></table></figure>
-<h2 id="one-bug"><a href="#one-bug" class="headerlink" title="one bug"></a>one bug</h2><p>例如, 如<a href="https://bugs.launchpad.net/nova/+bug/1679750描述的场景" target="_blank" rel="external">https://bugs.launchpad.net/nova/+bug/1679750描述的场景</a>, 在hostA上创建一虚机,hostA死掉了, 这时删除虚机时无法删除实例(因为nova-compute这时死掉了啊), 这样会导致allocations表中的记录没有被删除. 如果hostA又起来了, nova-compute的init_host-&gt;_complete_partial_deletion<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; nova/compute/manager.py#update_available_resource_for_node -&gt; update_available_resource -&gt; _update_available_resource -&gt; _remove_deleted_instances_allocations</span><br></pre></td></tr></table></figure></p>
-<p>当把一个nova-compute删除时，删了service和compute_node表记录后,却没有删除placement resource provider和host mapping records.<br>nova-compute自己都死了它是没法自己删自己的,所以改由nova-api在启动时在删除instances时也删除allocations表中的记录 -<br><a href="https://review.opendev.org/#/c/580498/" target="_blank" rel="external">https://review.opendev.org/#/c/580498/</a></p>
-<h2 id="debug"><a href="#debug" class="headerlink" title="debug"></a>debug</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">select * nova_api.from host_mappings;</span><br><span class="line">select * from nova_api.cell_mappings;</span><br><span class="line">select * from nova_api.resource_providers where name like &apos;%xxx%&apos;;   xx.bos01.xxx (9)</span><br><span class="line">select * from nova.compute_nodes where host like &apos;%bagon%&apos; or hypervisor_hostname like &apos;%xxx%&apos;;</span><br><span class="line">select * from nova_api.inventories where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;);</span><br><span class="line">select * from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;) order by consumer_id,resource_provider_id,resource_class_id;</span><br><span class="line">select uuid, host, node, vcpus, memory_mb, vm_state, power_state, task_state, root_gb, ephemeral_gb, cell_name,deleted from nova.instances where uuid in (select consumer_id from nova_api.allocations where resource_provider_id in (select id from nova_api.resource_providers where name like &apos;%xxx%&apos;)) order by uuid;</span><br></pre></td></tr></table></figure>
-<h2 id="20201230更新-another-bug"><a href="#20201230更新-another-bug" class="headerlink" title="20201230更新 - another bug"></a>20201230更新 - another bug</h2><p>“select numa_topology from nova.compute_nodes where hypervisor_hostname=’cloud3.xxx.com’\G”显示cell0上的pinned_cpus将所有CPU全用完了导致nova-schedule无法继续调度报“Filter NUMATopologyFilter returned 0 hosts”这种错。<br>下面代码分析显示周期性的update_available_resource本来是可以自动修改数据库记录的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pre_start_hook -&gt; update_available_resource -&gt; _update_available_resource -&gt; _update_usage_from_instances -&gt; _update_usage_from_instance -&gt; _update_usage -&gt; numa_usage_from_instance_numa</span><br></pre></td></tr></table></figure></p>
-<p>从数据库拿出host_cell.pinned_cpus作为pinned_cpus的初始值，特别要注意：host_cell.pinned_cpus并不是直接从数据库取的，它通过运行下列的self._copy_resources(cn, resources)方法实际上让host_cell.pinned_cpus永远为empty<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">693 def _init_compute_node(self, context, resources):</span><br><span class="line">...</span><br><span class="line">713 if nodename in self.compute_nodes:</span><br><span class="line">714 cn = self.compute_nodes[nodename]</span><br><span class="line">715 self._copy_resources(cn, resources)</span><br><span class="line">716 self._setup_pci_tracker(context, cn, resources)</span><br><span class="line">717 return False</span><br></pre></td></tr></table></figure></p>
-<p>它根据free变量来决定是往pinned_cpus上加还是减。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">./nova/virt/hardware.py#numa_usage_from_instance_numa</span><br><span class="line">def numa_usage_from_instance_numa(host_topology, instance_topology,free=False):</span><br><span class="line">...</span><br><span class="line">for host_cell in host_topology.cells:</span><br><span class="line">new_cell = objects.NUMACell(</span><br><span class="line">id=host_cell.id,</span><br><span class="line">cpuset=shared_cpus,</span><br><span class="line">pcpuset=dedicated_cpus,</span><br><span class="line">memory=host_cell.memory,</span><br><span class="line">cpu_usage=0,</span><br><span class="line">memory_usage=0,</span><br><span class="line">mempages=host_cell.mempages,</span><br><span class="line">pinned_cpus=host_cell.pinned_cpus,</span><br><span class="line">siblings=host_cell.siblings)</span><br><span class="line">...</span><br><span class="line">if free:</span><br><span class="line">if (instance_cell.cpu_thread_policy ==</span><br><span class="line">fields.CPUThreadAllocationPolicy.ISOLATE):</span><br><span class="line">new_cell.unpin_cpus_with_siblings(pinned_cpus)</span><br><span class="line">else:</span><br><span class="line">new_cell.unpin_cpus(pinned_cpus)</span><br></pre></td></tr></table></figure></p>
-<p>free是由”free = sign == -1“决定的（看仔细，右边的是两个等号，左边的是一个等号）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">def _update_usage(self, usage, nodename, sign=1):</span><br><span class="line">...</span><br><span class="line">free = sign == -1</span><br><span class="line">cn.numa_topology = hardware.numa_usage_from_instance_numa(</span><br><span class="line">host_numa_topology, instance_numa_topology, free)._to_json()</span><br><span class="line"></span><br><span class="line">def _update_usage_from_instance():</span><br><span class="line">is_new_instance = uuid not in self.tracked_instances</span><br><span class="line">is_removed_instance = not is_new_instance and (is_removed or</span><br><span class="line">instance[&apos;vm_state&apos;] in vm_states.ALLOW_RESOURCE_REMOVAL)</span><br><span class="line">if is_new_instance:</span><br><span class="line">self.tracked_instances.add(uuid)</span><br><span class="line">sign = 1</span><br><span class="line">if is_removed_instance:</span><br><span class="line">self.tracked_instances.remove(uuid)</span><br><span class="line">sign = -1</span><br><span class="line">...</span><br><span class="line">self._update_usage(self._get_usage_dict(instance, instance),nodename, sign=sign)</span><br></pre></td></tr></table></figure></p>
-<p>所以只要update_available_resource运行那脏记录必须得到修改，那现在没修改说明update_available_resource一直没运行，日志里发现这种错误placement正在使用http而非https打头的endpoint从而导致placement api不可用，这样导致update_available_resource在调用update_placement时出错，从而导致update_available_resource自2020-10-26后再未运行。详见－<a href="https://bugs.launchpad.net/charm-nova-compute/+bug/1826382" target="_blank" rel="external">https://bugs.launchpad.net/charm-nova-compute/+bug/1826382</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2020-10-26 15:43:34.459 1393 WARNING keystoneauth.discover [req-5dcdc394-2784-40d2-984c-54fe261f36f0 - - - - -] Failed to contact the endpoint at http://placement-int.xxx.com:8778 for discovery. Fallback to using that endpoint as the base url.</span><br><span class="line">2020-10-26 15:43:34.463 1393 ERROR nova.compute.manager [req-5dcdc394-2784-40d2-984c-54fe261f36f0 - - - - -] Could not retrieve compute node resource provider 8bd4062b-84c7-4aab-ade7-31dc01695878 and therefore unable to error out any instances stuck in BUILDING state. Error: Failed to retrieve allocations for resource provider 8bd4062b-84c7-4aab-ade7-31dc01695878:</span><br></pre></td></tr></table></figure>
-<p>关于numa测试环境的搭建可以见－<a href="https://blog.csdn.net/quqi99/article/details/51993512" target="_blank" rel="external">https://blog.csdn.net/quqi99/article/details/51993512</a>, 注意一点，grub里定义isolcpus并不会让nova不使用这些cpu, nova里专门有vcpu_pin_set来做这件事。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p>[1] <a href="https://blog.csdn.net/jmilk/article/details/81264240" target="_blank" rel="external">https://blog.csdn.net/jmilk/article/details/81264240</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/10/如何让novnc-websockify支持tls1-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="张华">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="技术并艺术着">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/10/如何让novnc-websockify支持tls1-2/" itemprop="url">如何让novnc/websockify支持tls1.2</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-10T15:04:57+08:00">
-                2020-09-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><strong>作者：张华 发表于：2020-09-10<br>版权声明：可以任意转载，转载时请务必以超链接形式标明文章原始出处和作者信息及本版权声明</strong></p>
-<p>如果希望novnc使用tls1.2该怎么办？<br>各软件(openssl, websockify, nova)支持tls1.2的历史情况如下：</p>
-<ul>
-<li>openssl在1.0.0h到1.0.1的时候才开始支持tls1.2, 见”Add TLS v1.2 server support for client authentication” - <a href="https://www.openssl.org/news/changelog.html，xenial使用的是1.0.2g版本" target="_blank" rel="external">https://www.openssl.org/news/changelog.html，xenial使用的是1.0.2g版本</a></li>
-<li>ubuntu 20.04开始默认使用tls1.2 [2]</li>
-<li>websockify在0.9.0才开始支持配置tls版本, 见 - <a href="https://pypi.org/project/websockify/" target="_blank" rel="external">https://pypi.org/project/websockify/</a>, 所以在nova xenial/mitaka版本中因为使用了websockify0.8.0所以列代码也不支持配置tls版本<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># grep -r &apos;ssl.wrap_sock&apos; /usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py -A 7</span><br><span class="line">            wrapped_sock = ssl.wrap_socket(</span><br><span class="line">                compute_sock,</span><br><span class="line">                keyfile=client_key,</span><br><span class="line">                certfile=client_cert,</span><br><span class="line">                server_side=False,</span><br><span class="line">                cert_reqs=ssl.CERT_REQUIRED,</span><br><span class="line">                ca_certs=CONF.vnc.vencrypt_ca_certs)</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>这样，后来在nova升级到websockify 0.9.0之后也开始有了一个patch支持配置tls版本,见<br><a href="https://review.opendev.org/#/c/679502/" target="_blank" rel="external">https://review.opendev.org/#/c/679502/</a><br>但是，目前我们使用的就是xenial，该如何办呢？<br>首先，因为使用的是websockify 0.8.0不支持配置ssl版本，那样想在ssl.wrap_socket中直接指定＂ssl_version=ssl.PROTOCOL_TLSv1_2＂来强制使用tls1_2是可行的．（如果不可行，是因为下列错误导致，见： <a href="https://github.com/freedesktop/spice-html5/commit/293d405e15a4499219fe81e830862cc2b1518e3e" target="_blank" rel="external">https://github.com/freedesktop/spice-html5/commit/293d405e15a4499219fe81e830862cc2b1518e3e</a> )<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SecurityError: Failed to construct &apos;WebSocket&apos;: An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.</span><br></pre></td></tr></table></figure></p>
-<p>那样，是否应该改变底层openssl的默认配置成tls1.2, 参考文档[1], 修改/etc/ssl/openssl.cnf在oid_section之后添加下列内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">root@juju-055b8b-ssl-7:~# grep -r &apos;oid_section&apos; /etc/ssl/openssl.cnf -A 2</span><br><span class="line">oid_section             = new_oids</span><br><span class="line"></span><br><span class="line">openssl_conf = default_conf</span><br><span class="line"></span><br><span class="line">root@juju-055b8b-ssl-7:~# cat /etc/ssl/openssl.cnf |tail -n9</span><br><span class="line">[default_conf]</span><br><span class="line">ssl_conf = ssl_sect</span><br><span class="line"></span><br><span class="line">[ssl_sect]</span><br><span class="line">system_default = system_default_sect</span><br><span class="line"></span><br><span class="line">[system_default_sect]</span><br><span class="line">MinProtocol = TLSv1.2</span><br><span class="line">CipherString = DEFAULT@SECLEVEL=2</span><br></pre></td></tr></table></figure></p>
-<p>但是使用下列方法测试时报错．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart nova-novncproxy nova-consoleauth</span><br><span class="line"># verify if tls 1.2 is supported - https://devanswers.co/test-server-tls-1-2-ubuntu/</span><br><span class="line"># https://www.poftut.com/use-openssl-s_client-check-verify-ssltls-https-webserver/</span><br><span class="line">OPENSSL_CONF=/etc/ssl/ openssl s_client -connect 10.5.100.4:6080 -tls1</span><br><span class="line">OPENSSL_CONF=/etc/ssl/ openssl s_client -connect 10.5.100.4:6080 -tls1_2</span><br><span class="line"></span><br><span class="line">#list all supported ciphers</span><br><span class="line">nmap --script ssl-enum-ciphers -p 6080 10.5.100.4</span><br><span class="line">OPENSSL_CONF=/etc/ssl/ openssl s_client -connect 10.5.2.196:6082 -tls1_2</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@juju-055b8b-ssl-7:~# openssl s_client -connect 10.5.100.4:6080 -tls1_2</span><br><span class="line">Error configuring OpenSSL</span><br><span class="line">139929571108504:error:25066067:DSO support routines:DLFCN_LOAD:could not load the shared library:dso_dlfcn.c:187:filename(libssl_conf.so): libssl_conf.so: cannot open shared object file: No such file or directory</span><br><span class="line">139929571108504:error:25070067:DSO support routines:DSO_load:could not load the shared library:dso_lib.c:233:</span><br><span class="line">139929571108504:error:0E07506E:configuration file routines:MODULE_LOAD_DSO:error loading dso:conf_mod.c:271:module=ssl_conf, path=ssl_conf</span><br><span class="line">139929571108504:error:0E076071:configuration file routines:MODULE_RUN:unknown module name:conf_mod.c:212:module=ssl_conf</span><br></pre></td></tr></table></figure>
-<p>错误是找不着libssl_conf.so，作下列更改后，问题依旧 ．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install libssl1.0.0 libssl-dev</span><br><span class="line">cd /lib/x86_64-linux-gnu/</span><br><span class="line">sudo ln -s libssl.so.1.0.0 libssl.so.10</span><br><span class="line">sudo ln -s libcrypto.so.1.0.0 libcrypto.so.10</span><br></pre></td></tr></table></figure></p>
-<p>20201120更新-是需要添加<strong>OPENSSL_CONF=/etc/ssl/</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># OPENSSL_CONF=/etc/ssl/ openssl ciphers -v TLSv1.2 | head -4</span><br><span class="line">ECDHE-RSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=RSA  Enc=AESGCM(256) Mac=AEAD</span><br><span class="line">ECDHE-ECDSA-AES256-GCM-SHA384 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AESGCM(256) Mac=AEAD</span><br><span class="line">ECDHE-RSA-AES256-SHA384 TLSv1.2 Kx=ECDH     Au=RSA  Enc=AES(256)  Mac=SHA384</span><br><span class="line">ECDHE-ECDSA-AES256-SHA384 TLSv1.2 Kx=ECDH     Au=ECDSA Enc=AES(256)  Mac=SHA384</span><br></pre></td></tr></table></figure></p>
-<p>将xenial上的openssl 1.1.0g升级到1.1.1a后问题依旧:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">#upgrade openssl from 1.1.0g to 1.1.1a in ubuntu 18.04</span><br><span class="line">sudo apt install build-essential checkinstall zlib1g-dev gcc make -y</span><br><span class="line">wget https://www.openssl.org/source/openssl-1.1.1a.tar.gz</span><br><span class="line">tar zxvf openssl-1.1.1a.tar.gz &amp;&amp; cd openssl-1.1.1a/</span><br><span class="line">./config --prefix=/usr/local/ssl --openssldir=/usr/local/ssl</span><br><span class="line">make</span><br><span class="line">sudo make install</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/ld.so.conf.d/openss1-1.1.1b.conf&apos; &lt;&lt; EOF</span><br><span class="line">/usr/local/ssl/lib</span><br><span class="line">EOF</span><br><span class="line">sudo ldconfig -v</span><br><span class="line">sudo mv /usr/bin/c_rehash /usr/bin/c_rehash.BAK</span><br><span class="line">sudo mv /usr/bin/openssl /usr/bin/openssl.BAK</span><br><span class="line">sudo cp /etc/environment /etc/environment.BAK</span><br><span class="line">sudo bash -c &apos;cat &gt; /etc/environment&apos; &lt;&lt; EOF</span><br><span class="line">PATH=&quot;/usr/local/ssl/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games&quot;</span><br><span class="line">EOF</span><br><span class="line">echo $PATH</span><br><span class="line">openssl version -a</span><br><span class="line">sudo apt-get install libssl-dev -y</span><br></pre></td></tr></table></figure></p>
-<p>然后修改/usr/lib/python2.7/dist-packages/websockify/websocket.py（注意，不是/usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py）里的ssl.wrap_socket添加’ssl_version=ssl.PROTOCOL_TLSv1_2’就可以了，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># nmap --script ssl-enum-ciphers -p 6080 10.5.100.4 |grep TLSv</span><br><span class="line">|   TLSv1.2:</span><br><span class="line">root@juju-055b8b-ssl-7:~/openssl-1.1.1a# openssl s_client -connect 10.5.100.4:6080 -tls1_2 |grep &apos;CN&apos;</span><br><span class="line">depth=0 C = GB, ST = England, L = London, O = Ubuntu Cloud, OU = Cloud, CN = 10.5.100.0</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>此时，去掉/usr/lib/python2.7/dist-packages/nova/console/rfb/authvencrypt.py里之前做的tls1.2修改也是可以的．<br>结论，似乎修改底层openssl的默认版本到tls1.2不好使，同时websockify 0.8.0默认的只是tls1.0, 此时只是修改nova端是不work的，直接修改websockify 0.8.0改到tls1.2是可以的．在websockify 0.9.0之后支持配置tls1.2，所以此时nova端修改tls的patch也就能派上用场了．<br>相关代码分析：<br>python ssl模块在wrap_socket中是将参数硬编码成ssl_version=PROTOCOL_SSLv23，所以在websockify 0.8.0不传ssl_version参数的话是即使改底层openssl的默认编码也是无济于事的．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def wrap_socket(sock, keyfile=None, certfile=None,</span><br><span class="line">                server_side=False, cert_reqs=CERT_NONE,</span><br><span class="line">                ssl_version=PROTOCOL_SSLv23, ca_certs=None,</span><br><span class="line">                do_handshake_on_connect=True,</span><br><span class="line">                suppress_ragged_eofs=True, ciphers=None):</span><br></pre></td></tr></table></figure></p>
-<p>看来唯一的办法是修改python-websockify 0.8.0包，加上那一行，做个临时hotfix了．</p>
-<h2 id="20201106更新"><a href="#20201106更新" class="headerlink" title="20201106更新"></a>20201106更新</h2><p>创建了一个xenial的spice ssl测试环境．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh -s xenial -r queens --create-model --name ssl2:stsstack --num-compute 1 --openstack-dashboard --ssl --nova-console --run</span><br><span class="line">juju config openstack-dashboard enforce-ssl=true</span><br><span class="line">ssl_results=/home/ubuntu/ed/stsstack-bundles/openstack/ssl/openstack-ssl2/results</span><br><span class="line">juju config openstack-dashboard ssl_ca=`base64 $&#123;ssl_results&#125;/cacert.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config openstack-dashboard ssl_cert=`base64 $&#123;ssl_results&#125;/servercert.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config openstack-dashboard ssl_key=`base64 $&#123;ssl_results&#125;/serverkey.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config nova-cloud-controller console-access-protocol=spice</span><br><span class="line">juju config nova-cloud-controller console-ssl-cert=`base64 $&#123;ssl_results&#125;/servercert.pem| tr -d &apos;\n&apos;`</span><br><span class="line">juju config nova-cloud-controller console-ssl-key=`base64 $&#123;ssl_results&#125;/serverkey.pem| tr -d &apos;\n&apos;`</span><br></pre></td></tr></table></figure></p>
-<p>但我们尽量不用–ssl，改用–vault<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./generate-bundle.sh -s xenial -r queens --create-model --name ssl-queens:stsstack --num-compute 1 --nova-console --vault</span><br></pre></td></tr></table></figure></p>
-<p>看到下列错，实际上这是正常的．<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">$ nova get-vnc-console bionic-061058 spice-html5</span><br><span class="line">+-------------+------------------------------------------------------------------------------------+</span><br><span class="line">| Type | Url |</span><br><span class="line">+-------------+------------------------------------------------------------------------------------+</span><br><span class="line">| spice-html5 | https://10.5.100.4:6082/spice_auto.html?token=69b15db8-2575-4bc9-980b-3e4149881015 |</span><br><span class="line">+-------------+------------------------------------------------------------------------------------+</span><br><span class="line">$ curl -k -vvv https://10.5.100.4:6082/spice_auto.html?token=69b15db8-2575-4bc9-980b-3e4149881015</span><br><span class="line">* Trying 10.5.100.4:6082...</span><br><span class="line">* TCP_NODELAY set</span><br><span class="line">* Connected to 10.5.100.4 (10.5.100.4) port 6082 (#0)</span><br><span class="line">* ALPN, offering h2</span><br><span class="line">* ALPN, offering http/1.1</span><br><span class="line">* successfully set certificate verify locations:</span><br><span class="line">* CAfile: /etc/ssl/certs/ca-certificates.crt</span><br><span class="line">CApath: /etc/ssl/certs</span><br><span class="line">* TLSv1.3 (OUT), TLS handshake, Client hello (1):</span><br><span class="line">* TLSv1.3 (IN), TLS handshake, Server hello (2):</span><br><span class="line">* TLSv1.3 (OUT), TLS alert, protocol version (582):</span><br><span class="line">* error:1425F102:SSL routines:ssl_choose_client_version:unsupported protocol</span><br><span class="line">* Closing connection 0</span><br><span class="line">curl: (35) error:1425F102:SSL routines:ssl_choose_client_version:unsupported protocol</span><br><span class="line"></span><br><span class="line">-root@juju-1833ad-ssl2-7:~# tail -f /var/log/nova/nova-spiceproxy.log</span><br><span class="line">2020-11-06 06:42:33.666 26162 DEBUG nova.console.websocketproxy [-] 10.5.0.8: new handler Process vmsg /usr/lib/python2.7/dist-packages/websockify/websocket.py:878</span><br><span class="line">2020-11-06 06:42:34.166 19170 INFO nova.console.websocketproxy [-] handler exception: [SSL: SSLV3_ALERT_CERTIFICATE_UNKNOWN] sslv3 alert certificate unknown (_ssl.c:590)</span><br></pre></td></tr></table></figure></p>
-<p>为什么说它是正常的呢？因为我们是在focal上运行的curl命令或者浏览器，focal支持的最低ssl版本是tlsv1.2，而spiceproxy运行在xenial只支持tlsv1.0.　所以找一台xenial机器运行下列加了–tlsv1.0的curl命令是OK的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -k -vvv https://10.5.100.4:6082/spice_auto.html?token=bd00bb9f-83e7-4b25-9b6a-57dde9941dce --tlsv1.0</span><br></pre></td></tr></table></figure></p>
-<p>还是上面类似的老问题，spice也用到了websockify0.8，而它写死了 ssl_version=PROTOCOL_TLSv1<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&gt; /usr/lib/python2.7/dist-packages/websockify/websocket.py(837)do_handshake()</span><br><span class="line">-&gt; retsock = ssl.wrap_socket(</span><br><span class="line">(Pdb) l</span><br><span class="line">832                     raise self.EClose(&quot;SSL connection but &apos;%s&apos; not found&quot;</span><br><span class="line">833                                       % self.cert)</span><br><span class="line">834                 retsock = None</span><br><span class="line">835                 try:</span><br><span class="line">836                     import rpdb;rpdb.set_trace()</span><br><span class="line">837  -&gt;                 retsock = ssl.wrap_socket(</span><br><span class="line">838                             sock,</span><br><span class="line">839                             server_side=True,</span><br><span class="line">840                             certfile=self.cert,</span><br><span class="line">841                             keyfile=self.key)</span><br><span class="line">842                 except ssl.SSLError:</span><br><span class="line">(Pdb) p self.cert</span><br><span class="line">&apos;/etc/nova/ssl/nova_cert.pem&apos;</span><br><span class="line">(Pdb) p self.key</span><br><span class="line">&apos;/etc/nova/ssl/nova_key.pem&apos;</span><br><span class="line">(Pdb) l</span><br><span class="line"> 48</span><br><span class="line"> 49         def __init__(self, sock, keyfile=None, certfile=None,</span><br><span class="line"> 50                      server_side=False, cert_reqs=CERT_NONE,</span><br><span class="line"> 51                      ssl_version=PROTOCOL_TLSv1, ca_certs=None,</span><br><span class="line"> 52                      do_handshake_on_connect=True, *args, **kw):</span><br><span class="line"> 53  -&gt;         if not isinstance(sock, GreenSocket):</span><br><span class="line"> 54                 sock = GreenSocket(sock)</span><br><span class="line"> 55</span><br><span class="line"> 56             self.act_non_blocking = sock.act_non_blocking</span><br><span class="line"> 57</span><br><span class="line"> 58             if six.PY2:</span><br><span class="line"></span><br><span class="line">root@juju-1833ad-ssl2-7:~# pip list |grep web</span><br><span class="line">websockify (0.8.0)</span><br></pre></td></tr></table></figure></p>
-<p>但直接在xenial上升级到websockify=0.9.0失败.</p>
-<h2 id="在queens中使用websockify-0-9-0"><a href="#在queens中使用websockify-0-9-0" class="headerlink" title="在queens中使用websockify 0.9.0"></a>在queens中使用websockify 0.9.0</h2><p>将websockify的patch backedport到0.8.0时依赖太多，所以只能将0.9.0整体backport到queens. 测试一下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/lib/python2.7/dist-packages/websockify ~/websockify_bak</span><br><span class="line">git clone https://github.com/novnc/websockify.git</span><br><span class="line">cd websockify &amp;&amp; git checkout -b v0.9.0 v0.9.0</span><br><span class="line">cd ../ &amp;&amp; cp -r websockify/websockify /usr/lib/python2.7/dist-packages/</span><br><span class="line"></span><br><span class="line">cp allow-TLS-ciphers-protocols-to-be-configurable-for-c.patch /usr/lib/python2.7/dist-packages/</span><br><span class="line">cd  /usr/lib/python2.7/dist-packages/ &amp;&amp; patch -p1 &lt;allow-TLS-ciphers-protocols-to-be-configurable-for-c.patch</span><br><span class="line"></span><br><span class="line">then set the following content in /etc/nova/nova.conf</span><br><span class="line">[console]</span><br><span class="line">ssl_minimum_version=tlsv1_2</span><br><span class="line"></span><br><span class="line">vim /usr/lib/python2.7/dist-packages/nova/console/websocketproxy.py</span><br><span class="line">    def socket(self, *args, **kwargs):</span><br><span class="line">        #return websockify.WebSocketServer.socket(*args, **kwargs)</span><br><span class="line">        return websockify.websockifyserver.WebSockifyServer.socket(*args, **kwargs)</span><br><span class="line"></span><br><span class="line">find /usr/lib/python2.7/dist-packages/websockify -name &quot;*.pyc&quot; -exec rm -rf &#123;&#125; \;</span><br><span class="line">find /usr/lib/python2.7/dist-packages/nova -name &quot;*.pyc&quot; -exec rm -rf &#123;&#125; \;</span><br><span class="line"></span><br><span class="line">systemctl restart nova-spiceproxy</span><br><span class="line">nmap --script ssl-enum-ciphers -p 6082 10.5.2.196 |grep -i tlsv</span><br></pre></td></tr></table></figure>
-<h2 id="代码流程"><a href="#代码流程" class="headerlink" title="代码流程"></a>代码流程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">websocketproxy.py#websockify_init (opts.ssl_options = select_ssl_version(opts.ssl_version)) -&gt; websockifyserver.py#start_server()</span><br><span class="line"></span><br><span class="line">when client is connecting:</span><br><span class="line">WebSocketProxy -&gt; ./websocketproxy.py#ProxyRequestHandler -&gt; WebSockifyRequestHandler#handle -&gt; /usr/lib/python3.6/http/server.py(377)handle_one_request() -&gt; _websocket_do_GET -&gt; handle_upgrade (self.headers.get(&apos;upgrade&apos;).lower() == &apos;websocket&apos;) -&gt;  WebSocketRequestHandlerMixIn.handle_upgrade(self) -&gt; handle_websocket(SSL/TLS)-&gt; new_websocket_client　-&gt; /usr/lib/python3/dist-packages/nova/console/websocketproxy.py(166)new_websocket_client</span><br></pre></td></tr></table></figure>
-<p>似乎是在queens中下面的self.headers.get(‘upgrade’)不为wesocket<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">54     def _websocket_do_GET(self):</span><br><span class="line">55         # Checks if it is a websocket request and redirects</span><br><span class="line">56         self.do_GET = self._real_do_GET</span><br><span class="line">57</span><br><span class="line">58         if (self.headers.get(&apos;upgrade&apos;) and</span><br><span class="line">59             self.headers.get(&apos;upgrade&apos;).lower() == &apos;websocket&apos;):</span><br><span class="line">60             self.handle_upgrade()</span><br><span class="line">61         else:</span><br><span class="line">62             self.do_GET()</span><br></pre></td></tr></table></figure></p>
-<p>根据这个网页（<a href="https://www.slideshare.net/DvidHalsz/smuggling-tcp-traffic-through-http-71473570）" target="_blank" rel="external">https://www.slideshare.net/DvidHalsz/smuggling-tcp-traffic-through-http-71473570）</a></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>主要是由两个问题导致：<br>1, one spice-html5 bug<br><a href="https://github.com/freedesktop/spice-html5/commit/293d405e15a4499219fe81e830862cc2b1518e3e" target="_blank" rel="external">https://github.com/freedesktop/spice-html5/commit/293d405e15a4499219fe81e830862cc2b1518e3e</a><br>2, ssl默认使用PROTOCOL_SSLv23 （ <a href="https://docs.python.org/2/library/ssl.html#socket-creation" target="_blank" rel="external">https://docs.python.org/2/library/ssl.html#socket-creation</a> ）要使用tlsv1_2，或者在ssl.wrap_socket中直接指定＂ssl_version=ssl.PROTOCOL_TLSv1_2，或者使用nova与websockify的patch可以通过ssl_option来配置使用的tls版本。<br>3, 或者/usr/lib/python2.7/dist-packages/eventlet/green/ssl.py中不应该用PROTOCOL_TLSv1作为默认，而应该用PROTOCOL_SSLv23， 这样PROTOCOL_SSLv23会依赖底层ssl版本自动选择tlsv1_0, tlsv1_1, tlsv1_2, 这样即使防火墙disable  tlsv1_0也不影响使用tlsv1_2. 最终的原因是因为python-eventlet 0.18.4-1引入了Rebased set-defaults-to-be-tlsv1-not-sslv23.patch，是它使用了PROTOCOL_TLSv1，应该去掉。</p>
-<h2 id="附录-Websocket-based-spice-client"><a href="#附录-Websocket-based-spice-client" class="headerlink" title="附录 - Websocket based spice client"></a>附录 - Websocket based spice client</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">1, a test vm with spice enabled</span><br><span class="line">    &lt;graphics type=&apos;spice&apos; port=&apos;5900&apos; autoport=&apos;yes&apos; listen=&apos;127.0.0.1&apos;&gt;</span><br><span class="line">      &lt;listen type=&apos;address&apos; address=&apos;127.0.0.1&apos;/&gt;</span><br><span class="line">    &lt;/graphics&gt;</span><br><span class="line"></span><br><span class="line">2, spice proxy side</span><br><span class="line">sudo apt install python3-websockify -y</span><br><span class="line">websockify 192.168.2.139:6082 127.0.0.1:5900</span><br><span class="line"></span><br><span class="line">3, spice client side</span><br><span class="line">sudo apt install spice-html5 apache2 -y</span><br><span class="line">ls /usr/share/spice-html5/spice_auto.html #it&apos;s similar to https://10.5.1.11:6082/spice_auto.html?token=xxx</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/apache2/conf-available/ws.conf</span><br><span class="line">Alias /spice /usr/share/spice-html5</span><br><span class="line">&lt;Directory /usr/share/spice-html5&gt;</span><br><span class="line">    # This page is broadly available, tune here to make it more restricted.</span><br><span class="line">    Allow from all</span><br><span class="line">    Satisfy Any</span><br><span class="line">    DirectoryIndex spice.html</span><br><span class="line">&lt;/Directory&gt;</span><br><span class="line">EOF</span><br><span class="line">sudo ln -s /etc/apache2/conf-available/ws.conf /etc/apache2/conf-enabled/ws.conf</span><br><span class="line">sudo systemctl restart apache2</span><br><span class="line"></span><br><span class="line">4, access it via http://192.168.2.139/spice/spice_auto.html?host=192.168.2.139&amp;port=6082</span><br></pre></td></tr></table></figure>
-<h2 id="附录-Websocket-ssl-based-spice-client"><a href="#附录-Websocket-ssl-based-spice-client" class="headerlink" title="附录 - Websocket ssl based spice client"></a>附录 - Websocket ssl based spice client</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">1, create key pairs</span><br><span class="line"></span><br><span class="line">mkdir ~/ca &amp;&amp; cd ~/ca</span><br><span class="line">openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ca.crt -keyout ca.key -subj &quot;/C=US/ST=UK/L=London/O=Ubuntu/OU=IT/CN=CA&quot;</span><br><span class="line">for DOMAIN in server client</span><br><span class="line">do</span><br><span class="line">  openssl genrsa -out $DOMAIN.key</span><br><span class="line">  openssl req -new -key $DOMAIN.key -out $DOMAIN.csr -subj &quot;/C=GB/ST=UK/L=London/O=Ubuntu/OU=Cloud/CN=$DOMAIN&quot;</span><br><span class="line">  openssl x509 -req -in $DOMAIN.csr -out $DOMAIN.crt -sha256 -CA ca.crt -CAkey ca.key -CAcreateserial -days 3650</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">2, spice server side</span><br><span class="line"></span><br><span class="line">sudo mkdir /etc/apache2/ssl &amp;&amp; sudo chown -R $USER /etc/apache2/ssl</span><br><span class="line">cp /home/hua/ca/server.crt /etc/apache2/ssl/</span><br><span class="line">cp /home/hua/ca/server.key /etc/apache2/ssl/</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/apache2/conf-available/ws.conf</span><br><span class="line">&lt;VirtualHost 192.168.2.139:443&gt;</span><br><span class="line">        SSLEngine on</span><br><span class="line">        SSLCertificateFile      /etc/apache2/ssl/server.crt</span><br><span class="line">        SSLCertificateKeyFile   /etc/apache2/ssl/server.key</span><br><span class="line">        CustomLog       &quot;/var/log/apache2/ws.log&quot; combined</span><br><span class="line">        ErrorLog        &quot;/var/log/apache2/ws.log&quot;</span><br><span class="line">	Alias /spice /usr/share/spice-html5</span><br><span class="line">	&lt;Directory /usr/share/spice-html5&gt;</span><br><span class="line">	    # This page is broadly available, tune here to make it more restricted.</span><br><span class="line">	    Allow from all</span><br><span class="line">	    Satisfy Any</span><br><span class="line">	    DirectoryIndex spice.html</span><br><span class="line">	&lt;/Directory&gt;</span><br><span class="line">&lt;/VirtualHost&gt;</span><br><span class="line">EOF</span><br><span class="line">sudo a2enmod ssl</span><br><span class="line">sudo systemctl restart apache2</span><br><span class="line"></span><br><span class="line">3, spice proxy side</span><br><span class="line">websockify --cert=/home/hua/ca/server.crt --key=/home/hua/ca/server.key --cafile=~/home/hua/ca/ca.crt --ssl-only --ssl-version=tlsv1_2 192.168.2.139:6082 127.0.0.1:5900</span><br><span class="line"></span><br><span class="line">4, access it via: https://192.168.2.139/spice/spice_auto.html?host=192.168.2.139&amp;port=6082</span><br><span class="line">   nmap --script ssl-enum-ciphers -p 6082 192.168.2.139</span><br><span class="line">   openssl s_client -connect 192.168.2.139:6082 -tls1_2</span><br><span class="line"></span><br><span class="line">5, debug, print http headers by adding the following scripts in /usr/share/spice-html5/spice_auto.html</span><br><span class="line"></span><br><span class="line">var req = new XMLHttpRequest();</span><br><span class="line">req.open(&apos;GET&apos;, document.location, false);  #but this is not the headers for websocket upgrade</span><br><span class="line">req.send(null);</span><br><span class="line">var headers = req.getAllResponseHeaders();</span><br><span class="line">alert(headers);</span><br><span class="line"></span><br><span class="line">6, why we see the following error when visitting the url &apos;https://10.5.2.196:6082/spice_auto.html?token=xxxx&apos;</span><br><span class="line"></span><br><span class="line">SecurityError: Failed to construct &apos;WebSocket&apos;: An insecure WebSocket connection may not be initiated from a page loaded over HTTPS.</span><br><span class="line"></span><br><span class="line">That&apos;s because the following content is missing in /usr/share/spice-html5/spice_auto.html, see this patch - https://github.com/freedesktop/spice-html5/commit/293d405e15a4499219fe81e830862cc2b1518e3e</span><br><span class="line"></span><br><span class="line">                if (window.location.protocol == &apos;https:&apos;) &#123;</span><br><span class="line">                    scheme = &quot;wss://&quot;;</span><br><span class="line">                &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Debug-novnc"><a href="#Debug-novnc" class="headerlink" title="Debug novnc"></a>Debug novnc</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">Debug novnc</span><br><span class="line">先debug http, &quot;10.5.1.160:6080&quot;是已存在的相当于上面的apache2一步它里面带了novnc中的vnc_auto.html</span><br><span class="line">root@juju-9c8c65-ssl-8:~# virsh dumpxml 1 |grep vnc -A2</span><br><span class="line">    &lt;graphics type=&apos;vnc&apos; port=&apos;5900&apos; autoport=&apos;yes&apos; listen=&apos;10.5.2.13&apos; keymap=&apos;en-us&apos;&gt;</span><br><span class="line">      &lt;listen type=&apos;address&apos; address=&apos;10.5.2.13&apos;/&gt;</span><br><span class="line">    &lt;/graphics&gt;</span><br><span class="line">websockify 10.5.1.161:6081 10.5.2.13:5900 -v</span><br><span class="line">http://10.5.1.161:6080/vnc_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line"></span><br><span class="line">#some log</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:09:51] &quot;GET /websockify HTTP/1.1&quot; 101 -</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:09:51] 10.5.0.8: Plain non-SSL (ws://) WebSocket connection</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:09:51] 10.5.0.8: Version hybi-13, base64: &apos;False&apos;</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:09:51] 10.5.0.8: Path: &apos;/websockify&apos;</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:09:51] connecting to: 10.5.2.13:5900</span><br><span class="line"></span><br><span class="line">再debug https,　沿用nova.conf(nova-novncproxy)中的cert与key, 只是用于在浏览器与websockify建立ssl, websockify与qemu之间还是http</span><br><span class="line">#--cafile=~/home/hua/ca/ca.crt  --ssl-version=tlsv1_2</span><br><span class="line">openssl x509 -noout -text -in /etc/apache2/ssl/nova/cert_10.5.1.161</span><br><span class="line">websockify --cert=/etc/apache2/ssl/nova/cert_10.5.1.161 --key=/etc/apache2/ssl/nova/key_10.5.1.161 --ssl-only 10.5.1.161:6081 10.5.2.13:5900 -v</span><br><span class="line">https://10.5.1.161:6080/vnc_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line"></span><br><span class="line">#some log</span><br><span class="line">root@juju-9c8c65-ssl-7:~# websockify --cert=/etc/apache2/ssl/nova/cert_10.5.1.161 --key=/etc/apache2/ssl/nova/key_10.5.1.161 --ssl-only 10.5.1.161:6081 10.5.2.13</span><br><span class="line">:5900 -v</span><br><span class="line">WebSocket server settings:</span><br><span class="line">  - Listen on 10.5.1.161:6081</span><br><span class="line">  - Flash security policy server</span><br><span class="line">  - SSL/TLS support</span><br><span class="line">  - Deny non-SSL/TLS connections</span><br><span class="line">  - proxying from 10.5.1.161:6081 to 10.5.2.13:5900</span><br><span class="line">10.5.0.8: new handler Process</span><br><span class="line">handler exception: [SSL: SSLV3_ALERT_CERTIFICATE_UNKNOWN] sslv3 alert certificate unknown (_ssl.c:590)</span><br><span class="line">exception</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/websockify/websocket.py&quot;, line 933, in top_new_client</span><br><span class="line">    client = self.do_handshake(startsock, address)</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/websockify/websocket.py&quot;, line 840, in do_handshake</span><br><span class="line">    keyfile=self.key)</span><br><span class="line">  File &quot;/usr/lib/python2.7/ssl.py&quot;, line 933, in wrap_socket</span><br><span class="line">    ciphers=ciphers)</span><br><span class="line">  File &quot;/usr/lib/python2.7/ssl.py&quot;, line 601, in __init__</span><br><span class="line">    self.do_handshake()</span><br><span class="line">  File &quot;/usr/lib/python2.7/ssl.py&quot;, line 830, in do_handshake</span><br><span class="line">    self._sslobj.do_handshake()</span><br><span class="line">SSLError: [SSL: SSLV3_ALERT_CERTIFICATE_UNKNOWN] sslv3 alert certificate unknown (_ssl.c:590)</span><br><span class="line">Ignoring interrupted syscall</span><br><span class="line">10.5.0.8: new handler Process</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:27] &quot;GET /websockify HTTP/1.1&quot; 101 -</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:27] 10.5.0.8: SSL/TLS (wss://) WebSocket connection</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:27] 10.5.0.8: Version hybi-13, base64: &apos;False&apos;</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:27] 10.5.0.8: Path: &apos;/websockify&apos;</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:27] connecting to: 10.5.2.13:5900</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:28] 10.5.2.13:5900: Client closed connection</span><br><span class="line">zhhuabj-bastion.cloud.sts - - [27/Jan/2021 06:21:28] 10.5.2.13:5900: Closed target</span><br><span class="line">Ignoring interrupted syscall</span><br><span class="line"></span><br><span class="line">#/usr/lib/python2.7/dist-packages/websockify/websocket.py</span><br><span class="line">#ssl_version=ssl.PROTOCOL_TLSv1_2,</span><br><span class="line"></span><br><span class="line">这样改试spice client不work</span><br><span class="line">sudo apt install spice-html5 -y</span><br><span class="line">sed -i &quot;s/ws:/wss:/g&quot; /usr/share/spice-html5/spice_auto.html</span><br><span class="line">cat &lt;&lt; EOF | sudo tee /etc/apache2/conf-available/ws.conf</span><br><span class="line">Alias /spice /usr/share/spice-html5</span><br><span class="line">&lt;Directory /usr/share/spice-html5&gt;</span><br><span class="line">    # This page is broadly available, tune here to make it more restricted.</span><br><span class="line">    Allow from all</span><br><span class="line">    Satisfy Any</span><br><span class="line">    DirectoryIndex spice.html</span><br><span class="line">&lt;/Directory&gt;</span><br><span class="line">EOF</span><br><span class="line">sudo ln -s /etc/apache2/conf-available/ws.conf /etc/apache2/conf-enabled/ws.conf</span><br><span class="line">sudo systemctl restart apache2</span><br><span class="line">websockify --cert=/etc/apache2/ssl/nova/cert_10.5.1.161 --key=/etc/apache2/ssl/nova/key_10.5.1.161 --ssl-only 10.5.1.161:6081 10.5.2.13:5900 -v</span><br><span class="line">#https://10.5.1.161:6080/vnc_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line">https://10.5.1.161:443/spice/spice_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line"></span><br><span class="line">再这样改试spice却是work的</span><br><span class="line">juju config nova-cloud-controller console-access-protocol=spice</span><br><span class="line">#need to run &apos;nova reboot --hard bionic-032738&apos; to fix &apos;Unavailable console type spice&apos;</span><br><span class="line">nova get-vnc-console bionic-032738 spice-html5</span><br><span class="line">websockify --cert=/etc/apache2/ssl/nova/cert_10.5.1.161 --key=/etc/apache2/ssl/nova/key_10.5.1.161 --ssl-only 10.5.1.161:6081 10.5.2.13:5900 -v</span><br><span class="line">#https://10.5.1.161:6080/vnc_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line">https://10.5.1.161:6082/spice_auto.html?token=a44045f9-0d22-495e-831a-8f64ae445d2f&amp;host=10.5.1.161&amp;port=6081</span><br><span class="line">https://10.5.1.161:6082/spice_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line"></span><br><span class="line">这样确定了novnc的问题不是是ssl造成的，而是timeout，所以在/usr/share/novnc/include/rfb.js修改下面配置之后</span><br><span class="line">def_con_timeout  = Websock_native ? 200 : 500,</span><br><span class="line">再restart(sudo service nova-novncproxy restart)就可以成功访问了。</span><br><span class="line">https://10.5.1.161:6080/vnc_auto.html?host=10.5.1.161&amp;port=6081</span><br><span class="line">https://10.5.1.161:6080/vnc_auto.html?token=887a070e-1f45-4320-912f-577a50417b1d&amp;host=10.5.1.161&amp;port=6081</span><br></pre></td></tr></table></figure>
-<h2 id="20210204更新"><a href="#20210204更新" class="headerlink" title="20210204更新"></a>20210204更新</h2><p>有时候如heat charm在里面会创建haproxy实例（外面用hacluster提供corosync做HA)，但并不需要在haproxy.cnf里设置如下设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets</span><br><span class="line">ssl-default-server-options ssl-min-ver TLSv1.2 no-tls-tickets</span><br></pre></td></tr></table></figure></p>
-<p>因为haproxy的后面是apache2，它由这个bug (<a href="https://bugs.launchpad.net/charm-helpers/+bug/1886630)已经提供了fix" target="_blank" rel="external">https://bugs.launchpad.net/charm-helpers/+bug/1886630)已经提供了fix</a> (<a href="https://github.com/juju/charm-helpers/commit/27d6ceb385e44a0610c1a6aba8e225368c4af384" target="_blank" rel="external">https://github.com/juju/charm-helpers/commit/27d6ceb385e44a0610c1a6aba8e225368c4af384</a> )在apache2层面禁用了sslv3/tlsv1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">root@juju-170792-stein-2:~# grep &apos;:7994&apos; /etc/apache2/sites-available/openstack_https_frontend.conf -A 7</span><br><span class="line">&lt;VirtualHost 10.5.3.29:7994&gt;</span><br><span class="line">ServerName 10.5.3.29</span><br><span class="line">SSLEngine on</span><br><span class="line"></span><br><span class="line"># This section is based on Mozilla&apos;s recommendation</span><br><span class="line"># as the &quot;intermediate&quot; profile as of July 7th, 2020.</span><br><span class="line"># https://wiki.mozilla.org/Security/Server_Side_TLS</span><br><span class="line">SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1</span><br><span class="line"></span><br><span class="line">root@juju-170792-stein-2:~# grep -r 7994 /etc/haproxy/haproxy.cfg -B2</span><br><span class="line">backend heat_api_10.5.3.29</span><br><span class="line">balance leastconn</span><br><span class="line">server heat-0 10.5.3.29:7994 check</span><br><span class="line">root@juju-170792-stein-2:~# grep -r &apos;use_backend heat_api_10.5.3.29&apos; /etc/haproxy/haproxy.cfg -B4</span><br><span class="line">frontend tcp-in_heat_api</span><br><span class="line">bind *:8004</span><br><span class="line">bind :::8004</span><br><span class="line">acl net_10.5.3.29 dst 10.5.3.29/255.255.0.0</span><br><span class="line">use_backend heat_api_10.5.3.29 if net_10.5.3.29</span><br></pre></td></tr></table></figure>
-<p>landscape也会在postgresql前安装haproxy，但也没提供enable TLSv1.2的配置项，可暂时用下列workaround:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">juju config landscape-postgresql extra_pg_conf=&quot;ssl_ciphers=&apos;TLSv1.2&apos;&quot;</span><br></pre></td></tr></table></figure></p>
-<p>keystone也会在apache2前安装haproxy，这个apache2不是来自charm-helper, 可单独修改charm template(/var/lib/juju/agents/unit-keystone-0/charm/templates/openstack_https_frontend.conf)作为workaround:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-SSLProtocol +TLSv1 +TLSv1.1 +TLSv1.2</span><br><span class="line">+SSLProtocol -TLSv1 -TLSv1.1 +TLSv1.2</span><br></pre></td></tr></table></figure></p>
-<p>对于Landscape/Postfix, In /etc/postfix, master.cf or main.cf (whichever one you use):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">smtpd_tls_mandatory_protocols = x,y,z,!TLSv1, !TLSv1.1</span><br></pre></td></tr></table></figure></p>
-<p>[1] <a href="https://blog.surgut.co.uk/2019/08/how-to-disable-tls-10-and-tls-11-on.html" target="_blank" rel="external">https://blog.surgut.co.uk/2019/08/how-to-disable-tls-10-and-tls-11-on.html</a><br>[2] <a href="https://discourse.ubuntu.com/t/default-to-tls-v1-2-in-all-tls-libraries-in-20-04-lts/12464" target="_blank" rel="external">https://discourse.ubuntu.com/t/default-to-tls-v1-2-in-all-tls-libraries-in-20-04-lts/12464</a><br>[3] <a href="https://notes.bitfunnel.net/?q=node/54" target="_blank" rel="external">https://notes.bitfunnel.net/?q=node/54</a><br>[4] <a href="https://github.com/certik/python-2.7/blob/master/Lib/ssl.py#L373" target="_blank" rel="external">https://github.com/certik/python-2.7/blob/master/Lib/ssl.py#L373</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1749,7 +1737,7 @@ set_state done
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">103</span>
+                  <span class="site-state-item-count">105</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
